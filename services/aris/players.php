@@ -162,6 +162,16 @@ class Players extends Module
 		return new returnData(0, $changeMade);
 	}
 	
+	public function npcViewed($intGameID, $intPlayerID, $intNpcID)
+	{	
+		$prefix = $this->getPrefix($intGameID);
+		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+		
+		$changeMade = Module::applyPlayerStateChanges($prefix, $intPlayerID, 'Npc', $intNpcID);
+		
+		return new returnData(0, $changeMade);
+	}	
+	
 	
 	/**
      * Reset all player Events
