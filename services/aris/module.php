@@ -132,7 +132,7 @@ abstract class Module
      * Adds the specified event to the player.
      * @return void
      */
-    protected function addEventToPlayer($strPrefix, $intPlayerID, $intEventID) {
+    protected function addEventToPlayer($strPrefix, $intEventID, $intPlayerID ) {
 	   	if (!Module::checkForEvent($strPrefix, $intPlayerID, $intEventID)) {
 			$query = "INSERT INTO {$strPrefix}_player_events 
 									  (player_id, event_id) VALUES ('$intPlayerID','$intEventID')
@@ -214,12 +214,11 @@ abstract class Module
 		$query = "SELECT * FROM {$strPrefix}_player_state_changes 
 									  WHERE content_type = '{$strObjectType}'
 									  AND content_id = '{$intObjectID}'";
-		
+		NetDebug::trace($query);
+
 		$rsStateChanges = @mysql_query($query);
 		
 		while ($stateChange = mysql_fetch_array($rsStateChanges)) {
-			//var_dump ($stateChange);
-			
 			//Check the requirement
 			switch ($stateChange['action']) {
 				case 'GIVE_ITEM':
