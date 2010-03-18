@@ -108,17 +108,29 @@ class Items extends Module
      * @returns with returnData object (0 on success) 
      */
 	public function createItemAndGiveToPlayer($intGameID, $intPlayerID, $strName, $strDescription, 
-								$intMediaID, $boolDropable, $boolDestroyable)
+								$strFileName, $boolDropable, $boolDestroyable)
 	{
 		
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+		
+		$query = "INSERT INTO {$prefix}_media 
+					(name, file_name)
+					VALUES ('{$strName}', 
+							'{$strFileName}')";
+		
+		//NetDebug::trace("createItem: Running a query = $query");	
+		
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
+		
+		$newMediaID = mysql_insert_id();
 
 		$query = "INSERT INTO {$prefix}_items 
 					(name, description, media_id, dropable, destroyable)
 					VALUES ('{$strName}', 
 							'{$strDescription}',
-							'{$intMediaID}', 
+							'{$newMediaID}', 
 							'$boolDropable',
 							'$boolDestroyable')";
 		

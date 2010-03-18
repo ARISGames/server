@@ -26,7 +26,7 @@ $newMediaFilePath = $gameMediaDirectory . '/' . $newMediaFileName;
 if (!move_uploaded_file( $_FILES['file']['tmp_name'], $newMediaFilePath))
 	die ("data=&returnCode=2&returnCodeDescription=CannotMoveFile");
 
-echo "data=$newMediaFileName&returnCode=0&returnCodeDescription=Success";
-
+//echo "data=$newMediaFileName&returnCode=0&returnCodeDescription=Success";
+echo $newMediaFileName;
 
 ?>
