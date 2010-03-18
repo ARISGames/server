@@ -107,7 +107,7 @@ class Games extends Module
 			item_id int(11) unsigned NOT NULL auto_increment,
 			name varchar(100) default NULL,
 			description text,
-			icon_media_id int(10) unsigned default NULL,
+			icon_media_id int(10) unsigned NOT NULL default '0',
 			media_id int(10) unsigned NOT NULL default '0',
 			dropable enum('0','1') NOT NULL default '0',
 			destroyable enum('0','1') NOT NULL default '0',
@@ -216,7 +216,7 @@ class Games extends Module
 			name varchar(30) NOT NULL default '',
 			description tinytext,
 			text tinytext,
-			media_id int(10) unsigned default NULL,
+			media_id int(10) unsigned NOT NULL default '0',
 			PRIMARY KEY  (npc_id)
 			)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
 		@mysql_query($query);
