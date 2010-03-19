@@ -73,6 +73,9 @@ class EditorFoldersAndContent extends Module
      */
 	public function saveFolder($intGameID, $intFolderID, $strName, $intParentID, $intPreviousFolderID )
 	{
+		$strName = addslashes($strName);	
+
+		
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
@@ -121,10 +124,11 @@ class EditorFoldersAndContent extends Module
 	public function saveContent($intGameID, $intObjectContentID, $intFolderID, 
 								$strContentType, $intContentID, $intPreviousObjectContentID )
 	{
+		
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
-		if ($intFolderContentID) {
+		if ($intObjectContentID) {
 			//This is an update
 			
 			$this->spliceOut($prefix, self::EDITORCONTENT, $intFolderContentID);
