@@ -86,7 +86,7 @@ class EditorFoldersAndContent extends Module
 						SET 
 						name = '{$strName}',
 						parent_id = '{$intParentID}',
-						previous_id = {$intSortOrder}'
+						previous_id = '{$intSortOrder}'
 						WHERE 
 						folder_id = {$intFolderID}
 						";
