@@ -71,11 +71,10 @@ class EditorFoldersAndContent extends Module
      * Create or Update a Folder. Use 0 or null for FolderID to create a new record. If update, it will also update the sorting info
      * @returns the new folderID on insert	
      */
-	public function saveFolder($intGameID, $intFolderID, $strName, $intParentID, $intPreviousFolderID )
+	public function saveFolder($intGameID, $intFolderID, $strName, $intParentID, $intSortOrder )
 	{
 		$strName = addslashes($strName);	
 
-		
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
@@ -83,13 +82,11 @@ class EditorFoldersAndContent extends Module
 		if ($intFolderID) {
 			//This is an update
 			
-			$this->spliceOut($prefix, self::EDITORFOLDER, $intFolderID);
-			$this->spliceIn($prefix, self::EDITORFOLDER, $intFolderID, $intPreviousFolderID, $intParentID);
-			
 			$query = "UPDATE {$prefix}_folders
 						SET 
 						name = '{$strName}',
-						parent_id = '{$intParentID}'
+						parent_id = '{$intParentID}',
+						previous_id = {$intSortOrder}'
 						WHERE 
 						folder_id = {$intFolderID}
 						";
@@ -103,11 +100,10 @@ class EditorFoldersAndContent extends Module
 			//This is an insert
 				
 			$query = "INSERT INTO {$prefix}_folders (name, parent_id, previous_id)
-					VALUES ('{$strName}', '{$intParentID}', '{$intPreviousFolderID}')";
+					VALUES ('{$strName}', '{$intParentID}', '{$intSortOrder}')";
 					
 			@mysql_query($query);
 			$newFolderID = mysql_insert_id();
-			$this->placeAtBegining($prefix, self::EDITORFOLDER, $newFolderID, $intParentID);
 			
 			if (mysql_error()) return new returnData(1, NULL, "SQL Error:" . mysql_error());
 			else return new returnData(0, $newFolderID, NULL);
@@ -122,7 +118,7 @@ class EditorFoldersAndContent extends Module
      * @returns the new folderContentID on insert
      */
 	public function saveContent($intGameID, $intObjectContentID, $intFolderID, 
-								$strContentType, $intContentID, $intPreviousObjectContentID )
+								$strContentType, $intContentID, $intSortOrder )
 	{
 		
 		$prefix = $this->getPrefix($intGameID);
@@ -131,14 +127,12 @@ class EditorFoldersAndContent extends Module
 		if ($intObjectContentID) {
 			//This is an update
 			
-			$this->spliceOut($prefix, self::EDITORCONTENT, $intFolderContentID);
-			$this->spliceIn($prefix, self::EDITORCONTENT, $intFolderContentID, $intPreviousContentID, $intFolderID);
-			
 			$query = "UPDATE {$prefix}_folder_contents
 						SET 
 						folder_id = '{$intFolderID}',
 						content_type = '{$strContentType}',
-						content_id = '{$intContentID}'
+						content_id = '{$intContentID}',
+						previous_id = '{$intSortOrder}'
 						WHERE 
 						object_content_id = {$intObjectContentID}
 						";
@@ -154,13 +148,11 @@ class EditorFoldersAndContent extends Module
 			$query = "INSERT INTO {$prefix}_folder_contents 
 					(folder_id, content_type, content_id, previous_id)
 					VALUES 
-					('{$intFolderID}', '{$strContentType}', '{$intContentID}', '{$intPreviousFolderID}')";
+					('{$intFolderID}', '{$strContentType}', '{$intContentID}', '{$intSortOrder}')";
 					
 			@mysql_query($query);
 			$newContentID = mysql_insert_id();
-			
-			$this->placeAtBegining($prefix, self::EDITORCONTENT, $newContentID, $intFolderID);
-			
+						
 			if (mysql_error()) return new returnData(1, NULL, "SQL Error:" . mysql_error());
 			else return new returnData(0, $newContentID, NULL);
 		}
@@ -175,8 +167,6 @@ class EditorFoldersAndContent extends Module
 	{
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");		
-
-		$this->spliceOut($prefix, self::EDITORFOLDER, $intFolderID);
 				
 		$query = "DELETE FROM {$prefix}_folders WHERE folder_id = {$intFolderID}";
 		@mysql_query($query);
@@ -195,8 +185,6 @@ class EditorFoldersAndContent extends Module
 	{
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");		
-
-		$this->spliceOut($prefix, self::EDITORCONTENT, $intContentID);
 		
 		$query = "DELETE FROM {$prefix}_folder_contents WHERE object_content_id = {$intContentID}";
 		NetDebug::trace($query);
@@ -209,145 +197,4 @@ class EditorFoldersAndContent extends Module
 	}	
 	
 	
-	private function spliceOut($strPrefix, $strFolderOrContent, $IDToRemove) {
-		
-		if ($strFolderOrContent == self::EDITORCONTENT) { 
-			NetDebug::trace("Splice out some content");
-			$table = "folder_contents";
-			$idField ="object_content_id";
-		}
-		else if ($strFolderOrContent == self::EDITORFOLDER) {
-			NetDebug::trace("Splice out a folder");
-			$table = "folders";
-			$idField ="folder_id";
-		}
-		
-		//Find a following folder/content (if it exists)
-		$query = "SELECT * FROM {$strPrefix}_{$table} 
-				WHERE previous_id = '{$IDToRemove}'";
-		NetDebug::trace($query);
-		$rs = @mysql_query($query);
-		if (mysql_error()) return new returnData(1, NULL, "SQL Error:". mysql_error());
-		$follower = mysql_fetch_object($rs);
-		
-		if ($follower) {
-			$followerID = $follower->$idField;
-			NetDebug::trace("Record $followerID is a follower of this record");
-		
-			//Fetch this folder/content's previous id
-			$query = "SELECT * FROM {$strPrefix}_{$table} WHERE {$idField} = '{$IDToRemove}'";
-			NetDebug::trace($query);
-			$rs= @mysql_query($query);
-			if (mysql_error()) return new returnData(1, NULL, "SQL Error:". mysql_error());
-			$thisObject = mysql_fetch_object($rs);
-			$thisObjectsPrevious = $thisObject->previous_id;
-			NetDebug::trace("This record uses $thisObjectsPrevious for its previous");
-
-			
-			//Set the following folder/content to this folder/content's previous
-			$query = "UPDATE {$strPrefix}_{$table} 
-						SET previous_id = {$thisObjectsPrevious}
-						WHERE {$idField} = {$followerID}";
-			NetDebug::trace($query);
-			@mysql_query($query);
-			if (mysql_error()) return new returnData(1, NULL, "SQL Error:". mysql_error());
-			NetDebug::trace("Done");
-		}
-	}
-
-	private function spliceIn($strPrefix, $strFolderOrContent, $IDToInsert, $previousID, $parentID) {
-		if ($previousID == NULL) $previousID = 0;
-
-		
-		if ($strFolderOrContent == self::EDITORCONTENT) { 
-			NetDebug::trace("Splice in some content");
-			$table = "folder_contents";
-			$idField ="object_content_id";
-			$parentIDField = "folder_id";
-		}
-		else if ($strFolderOrContent == self::EDITORFOLDER) {
-			NetDebug::trace("Splice in a folder");
-			$table = "folders";
-			$idField ="folder_id";
-			$parentIDField = "parent_id";
-		}
-		
-		//Check who is following the the previous within this folder (if anyone)
-		$query = "SELECT * FROM {$strPrefix}_{$table} 
-				WHERE previous_id = '{$previousID}' AND $parentIDField = {$parentID}";
-		NetDebug::trace($query);
-		$rs = @mysql_query($query);
-		if (mysql_error()) return new returnData(1, NULL, "SQL Error:". mysql_error());
-		$newFollower = mysql_fetch_object($rs);
-		
-		if($newFollower) {
-			$newFollowerID = $newFollower->$idField;
-		
-			//Point them to us
-			$query = "UPDATE {$strPrefix}_{$table} 
-							SET previous_id = {$IDToInsert}
-							WHERE {$idField} = '{$newFollowerID}'";
-			NetDebug::trace($query);
-			@mysql_query($query);
-			if (mysql_error()) return new returnData(1, NULL, "SQL Error:". mysql_error());
-		}
-		
-			
-		//Point our record to the previous
-		$query = "UPDATE {$strPrefix}_{$table} 
-						SET previous_id = {$previousID}
-						WHERE {$idField} = '{$IDToInsert}'";
-		NetDebug::trace($query);
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(1, NULL, "SQL Error:". mysql_error());		
-	}
-	
-	
-	private function placeAtBegining($strPrefix, $strFolderOrContent, $IDToInsert, $parentFolderID){
-		if ($parentFolderID == NULL) $parentFolderID = 0;
-		
-		if ($strFolderOrContent == self::EDITORCONTENT) { 
-			NetDebug::trace("Add some content");
-			$table = "folder_contents";
-			$idField ="object_content_id";
-			$parentIDField = "folder_id";
-		}
-		else if ($strFolderOrContent == self::EDITORFOLDER) {
-			NetDebug::trace("Add a folder");
-			$table = "folders";
-			$idField ="folder_id";
-			$parentIDField = "parent_id";
-		}
-		
-		//Check who is first (if anyone) in this folder
-		
-		$query = "SELECT * FROM {$strPrefix}_{$table} 
-					WHERE previous_id = 0 AND 
-						{$parentIDField} = {$parentFolderID} AND
-						{$idField} != $IDToInsert";
-		NetDebug::trace($query);
-		$rs = @mysql_query($query);
-		if (mysql_error()) return new returnData(1, NULL, "SQL Error:". mysql_error());
-		$newFollower = mysql_fetch_object($rs);
-		$newFollowerID = $newFollower->$idField;
-		NetDebug::trace("FollowerID =" . $newFollowerID);
-
-		if(!$newFollower) return;
-
-		//Point them to us
-		$query = "UPDATE {$strPrefix}_{$table} 
-						SET previous_id = {$IDToInsert}
-						WHERE {$idField} = {$newFollowerID}";
-		NetDebug::trace($query);
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(1, NULL, "SQL Error:". mysql_error());
-			
-		//Point our record to the previous
-		$query = "UPDATE {$strPrefix}_{$table} 
-						SET previous_id = 0
-						WHERE {$idField} = {$IDToInsert}";
-		NetDebug::trace($query);
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(1, NULL, "SQL Error:". mysql_error());		
-	}
 }
