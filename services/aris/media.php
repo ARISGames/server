@@ -6,9 +6,10 @@ class Media extends Module
 {
 	
 	const MEDIA_IMAGE = 'Image';
+	const MEDIA_ICON = 'Icon';
 	const MEDIA_VIDEO = 'Video';
 	const MEDIA_AUDIO = 'Audio';
-	protected $validImageTypes = array('jpg','png');
+	protected $validImageAndIconTypes = array('jpg','png');
 	protected $validAudioTypes = array('mp3','m4a','caf');
 	protected $validVideoTypes = array('mp4','m4v','3gp');
 	
@@ -40,7 +41,8 @@ class Media extends Module
 			$mediaItem['name'] = $mediaRow['name'];
 			$mediaItem['file_name'] = $mediaRow['file_name'];
 			$mediaItem['url_path'] = Config::gamedataWWWPath . "/{$prefix}/" . Config::gameMediaSubdir;
-			$mediaItem['type'] = $this->getMediaType($mediaRow['file_name']);
+			if ($mediaRow['is_icon'] == '1') $mediaItem['type'] = self::MEDIA_ICON;
+			else $mediaItem['type'] = $this->getMediaType($mediaRow['file_name']);
 			$mediaItem['is_default'] = $this->getMediaType($mediaRow['is_default']);
 			array_push($returnData->data, $mediaItem);
 		}
@@ -72,9 +74,9 @@ class Media extends Module
      * Fetch the valid file extensions
      * @returns the extensions
      */
-	public function getValidImageExtensions()
+	public function getValidImageAndIconExtensions()
 	{
-		return new returnData(0, $this->validImageTypes);
+		return new returnData(0, $this->validImageAndIconTypes);
 	}
 
 		
@@ -83,15 +85,18 @@ class Media extends Module
      * Create a media record
      * @returns the new mediaID on success
      */
-	public function createMedia($intGameID, $strName, $strFileName)
+	public function createMedia($intGameID, $strName, $strFileName, $boolIsIcon)
 	{
 		
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+		
+		if ($boolIsIcon && $this->getMediaType($strFileName) != self::MEDIA_IMAGE)
+			return new returnData(4, NULL, "Icons must have a valid Image file extension");
 		            	
 		$query = "INSERT INTO {$prefix}_media 
-					(name, file_name, is_default)
-					VALUES ('{$strName}', '{$strFileName}',0)";
+					(name, file_name, is_default, is_icon)
+					VALUES ('{$strName}', '{$strFileName}',0 ,{$boolIsIcon})";
 		
 		NetDebug::trace("Running a query = $query");	
 		
@@ -189,7 +194,7 @@ class Media extends Module
 		$mediaParts = pathinfo($strMediaFileName);
  		$mediaExtension = $mediaParts['extension'];
  		
- 		if (in_array($mediaExtension, $this->validImageTypes )) return self::MEDIA_IMAGE;
+ 		if (in_array($mediaExtension, $this->validImageAndIconTypes )) return self::MEDIA_IMAGE;
  		else if (in_array($mediaExtension, $this->validAudioTypes )) return self::MEDIA_AUDIO;
 		else if (in_array($mediaExtension, $this->validVideoTypes )) return self::MEDIA_VIDEO;
  		

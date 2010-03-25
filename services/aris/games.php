@@ -263,6 +263,7 @@ class Games extends Module
             name VARCHAR( 255 ) NOT NULL,
             file_name VARCHAR( 255 ) NOT NULL,
             is_default tinyint(1) default '0',
+            is_icon tinyint(1) default '0',
             PRIMARY KEY ( media_id )
             )ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
 		@mysql_query($query);
@@ -319,8 +320,21 @@ class Games extends Module
 		
 		if (mysql_affected_rows()) return new returnData(0, TRUE);
 		else return new returnData(0, FALSE);		
-		
 	}		
+	
+	
+	/**
+     * Updates a game's information
+     * @returns true if a record was updated, false otherwise
+     */	
+	public function upgradeGameDatabase($intGameID)
+	{	
+		$prefix = $this->getPrefix($intGameID);
+		$query = "ALTER TABLE {$prefix}_media ADD is_icon BOOL NOT NULL DEFAULT '0'";
+		mysql_query($query);
+		if (mysql_error()) return new returnData(3, false, "SQL Error:".mysql_error());
+		else return new returnData(0, FALSE);	
+	}
 	
 	/**
      * Sets a game's name
