@@ -105,7 +105,7 @@ class Games extends Module
 
 		$query = "CREATE TABLE {$strShortName}_items (
 			item_id int(11) unsigned NOT NULL auto_increment,
-			name varchar(100) default NULL,
+			name varchar(255) default NULL,
 			description text,
 			icon_media_id int(10) unsigned NOT NULL default '0',
 			media_id int(10) unsigned NOT NULL default '0',
@@ -153,7 +153,7 @@ class Games extends Module
 	
 		$query = "CREATE TABLE {$strShortName}_locations (
 	  		location_id int(11) NOT NULL auto_increment,
-			name varchar(50) default NULL,
+			name varchar(255) default NULL,
 			description tinytext,
 			latitude double default '43.0746561',
 			longitude double default '-89.384422',
@@ -182,7 +182,7 @@ class Games extends Module
 		
 		$query = "CREATE TABLE {$strShortName}_nodes (
 			  node_id int(11) unsigned NOT NULL auto_increment,
-			  title varchar(100) default NULL,
+			  title varchar(255) default NULL,
 			  text text,
 			  opt1_text varchar(100) default NULL,
 			  opt1_node_id int(11) unsigned NOT NULL default '0',
@@ -213,7 +213,7 @@ class Games extends Module
 	
 		$query = "CREATE TABLE {$strShortName}_npcs (
 			npc_id int(10) unsigned NOT NULL auto_increment,
-			name varchar(30) NOT NULL default '',
+			name varchar(255) NOT NULL default '',
 			description tinytext,
 			text tinytext,
 			media_id int(10) unsigned NOT NULL default '0',
@@ -330,10 +330,46 @@ class Games extends Module
 	public function upgradeGameDatabase($intGameID)
 	{	
 		$prefix = $this->getPrefix($intGameID);
+		
+		$messages = array();
+		
+		$message = "Adding is_icon to Media Table";
 		$query = "ALTER TABLE {$prefix}_media ADD is_icon BOOL NOT NULL DEFAULT '0'";
 		mysql_query($query);
-		if (mysql_error()) return new returnData(3, false, "SQL Error:".mysql_error());
-		else return new returnData(0, FALSE);	
+		$message .= ":" . mysql_error();
+		$messages[] = $message;
+		
+		$message = "Changing Name to length 255 in Locations Table";
+		$query = "ALTER TABLE {$prefix}_locations CHANGE name name VARCHAR( 255 ) NULL DEFAULT NULL";
+		mysql_query($query);
+		$message .= ":" . mysql_error();
+		$messages[] = $message;
+		
+		$message = "Changing title to length 255 in Nodes Table";
+		$query = "ALTER TABLE {$prefix}_nodes CHANGE title title VARCHAR( 255 ) NULL DEFAULT NULL";
+		mysql_query($query);
+		$message .= ":" . mysql_error();
+		$messages[] = $message;
+
+		$message = "Changing Name to length 255 in NPC Table";
+		$query = "ALTER TABLE {$prefix}_npcs CHANGE name name VARCHAR( 255 ) NULL DEFAULT NULL";
+		mysql_query($query);
+		$message .= ":" . mysql_error();
+		$messages[] = $message;
+		
+		$message = "Changing Name to length 255 in Items Table";
+		$query = "ALTER TABLE {$prefix}_items CHANGE name name VARCHAR( 255 ) NULL DEFAULT NULL";
+		mysql_query($query);
+		$message .= ":" . mysql_error();
+		$messages[] = $message;	
+		
+		$message = "Changing Name to length 255 in Locations Table";
+		$query = "ALTER TABLE {$prefix}_locations CHANGE name name VARCHAR( 255 ) NULL DEFAULT NULL";
+		mysql_query($query);
+		$message .= ":" . mysql_error();
+		$messages[] = $message;		
+		
+		return new returnData(0, FALSE, $messages);	
 	}
 	
 	/**
