@@ -324,8 +324,7 @@ class Games extends Module
 	
 	
 	/**
-     * Updates a game's information
-     * @returns true if a record was updated, false otherwise
+     * Updates a game's database to the most current version
      */	
 	public function upgradeGameDatabase($intGameID)
 	{	
