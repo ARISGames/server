@@ -52,6 +52,99 @@ class QRCodes extends Module
 	}
 	
 	/**
+	 * Download QR Code Package
+	 * @returns the URL of the file to download
+	 */
+	 public function getQRCodePackageURL($intGameID)
+	 {
+	 	$prefix = $this->getPrefix($intGameID);
+		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+
+		$query = "SELECT * FROM {$prefix}_qrcodes";
+		
+		$rsResult = @mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+		
+		//Set up a tmp directory
+		$relDir = "{$prefix}_qrcodes_" . date('Y_m_d_h_i_s');
+		$tmpDir = Config::gamedataFSPath . "/backups/{$relDir}";
+		$command = "mkdir {$tmpDir}";
+		NetDebug::trace($command);
+		exec($command, $output, $return);
+		if ($return) return new returnData(4, NULL, "cannot create backup dir, check file permissions");
+		
+		//Get all the images
+		while ($qrCode = mysql_fetch_object($rsResult)) {
+			//Look up the item to get a good file name
+			$fileNameType = '';
+			$fileNameId = '';
+			$fileNameName = '';
+			NetDebug::trace("QR Code Type:" . $qrCode->link_type);
+
+			switch ($qrCode->link_type) {
+				case 'Location':
+					NetDebug::trace("It is Location " . $qrCode->link_id);
+					$fileNameType = "Location";
+					$fileNameId = $qrCode->link_id;
+					
+					$locationReturnData = Locations::getLocation($intGameID, $qrCode->link_id);
+					$location = $locationReturnData->data;				
+					NetDebug::trace("Location Found. Type:" . $location->type .". Look up the Object" );
+					switch ($location->type) {
+						case 'Npc': 
+							NetDebug::trace("It is an NPC");
+							$object = Npcs::getNpc($intGameID, $location->type_id);
+							$fileNameName = $object->data->name;
+							break;
+						case 'Node': 
+							NetDebug::trace("It is an NPC");
+							$object = Nodes::getNode($intGameID, $location->type_id);
+							$fileNameName = $object->data->title;
+							break;
+						case 'Item':
+							NetDebug::trace("It is an Item");
+							$object = Items::getItem($intGameID, $location->type_id);
+							$fileNameName = $object->data->name;
+							break;	
+					}
+	
+					break;
+				
+				default:
+					$returnResult = new returnData(5, NULL, "Invalid QR Code Found.");
+			}
+	
+			$fileName = "{$fileNameType}{$fileNameId}-{$fileNameName}.jpg";
+			NetDebug::trace("The file name will be {$fileName}");
+			
+			$command = "curl -s -o /{$tmpDir}/{$fileName} 'http://chart.apis.google.com/chart?chs=300x300&cht=qr&choe=UTF-8&chl={$qrCode->code}'";
+			exec($command, $output, $return);
+			NetDebug::trace($command);
+			if ($return) return new returnData(4, NULL, "cannot download and save qr code image, check file permissions and url in console");
+		}
+		
+		//Zip up the whole directory
+		$zipFileName = "aris_qr_codes.tar";
+		$cwd = Config::gamedataFSPath . "/backups";
+		chdir($cwd);
+		NetDebug::trace("cd $cwd");
+
+		$command = "tar -cf {$zipFileName} {$relDir}/";
+		exec($command, $output, $return);
+		NetDebug::trace($command);
+		if ($return) return new returnData(5, NULL, "cannot compress backup dir, check that tar command is availabe.");
+		
+		//Delete the Temp
+		/*
+		$rmCommand = "rm -rf {$tmpDir}";
+		exec($rmCommand, $output, $return);
+		if ($return) return new returnData(5, NULL, "cannot delete backup dir, check file permissions");
+		*/
+		
+		return new returnData(0, Config::gamedataWWWPath . "/backups/{$zipFileName}");		
+	 }
+	
+	/**
      * Fetch a QRCode object
      * @returns a 0 with an NPC, Node or Item in addition to the latitute and longitude in the data, 2 for an invalid code, 4 for reqs not met or 5 for a data error
      */
