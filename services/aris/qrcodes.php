@@ -83,6 +83,7 @@ class QRCodes extends Module
 				$locationReturnData = Locations::getLocation($intGameID, $qrcode->link_id);
 				$location = $locationReturnData->data;
 				if (!$location) return new returnData(5, NULL, "bad link in qr code, no matching location found");
+				
 				NetDebug::trace("Location Found. Type:" . $location->type .". Look up the Object" );
 				switch ($location->type) {
 					case 'Npc': 
@@ -97,6 +98,10 @@ class QRCodes extends Module
 						break;
 					case 'Item':
 						NetDebug::trace("It is an Item");
+						
+						//Check Item Quantity
+						if ($location->item_qty == 0) return new returnData(4, NULL, "Item Quantity is 0");
+
 						$returnResult = Items::getItem($intGameID, $location->type_id);
 						$returnResult->data->type = "Item";
 						break;	
