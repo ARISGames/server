@@ -126,15 +126,24 @@ class QRCodes extends Module
 	
 	/**
      * Create a QR Code
-     * @returns the new QR Code ID on success
+     * If no code is provided, a random 4 digit number will be generated
+     * @returns the new QR Code ID on success.
      */
-	public function createQRCode($intGameID, $strLinkType, $intLinkID, $strCode)
+	public function createQRCode($intGameID, $strLinkType, $intLinkID, $strCode = '')
 	{
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		if (!$this->isValidObjectType($intGameID, $strLinkType)) return new returnData(4, NULL, "Invalid link type");
+		if (!QRCodes::isValidObjectType($intGameID, $strLinkType)) return new returnData(4, NULL, "Invalid link type");
 
+		//generate a random code if one is not provided
+		if (strlen($strCode) < 1) {
+			$charSet = "123456789";
+			$strCode = '';
+			for ($i=0; $i<4; $i++) $strCode .= substr($charSet,rand(0,strlen(charSet)-1),1);
+			NetDebug::trace("New Code was Created: " . $strCode);	
+		}
+		
 		$query = "INSERT INTO {$prefix}_qrcodes 
 					(link_type, link_id, code)
 					VALUES ('{$strLinkType}','{$intLinkID}','{$strCode}')";
@@ -200,8 +209,31 @@ class QRCodes extends Module
 		else {
 			return new returnData(2, NULL, 'invalid qrcode id');
 		}
-		
 	}	
+	
+	/**
+     * Delete all QR Codes that link to a specified object
+     * @returns true if delete was done, false if no changes were made
+     */
+	public function deleteQRCodeCodesForLink($intGameID, $strLinkType, $intLinkID)
+	{
+		$prefix = $this->getPrefix($intGameID);
+		if (!$prefix) return new returnData(1, NULL, "invalid game id");		
+		
+		$query = "DELETE FROM {$prefix}_qrcodes WHERE 
+			link_type = '{$strLinkType}' AND link_id = '{$intLinkID}'";
+		
+		$rsResult = @mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+		
+		if (mysql_affected_rows()) {
+			return new returnData(0, TRUE);
+		}
+		else {
+			return new returnData(0, FALSE);
+		}
+	}		
+	
 	
 	/**
      * Fetch the valid content types from the requirements table
@@ -240,7 +272,7 @@ class QRCodes extends Module
      * @returns TRUE if valid
      */
 	private function isValidObjectType($intGameID, $strObjectType) {
-		$validTypes = $this->lookupContentTypeOptionsFromSQL($intGameID);
+		$validTypes = QRCodes::lookupContentTypeOptionsFromSQL($intGameID);
 		return in_array($strObjectType, $validTypes);
 	}
 

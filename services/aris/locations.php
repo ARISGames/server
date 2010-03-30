@@ -1,6 +1,7 @@
 <?php
 require_once("module.php");
 require_once("players.php");
+require_once("qrcodes.php");
 
 
 class Locations extends Module
@@ -145,6 +146,10 @@ class Locations extends Module
 			NetDebug::trace("createLocation: SQL Error = " . mysql_error());
 			return new returnData(3, NULL, "SQL Error");
 		}
+		
+		//Create a coresponding QR Code
+		QRCodes::createQRCode($intGameID, "Location", mysql_insert_id());
+
 		return new returnData(0, mysql_insert_id());
 
 	}
@@ -215,6 +220,10 @@ class Locations extends Module
 		
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+		
+		//Delete any QR Codes that point here
+		QRCodes::deleteQRCodeCodesForLink($intGameID, "Location", $intLocationId);
+		
 		
 		if (mysql_affected_rows()) {
 			return new returnData(0, TRUE);
