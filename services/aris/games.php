@@ -324,6 +324,24 @@ class Games extends Module
 		else return new returnData(0, FALSE);		
 	}		
 	
+	/**
+     * Updates all game databases using upgradeGameDatabase
+     */	
+	public function upgradeGameDatabases() 
+	{		
+		$query = "SELECT * FROM games";
+		$rs = @mysql_query($query);
+		if (mysql_error())  return new returnData(3, NULL, 'SQL error');
+		
+		while ($game = mysql_fetch_object($rs)) {
+			NetDebug::trace("Upgrade Game: {$game->game_id}");
+			$upgradeResult = Games::upgradeGameDatabase($game->game_id);
+		}
+	}
+	
+	
+	
+	
 	
 	/**
      * Updates a game's database to the most current version
