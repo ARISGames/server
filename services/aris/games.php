@@ -337,6 +337,8 @@ class Games extends Module
 			NetDebug::trace("Upgrade Game: {$game->game_id}");
 			$upgradeResult = Games::upgradeGameDatabase($game->game_id);
 		}
+		
+		return new returnData(0, FALSE);
 	}
 	
 	
