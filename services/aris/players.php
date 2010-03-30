@@ -76,6 +76,19 @@ class Players extends Module
 		else return new returnData(0, FALSE);
 	}	
 
+	/**
+     * getPlayers
+     * @returns all ARIS players
+     */
+	public function getPlayers()
+	{
+		$query = "SELECT player_id, user_name, latitude, longitude FROM players";
+		
+		//NetDebug::trace($query);
+
+		$rs = @mysql_query($query);
+		return new returnData(0, $rs);
+	}
 
 	/**
      * getPlayersForGame

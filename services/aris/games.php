@@ -248,10 +248,12 @@ class Games extends Module
 		
 	
 		$query = "CREATE TABLE {$strShortName}_qrcodes (
-			  qrcode_id int(11) NOT NULL auto_increment,
-			  `type` enum('Node','Event','Item','Npc') NOT NULL,
-			  type_id int(11) NOT NULL,
-			  PRIMARY KEY  (qrcode_id)
+			qrcode_id int(11) NOT NULL auto_increment,
+  			link_type enum('Location') NOT NULL default 'Location',
+  			link_id int(11) NOT NULL,
+  			code varchar(255) NOT NULL,
+  			PRIMARY KEY  (qrcode_id),
+  			UNIQUE KEY `code` (`code`)
 			)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(6, NULL, 'cannot create qrcodes table');							
@@ -368,6 +370,30 @@ class Games extends Module
 		$message .= ":" . mysql_error();
 		$messages[] = $message;		
 		
+		$message = "Renaming field type to link_type in QRCode Table";
+		$query = "ALTER TABLE {$prefix}_qrcodes CHANGE type link_type enum('Location') NOT NULL default 'Location'";
+		mysql_query($query);
+		$message .= ":" . mysql_error();
+		$messages[] = $message;		
+		
+		$message = "Renaming field link_id in QRCode Table";
+		$query = "ALTER TABLE {$prefix}_qrcodes CHANGE type_id link_id int(11) NOT NULL";
+		mysql_query($query);
+		$message .= ":" . mysql_error();
+		$messages[] = $message;		
+		
+		$message = "Adding code field in QRCode Table";
+		$query = "ALTER TABLE {$prefix}_qrcodes ADD code varchar(255) NOT NULL";
+		mysql_query($query);
+		$message .= ":" . mysql_error();
+		$messages[] = $message;	
+		
+		$message = "Adding unique key to code field in QRCode Table";
+		$query = "ALTER TABLE {$prefix}_qrcodes ADD UNIQUE code (code(255))";
+		mysql_query($query);
+		$message .= ":" . mysql_error();
+		$messages[] = $message;	
+			
 		return new returnData(0, FALSE, $messages);	
 	}
 	

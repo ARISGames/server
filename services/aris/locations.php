@@ -42,16 +42,19 @@ class Locations extends Module
 		
 		$arrayLocations = array();
 		
-		while ($location = mysql_fetch_object($rsLocations)) {
+		while ($location = mysql_fetch_object($rsLocations)) {			
 			//If location and object it links to meet requirments, add it to the array
-		
+			NetDebug::trace('Location ' . $location->location_id . ' Found. Checking Reqs');	
+
 			if ($this->objectMeetsRequirements ($prefix, $intPlayerID, 'Location', $location->location_id)
 				AND
-				$this->objectMeetsRequirements ($prefix, $intPlayerID, $location->type, $location->type_id)
-				) {
+				$this->objectMeetsRequirements ($prefix, $intPlayerID, $location->type, $location->type_id)) {
 				
 					$arrayLocations[] = $location;
+					NetDebug::trace('Reqs Met. Adding to Result');	
+
 			}
+			else NetDebug::trace('Reqs Failed. Moving On');	
 		}
 		
 		//Add the others players from this game, making them look like reqular locations
