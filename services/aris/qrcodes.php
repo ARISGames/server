@@ -153,7 +153,7 @@ class QRCodes extends Module
 		
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
+		
 		$query = "SELECT * FROM {$prefix}_qrcodes WHERE code = '{$strCode}' LIMIT 1";
 		
 		$rsResult = @mysql_query($query);
@@ -162,13 +162,20 @@ class QRCodes extends Module
 		$qrcode = @mysql_fetch_object($rsResult);
 		
 		//Check for a valid QR Code
-		if (!$qrcode) 
+		if (!$qrcode) { 
+			Module::appendLog($intPlayerID, $intGameID, Module::kLOG_ENTER_QRCODE, $strCode, 'INVALID');
 			return new returnData(2, NULL, "invalid QRCode code");
+		}
+			
 		
 		//Check the requirements of the QR Code's link object
-		if (!$this->objectMeetsRequirements ($prefix, $intPlayerID, $qrcode->link_type, $qrcode->link_id))
+		if (!$this->objectMeetsRequirements ($prefix, $intPlayerID, $qrcode->link_type, $qrcode->link_id)) {
+			Module::appendLog($intPlayerID, $intGameID, Module::kLOG_ENTER_QRCODE, $strCode, 'REQS_OR_QTY_NOT_MET');
 			return new returnData(4, NULL, "QRCode requirements not met");
+		}
 		
+		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_ENTER_QRCODE, $strCode, 'SUCCESSFUL');
+
 		//Get the data
 		switch ($qrcode->link_type) {
 			case 'Location':

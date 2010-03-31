@@ -125,6 +125,8 @@ class Items extends Module
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
 		
 		$newMediaID = mysql_insert_id();
+		
+		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_UPLOAD_MEDIA, $newMediaID);
 
 		$query = "INSERT INTO {$prefix}_items 
 					(name, description, media_id, dropable, destroyable)

@@ -4,6 +4,7 @@ require_once("module.php");
 
 class Players extends Module
 {	
+
 	/**
      * Create a new Player
      * @returns player id
@@ -37,7 +38,7 @@ class Players extends Module
 	
 	/**
      * Login
-     * @returns player id
+     * @returns 0 with player id for success, 4 for failure
      */
 	public function login($strUser,$strPassword)
 	{
@@ -45,13 +46,15 @@ class Players extends Module
 		$query = "SELECT * FROM players 
 				WHERE user_name = '{$strUser}' and password = MD5('{$strPassword}') LIMIT 1";
 		
-		//NetDebug::trace($query);
+		NetDebug::trace($query);
 
 		$rs = @mysql_query($query);
 		if (mysql_num_rows($rs) < 1) return new returnData(4, NULL, 'bad username or password');
 		
 		$player = @mysql_fetch_object($rs);
-				
+		
+		Module::appendLog($intPlayerID, NULL, Module::kLOG_LOGIN);
+		
 		return new returnData(0, intval($player->player_id));
 	}
 		
@@ -124,79 +127,19 @@ class Players extends Module
 		
 		return new returnData(0, $array);
 	}
-
-	/**
-     * updates the lat/long for the player record
-     * @returns players with this game id
-     */
-	public function updatePlayerLocation($intPlayerID, $floatLat, $floatLong)
-	{
-		$query = "UPDATE players
-					SET latitude = {$floatLat} , longitude = {$floatLong}
-					WHERE player_id = {$intPlayerID}";
-		
-		//NetDebug::trace($query);
-
-		@mysql_query($query);
-		
-		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
-		if (mysql_affected_rows()) return new returnData(0, TRUE);
-		else return new returnData(0, FALSE);
-	}
-	
-	
-
-	/**
-     * Player Viewed a Node, exectute it's actions
-     * @returns returnData with data=true if a player state change was made
-     */
-	public function nodeViewed($intGameID, $intPlayerID, $intNodeID)
-	{	
-		$prefix = $this->getPrefix($intGameID);
-		if (!$prefix) return new returnData(1, NULL, "invalid game id");
-		
-		$changeMade = Module::applyPlayerStateChanges($prefix, $intPlayerID, 'Node', $intNodeID);
-		
-		return new returnData(0, $changeMade);
-	}
-	
-
-	/**
-     * Player Viewed an Item, exectute it's actions
-     * @returns returnData with data=true if a player state change was made
-     */
-	public function itemViewed($intGameID, $intPlayerID, $intItemID)
-	{
-		$prefix = $this->getPrefix($intGameID);
-		if (!$prefix) return new returnData(1, NULL, "invalid game id");
-		
-		$changeMade = Module::applyPlayerStateChanges($prefix, $intPlayerID, 'Item', $intItemID);
-		
-		return new returnData(0, $changeMade);
-	}
-	
-	public function npcViewed($intGameID, $intPlayerID, $intNpcID)
-	{	
-		$prefix = $this->getPrefix($intGameID);
-		if (!$prefix) return new returnData(1, NULL, "invalid game id");
-		
-		$changeMade = Module::applyPlayerStateChanges($prefix, $intPlayerID, 'Npc', $intNpcID);
-		
-		return new returnData(0, $changeMade);
-	}	
 	
 	
 	/**
      * Reset all player Events
      * @returns returnData with data=true if changes were made
      */
-	public function resetPlayerEvents($intGameID, $intPlayerID)
+	public function resetPlayerLog($intGameID, $intPlayerID)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
-		$query = "DELETE {$prefix}_player_events
-					WHERE player_id = {$intPlayerID}";
+		$query = "DELETE player_log
+					WHERE player_id = {$intPlayerID} AND game_id = {$intGameID}";
 		
 		//NetDebug::trace($query);
 
@@ -206,7 +149,6 @@ class Players extends Module
 		if (mysql_affected_rows()) return new returnData(0, TRUE);
 		else return new returnData(0, FALSE);
 	}
-	
 	
 	/**
      * Reset all player Items
@@ -214,7 +156,7 @@ class Players extends Module
      */
 	public function resetPlayerItems($intGameID, $intPlayerID)
 	{	
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
 		$query = "DELETE {$prefix}_player_items
@@ -227,7 +169,79 @@ class Players extends Module
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 		if (mysql_affected_rows()) return new returnData(0, TRUE);
 		else return new returnData(0, FALSE);
+	}	
+	
+
+	/**
+     * updates the lat/long for the player record
+     * @returns players with this game id
+     */
+	public function updatePlayerLocation($intPlayerID, $floatLat, $floatLong)
+	{
+		$query = "UPDATE players
+					SET latitude = {$floatLat} , longitude = {$floatLong}
+					WHERE player_id = {$intPlayerID}";
+		
+		NetDebug::trace($query);
+
+		@mysql_query($query);
+		
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+		
+		Module::appendLog($intPlayerID, NULL, Module::kLOG_MOVE, $floatLat, $floatLong);
+		
+		
+		if (mysql_affected_rows()) return new returnData(0, TRUE);
+		else return new returnData(0, FALSE);
 	}
+	
+	
+
+	/**
+     * Player Viewed a Node, exectute it's actions
+     * @returns returnData with data=true if a player state change was made
+     */
+	public function nodeViewed($intGameID, $intPlayerID, $intNodeID)
+	{	
+		$prefix = Module::getPrefix($intGameID);
+		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+		
+		$changeMade = Module::applyPlayerStateChanges($prefix, $intPlayerID, 'Node', $intNodeID);
+		
+		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_VIEW_NODE, $intNodeID);
+
+		return new returnData(0, $changeMade);
+	}
+	
+
+	/**
+     * Player Viewed an Item, exectute it's actions
+     * @returns returnData with data=true if a player state change was made
+     */
+	public function itemViewed($intGameID, $intPlayerID, $intItemID)
+	{
+		$prefix = Module::getPrefix($intGameID);
+		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+		
+		$changeMade = Module::applyPlayerStateChanges($prefix, $intPlayerID, 'Item', $intItemID);
+		
+		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_VIEW_ITEM, $intItemID);
+		
+		return new returnData(0, $changeMade);
+	}
+	
+	public function npcViewed($intGameID, $intPlayerID, $intNpcID)
+	{	
+		$prefix = Module::getPrefix($intGameID);
+		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+		
+		$changeMade = Module::applyPlayerStateChanges($prefix, $intPlayerID, 'Npc', $intNpcID);
+		
+		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_VIEW_NPC, $intNpcID);
+		
+		return new returnData(0, $changeMade);
+	}	
+	
 
 	/**
      * Removes an Item from the Map and Gives it to the Player
@@ -235,11 +249,14 @@ class Players extends Module
      */
 	public function pickupItemFromLocation($intGameID, $intPlayerID, $intItemID, $intLocationID)
 	{	
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
-		$this->giveItemToPlayer($prefix, $intItemID, $intPlayerID);
-		$this->decrementItemQtyAtLocation($prefix, $intLocationID, 1); 
+		Module::giveItemToPlayer($prefix, $intItemID, $intPlayerID);
+		Module::decrementItemQtyAtLocation($prefix, $intLocationID, 1); 
+		
+		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_PICKUP_ITEM, $intItemID);
+
 		return new returnData(0, FALSE);
 	}
 	
@@ -249,11 +266,14 @@ class Players extends Module
      */
 	public function dropItem($intGameID, $intPlayerID, $intItemID, $floatLat, $floatLong)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
-		$this->takeItemFromPlayer($prefix, $intItemID, $intPlayerID);
-		$this->giveItemToWorld($prefix, $intItemID, $floatLat, $floatLong, 1);
+		Module::takeItemFromPlayer($prefix, $intItemID, $intPlayerID);
+		Module::giveItemToWorld($prefix, $intItemID, $floatLat, $floatLong, 1);
+		
+		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_DROP_ITEM, $intItemID);
+
 		return new returnData(0, FALSE);
 	}		
 	
@@ -263,14 +283,49 @@ class Players extends Module
      */
 	public function destroyItem($intGameID, $intPlayerID, $intItemID)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
-		$this->takeItemFromPlayer($prefix, $intItemID, $intPlayerID);
+		Module::takeItemFromPlayer($prefix, $intItemID, $intPlayerID);
+		
+		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_DESTROY_ITEM, $intItemID);
+
+		
 		return new returnData(0, FALSE);
 	}		
 	
+	/**
+     * Log that player viewed the map
+     * @returns Always returns 0
+     */
+	public function mapViewed($intGameID, $intPlayerID)
+	{
+		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_VIEW_MAP);
+		return new returnData(0, FALSE);
 
+	}
+	
+	/**
+     * Log that player viewed the quests
+     * @returns Always returns 0
+     */	
+	public function questsViewed($intGameID, $intPlayerID)
+	{
+		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_VIEW_QUESTS);
+		return new returnData(0, FALSE);
+
+	}
+	
+	/**
+     * Log that player viewed the inventory
+     * @returns Always returns 0
+     */	
+	public function inventoryViewed($intGameID, $intPlayerID)
+	{
+		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_VIEW_INVENTORY);
+		return new returnData(0, FALSE);
+
+	}			
 	
 }
 ?>

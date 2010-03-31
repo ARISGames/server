@@ -5,6 +5,21 @@ require_once('returnData.class.php');
 abstract class Module
 {
 	
+	const kLOG_LOGIN = 'LOGIN';
+	const kLOG_MOVE = 'MOVE';
+	const kLOG_PICKUP_ITEM = 'PICKUP_ITEM';
+	const kLOG_DROP_ITEM = 'DROP_ITEM';
+	const kLOG_DESTROY_ITEM = 'DESTROY_ITEM';
+	const kLOG_VIEW_ITEM = 'VIEW_ITEM';
+	const kLOG_VIEW_NODE = 'VIEW_NODE';
+	const kLOG_VIEW_NPC = 'VIEW_NPC';
+	const kLOG_VIEW_MAP = 'VIEW_MAP';
+	const kLOG_VIEW_QUESTS = 'VIEW_QUESTS';
+	const kLOG_VIEW_INVENTORY = 'VIEW_INVENTORY';
+	const kLOG_ENTER_QRCODE = 'ENTER_QRCODE';
+	const kLOG_UPLOAD_MEDIA = 'UPLOAD_MEDIA';
+	
+	
 	public function Module()
 	{
 		$this->conn = mysql_pconnect(Config::dbHost, Config::dbUser, Config::dbPass);
@@ -34,7 +49,8 @@ abstract class Module
     	$query = "INSERT INTO {$strGamePrefix}_player_items 
 										  (player_id, item_id) VALUES ($intPlayerID, $intItemID)
 										  ON duplicate KEY UPDATE item_id = $intItemID";
-		@mysql_query($query);    	
+		@mysql_query($query);
+		
     }
 	
 	
@@ -242,7 +258,32 @@ abstract class Module
 		return $changeMade;
 	}
 		
+	/**
+     * Add a row to the player log
+     * @returns true on success
+     */
+	protected function appendLog($intPlayerID, $intGameID, $strEventType, $strEventDetail1=null, $strEventDetail2=null)
+	{
 	
+		if (!$intGameID) $intGameID = "NULL";
+		
+		$query = "INSERT INTO player_log 
+					(player_id, game_id, event_type, event_detail_1,event_detail_2) 
+				  VALUES 
+				  	({$intPlayerID},{$intGameID},'{$strEventType}','{$strEventDetail1}','{$strEventDetail2}')";
+		
+		@mysql_query($query);
+		
+		NetDebug::trace($query);
+
+		
+		if (mysql_error()) {
+			NetDebug::trace(mysql_error());
+			return false;
+		}
+		
+		else return true;
+	}		
 	
 	
 	
