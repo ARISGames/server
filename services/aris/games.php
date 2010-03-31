@@ -117,31 +117,23 @@ class Games extends Module
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(6, NULL, 'cannot create items table');
 				
-		$query = "CREATE TABLE {$strShortName}_events (
-			event_id int(10) unsigned NOT NULL auto_increment,
-  			description tinytext,
- 			 PRIMARY KEY  (event_id)
-			)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(6, NULL, 'cannot create events table');
-		
 		
 		$query = "CREATE TABLE {$strShortName}_player_state_changes (
 			id int(10) unsigned NOT NULL auto_increment,
-			content_type enum('Node','Item','Npc') NOT NULL,
-			content_id int(10) unsigned NOT NULL,
-			action enum('GIVE_ITEM','GIVE_EVENT','TAKE_ITEM') NOT NULL,
+			event_type enum('VIEW_ITEM', 'VIEW_NODE', 'VIEW_NPC' ) NOT NULL,
+			event_detail VARCHAR( 50 ) NULL,
+			action enum('GIVE_ITEM','TAKE_ITEM') NOT NULL,
 			action_detail int(10) unsigned NOT NULL,
 			PRIMARY KEY  (id)
 			)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
 		@mysql_query($query);
-		if (mysql_error()) return new returnData(6, NULL, 'cannot create player_state_changes table');
+		if (mysql_error()) return new returnData(6, NULL, 'cannot create player_state_changes table' . mysql_error());
 		
 		
 		
 		$query = "CREATE TABLE {$strShortName}_requirements (
 			requirement_id int(11) NOT NULL auto_increment,
-			content_type enum('Node','QuestDisplay','QuestComplete','Item','Npc','Location') NOT NULL,
+			content_type enum('Node','QuestDisplay','QuestComplete','Location') NOT NULL,
 			content_id int(10) unsigned NOT NULL,
 			requirement enum('HAS_ITEM','HAS_EVENT','DOES_NOT_HAVE_ITEM','DOES_NOT_HAVE_EVENT') NOT NULL,
 			requirement_detail int(11) NOT NULL,
@@ -222,17 +214,7 @@ class Games extends Module
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(6, NULL, 'cannot create npcs table');
 		
-		$query = "CREATE TABLE {$strShortName}_player_events (
-			id int(11) NOT NULL auto_increment,
-			player_id int(10) unsigned NOT NULL default '0',
-			event_id int(10) unsigned NOT NULL default '0',
-			timestamp timestamp NOT NULL default CURRENT_TIMESTAMP,
-			PRIMARY KEY  (id),
-			UNIQUE KEY `unique` (player_id,event_id)
-			)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(6, NULL, 'cannot create player_events table');
-		
+	
 		$query = "CREATE TABLE {$strShortName}_player_items (
 			id int(11) NOT NULL auto_increment,
 			player_id int(11) unsigned NOT NULL default '0',
@@ -413,7 +395,57 @@ class Games extends Module
 		mysql_query($query);
 		$message .= ":" . mysql_error();
 		$messages[] = $message;	
-			
+		
+		$message = "Making Changes for new Log/Req system";
+		$query = "ALTER TABLE `{$prefix}_requirements` 
+			CHANGE `content_type` `content_type` ENUM( 'Node', 'QuestDisplay', 'QuestComplete', 'Location' )  NOT NULL";
+		mysql_query($query);
+		$message .= ":" . mysql_error();
+		$messages[] = $message;	
+
+		$message = "Making Changes for new Log/Req system";
+		$query = "ALTER TABLE `{$prefix}_player_state_changes` 
+			CHANGE `action` `action` ENUM( 'GIVE_ITEM', 'TAKE_ITEM' ) NOT NULL";
+		mysql_query($query);
+		$message .= ":" . mysql_error();
+		$messages[] = $message;	
+		
+		$message = "Making Changes for new Log/Req system";
+		$query = "ALTER TABLE `{$prefix}_player_state_changes` 
+			CHANGE `content_type` `event_type` ENUM( 'VIEW_ITEM', 'VIEW_NODE', 'VIEW_NPC' ) NOT NULL";
+		mysql_query($query);
+		$message .= ":" . mysql_error();
+		$messages[] = $message;		
+		
+		$message = "Making Changes for new Log/Req system";
+		$query = "ALTER TABLE `{$prefix}_player_state_changes` CHANGE `content_id` `event_detail` VARCHAR( 50 ) NULL";
+		mysql_query($query);
+		$message .= ":" . mysql_error();
+		$messages[] = $message;		
+		
+		$message = "Making Changes for new Log/Req system";
+		$query = "DROP TABLE `{$prefix}_player_events`";
+		mysql_query($query);
+		$message .= ":" . mysql_error();
+		$messages[] = $message;		
+		
+		$message = "Making Changes for new Log/Req system";
+		$query = "DROP TABLE `{$prefix}_events`";
+		mysql_query($query);
+		$message .= ":" . mysql_error();
+		$messages[] = $message;		
+		
+		$message = "Making Changes for new Log/Req system";
+		$query = "ALTER TABLE `player_log` 
+			CHANGE `event_type` `event_type` 
+			ENUM( 'LOGIN', 'MOVE', 'PICKUP_ITEM', 'DROP_ITEM', 'DESTROY_ITEM', 'VIEW_ITEM', 'VIEW_NODE', 'VIEW_NPC', 'VIEW_MAP', 'VIEW_QUESTS', 'VIEW_INVENTORY', 'ENTER_QRCODE', 'UPLOAD_MEDIA' )
+			NOT NULL";
+		mysql_query($query);
+		$message .= ":" . mysql_error();
+		$messages[] = $message;	
+	
+		
+		
 		return new returnData(0, FALSE, $messages);	
 	}
 	

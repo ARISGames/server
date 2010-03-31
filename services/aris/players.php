@@ -206,11 +206,10 @@ class Players extends Module
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
-		$changeMade = Module::applyPlayerStateChanges($prefix, $intPlayerID, 'Node', $intNodeID);
-		
+		Module::applyPlayerStateChanges($prefix, $intPlayerID, Module::kLOG_VIEW_NODE, $intNodeID);
 		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_VIEW_NODE, $intNodeID);
 
-		return new returnData(0, $changeMade);
+		return new returnData(0, TRUE);
 	}
 	
 
@@ -223,11 +222,10 @@ class Players extends Module
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
-		$changeMade = Module::applyPlayerStateChanges($prefix, $intPlayerID, 'Item', $intItemID);
-		
+		Module::applyPlayerStateChanges($prefix, $intPlayerID, Module::kLOG_VIEW_ITEM, $intItemID);
 		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_VIEW_ITEM, $intItemID);
 		
-		return new returnData(0, $changeMade);
+		return new returnData(0, TRUE);
 	}
 	
 	public function npcViewed($intGameID, $intPlayerID, $intNpcID)
@@ -235,11 +233,10 @@ class Players extends Module
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
-		$changeMade = Module::applyPlayerStateChanges($prefix, $intPlayerID, 'Npc', $intNpcID);
-		
+		Module::applyPlayerStateChanges($prefix, $intPlayerID, Module::kLOG_VIEW_NPC, $intNpcID);
 		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_VIEW_NPC, $intNpcID);
 		
-		return new returnData(0, $changeMade);
+		return new returnData(0, TRUE);
 	}	
 	
 

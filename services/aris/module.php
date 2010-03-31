@@ -4,7 +4,7 @@ require_once('returnData.class.php');
 
 abstract class Module
 {
-	
+	//constants for player_log table enums
 	const kLOG_LOGIN = 'LOGIN';
 	const kLOG_MOVE = 'MOVE';
 	const kLOG_PICKUP_ITEM = 'PICKUP_ITEM';
@@ -19,6 +19,19 @@ abstract class Module
 	const kLOG_ENTER_QRCODE = 'ENTER_QRCODE';
 	const kLOG_UPLOAD_MEDIA = 'UPLOAD_MEDIA';
 	
+	//constants for gameID_requirements table enums
+	const kREQ_PLAYER_HAS_ITEM = 'PLAYER_HAS_ITEM';
+	const kREQ_PLAYER_DOES_NOT_HAVE_ITEM = 'PLAYER_DOES_NOT_HAVE_ITEM';
+	const kREQ_PLAYER_VIEWED_ITEM = 'PLAYER_VIEWED_ITEM';
+	const kREQ_PLAYER_HAS_NOT_VIEWED_ITEM = 'PLAYER_HAS_NOT_VIEWED_ITEM';
+	const kREQ_PLAYER_VIEWED_NODE = 'PLAYER_VIEWED_NODE';
+	const kREQ_PLAYER_HAS_NOT_VIEWED_NODE = 'PLAYER_HAS_NOT_VIEWED_NODE';
+	const kREQ_PLAYER_VIEWED_NPC = 'PLAYER_VIEWED_NPC';
+	const kREQ_PLAYER_HAS_NOT_VIEWED_NPC = 'PLAYER_HAS_NOT_VIEWED_NPC';
+	
+	//constants for player_state_changes table enums
+	const kPSC_GIVE_ITEM = 'GIVE_ITEM';
+	const kPSC_TAKE_ITEM = 'TAKE_ITEM';	
 	
 	public function Module()
 	{
@@ -39,6 +52,21 @@ abstract class Module
 		return substr($gameRecord['prefix'],0,strlen($row['prefix'])-1);
 		
 	}
+	
+	/**
+     * Fetch the GameID from a prefix
+     * @returns a gameID int
+     */
+	public function getGameIdFromPrefix($strPrefix) {	
+		//Lookup game information
+		$query = "SELECT * FROM games WHERE prefix= '{$strPrefix}_'";
+		$rsResult = @mysql_query($query);
+		if (mysql_num_rows($rsResult) < 1) return FALSE;
+		$gameRecord = mysql_fetch_array($rsResult);
+		return $gameRecord['game_id'];
+		
+	}	
+	
 	
 	
     /**
@@ -124,50 +152,43 @@ abstract class Module
     }   
 		
 	/** 
-	 * checkForEvent
+	 * playerHasLog
 	 *
-     * Checks if the specified user has the specified event.
+     * Checks if the specified user has the specified log event in the game
 	 *
      * @return boolean
      */
-    protected function checkForEvent($strPrefix, $intPlayerID, $intEventID) {
-		$query = "SELECT * FROM {$strPrefix}_player_events 
-					WHERE player_id = '{$intPlayerID}' 
-					AND event_id = '{$intEventID}'";
-		//NetDebug::trace($query);
+    protected function playerHasLog($strPrefix, $intPlayerID, $strEventType, $strEventDetail) {
+		
+		$intGameID = Module::getGameIdFromPrefix($strPrefix);
+
+		$query = "SELECT * FROM player_log 
+					WHERE player_id = '{$intPlayerID}' AND
+						game_id = '{$intGameID}' AND
+						event_type = '{$strEventType}' AND
+						event_detail_1 = '{$strEventDetail}'";
+		NetDebug::trace($query);
+		
 		$rsResult = @mysql_query($query);
 		
 		if (mysql_num_rows($rsResult) > 0) return true;
 		else return false;
     }
     
-    
-	/** 
-	 * addEventToPlayer
-	 *
-     * Adds the specified event to the player.
-     * @return void
-     */
-    protected function addEventToPlayer($strPrefix, $intEventID, $intPlayerID ) {
-	   	if (!Module::checkForEvent($strPrefix, $intPlayerID, $intEventID)) {
-			$query = "INSERT INTO {$strPrefix}_player_events 
-									  (player_id, event_id) VALUES ('$intPlayerID','$intEventID')
-									  ON duplicate KEY UPDATE event_id = '$intEventID'";
-			@mysql_query($query);    
-		}
-    }    
-
 
 	/** 
-	 * checkForItem
+	 * playerHasItem
 	 *
-     * Checks if the specified user has the specified event.
+     * Checks if the specified user has the specified item in the specified game.
      * @return boolean
      */
-    protected function checkForItem($strPrefix, $intPlayerID, $intItemID) {
-		$query = "SELECT * FROM {$strPrefix}_player_items 
-									  WHERE player_id = '$$intPlayerID' 
-									  AND item_id = '$intItemID'";
+    protected function playerHasItem($intGameID, $intPlayerID, $intItemID) {
+    	$prefix = $this->getPrefix($intGameID);
+		if (!$prefix) return FALSE;
+    
+		$query = "SELECT * FROM {$prefix}_player_items 
+									  WHERE player_id = '{$intPlayerID}' 
+									  AND item_id = '{$intItemID}'";
 		
 		$rsResult = @mysql_query($query);
 		
@@ -190,25 +211,35 @@ abstract class Module
 		$rsRequirments = @mysql_query($query);
 		
 		while ($requirement = mysql_fetch_array($rsRequirments)) {
-			//var_dump ($requirement);
-			
+			//NetDebug::trace("Requirement for {$strObjectType}:{$intObjectID} is {$requirement['requirement']}:{$requirement['requirement_detail']}");
+
 			//Check the requirement
 			switch ($requirement['requirement']) {
-				case 'HAS_EVENT':
-					//echo 'Checking for an HAS_EVENT';
-					if (!$this->checkForEvent($strPrefix, $intPlayerID, $requirement['requirement_detail'])) return FALSE;
+				//Log related
+				case Module::kREQ_PLAYER_VIEWED_ITEM:
+					if (!Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_ITEM, $requirement['requirement_detail'])) return FALSE;
 					break;
-				case 'DOES_NOT_HAVE_EVENT':
-					//echo 'Checking for an DOES_NOT_HAVE_EVENT';
-					if ($this->checkForEvent($strPrefix, $intPlayerID, $requirement['requirement_detail'])) return FALSE;
+				case Module::kREQ_PLAYER_HAS_NOT_VIEWED_ITEM:
+					if (Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_ITEM, $requirement['requirement_detail'])) return FALSE;
 					break;
-				case 'HAS_ITEM':
-					//echo 'Checking for an HAS_ITEM';
-					if (!$this->checkForItem($strPrefix, $intPlayerID, $requirement['requirement_detail'])) return FALSE;
+				case Module::kREQ_PLAYER_VIEWED_NODE:
+					if (!Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NODE, $requirement['requirement_detail'])) return FALSE;
 					break;
-				case 'DOES_NOT_HAVE_ITEM':
-					//echo 'Checking for a DOES_NOT_HAVE_ITEM';
-					if ($this->checkForItem($strPrefix, $intPlayerID, $requirement['requirement_detail'])) return FALSE;
+				case Module::kREQ_PLAYER_HAS_NOT_VIEWED_NODE:
+					if (Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NODE, $requirement['requirement_detail'])) return FALSE;
+					break;
+				case Module::kREQ_PLAYER_VIEWED_NPC:
+					if (!Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NPC, $requirement['requirement_detail'])) return FALSE;
+					break;
+				case Module::kREQ_PLAYER_HAS_NOT_VIEWED_NPC:
+					if (Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NPC, $requirement['requirement_detail'])) return FALSE;
+					break;					
+				//Inventory related	
+				case Module::kREQ_PLAYER_HAS_ITEM:
+					if (!Module::playerHasItem($strPrefix, $intPlayerID, $requirement['requirement_detail'])) return FALSE;
+					break;
+				case Module::kREQ_PLAYER_DOES_NOT_HAVE_ITEM:
+					if (Module::playerHasItem($strPrefix, $intPlayerID, $requirement['requirement_detail'])) return FALSE;
 					break;
 			}
 		}
@@ -222,36 +253,33 @@ abstract class Module
      * Applies any state changes for the given object
      * @return boolean. True if a change was made, false otherwise
      */	
-	protected function applyPlayerStateChanges($strPrefix, $intPlayerID, $strObjectType, $intObjectID) {	
+	protected function applyPlayerStateChanges($strPrefix, $intPlayerID, $strEventType, $strEventDetail) {	
 		
 		$changeMade = FALSE;
 		
 		//Fetch the state changes
 		$query = "SELECT * FROM {$strPrefix}_player_state_changes 
-									  WHERE content_type = '{$strObjectType}'
-									  AND content_id = '{$intObjectID}'";
+									  WHERE event_type = '{$strEventType}'
+									  AND event_detail = '{$strEventDetail}'";
 		NetDebug::trace($query);
 
 		$rsStateChanges = @mysql_query($query);
 		
 		while ($stateChange = mysql_fetch_array($rsStateChanges)) {
+			NetDebug::trace("State Change Found");
+
 			//Check the requirement
 			switch ($stateChange['action']) {
-				case 'GIVE_ITEM':
+				case Module::kPSC_GIVE_ITEM:
 					//echo 'Running a GIVE_ITEM';
 					Module::giveItemToPlayer($strPrefix, $stateChange['action_detail'], $intPlayerID);
 					$changeMade = TRUE;
 					break;
-				case 'TAKE_ITEM':
+				case Module::kPSC_TAKE_ITEM:
 					//echo 'Running a TAKE_ITEM';
 					Module::takeItemFromPlayer($strPrefix, $stateChange['action_detail'], $intPlayerID);
 					$changeMade = TRUE;
 					break;
-				case 'GIVE_EVENT':
-					//echo 'Running a GIVE_EVENT';
-					Module::addEventToPlayer($strPrefix, $stateChange['action_detail'], $intPlayerID);
-					$changeMade = TRUE;
-					break;	
 			}
 		}//stateChanges loop
 		

@@ -6,19 +6,19 @@ class PlayerStateChanges extends Module
 {	
 	
 	/**
-     * Fetch all Requirements for a Game Object
+     * Fetch all Requirements for a Game Event
      * @returns the requirements
      */
-	public function getPlayerStateChangesForObject($intGameID, $strObjectType, $intObjectID)
+	public function getPlayerStateChangesForObject($intGameID, $strEventType, $strEventDetail)
 	{
 		
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		if (!$this->isValidObjectType($intGameID, $strObjectType)) return new returnData(4, NULL, "Invalid object type");
+		if (!$this->isValidEventType($intGameID, $strEventType)) return new returnData(4, NULL, "Invalid event type");
 		
 		$query = "SELECT * FROM {$prefix}_player_state_changes
-					WHERE content_type = '{$strObjectType}' and content_id = '{$intObjectID}'";
+					WHERE event_type = '{$strEventType}' and event_detail = '{$strEventDetail}'";
 		NetDebug::trace($query);
 
 		
@@ -29,7 +29,7 @@ class PlayerStateChanges extends Module
 	}
 	
 	/**
-     * Fetch a specific requirement
+     * Fetch a specific state change record
      * @returns a single requirement
      */
 	public function getPlayerStateChange($intGameID, $intPlayerStateChangeID)
@@ -52,21 +52,21 @@ class PlayerStateChanges extends Module
      * Create a Player State Change
      * @returns the new playerStateChangeID on success
      */
-	public function createPlayerStateChange($intGameID, $strObjectType, $intObjectID, $strActionType, $intActionID )
+	public function createPlayerStateChange($intGameID, $strEventType, $strEventDetail, $strActionType, $strActionDetail)
 	{
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		//test the object type 
-		if (!$this->isValidObjectType($intGameID, $strObjectType)) return new returnData(4, NULL, "Invalid object type");
+		if (!$this->isValidEventType($intGameID, $strEventType)) return new returnData(4, NULL, "Invalid event type");
 				
 		//test the requirement type
 		if (!$this->isValidActionType($intGameID, $strActionType)) return new returnData(5, NULL, "Invalid action type");
 		
 		
 		$query = "INSERT INTO {$prefix}_player_state_changes 
-					(content_type, content_id, action, action_detail)
-					VALUES ('{$strObjectType}','{$intObjectID}','{$strActionType}','{$intActionID}')";
+					(event_type, event_detail, action, action_detail)
+					VALUES ('{$strEventType}','{$strEventDetail}','{$strActionType}','{$strActionDetail}')";
 		
 		NetDebug::trace("Running a query = $query");	
 		
@@ -82,13 +82,13 @@ class PlayerStateChanges extends Module
      * Update a specific Player State Change
      * @returns true if edit was done, false if no changes were made
      */
-	public function updatePlayerStateChange($intGameID, $intPlayerStateChangeID, $strObjectType, $intObjectID, $strActionType, $intActionID)
+	public function updatePlayerStateChange($intGameID, $intPlayerStateChangeID, $strEventType, $strEventDetail, $strActionType, $strActionDetail)
 	{
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		//test the object type 
-		if (!$this->isValidObjectType($intGameID, $strObjectType)) return new returnData(4, NULL, "Invalid object type");
+		if (!$this->isValidEventType($intGameID, $strEventType)) return new returnData(4, NULL, "Invalid object type");
 				
 		//test the requirement type
 		if (!$this->isValidActionType($intGameID, $strActionType)) return new returnData(5, NULL, "Invalid action type");
@@ -97,10 +97,10 @@ class PlayerStateChanges extends Module
 
 		$query = "UPDATE {$prefix}_player_state_changes 
 					SET 
-					content_type = '{$strObjectType}',
-					content_id = '{$intObjectID}',
+					event_type = '{$strEventType}',
+					event_detail = '{$strEventDetail}',
 					action = '{$strActionType}',
-					action_detail = '{$intActionID}'
+					action_detail = '{$strActionDetail}'
 					WHERE id = '{$intPlayerStateChangeID}'";
 		
 		NetDebug::trace("Running a query = $query");	
@@ -140,7 +140,7 @@ class PlayerStateChanges extends Module
      * Fetch the valid content types from the requirements table
      * @returns an array of strings
      */
-	public function contentTypeOptions($intGameID){	
+	public function eventTypeOptions($intGameID){	
 		$options = $this->lookupContentTypeOptionsFromSQL($intGameID);
 		if (!$options) return new returnData(1, NULL, "invalid game id");
 		return new returnData(0, $options);
@@ -161,11 +161,11 @@ class PlayerStateChanges extends Module
      * Fetch the valid content types from the requirements table
      * @returns an array of strings
      */
-	private function lookupContentTypeOptionsFromSQL($intGameID){
+	private function lookupEventTypeOptionsFromSQL($intGameID){
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return FALSE;
 		
-		$query = "SHOW COLUMNS FROM {$prefix}_player_state_changes LIKE 'content_type'";
+		$query = "SHOW COLUMNS FROM {$prefix}_player_state_changes LIKE 'event_type'";
 		NetDebug::trace($query);
 		
 		$result = @mysql_query( $query );
@@ -198,8 +198,8 @@ class PlayerStateChanges extends Module
      * Check if a content type is valid
      * @returns TRUE if valid
      */
-	private function isValidObjectType($intGameID, $strObjectType) {
-		$validTypes = $this->lookupContentTypeOptionsFromSQL($intGameID);
+	private function isValidEventType($intGameID, $strObjectType) {
+		$validTypes = $this->lookupEventTypeOptionsFromSQL($intGameID);
 		return in_array($strObjectType, $validTypes);
 	}
 
