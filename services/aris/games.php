@@ -435,7 +435,7 @@ class Games extends Module
 		$message .= ":" . mysql_error();
 		$messages[] = $message;		
 		
-		$message = "Making Changes for new Log/Req system";
+		$message = "Changing enums for player_log";
 		$query = "ALTER TABLE `player_log` 
 			CHANGE `event_type` `event_type` 
 			ENUM( 'LOGIN', 'MOVE', 'PICKUP_ITEM', 'DROP_ITEM', 'DESTROY_ITEM', 'VIEW_ITEM', 'VIEW_NODE', 'VIEW_NPC', 'VIEW_MAP', 'VIEW_QUESTS', 'VIEW_INVENTORY', 'ENTER_QRCODE', 'UPLOAD_MEDIA' )
@@ -444,7 +444,11 @@ class Games extends Module
 		$message .= ":" . mysql_error();
 		$messages[] = $message;	
 	
-		
+		$message = "Adding is_deafult to media";
+		$query = "ALTER TABLE `{$prefix}_media` ADD `is_default` tinyint(1) default '0'";
+		mysql_query($query);
+		$message .= ":" . mysql_error();
+		$messages[] = $message;	
 		
 		return new returnData(0, FALSE, $messages);	
 	}
