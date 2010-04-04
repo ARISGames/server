@@ -19,7 +19,7 @@ if (!$prefix) die ("data=&returnCode=1&returnCodeDescription=InvalidGameID");
 		
 $gameMediaDirectory = $media->getMediaDirectory($prefix)->data;
 
-$pathInfo = pathinfo($_FILES['file']['name']);
+$pathInfo = pathinfo($_POST['fileName']);
 $newMediaFileName = 'aris' . md5( date("YmdGis") . $_FILES['file']['name']) . '.' . $pathInfo['extension'];
 $newMediaFilePath = $gameMediaDirectory . '/' . $newMediaFileName;
 
