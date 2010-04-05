@@ -450,6 +450,14 @@ class Games extends Module
 		$message .= ":" . mysql_error();
 		$messages[] = $message;	
 		
+		$message = "Setting Item media ID to NOT NULL";
+		$query = "ALTER TABLE `{$prefix}_items` CHANGE `icon_media_id` `icon_media_id` INT( 10 ) UNSIGNED NOT NULL DEFAULT '0' ";
+		mysql_query($query);
+		$message .= ":" . mysql_error();
+		$messages[] = $message;	
+		 
+	
+		
 		return new returnData(0, FALSE, $messages);	
 	}
 	
