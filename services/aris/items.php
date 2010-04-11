@@ -1,6 +1,6 @@
 <?php
 require_once("module.php");
-
+require_once("media.php");
 
 class Items extends Module
 {
@@ -110,21 +110,11 @@ class Items extends Module
 	public function createItemAndGiveToPlayer($intGameID, $intPlayerID, $strName, $strDescription, 
 								$strFileName, $boolDropable, $boolDestroyable)
 	{
-		
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
-		$query = "INSERT INTO {$prefix}_media 
-					(name, file_name)
-					VALUES ('{$strName}', 
-							'{$strFileName}')";
-		
-		//NetDebug::trace("createItem: Running a query = $query");	
-		
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
-		
-		$newMediaID = mysql_insert_id();
+		$newMediaResultData = Media::createMedia($intGameID, $strName, $strFileName, 0);
+		$newMediaID = $newMediaResultData->data;
 		
 		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_UPLOAD_MEDIA, $newMediaID);
 

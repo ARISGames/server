@@ -1,5 +1,5 @@
 <?php
-require("module.php");
+require_once("module.php");
 
 
 class Media extends Module
@@ -20,12 +20,10 @@ class Media extends Module
      */
 	public function getMedia($intGameID)
 	{
-		
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		
-		$query = "SELECT * FROM {$prefix}_media";
+		$query = "SELECT * FROM media WHERE game_id = {$prefix} or game_id = 0";
 		NetDebug::trace($query);
 
 		
@@ -36,14 +34,20 @@ class Media extends Module
 		
 		//Calculate the media types
 		while ($mediaRow = mysql_fetch_array($rsResult)) {
+
 			$mediaItem = array();
 			$mediaItem['media_id'] = $mediaRow['media_id'];
 			$mediaItem['name'] = $mediaRow['name'];
 			$mediaItem['file_name'] = $mediaRow['file_name'];
-			$mediaItem['url_path'] = Config::gamedataWWWPath . "/{$prefix}/" . Config::gameMediaSubdir;
+
+			$mediaItem['url_path'] = Config::gamedataWWWPath . "/{$mediaRow['game_id']}/" . Config::gameMediaSubdir;
+			
 			if ($mediaRow['is_icon'] == '1') $mediaItem['type'] = self::MEDIA_ICON;
 			else $mediaItem['type'] = $this->getMediaType($mediaRow['file_name']);
-			$mediaItem['is_default'] = $this->getMediaType($mediaRow['is_default']);
+			
+			if ($mediaRow['game_id'] == 0) $mediaItem['is_default'] = 1;
+			else $mediaItem['is_default'] = 0;
+			
 			array_push($returnData->data, $mediaItem);
 		}
 		
@@ -94,9 +98,9 @@ class Media extends Module
 		if ($boolIsIcon && $this->getMediaType($strFileName) != self::MEDIA_IMAGE)
 			return new returnData(4, NULL, "Icons must have a valid Image file extension");
 		            	
-		$query = "INSERT INTO {$prefix}_media 
-					(name, file_name, is_default, is_icon)
-					VALUES ('{$strName}', '{$strFileName}',0 ,{$boolIsIcon})";
+		$query = "INSERT INTO media 
+					(game_id, name, file_name, is_icon)
+					VALUES ('{$intGameID}','{$strName}', '{$strFileName}',{$boolIsIcon})";
 		
 		NetDebug::trace("Running a query = $query");	
 		
@@ -121,7 +125,7 @@ class Media extends Module
 		$query = "UPDATE {$prefix}_media 
 					SET name = '{$strName}' 
 					media = '{$strFileName}'
-					WHERE media_id = '{$intMediaID}'";
+					WHERE media_id = '{$intMediaID}' and game_id = '{$intGameID}'";
 		
 		NetDebug::trace("updateNpc: Running a query = $query");	
 		
@@ -139,25 +143,25 @@ class Media extends Module
      */
 	public function deleteMedia($intGameID, $intMediaID)
 	{
-		$prefix = $this->getPrefix($intGameID);
-		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
-		$query = "SELECT * FROM {$prefix}_media WHERE media_id = {$intMediaID}";
+		$query = "SELECT * FROM {$prefix}_media 
+					WHERE media_id = {$intMediaID} and game_id = {$intGameID}";
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:". mysql_error());
 		
 		$mediaRow = mysql_fetch_array($rsResult);
-		if ($mediaRow === FALSE) return new returnData(2, NULL, "Invalid Media ID");
+		if ($mediaRow === FALSE) return new returnData(2, NULL, "Invalid Media Record");
 
 
 		//Delete the file		
-		$fileToDelete = Config::gamedataFSPath . "/{$prefix}/" . $mediaRow['file_name'];
+		$fileToDelete = Config::gamedataFSPath . "/{$intGameID}/" . $mediaRow['file_name'];
 		if (!@unlink($fileToDelete)) 
 			return new returnData(4, NULL, "Could not delete: $fileToDelete");
 		
 		
 		//Delete the Record
-		$query = "DELETE FROM {$prefix}_media WHERE media_id = {$intMediaID}";
+		$query = "DELETE FROM {$prefix}_media 
+					WHERE media_id = {$intMediaID} and game_id = {$intGameID}";
 		
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
@@ -175,15 +179,15 @@ class Media extends Module
 	/**
 	* @returns path to the media directory on the file system
 	*/
-	public function getMediaDirectory($prefix){
-		return new returnData(0, Config::gamedataFSPath . "/{$prefix}/" . Config::gameMediaSubdir);
+	public function getMediaDirectory($gameID){
+		return new returnData(0, Config::gamedataFSPath . "/{$gameID}/" . Config::gameMediaSubdir);
 	}
 	
 	/**
 	* @returns path to the media directory URL
 	*/
-	public function getMediaDirectoryURL($prefix){
-		return new returnData(0, Config::gamedataFSPath . "/{$prefix}/". Config::gameMediaSubdir);
+	public function getMediaDirectoryURL($gameID){
+		return new returnData(0, Config::gamedataFSPath . "/{$gameID}/". Config::gameMediaSubdir);
 	}	
 
 	/**

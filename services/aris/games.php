@@ -94,7 +94,7 @@ class Games extends Module
 	
 
 		//Copy the default site to the new name	
-		$from = Config::gamedataFSPath . '/' . Config::defaultGameName;
+		$from = Config::gamedataFSPath . '/0';
 		$to = Config::gamedataFSPath . "/{$strShortName}";
 		$command = "cp -R -v -n $from $to";
 		NetDebug::trace($command);
@@ -240,20 +240,6 @@ class Games extends Module
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(6, NULL, 'cannot create qrcodes table');							
 		
-		
-		
-		$query = "CREATE TABLE {$strShortName}_media (
-            media_id INT UNSIGNED NOT NULL AUTO_INCREMENT ,
-            name VARCHAR( 255 ) NOT NULL,
-            file_name VARCHAR( 255 ) NOT NULL,
-            is_default tinyint(1) default '0',
-            is_icon tinyint(1) default '0',
-            PRIMARY KEY ( media_id )
-            )ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(6, NULL, 'cannot create media table');	
-		
-		
 		$query = "CREATE TABLE {$strShortName}_folders (
 			folder_id int(10) unsigned NOT NULL auto_increment,
   			name varchar(50) collate utf8_unicode_ci NOT NULL,
@@ -289,7 +275,7 @@ class Games extends Module
      * Updates a game's information
      * @returns true if a record was updated, false otherwise
      */	
-	public function updateGame($intGameID, $strNewName, $strNewDescription)
+	public function updateGame($intGameID, $strNewName, $strNewDescription, $intPCMediaID)
 	{
 	    $returnData = new returnData(0, mysql_query($query), NULL);
 
@@ -297,7 +283,8 @@ class Games extends Module
 	
 		$query = "UPDATE games 
 				SET name = '{$strNewName}',
-				description = '{$strNewDescription}'
+				description = '{$strNewDescription}',
+				pc_media_id = '{$intPCMediaID}'
 				WHERE game_id = {$intGameID}";
 		mysql_query($query);
 		if (mysql_error()) return new returnData(3, false, "SQL Error");
@@ -456,7 +443,24 @@ class Games extends Module
 		$message .= ":" . mysql_error();
 		$messages[] = $message;	
 		 
+		$message = "Droping Game Specific Media Table";
+		$query = "DROP TABLE `{$prefix}_media`";
+		mysql_query($query);
+		$message .= ":" . mysql_error();
+		$messages[] = $message;	
 	
+		$message = "Creating systemwide media table";
+		$query = "CREATE TABLE IF NOT EXISTS `media` (
+  			`media_id` int(10) unsigned NOT NULL auto_increment,
+  			`game_id` int(10) unsigned NOT NULL default '0',
+  			`name` varchar(255) collate utf8_unicode_ci NOT NULL,
+  			`file_name` varchar(255) collate utf8_unicode_ci NOT NULL,
+  			`is_icon` tinyint(1) NOT NULL default '0',
+  			PRIMARY KEY  (`media_id`,`game_id`)
+			) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
+		mysql_query($query);
+		$message .= ":" . mysql_error();
+		$messages[] = $message;	
 		
 		return new returnData(0, FALSE, $messages);	
 	}
@@ -519,20 +523,17 @@ class Games extends Module
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
 		
-		
-		//Delete the game record
-		$query = "DELETE FROM games WHERE prefix = '{$prefix}_'";
-		NetDebug::trace($query);
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
-
-
 		//Fetch the table names for this game
 		$query = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='" . Config::dbSchema . "' AND TABLE_NAME LIKE '{$prefix}_%'";
 		NetDebug::trace($query);
 		$result = mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
 
+		//Delete any media records
+		$query = "DELETE FROM media WHERE game_id = '{$intGameID}'";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
 		
 		//Delete all tables for this game
 		while ($table = mysql_fetch_array($result)) {
@@ -541,6 +542,12 @@ class Games extends Module
 			 mysql_query($query);
 			 if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
 		}
+		
+		//Delete the game record
+		$query = "DELETE FROM games WHERE prefix = '{$prefix}_'";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
 		
 		return new returnData(0);	
 	}	

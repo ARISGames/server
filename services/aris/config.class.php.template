@@ -9,7 +9,6 @@ class Config
 	
 	const gamedataFSPath		= '/Users/djgagnon/Sites/editor/server/gamedata';
 	const gamedataWWWPath		= 'http://davembp.local/editor/server/gamedata';
-	const defaultGameName		= 'default';
 	const gameMediaSubdir		= ''; //if this is used, you must include the trailing slash
 
 	const mysqlBinPath			= '/Applications/MAMP/Library/bin';
