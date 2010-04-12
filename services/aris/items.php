@@ -113,6 +113,9 @@ class Items extends Module
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
+		$strName = addslashes($strName);
+		$strDescription = ($strDescription);
+		
 		$newMediaResultData = Media::createMedia($intGameID, $strName, $strFileName, 0);
 		$newMediaID = $newMediaResultData->data;
 		

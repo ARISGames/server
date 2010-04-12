@@ -91,16 +91,6 @@ class Games extends Module
 		if (mysql_error()) return new returnData(6, NULL, 'cannot create game_editors record');
 		
 			
-	
-
-		//Copy the default site to the new name	
-		$from = Config::gamedataFSPath . '/0';
-		$to = Config::gamedataFSPath . "/{$strShortName}";
-		$command = "cp -R -v -n $from $to";
-		NetDebug::trace($command);
-		exec($command, $output, $return);
-		if ($return) return new returnData(5, NULL, 'cannot copy default site');
-	
 		//Create the SQL tables
 
 		$query = "CREATE TABLE {$strShortName}_items (
@@ -270,15 +260,12 @@ class Games extends Module
 		
 	}
 	
-	
 	/**
      * Updates a game's information
      * @returns true if a record was updated, false otherwise
      */	
 	public function updateGame($intGameID, $strNewName, $strNewDescription, $intPCMediaID)
 	{
-	    $returnData = new returnData(0, mysql_query($query), NULL);
-
 		$strNewGameName = addslashes($strNewGameName);	
 	
 		$query = "UPDATE games 
@@ -292,6 +279,25 @@ class Games extends Module
 		if (mysql_affected_rows()) return new returnData(0, TRUE);
 		else return new returnData(0, FALSE);		
 	}		
+	
+	
+	/**
+     * Updates a game's Player Character Media
+     * @returns true if a record was updated, false otherwise
+     */	
+	public function setPCMediaID($intGameID, $intPCMediaID)
+	{
+	
+		$query = "UPDATE games 
+				SET pc_media_id = '{$intPCMediaID}'
+				WHERE game_id = {$intGameID}";
+		mysql_query($query);
+		if (mysql_error()) return new returnData(3, false, "SQL Error");
+		
+		if (mysql_affected_rows()) return new returnData(0, TRUE);
+		else return new returnData(0, FALSE);		
+	}			
+	
 	
 	/**
      * Updates all game databases using upgradeGameDatabase
@@ -462,6 +468,36 @@ class Games extends Module
 		$message .= ":" . mysql_error();
 		$messages[] = $message;	
 		
+		$message = "Removing auth from players";
+		$query = "ALTER TABLE `players` DROP `authorization`";
+		mysql_query($query);
+		$message .= ":" . mysql_error();
+		$messages[] = $message;	
+
+		$message = "Changing photo to media_id players";
+		$query = "ALTER TABLE `players` CHANGE `photo` `media_id` INT( 25 ) UNSIGNED NULL";
+		mysql_query($query);
+		$message .= ":" . mysql_error();
+		$messages[] = $message;	
+		
+		$message = "Removing last_location_id from players";
+		$query = "ALTER TABLE `players` DROP `last_location_id`";
+		mysql_query($query);
+		$message .= ":" . mysql_error();
+		$messages[] = $message;	
+		
+		$message = "Adding pc media_id to games";
+		$query = "ALTER TABLE `games` ADD `pc_media_id` INT UNSIGNED NOT NULL DEFAULT '0'";
+		mysql_query($query);
+		$message .= ":" . mysql_error();
+		$messages[] = $message;	
+		
+		$message = "Adding pc media_id to games";
+		$query = "ALTER TABLE `games` CHANGE `pc_media_id` `pc_media_id` INT( 10 ) UNSIGNED NOT NULL DEFAULT '0' ";
+		mysql_query($query);
+		$message .= ":" . mysql_error();
+		$messages[] = $message;	
+				
 		return new returnData(0, FALSE, $messages);	
 	}
 	
