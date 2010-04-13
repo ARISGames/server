@@ -498,6 +498,22 @@ class Games extends Module
 		$message .= ":" . mysql_error();
 		$messages[] = $message;	
 		
+		$message = "Adding origin info to items";
+		$query = "ALTER TABLE `{$prefix}_items` ADD `creator_player_id` INT UNSIGNED NOT NULL DEFAULT '0',
+		ADD `origin_latitude` DOUBLE NOT NULL DEFAULT '0',
+		ADD `origin_longitude` DOUBLE NOT NULL DEFAULT '0';";
+		mysql_query($query);
+		$message .= ":" . mysql_error();
+		$messages[] = $message;	
+		
+		
+		
+		
+		
+		
+		
+		
+		
 		return new returnData(0, FALSE, $messages);	
 	}
 	

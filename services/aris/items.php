@@ -108,7 +108,7 @@ class Items extends Module
      * @returns with returnData object (0 on success) 
      */
 	public function createItemAndGiveToPlayer($intGameID, $intPlayerID, $strName, $strDescription, 
-								$strFileName, $boolDropable, $boolDestroyable)
+								$strFileName, $boolDropable, $boolDestroyable, $latitude, $longitude)
 	{
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
@@ -122,14 +122,16 @@ class Items extends Module
 		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_UPLOAD_MEDIA, $newMediaID);
 
 		$query = "INSERT INTO {$prefix}_items 
-					(name, description, media_id, dropable, destroyable)
+					(name, description, media_id, dropable, destroyable,
+					creator_player_id, origin_latitude, origin_longitude)
 					VALUES ('{$strName}', 
 							'{$strDescription}',
 							'{$newMediaID}', 
 							'$boolDropable',
-							'$boolDestroyable')";
+							'$boolDestroyable',
+							'$intPlayerID', '$latitude', '$longitude')";
 		
-		//NetDebug::trace("createItem: Running a query = $query");	
+		NetDebug::trace("createItem: Running a query = $query");	
 		
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
