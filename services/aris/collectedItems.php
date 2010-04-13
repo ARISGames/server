@@ -61,6 +61,7 @@ $kml[] = ' </Document>';
 $kml[] = '</kml>';
 $kmlOutput = join("\n", $kml);
 header('Content-type: application/vnd.google-earth.kml+xml');
+header('Content-Disposition: attachment; filename="ARISGame.kml"');
 echo $kmlOutput;
 
 
