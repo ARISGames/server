@@ -4,9 +4,9 @@ require_once('config.class.php');
 $conn = mysql_pconnect(Config::dbHost, Config::dbUser, Config::dbPass);
 mysql_select_db (Config::dbSchema);
 $prefix = $_REQUEST['gameId'];
-$query = "SELECT {$prefix}_items.*, media.*
-			FROM {$prefix}_items, media
-			WHERE {$prefix}_items.media_id = media.media_id";
+$query = "SELECT {$prefix}_items.*, media.*, players.*
+			FROM {$prefix}_items, media, players
+			WHERE {$prefix}_items.media_id = media.media_id AND {$prefix}_items.creator_player_id = players.player_id";
 $result = mysql_query($query);
 
 
@@ -25,8 +25,15 @@ while ($row = @mysql_fetch_assoc($result))
   $mediaURL = Config::gamedataWWWPath . "/{$_REQUEST['gameId']}/{$row['file_name']}";
   $mediaImg = "<a href = '{$mediaURL}'><img src = '$mediaURL' width = '100%'/></a>";
   
-  $kml[] = ' <description>' . htmlentities($row['description']) . '<br/>' . $mediaImg . '</description>';
-  $kml[] = ' <styleUrl>#' . 1 .'Style</styleUrl>';
+  $description = array("<![CDATA[");
+  $description[] = "<strong>Created By:</strong> {$row['user_name']}<br/>";
+  $description[] = "<strong>Date:</strong> {$row['origin_timestamp']}<br/>";
+  $description[] = '<p>' . htmlentities($row['description']) . '</p>';
+  $description[] = $mediaImg;
+  $description[] = "]]>";
+  $descriptionHtml = join("\n", $description);
+  
+  $kml[] = ' <description>' . $descriptionHtml . '</description>';
   $kml[] = ' <Point>';
   $kml[] = ' <coordinates>' . $row['origin_longitude'] . ','  . $row['origin_latitude'] . '</coordinates>';
   $kml[] = ' </Point>';

@@ -506,6 +506,12 @@ class Games extends Module
 		$message .= ":" . mysql_error();
 		$messages[] = $message;	
 		
+		$message = "ALTER TABLE `{$prefix}_items` ADD `origin_timestamp` TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ;";
+		mysql_query($query);
+		$message .= ":" . mysql_error();
+		$messages[] = $message;	
+		
+		
 		
 		
 		
