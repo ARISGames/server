@@ -497,7 +497,7 @@ class Games extends Module
 		mysql_query($query);
 		$message .= ":" . mysql_error();
 		$messages[] = $message;	
-				v
+		
 		return new returnData(0, FALSE, $messages);	
 	}
 	
