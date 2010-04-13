@@ -1,6 +1,8 @@
 <?php
 
 require_once('config.class.php');
+require_once('media.php');
+
 $conn = mysql_pconnect(Config::dbHost, Config::dbUser, Config::dbPass);
 mysql_select_db (Config::dbSchema);
 $prefix = $_REQUEST['gameId'];
@@ -23,13 +25,26 @@ while ($row = @mysql_fetch_assoc($result))
   $kml[] = ' <name>' . htmlentities($row['name']) . '</name>';
   
   $mediaURL = Config::gamedataWWWPath . "/{$_REQUEST['gameId']}/{$row['file_name']}";
-  $mediaImg = "<a href = '{$mediaURL}'><img src = '$mediaURL' width = '100%'/></a>";
+  
+  $mediaObject = new Media;
+  $type = $mediaObject->getMediaType($mediaURL);
+  if ($type == Media::MEDIA_IMAGE) $mediaHtml = "<a target = '_blank' href = '{$mediaURL}'><img src = '$mediaURL' width = '100%'/></a>";
+  else   $mediaHtml = '<a target = "_blank" href = "' . $mediaURL . '">Video Link</a>
+  				<object height="175" width="212"> 
+               	<param value="' . $mediaURL . '" name="movie"> 
+                <param value="transparent" name="wmode"> 
+                <embed wmode="transparent" type="application/x-shockwave-flash" src="'. $mediaURL .'" height="175" width="212"> 
+               </object>
+               ';
+  
+  
+            
   
   $description = array("<![CDATA[");
   $description[] = "<strong>Created By:</strong> {$row['user_name']}<br/>";
   $description[] = "<strong>Date:</strong> {$row['origin_timestamp']}<br/>";
   $description[] = '<p>' . htmlentities($row['description']) . '</p>';
-  $description[] = $mediaImg;
+  $description[] = $mediaHtml;
   $description[] = "]]>";
   $descriptionHtml = join("\n", $description);
   

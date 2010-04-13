@@ -194,13 +194,13 @@ class Media extends Module
      * Determine the Item Type
      * @returns "Audio", "Video" or "Image"
      */
-	protected function getMediaType($strMediaFileName) {
+	public function getMediaType($strMediaFileName) {
 		$mediaParts = pathinfo($strMediaFileName);
  		$mediaExtension = $mediaParts['extension'];
  		
- 		if (in_array($mediaExtension, $this->validImageAndIconTypes )) return self::MEDIA_IMAGE;
- 		else if (in_array($mediaExtension, $this->validAudioTypes )) return self::MEDIA_AUDIO;
-		else if (in_array($mediaExtension, $this->validVideoTypes )) return self::MEDIA_VIDEO;
+ 		if (in_array($mediaExtension, $this->validImageAndIconTypes )) return Media::MEDIA_IMAGE;
+ 		else if (in_array($mediaExtension, $this->validAudioTypes )) return Media::MEDIA_AUDIO;
+		else if (in_array($mediaExtension, $this->validVideoTypes )) return Media::MEDIA_VIDEO;
  		
  		return FALSE;
  	}	
