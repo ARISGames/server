@@ -28,15 +28,48 @@ while ($row = @mysql_fetch_assoc($result))
   
   $mediaObject = new Media;
   $type = $mediaObject->getMediaType($mediaURL);
-  if ($type == Media::MEDIA_IMAGE) $mediaHtml = "<a target = '_blank' href = '{$mediaURL}'><img src = '$mediaURL' width = '100%'/></a>";
-  else   $mediaHtml = '<a target = "_blank" href = "' . $mediaURL . '">Video Link</a>
-  				<object height="175" width="212"> 
-               	<param value="' . $mediaURL . '" name="movie"> 
-                <param value="transparent" name="wmode"> 
-                <embed wmode="transparent" type="application/x-shockwave-flash" src="'. $mediaURL .'" height="175" width="212"> 
-               </object>
-               ';
   
+  if ($type == Media::MEDIA_IMAGE) $mediaHtml = "<a target = '_blank' href = '{$mediaURL}'><img src = '$mediaURL' width = '100%'/></a>";
+  else if ($type == Media::MEDIA_AUDIO) $mediaHtml = "<a target = '_blank' href = '{$mediaURL}'>Link to Audio</a>"; 
+  else if ($type == Media::MEDIA_VIDEO) $mediaHtml = '<div style="margin-left: auto; margin-right:auto;">
+              <object height="175" width="212">
+                <param value="' . $mediaURL . '" name="movie">
+                <param value="transparent" name="wmode">
+                <embed wmode="transparent" type="application/x-shockwave-flash"
+                   src="'.$mediaURL.'" height="175"
+                   width="212">
+               </object>
+             </div>';
+
+/*
+<![CDATA[<div style="font-size:larger">
+          <div>
+            <div style="width: 212px; font-size: 12px;">
+              <b>The Spaghetti Film</b>
+            </div>
+            <div style="font-size: 11px;">
+              <a target="_blank" href="http://www.youtube.com/?v=FICUvrVlyXc">
+                http://www.youtube.com/?v=FICUvrVlyXc</a><br>
+            </div><br>
+            <div style="margin-left: auto; margin-right:auto;">
+              <object height="175" width="212">
+                <param value="http://www.youtube.com/v/FICUvrVlyXc" name="movie">
+                <param value="transparent" name="wmode">
+                <embed wmode="transparent" type="application/x-shockwave-flash"
+                   src="http://www.youtube.com/v/FICUvrVlyXc" height="175"
+                   width="212">
+               </object>
+             </div>
+           </div>
+          </div>
+          <div style="font-size: smaller; margin-top: 1em;">Saved from 
+            <a href="http://maps.google.com/ig/add?synd=mpl&pid=mpl&moduleurl=
+                http:%2F%2Fwww.google.com%2Fig%2Fmodules%2Fmapplets-youtube.xml&hl=en&gl=us">
+                YouTubeVideos</a>
+          </div>
+         ]]>
+
+  */
   
             
   
