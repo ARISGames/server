@@ -119,8 +119,6 @@ class Items extends Module
 		$newMediaResultData = Media::createMedia($intGameID, $strName, $strFileName, 0);
 		$newMediaID = $newMediaResultData->data;
 		
-		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_UPLOAD_MEDIA, $newMediaID);
-
 		$query = "INSERT INTO {$prefix}_items 
 					(name, description, media_id, dropable, destroyable,
 					creator_player_id, origin_latitude, origin_longitude)
@@ -137,6 +135,9 @@ class Items extends Module
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
 		
 		$newItemID = mysql_insert_id();
+		
+		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_UPLOAD_MEDIA_ITEM, $newItemID);
+
 		Module::giveItemToPlayer($prefix, $newItemID, $intPlayerID); 
 		
 		return new returnData(0, TRUE);

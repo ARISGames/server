@@ -125,7 +125,9 @@ class Games extends Module
 			requirement_id int(11) NOT NULL auto_increment,
 			content_type enum('Node','QuestDisplay','QuestComplete','Location') NOT NULL,
 			content_id int(10) unsigned NOT NULL,
-			requirement enum( 'PLAYER_HAS_ITEM', 'PLAYER_DOES_NOT_HAVE_ITEM', 'PLAYER_VIEWED_ITEM', 'PLAYER_HAS_NOT_VIEWED_ITEM', 'PLAYER_VIEWED_NODE', 'PLAYER_HAS_NOT_VIEWED_NODE', 'PLAYER_VIEWED_NPC', 'PLAYER_HAS_NOT_VIEWED_NPC'  ) NOT NULL,
+			requirement enum( 'PLAYER_HAS_ITEM', 'PLAYER_DOES_NOT_HAVE_ITEM', 'PLAYER_VIEWED_ITEM',
+							'PLAYER_HAS_NOT_VIEWED_ITEM', 'PLAYER_VIEWED_NODE', 'PLAYER_HAS_NOT_VIEWED_NODE',
+							'PLAYER_VIEWED_NPC', 'PLAYER_HAS_NOT_VIEWED_NPC', 'PLAYER_HAS_UPLOADED_MEDIA_ITEM'  ) NOT NULL,
 			requirement_detail int(11) NOT NULL,
 			PRIMARY KEY  (requirement_id)
 			)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
@@ -326,16 +328,29 @@ class Games extends Module
 	public function upgradeGameDatabase($intGameID)
 	{	
 		$prefix = $this->getPrefix($intGameID);
-		
-		$messages = array();
+
 		$query = "ALTER TABLE `{$prefix}_items` ADD `origin_timestamp` TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP";
 		mysql_query($query);
-		$message .= ":" . mysql_error();
-		$messages[] = $message;	
+		NetDebug::trace("$query" . ":" . mysql_error());
+
+		$query = "ALTER TABLE `{$prefix}_requirements` CHANGE `requirement` `requirement` 
+		ENUM( 'PLAYER_HAS_ITEM', 'PLAYER_DOES_NOT_HAVE_ITEM', 'PLAYER_VIEWED_ITEM', 'PLAYER_HAS_NOT_VIEWED_ITEM', 'PLAYER_VIEWED_NODE', 'PLAYER_HAS_NOT_VIEWED_NODE', 'PLAYER_VIEWED_NPC', 'PLAYER_HAS_NOT_VIEWED_NPC', 'PLAYER_HAS_UPLOADED_MEDIA_ITEM' ) 
+		CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+
+		$query = "ALTER TABLE `{$prefix}_requirements` CHANGE `requirement_detail` `requirement_detail_1`  VARCHAR( 30 ) NULL";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
 		
+		$query = "ALTER TABLE `{$prefix}_requirements` ADD `requirement_detail_2`  VARCHAR( 30 ) NULL";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
 		
-		
-		return new returnData(0, FALSE, $messages);	
+		$query = "ALTER TABLE `{$prefix}_requirements` ADD `requirement_detail_3`  VARCHAR( 30 ) NULL";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());	
+
 	}
 	
 	/**

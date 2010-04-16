@@ -17,7 +17,7 @@ abstract class Module
 	const kLOG_VIEW_QUESTS = 'VIEW_QUESTS';
 	const kLOG_VIEW_INVENTORY = 'VIEW_INVENTORY';
 	const kLOG_ENTER_QRCODE = 'ENTER_QRCODE';
-	const kLOG_UPLOAD_MEDIA = 'UPLOAD_MEDIA';
+	const kLOG_UPLOAD_MEDIA_ITEM = 'UPLOAD_MEDIA_ITEM';
 	
 	//constants for gameID_requirements table enums
 	const kREQ_PLAYER_HAS_ITEM = 'PLAYER_HAS_ITEM';
@@ -28,10 +28,13 @@ abstract class Module
 	const kREQ_PLAYER_HAS_NOT_VIEWED_NODE = 'PLAYER_HAS_NOT_VIEWED_NODE';
 	const kREQ_PLAYER_VIEWED_NPC = 'PLAYER_VIEWED_NPC';
 	const kREQ_PLAYER_HAS_NOT_VIEWED_NPC = 'PLAYER_HAS_NOT_VIEWED_NPC';
-	
+	const kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM = 'PLAYER_HAS_UPLOADED_MEDIA_ITEM';
+
 	//constants for player_state_changes table enums
 	const kPSC_GIVE_ITEM = 'GIVE_ITEM';
 	const kPSC_TAKE_ITEM = 'TAKE_ITEM';	
+	
+
 	
 	public function Module()
 	{
@@ -195,8 +198,36 @@ abstract class Module
 		if (mysql_num_rows($rsResult) > 0) return true;
 		else return false;
     }		
-	
-	
+    
+	/** 
+	 * playerHasUploadedMedia
+	 *
+     * Checks if the specified user has uploaded media near the specified location.
+     * @return boolean
+     */
+    protected function playerHasUploadedMediaItemWithinDistence($intGameID, $intPlayerID, $dblLatitude, $dblLongitude, $dblDistenceInMeters) {
+    	$prefix = $this->getPrefix($intGameID);
+		if (!$prefix) return FALSE;
+
+		$query = "SELECT {$prefix}_items.*
+					FROM player_log, {$prefix}_items
+					WHERE 
+						player_log.player_id = '{$intPlayerID}' AND
+						player_log.game_id = '{$intGameID}' AND
+						player_log.event_type = '". Module::kLOG_UPLOAD_MEDIA_ITEM ."' AND
+						player_log.event_detail_1 = {$prefix}_items.item_id AND
+						
+						(((acos(sin(({$dblLatitude}*pi()/180)) * sin((origin_latitude*pi()/180))+cos(({$dblLatitude}*pi()/180)) * 
+						cos((origin_latitude*pi()/180)) * 
+						cos((({$dblLongitude} - origin_longitude)*pi()/180))))*180/pi())*60*1.1515*1.609344*1000) < {$dblDistenceInMeters}";						
+						
+		NetDebug::trace($query);
+		$rsResult = @mysql_query($query);
+		if (@mysql_num_rows($rsResult) > 0) return true;
+		else return false;
+
+    }	    
+    
 	/** 
 	 * objectMeetsRequirements
 	 *
@@ -211,35 +242,48 @@ abstract class Module
 		$rsRequirments = @mysql_query($query);
 		
 		while ($requirement = mysql_fetch_array($rsRequirments)) {
-			//NetDebug::trace("Requirement for {$strObjectType}:{$intObjectID} is {$requirement['requirement']}:{$requirement['requirement_detail']}");
+			//NetDebug::trace("Requirement for {$strObjectType}:{$intObjectID} is {$requirement['requirement']}:{$requirement['requirement_detail_1']}");
 
 			//Check the requirement
 			switch ($requirement['requirement']) {
 				//Log related
 				case Module::kREQ_PLAYER_VIEWED_ITEM:
-					if (!Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_ITEM, $requirement['requirement_detail'])) return FALSE;
+					if (!Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_ITEM, 
+						$requirement['requirement_detail_1'])) return FALSE;
 					break;
 				case Module::kREQ_PLAYER_HAS_NOT_VIEWED_ITEM:
-					if (Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_ITEM, $requirement['requirement_detail'])) return FALSE;
+					if (Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_ITEM, 
+						$requirement['requirement_detail_1'])) return FALSE;
 					break;
 				case Module::kREQ_PLAYER_VIEWED_NODE:
-					if (!Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NODE, $requirement['requirement_detail'])) return FALSE;
+					if (!Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NODE, 
+						$requirement['requirement_detail_1'])) return FALSE;
 					break;
 				case Module::kREQ_PLAYER_HAS_NOT_VIEWED_NODE:
-					if (Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NODE, $requirement['requirement_detail'])) return FALSE;
+					if (Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NODE, 
+						$requirement['requirement_detail_1'])) return FALSE;
 					break;
 				case Module::kREQ_PLAYER_VIEWED_NPC:
-					if (!Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NPC, $requirement['requirement_detail'])) return FALSE;
+					if (!Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NPC, 
+						$requirement['requirement_detail_1'])) return FALSE;
 					break;
 				case Module::kREQ_PLAYER_HAS_NOT_VIEWED_NPC:
-					if (Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NPC, $requirement['requirement_detail'])) return FALSE;
+					if (Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NPC, 
+						$requirement['requirement_detail_1'])) return FALSE;
 					break;					
 				//Inventory related	
 				case Module::kREQ_PLAYER_HAS_ITEM:
-					if (!Module::playerHasItem($strPrefix, $intPlayerID, $requirement['requirement_detail'])) return FALSE;
+					if (!Module::playerHasItem($strPrefix, $intPlayerID, 
+						$requirement['requirement_detail_1'])) return FALSE;
 					break;
 				case Module::kREQ_PLAYER_DOES_NOT_HAVE_ITEM:
-					if (Module::playerHasItem($strPrefix, $intPlayerID, $requirement['requirement_detail'])) return FALSE;
+					if (Module::playerHasItem($strPrefix, $intPlayerID, 
+						$requirement['requirement_detail_1'])) return FALSE;
+					break;
+				//Data Collection
+				case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM:
+					if (!Module::playerHasUploadedMediaItemWithinDistence($strPrefix, $intPlayerID, 
+						$requirement['requirement_detail_1'], $requirement['requirement_detail_2'], $requirement['requirement_detail_3'])) return FALSE;
 					break;
 			}
 		}

@@ -52,7 +52,8 @@ class Requirements extends Module
      * Create a Requirement
      * @returns the new requirementID on success
      */
-	public function createRequirement($intGameID, $strObjectType, $intObjectID, $strRequirementType, $intRequirementTypeID )
+	public function createRequirement($intGameID, $strObjectType, $intObjectID, 
+		$strRequirementType, $strRequirementDetail1 = null, $strRequirementDetail2 = null,$strRequirementDetail3 = null)
 	{
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
@@ -65,8 +66,10 @@ class Requirements extends Module
 		
 		
 		$query = "INSERT INTO {$prefix}_requirements 
-					(content_type, content_id, requirement, requirement_detail)
-					VALUES ('{$strObjectType}','{$intObjectID}','{$strRequirementType}','{$intRequirementTypeID}')";
+					(content_type, content_id, requirement, 
+					requirement_detail_1,requirement_detail_2,requirement_detail_3)
+				VALUES ('{$strObjectType}','{$intObjectID}','{$strRequirementType}',
+					'{$strRequirementDetail1}', '{$strRequirementDetail2}', '{$strRequirementDetail3}')";
 		
 		NetDebug::trace("Running a query = $query");	
 		
@@ -82,7 +85,8 @@ class Requirements extends Module
      * Update a specific Requirement
      * @returns true if edit was done, false if no changes were made
      */
-	public function updateRequirement($intGameID, $intRequirementID, $strObjectType, $intObjectID, $strRequirementType, $intRequirementTypeID)
+	public function updateRequirement($intGameID, $intRequirementID, $strObjectType, $intObjectID, 
+		$strRequirementType, $strRequirementDetail1 = null, $strRequirementDetail2 = null,$strRequirementDetail3 = null)
 	{
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
@@ -100,7 +104,9 @@ class Requirements extends Module
 					content_type = '{$strObjectType}',
 					content_id = '{$intObjectID}',
 					requirement = '{$strRequirementType}',
-					requirement_detail = '{$intRequirementTypeID}'
+					requirement_detail_1 = '{$strRequirementDetail1}',
+					requirement_detail_2 = '{$strRequirementDetail2}',
+					requirement_detail_3 = '{$strRequirementDetail3}'
 					WHERE requirement_id = '{$intRequirementID}'";
 		
 		NetDebug::trace("Running a query = $query");	
