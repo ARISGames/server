@@ -125,7 +125,7 @@ class Games extends Module
 			requirement_id int(11) NOT NULL auto_increment,
 			content_type enum('Node','QuestDisplay','QuestComplete','Location') NOT NULL,
 			content_id int(10) unsigned NOT NULL,
-			requirement enum('HAS_ITEM','HAS_EVENT','DOES_NOT_HAVE_ITEM','DOES_NOT_HAVE_EVENT') NOT NULL,
+			requirement enum( 'PLAYER_HAS_ITEM', 'PLAYER_DOES_NOT_HAVE_ITEM', 'PLAYER_VIEWED_ITEM', 'PLAYER_HAS_NOT_VIEWED_ITEM', 'PLAYER_VIEWED_NODE', 'PLAYER_HAS_NOT_VIEWED_NODE', 'PLAYER_VIEWED_NPC', 'PLAYER_HAS_NOT_VIEWED_NPC'  ) NOT NULL,
 			requirement_detail int(11) NOT NULL,
 			PRIMARY KEY  (requirement_id)
 			)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
