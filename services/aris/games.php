@@ -95,8 +95,8 @@ class Games extends Module
 
 		$query = "CREATE TABLE {$strShortName}_items (
 			item_id int(11) unsigned NOT NULL auto_increment,
-			name varchar(255) default NULL,
-			description text,
+			name varchar(255) NOT NULL,
+			description text NOT NULL,
 			icon_media_id int(10) unsigned NOT NULL default '0',
 			media_id int(10) unsigned NOT NULL default '0',
 			dropable enum('0','1') NOT NULL default '0',
@@ -105,13 +105,13 @@ class Games extends Module
 			)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
 		NetDebug::trace($query);
 		@mysql_query($query);
-		if (mysql_error()) return new returnData(6, NULL, 'cannot create items table');
+		if (mysql_error()) return new returnData(6, NULL, 'cannot create items table' . mysql_error());
 				
 		
 		$query = "CREATE TABLE {$strShortName}_player_state_changes (
 			id int(10) unsigned NOT NULL auto_increment,
 			event_type enum('VIEW_ITEM', 'VIEW_NODE', 'VIEW_NPC' ) NOT NULL,
-			event_detail VARCHAR( 50 ) NULL,
+			event_detail VARCHAR( 50 ) NOT NULL,
 			action enum('GIVE_ITEM','TAKE_ITEM') NOT NULL,
 			action_detail int(10) unsigned NOT NULL,
 			PRIMARY KEY  (id)
@@ -137,12 +137,12 @@ class Games extends Module
 	
 		$query = "CREATE TABLE {$strShortName}_locations (
 	  		location_id int(11) NOT NULL auto_increment,
-			name varchar(255) default NULL,
-			description tinytext,
-			latitude double default '43.0746561',
-			longitude double default '-89.384422',
-			error double default '5',
-			type enum('Node','Event','Item','Npc') NOT NULL,
+			name varchar(255) NOT NULL,
+			description tinytext NOT NULL,
+			latitude double NOT NULL default '43.0746561',
+			longitude double NOT NULL default '-89.384422',
+			error double NOT NULL default '5',
+			type enum('Node','Event','Item','Npc') NOT NULL DEFAULT 'Node',
 			type_id int(11) NOT NULL,
 			icon_media_id int(10) unsigned NOT NULL default '0',
 			item_qty int(11) NOT NULL default '0',
@@ -150,13 +150,14 @@ class Games extends Module
 			force_view enum('0','1') NOT NULL default '0',
 			PRIMARY KEY  (location_id)
 			)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
+		NetDebug::trace($query);	
 		@mysql_query($query);
-		if (mysql_error()) return new returnData(6, NULL, 'cannot create locations table');
+		if (mysql_error()) return new returnData(6, NULL, 'cannot create locations table: ' . mysql_error());
 	
 		$query = "CREATE TABLE {$strShortName}_quests (
 			 quest_id int(11) unsigned NOT NULL auto_increment,
-			 name tinytext,
-			 description text,
+			 name tinytext NOT NULL,
+			 description text NOT NULL,
 			 text_when_complete tinytext NOT NULL COMMENT 'This is the txt that displays on the completed quests screen',
 			 icon_media_id int(10) unsigned NOT NULL default '0',
 			 PRIMARY KEY  (quest_id)
@@ -166,8 +167,8 @@ class Games extends Module
 		
 		$query = "CREATE TABLE {$strShortName}_nodes (
 			  node_id int(11) unsigned NOT NULL auto_increment,
-			  title varchar(255) default NULL,
-			  text text,
+			  title varchar(255) NOT NULL,
+			  text text NOT NULL,
 			  opt1_text varchar(100) default NULL,
 			  opt1_node_id int(11) unsigned NOT NULL default '0',
 			  opt2_text varchar(100) default NULL,
@@ -198,8 +199,8 @@ class Games extends Module
 		$query = "CREATE TABLE {$strShortName}_npcs (
 			npc_id int(10) unsigned NOT NULL auto_increment,
 			name varchar(255) NOT NULL default '',
-			description tinytext,
-			text tinytext,
+			description tinytext NOT NULL,
+			text tinytext NOT NULL,
 			media_id int(10) unsigned NOT NULL default '0',
 			PRIMARY KEY  (npc_id)
 			)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
@@ -329,28 +330,95 @@ class Games extends Module
 	{	
 		$prefix = $this->getPrefix($intGameID);
 
-		$query = "ALTER TABLE `{$prefix}_items` ADD `origin_timestamp` TIMESTAMP ON UPDATE CURRENT_TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP";
+		$query = " ALTER TABLE `{$prefix}_quests` CHANGE `description` `description` TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL  ";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
 
-		$query = "ALTER TABLE `{$prefix}_requirements` CHANGE `requirement` `requirement` 
-		ENUM( 'PLAYER_HAS_ITEM', 'PLAYER_DOES_NOT_HAVE_ITEM', 'PLAYER_VIEWED_ITEM', 'PLAYER_HAS_NOT_VIEWED_ITEM', 'PLAYER_VIEWED_NODE', 'PLAYER_HAS_NOT_VIEWED_NODE', 'PLAYER_VIEWED_NPC', 'PLAYER_HAS_NOT_VIEWED_NPC', 'PLAYER_HAS_UPLOADED_MEDIA_ITEM' ) 
-		CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL";
+		$query = "ALTER TABLE `{$prefix}_quests` CHANGE `name` `name` TINYTEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL ";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
 
-		$query = "ALTER TABLE `{$prefix}_requirements` CHANGE `requirement_detail` `requirement_detail_1`  VARCHAR( 30 ) NULL";
+    	$query = "ALTER TABLE `{$prefix}_items` CHANGE `name` `name` VARCHAR( 255 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL ";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
-		
-		$query = "ALTER TABLE `{$prefix}_requirements` ADD `requirement_detail_2`  VARCHAR( 30 ) NULL";
-		mysql_query($query);
-		NetDebug::trace("$query" . ":" . mysql_error());
-		
-		$query = "ALTER TABLE `{$prefix}_requirements` ADD `requirement_detail_3`  VARCHAR( 30 ) NULL";
-		mysql_query($query);
-		NetDebug::trace("$query" . ":" . mysql_error());	
 
+ 		$query = "ALTER TABLE `{$prefix}_items` CHANGE `description` `description` TEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());  
+ 
+ 		$query = "ALTER TABLE `{$prefix}_locations` CHANGE `name` `name` VARCHAR( 255 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL ";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error()); 
+  
+ 		$query = "ALTER TABLE `{$prefix}_locations` CHANGE `description` `description` TINYTEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL  ";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+ 		$query = "ALTER TABLE `{$prefix}_locations` CHANGE `latitude` `latitude` DOUBLE NOT NULL DEFAULT '43.0746561' ";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+ 		$query = "ALTER TABLE `{$prefix}_locations` CHANGE `longitude` `longitude` DOUBLE NOT NULL DEFAULT '-89.384422' ";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+ 		$query = "ALTER TABLE `{$prefix}_locations` CHANGE `error` `error` DOUBLE NOT NULL DEFAULT '5' ";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+		$query = "ALTER TABLE `{$prefix}_nodes` CHANGE `title` `title` VARCHAR( 255 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());  
+ 		$query = "ALTER TABLE `{$prefix}_nodes` CHANGE `text` `text` TEXT CHARACTER SET utf8 COLLATE utf8_unicoderequirement_detail_1_ci NOT NULL";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());  
+  		$query = "ALTER TABLE `{$prefix}_npcs` CHANGE `name` `name` VARCHAR( 255 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());  
+  		$query = "ALTER TABLE `{$prefix}_npcs` CHANGE `description` `description` TINYTEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());  
+  		$query = "ALTER TABLE `{$prefix}_npcs` CHANGE `text` `text` TINYTEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());  
+  		$query = "ALTER TABLE `editors` CHANGE `name` `name` VARCHAR( 25 ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());  
+  		$query = "ALTER TABLE `editors` CHANGE `password` `password` VARCHAR( 32 ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());  
+  		$query = "ALTER TABLE `editors` CHANGE `email` `email` VARCHAR( 255 ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());  
+  		$query = "ALTER TABLE `editors` CHANGE `comments` `comments` TINYTEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());  
+  		$query = "ALTER TABLE `games` CHANGE `prefix` `prefix` VARCHAR( 50 ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());  
+  		$query = "ALTER TABLE `games` CHANGE `name` `name` VARCHAR( 100 ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());  
+        $query = "ALTER TABLE `games` CHANGE `description` `description` TINYTEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error()); 
+        $query = "ALTER TABLE `game_editors` CHANGE `editor_id` `editor_id` INT( 11 ) NOT NULL DEFAULT '0' ";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        $query = "ALTER TABLE `game_editors` CHANGE `game_id` `game_id` INT( 11 ) NOT NULL DEFAULT '0' ";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        $query = "ALTER TABLE `players` CHANGE `user_name` `user_name` VARCHAR( 30 ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());  
+       	$query = "ALTER TABLE `players` CHANGE `longitude` `longitude` DOUBLE NOT NULL DEFAULT '0'";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error()); 
+        $query = "ALTER TABLE `players` CHANGE `latitude` `latitude` DOUBLE NOT NULL DEFAULT '0' ";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        $query = "ALTER TABLE `players` CHANGE `media_id` `media_id` INT( 25 ) UNSIGNED NOT NULL DEFAULT '0' ";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        $query = "ALTER TABLE `player_log` CHANGE `game_id` `game_id` INT( 10 ) UNSIGNED NOT NULL DEFAULT '0' ";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
 	}
 	
 	/**
