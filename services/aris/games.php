@@ -21,7 +21,7 @@ class Games extends Module
      * Fetch all games with distences from the current location
      * @returns Object Recordset for each Game.
      */
-	public function getGamesWithDistenceFromLocation($dblLatitude, $dblLongitude)
+	public function getGamesWithLocation()
 	{
 	    $query = "SELECT games.* 
 	    			FROM games";
@@ -44,35 +44,21 @@ class Games extends Module
 				$latTotal += $location['latitude'];
 				$longTotal += $location['longitude'];
 			}
+			
+			if (mysql_num_rows($locationsRs) < 1) break;
+			
 			$latAve = $latTotal/mysql_num_rows($locationsRs);
 			$longAve = $longTotal/mysql_num_rows($locationsRs);
 			
-			//Calculate the distence from the centroid to the arguments
-			$dist = self::getDistanceBetweenPoints($latAve,$longAve,$dblLatitude,$dblLongitude);
-			NetDebug::trace("GameID {$game['game_id']} has average position of ({$latTotal}, {$longTotal}) is {$dist} Kilometers from arguments");
+			NetDebug::trace("GameID {$game['game_id']} has average position of ({$latTotal}, {$longTotal})");
 			$game['latitude'] = $latAve;
 			$game['longitude'] = $longAve;
-			$game['distence'] = $dist;
 			$games[] = $game;
 		}
 
 		return new returnData(0, $games, NULL);		
 	}	
-	
-	function getDistanceBetweenPoints($latitude1, $longitude1, $latitude2, $longitude2, $unit = 'KILOMETERS') {
-		$theta = $longitude1 - $longitude2;
-		$distance = (sin(deg2rad($latitude1)) * sin(deg2rad($latitude2))) +
-					(cos(deg2rad($latitude1)) * cos(deg2rad($latitude2)) *
-					cos(deg2rad($theta)));
-		$distance = acos($distance);
-		$distance = rad2deg($distance);
-		$distance = $distance * 60 * 1.1515;
-		switch($unit) {
-			case 'MILES': break;
-			case 'KILOMETERS' : $distance = $distance * 1.609344;
-		}return (round($distance,2));
-	}	
-	
+		
 	
 	/**
      * Fetch the games an editor may edit
