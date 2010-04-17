@@ -50,6 +50,8 @@ class Games extends Module
 			//Calculate the distence from the centroid to the arguments
 			$dist = self::getDistanceBetweenPoints($latAve,$longAve,$dblLatitude,$dblLongitude);
 			NetDebug::trace("GameID {$game['game_id']} has average position of ({$latTotal}, {$longTotal}) is {$dist} Kilometers from arguments");
+			$game['latitude'] = $latAve;
+			$game['longitude'] = $longAve;
 			$game['distence'] = $dist;
 			$games[] = $game;
 		}
