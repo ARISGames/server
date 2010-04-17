@@ -16,7 +16,60 @@ class Games extends Module
 		if (mysql_error())  return new returnData(3, NULL, 'SQL error');
 		return new returnData(0, $rs, NULL);		
 	}
+
+	/**
+     * Fetch all games with distences from the current location
+     * @returns Object Recordset for each Game.
+     */
+	public function getGamesWithDistenceFromLocation($dblLatitude, $dblLongitude)
+	{
+	    $query = "SELECT games.* 
+	    			FROM games";
+		$gamesRs = @mysql_query($query);
+		
+		$games = array();
+		
+		while ($game = mysql_fetch_array($gamesRs)) {
+			//Calculate the centroid of the locations for this game
+			$query = "SELECT * 
+	    			FROM {$game['prefix']}locations";
+			$locationsRs = @mysql_query($query);
+			
+			$latAve = 0;
+			$longAve = 0;
+			$latTotal = 0;
+			$longTotal = 0;
+			
+			while ($location = mysql_fetch_array($locationsRs)) {
+				$latTotal += $location['latitude'];
+				$longTotal += $location['longitude'];
+			}
+			$latAve = $latTotal/mysql_num_rows($locationsRs);
+			$longAve = $longTotal/mysql_num_rows($locationsRs);
+			
+			//Calculate the distence from the centroid to the arguments
+			$dist = self::getDistanceBetweenPoints($latAve,$longAve,$dblLatitude,$dblLongitude);
+			NetDebug::trace("GameID {$game['game_id']} has average position of ({$latTotal}, {$longTotal}) is {$dist} Kilometers from arguments");
+			$game['distence'] = $dist;
+			$games[] = $game;
+		}
+
+		return new returnData(0, $games, NULL);		
+	}	
 	
+	function getDistanceBetweenPoints($latitude1, $longitude1, $latitude2, $longitude2, $unit = 'KILOMETERS') {
+		$theta = $longitude1 - $longitude2;
+		$distance = (sin(deg2rad($latitude1)) * sin(deg2rad($latitude2))) +
+					(cos(deg2rad($latitude1)) * cos(deg2rad($latitude2)) *
+					cos(deg2rad($theta)));
+		$distance = acos($distance);
+		$distance = rad2deg($distance);
+		$distance = $distance * 60 * 1.1515;
+		switch($unit) {
+			case 'MILES': break;
+			case 'KILOMETERS' : $distance = $distance * 1.609344;
+		}return (round($distance,2));
+	}	
 	
 	
 	/**
