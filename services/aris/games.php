@@ -30,6 +30,8 @@ class Games extends Module
 		$games = array();
 		
 		while ($game = mysql_fetch_array($gamesRs)) {
+			NetDebug::trace("Starting GameID: {$game['game_id']}");
+	
 			//Calculate the centroid of the locations for this game
 			$query = "SELECT * 
 	    			FROM {$game['prefix']}locations";
@@ -45,7 +47,13 @@ class Games extends Module
 				$longTotal += $location['longitude'];
 			}
 			
-			if (mysql_num_rows($locationsRs) < 1) break;
+			if (mysql_num_rows($locationsRs) < 1) {
+				NetDebug::trace("GameID {$game['game_id']} Has no locations, skip");
+				continue;
+			}
+			
+			NetDebug::trace("GameID {$game['game_id']} Has ". mysql_num_rows($locationsRs) . "locations, calc the center of them");
+
 			
 			$latAve = $latTotal/mysql_num_rows($locationsRs);
 			$longAve = $longTotal/mysql_num_rows($locationsRs);
