@@ -21,7 +21,7 @@ class Games extends Module
      * Fetch all games with distences from the current location
      * @returns Object Recordset for each Game.
      */
-	public function getGamesWithLocation()
+	public function getGamesWithDetails()
 	{
 	    $query = "SELECT games.* 
 	    			FROM games";
@@ -29,12 +29,14 @@ class Games extends Module
 		
 		$games = array();
 		
-		while ($game = mysql_fetch_array($gamesRs)) {
+		
+		while ($game = mysql_fetch_object($gamesRs)) {
+			
 			NetDebug::trace("Starting GameID: {$game['game_id']}");
 	
 			//Calculate the centroid of the locations for this game
 			$query = "SELECT * 
-	    			FROM {$game['prefix']}locations";
+	    			FROM {$game->prefix}locations";
 			$locationsRs = @mysql_query($query);
 			
 			$latAve = 0;
@@ -51,16 +53,36 @@ class Games extends Module
 				NetDebug::trace("GameID {$game['game_id']} Has no locations, skip");
 				continue;
 			}
-			
 			NetDebug::trace("GameID {$game['game_id']} Has ". mysql_num_rows($locationsRs) . "locations, calc the center of them");
 
 			
 			$latAve = $latTotal/mysql_num_rows($locationsRs);
 			$longAve = $longTotal/mysql_num_rows($locationsRs);
+			NetDebug::trace("GameID {$game->game_id} has average position of ({$latTotal}, {$longTotal})");
+			$game->latitude = $latAve;
+			$game->longitude = $longAve;
 			
-			NetDebug::trace("GameID {$game['game_id']} has average position of ({$latTotal}, {$longTotal})");
-			$game['latitude'] = $latAve;
-			$game['longitude'] = $longAve;
+			//Calculate the editors
+			$query = "SELECT editors.* FROM editors, game_editors
+	    			WHERE game_editors.editor_id = editors.editor_id
+	    			AND game_editors.game_id = {$game->game_id}";
+			$editorsRs = @mysql_query($query);
+			
+			$editor = mysql_fetch_array($editorsRs);
+			$editorsString = $editor['name'];
+			while ($editor = mysql_fetch_array($editorsRs)) {
+				$editorsString .= ', ' . $editor['name'];
+			}
+			
+			NetDebug::trace("GameID {$game->game_id} has editors: {$editorsString}");
+			$game->editors = $editorsString;
+			
+			//Number of Players
+			$query = "SELECT * FROM players
+					WHERE last_game_id = {$game->game_id}";
+			$playersRs = @mysql_query($query);
+			$game->numPlayers = mysql_num_rows($playersRs);
+	
 			$games[] = $game;
 		}
 
@@ -316,14 +338,15 @@ class Games extends Module
      * Updates a game's information
      * @returns true if a record was updated, false otherwise
      */	
-	public function updateGame($intGameID, $strNewName, $strNewDescription, $intPCMediaID)
+	public function updateGame($intGameID, $strNewName, $strNewDescription, $intPCMediaID=0, $intIconMediaID=0)
 	{
 		$strNewGameName = addslashes($strNewGameName);	
 	
 		$query = "UPDATE games 
 				SET name = '{$strNewName}',
 				description = '{$strNewDescription}',
-				pc_media_id = '{$intPCMediaID}'
+				pc_media_id = '{$intPCMediaID}',
+				icon_media_id = '{$intIconMediaID}'
 				WHERE game_id = {$intGameID}";
 		mysql_query($query);
 		if (mysql_error()) return new returnData(3, false, "SQL Error");
@@ -468,6 +491,10 @@ class Games extends Module
         $query = "ALTER TABLE `player_log` CHANGE `game_id` `game_id` INT( 10 ) UNSIGNED NOT NULL DEFAULT '0' ";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
+		
+		
+
+		
 	}
 	
 	/**
