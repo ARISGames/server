@@ -130,48 +130,32 @@ class Players extends Module
 	
 	
 	/**
-     * Reset all player Events
+     * Start Over a Game for a Player by deleting all items and logs
      * @returns returnData with data=true if changes were made
      */
-	public function resetPlayerLog($intGameID, $intPlayerID)
-	{
-		$prefix = Module::getPrefix($intGameID);
-		if (!$prefix) return new returnData(1, NULL, "invalid game id");
-		
-		$query = "DELETE player_log
-					WHERE player_id = {$intPlayerID} AND game_id = {$intGameID}";
-		
-		//NetDebug::trace($query);
-
-		@mysql_query($query);
-		
-		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
-		if (mysql_affected_rows()) return new returnData(0, TRUE);
-		else return new returnData(0, FALSE);
-	}
-	
-	/**
-     * Reset all player Items
-     * @returns returnData with data=true if changes were made
-     */
-	public function resetPlayerItems($intGameID, $intPlayerID)
+	public function startOverGameForPlayer($intGameID, $intPlayerID)
 	{	
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
-		$query = "DELETE {$prefix}_player_items
-					WHERE player_id = {$intPlayerID}";
-		
-		//NetDebug::trace($query);
-
+		$query = "DELETE FROM {$prefix}_player_items WHERE player_id = '{$intPlayerID}'";		
+		NetDebug::trace($query);
 		@mysql_query($query);
-		
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+		
+		$query = "UPDATE player_log
+					SET deleted = 1
+					WHERE player_id = '{$intPlayerID}' AND game_id = '{$intGameID}'";		
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+		
+		
+		
 		if (mysql_affected_rows()) return new returnData(0, TRUE);
 		else return new returnData(0, FALSE);
 	}	
 	
-
 	/**
      * updates the lat/long for the player record
      * @returns players with this game id

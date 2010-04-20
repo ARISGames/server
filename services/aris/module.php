@@ -169,7 +169,8 @@ abstract class Module
 					WHERE player_id = '{$intPlayerID}' AND
 						game_id = '{$intGameID}' AND
 						event_type = '{$strEventType}' AND
-						event_detail_1 = '{$strEventDetail}'";
+						event_detail_1 = '{$strEventDetail}' AND
+						deleted = 0";
 		NetDebug::trace($query);
 		
 		$rsResult = @mysql_query($query);
