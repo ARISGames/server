@@ -26,10 +26,11 @@ class Editors extends Module
 	
 	/**
      * Create a new editor
-     * @returns the new editorID or false if an account already exists
+     * @returns the new editorID or false if an account name (code 4) or email (code 5) already exists
      */
 	public function createEditor($strUser, $strPassword, $strEmail, $strComments)
 	{	
+	
 		$query = "SELECT editor_id FROM editors 
 				  WHERE name = '{$strUser}' LIMIT 1";
 			
@@ -37,33 +38,118 @@ class Editors extends Module
 			return new returnData(4, NULL, 'user exists');
 		}
 		
+		$query = "SELECT editor_id FROM editors 
+				  WHERE email = '{$strEmail}' LIMIT 1";
+			
+		if (mysql_fetch_array(mysql_query($query))) {
+			return new returnData(5, NULL, 'email exists');
+		}
+		
+		$strComments = addslashes($strComments);
+		
 		$query = "INSERT INTO editors (name, password, email, comments) 
 				  VALUES ('{$strUser}',MD5('$strPassword'),'{$strEmail}','{$strComments}' )";
 			
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 		
-		//Email the editor login information to them
-		
-		return new returnData(0, mysql_insert_id());
+		$subject = "Welcome to the ARIS Beta!";
+ 		$body = "<p><strong>You signed up to become an editor for ARIS beta games!</strong> To get things started well, we wanted to make sure you 
+ 		knew about a few things and had a few folks to call for help.</p>
+ 		<p>For starters, you should head out to http://arisdocumentation.pbwiki.com for user created documentation</p>
+ 		<p>If you have questions and want to talk with other users, go to http://groups.google.com/group/arisgames</p>
+ 		<p>If you discover bugs, please tell us at http://code.google.com/p/arisgames/issues/entry</p>
+ 		<p>Just so you don't forget, your username is $strUser and your password is $strPassword</p>
+ 		<p>Good luck making games!</p>";
+ 			
+ 		if (self::email($strEmail, $subject, $body)) return new returnData(0, mysql_insert_id());
+		else return new returnData(4, mysql_insert_id(), "Account created but email not sent");
 	}
 	
 	/**
-     * Reset and email editor a new password- NOT IMPLEMENTED
+     * Reset and email editor a new password
      * @returns 0 on success
      */
 	public function resetAndEmailNewPassword($strEmail) {
-		return new returnData(0, NULL);
+		//create a new password
+		$chars = 'abcdefghijklmnopqrstuvwxyz1234567890';
+		$length = 6;
+		$newPass = '';
+		for ($i=0; $i<$length; $i++) {
+			$char = substr($chars, rand(0,35), 1);
+			$newPass .= $char;
+		}
+		NetDebug::trace("New Password: {$newPass}");
+
+		//set the editor record to this pw
+		$query = "UPDATE editors SET password = MD5('{$newPass}') 
+				WHERE email = '{$strEmail}'";
+		
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error' . mysql_error());
+		
+		if (!mysql_affected_rows()) return new returnData(4, NULL, "Email is not an editor");
+		
+		//email it to them
+ 		$subject = "Reset ARIS Password";
+ 		$body = "Your new password is: $newPass";
+ 		if (self::email($strEmail, $subject, $body)) return new returnData(0, NULL);
+  		else return new returnData(5, NULL, "Mail could not be sent");
 	}
 	
 		
 	/**
-     * Email editor account name - NOT IMPLEMENTED
+     * Email editor account name
      * @returns 0 on success
      */
 	public function emailUserName($strEmail) {
-		return new returnData(0, NULL);
+		//set the editor record to this pw
+		$query = "SELECT * FROM editors	WHERE email = '{$strEmail}'";
+		
+		$result = @mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error' . mysql_error());
+	
+		if (!$editor = mysql_fetch_array($result)) return new returnData(4, NULL, "Email is not an editor");
+		
+		$subject = "Recover ARIS Login Information";
+ 		$body = "Your ARIS username is: {$editor['name']}";
+ 			
+ 		if (self::email($strEmail, $subject, $body)) return new returnData(0, NULL);
+  		else return new returnData(5, NULL, "Mail could not be sent");
+
 	}
+
+
+	private function email($to, $subject, $body) {
+	  	include_once('../../libraries/phpmailer/class.phpmailer.php');
+	
+	  	if (empty($to)) {
+			  return false;
+	  	}
+	  	
+	  	NetDebug::trace("TO: $to");
+		NetDebug::trace("SUBJECT: $subject");
+		NetDebug::trace("BODY: $body");
+	  	
+	  	$mail = new phpmailer;
+	  	$mail->PluginDir = '../../libraries/phpmailer';      // plugin directory (eg smtp plugin)
+	
+	  	$mail->CharSet = 'UTF-8';
+		$mail->Subject = substr(stripslashes($subject), 0, 900);
+	  	$mail->From = 'noreply@arisgames.org';
+	  	$mail->FromName = 'ARIS Mailer';
+	
+	  	$mail->AddAddress($to, 'ARIS Author');
+		$mail->MsgHTML($body);
+	
+	
+	  	$mail->WordWrap = 79;                               // set word wrap
+	
+	  	if ($mail->Send()) return true;
+	  	else return false;
+
+	}
+
 	
 	
 }
