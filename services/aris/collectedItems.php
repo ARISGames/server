@@ -9,7 +9,9 @@ $prefix = $_REQUEST['gameId'];
 $query = "SELECT {$prefix}_items.*, media.*, players.*
 			FROM {$prefix}_items, media, players
 			WHERE {$prefix}_items.media_id = media.media_id AND {$prefix}_items.creator_player_id = players.player_id";
-$result = mysql_query($query);
+$result = @mysql_query($query);
+
+if (mysql_error()) die ("<html><body>ERROR: Bad gameId</body></html>");
 
 
 // Creates an array of strings to hold the lines of the KML file.
