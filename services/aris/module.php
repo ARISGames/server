@@ -243,7 +243,7 @@ abstract class Module
 		$rsRequirments = @mysql_query($query);
 		
 		while ($requirement = mysql_fetch_array($rsRequirments)) {
-			//NetDebug::trace("Requirement for {$strObjectType}:{$intObjectID} is {$requirement['requirement']}:{$requirement['requirement_detail_1']}");
+			NetDebug::trace("Requirement for {$strObjectType}:{$intObjectID} is {$requirement['requirement']}:{$requirement['requirement_detail_1']}");
 
 			//Check the requirement
 			switch ($requirement['requirement']) {
