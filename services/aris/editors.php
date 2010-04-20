@@ -66,6 +66,29 @@ class Editors extends Module
 		else return new returnData(4, mysql_insert_id(), "Account created but email not sent");
 	}
 	
+	
+	/**
+     * Change an Editor's PAssword
+     * @returns 0 on success, 4 bad editorID or password
+     */
+	public function changePassword($intEditorID, $strOldPassword, $strNewPassword)
+	{	
+		if ($strOldPassword == $strNewPassword) return new returnData(0, NULL);
+		
+		$query = "UPDATE editors 
+				SET password = MD5('{$strNewPassword}')
+				WHERE password = MD5('{$strOldPassword}')
+				AND editor_id = {$intEditorID}";
+		
+		NetDebug::trace($query);
+		
+		@mysql_query($query);
+
+		if (mysql_affected_rows() < 1) return new returnData(4, NULL, 'No editors exist with matching ID and password');
+		return new returnData(0, NULL);
+	}	
+	
+	
 	/**
      * Reset and email editor a new password
      * @returns 0 on success
