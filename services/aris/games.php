@@ -1,6 +1,6 @@
 <?php
 require("module.php");
-
+require_once("media.php");
 
 class Games extends Module
 {	
@@ -329,7 +329,11 @@ class Games extends Module
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(6, NULL, 'cannot create folder contents table: ' . mysql_error());	
 
-
+		$media = new Media();
+		$returnObject = $media->getMediaDirectory($newGameID);
+		$newGameDirectory = $returnObject->data;
+		
+		 mkdir($newGameDirectory,0777);
 
 		return new returnData(0, $newGameID, NULL);
 
