@@ -126,6 +126,8 @@ class Locations extends Module
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
+		$strLocationName = addslashes($strLocationName);
+		
 		//Check the object Type is good or null
 		if ( !$this->isValidObjectType($intGameID, $strObjectType) or !strlen($strObjectType) > 0 )
 			return new returnData(4, NULL, "invalid object type");
@@ -168,6 +170,8 @@ class Locations extends Module
 	{
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+
+		$strLocationName = addslashes($strLocationName);
 
 		//Check the object Type is good or null
 		if ( !$this->isValidObjectType($intGameID, $strObjectType) or !strlen($strObjectType) > 0 )
