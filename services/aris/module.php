@@ -250,41 +250,42 @@ abstract class Module
 				//Log related
 				case Module::kREQ_PLAYER_VIEWED_ITEM:
 					if (!Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_ITEM, 
-						$requirement['requirement_detail_1'])) return FALSE;
+						$requirement['requirement_detail_1'])) { NetDebug::trace("FAILED"); return FALSE;}
 					break;
 				case Module::kREQ_PLAYER_HAS_NOT_VIEWED_ITEM:
 					if (Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_ITEM, 
-						$requirement['requirement_detail_1'])) return FALSE;
+						$requirement['requirement_detail_1'])) { NetDebug::trace("FAILED"); return FALSE;}
 					break;
 				case Module::kREQ_PLAYER_VIEWED_NODE:
 					if (!Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NODE, 
-						$requirement['requirement_detail_1'])) return FALSE;
+						$requirement['requirement_detail_1'])) { NetDebug::trace("FAILED"); return FALSE;}
 					break;
 				case Module::kREQ_PLAYER_HAS_NOT_VIEWED_NODE:
 					if (Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NODE, 
-						$requirement['requirement_detail_1'])) return FALSE;
+						$requirement['requirement_detail_1'])) { NetDebug::trace("FAILED"); return FALSE;}
 					break;
 				case Module::kREQ_PLAYER_VIEWED_NPC:
 					if (!Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NPC, 
-						$requirement['requirement_detail_1'])) return FALSE;
+						$requirement['requirement_detail_1'])) { NetDebug::trace("FAILED"); return FALSE;}
 					break;
 				case Module::kREQ_PLAYER_HAS_NOT_VIEWED_NPC:
 					if (Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NPC, 
-						$requirement['requirement_detail_1'])) return FALSE;
+						$requirement['requirement_detail_1'])) { NetDebug::trace("FAILED"); return FALSE;}
 					break;					
 				//Inventory related	
 				case Module::kREQ_PLAYER_HAS_ITEM:
 					if (!Module::playerHasItem($strPrefix, $intPlayerID, 
-						$requirement['requirement_detail_1'])) return FALSE;
+						$requirement['requirement_detail_1'])) { NetDebug::trace("FAILED"); return FALSE;}
 					break;
 				case Module::kREQ_PLAYER_DOES_NOT_HAVE_ITEM:
 					if (Module::playerHasItem($strPrefix, $intPlayerID, 
-						$requirement['requirement_detail_1'])) return FALSE;
+						$requirement['requirement_detail_1'])) { NetDebug::trace("FAILED"); return FALSE;}
 					break;
 				//Data Collection
 				case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM:
 					if (!Module::playerHasUploadedMediaItemWithinDistence($strPrefix, $intPlayerID, 
-						$requirement['requirement_detail_1'], $requirement['requirement_detail_2'], $requirement['requirement_detail_3'])) return FALSE;
+						$requirement['requirement_detail_1'], $requirement['requirement_detail_2'], 
+						$requirement['requirement_detail_3'])) { NetDebug::trace("FAILED"); return FALSE;}
 					break;
 			}
 		}

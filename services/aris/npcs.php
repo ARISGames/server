@@ -189,7 +189,7 @@ class Npcs extends Module
 		
 		$query = "SELECT * FROM {$prefix}_npc_conversations WHERE npc_id = '{$intNpcID}'";
 		
-		//NetDebug::trace("getConversations: Running a query = $query");	
+		NetDebug::trace("getConversations: Running a query = $query");	
 
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -207,17 +207,19 @@ class Npcs extends Module
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");		
 		
-		$conversationsReturnData = Npcs::getConversations($intGameID, $intNpcID);	
-		if ($conversationsReturnData->returnCode != 0) return $conversationsReturnData;
+		NetDebug::trace("getConversationsForPlayer beginning");	
 		
+		$conversationsReturnData= Npcs::getConversations($intGameID, $intNpcID);	
 		$conversations = $conversationsReturnData->data;
 
+		
 		$conversationsWithRequirementsMet = array();
-		while ($conversation = mysql_fetch_object($conversations)) {
-			//Check the requirements are met
-			
-			//Add it to the result
-			$conversationsWithRequirementsMet[] = $conversation;
+		
+		while ($conversation = mysql_fetch_array($conversations)) {
+			NetDebug::trace("Testing Conversation {$conversation['conversation_id']}");	
+
+    		if (Module::objectMeetsRequirements ($prefix, $intPlayerID, 'Node',  $conversation['node_id']) ) 
+				$conversationsWithRequirementsMet[] = $conversation;
 		}
 		
 		return new returnData(0, $conversationsWithRequirementsMet);
