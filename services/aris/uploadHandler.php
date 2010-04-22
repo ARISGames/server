@@ -14,13 +14,14 @@ $media = new Media();
 
 
 //Check for Errors
-if ($_FILES['file']['error']) die ("error");
+if ($_FILES['file']['error']) die ("file upload error");
 		
 $gameMediaDirectory = $media->getMediaDirectory($_POST['gameID'])->data;
+$pathInfo = pathinfo($_FILES['file']['name']);
+//echo 'extension:' . $pathInfo['extension'];
 
-$pathInfo = pathinfo($_POST['fileName']);
 $newMediaFileName = 'aris' . md5( date("YmdGis") . $_FILES['file']['name']) . '.' . $pathInfo['extension'];
-$newMediaFilePath = $gameMediaDirectory . '/' . $newMediaFileName;
+$newMediaFilePath = $gameMediaDirectory . $newMediaFileName;
 
 if (!move_uploaded_file( $_FILES['file']['tmp_name'], $newMediaFilePath))
 	die ("error");
