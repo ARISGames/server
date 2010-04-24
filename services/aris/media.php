@@ -202,7 +202,7 @@ class Media extends Module
  		else if (in_array($mediaExtension, $this->validAudioTypes )) return Media::MEDIA_AUDIO;
 		else if (in_array($mediaExtension, $this->validVideoTypes )) return Media::MEDIA_VIDEO;
  		
- 		return FALSE;
+ 		return '';
  	}	
 	
 }
