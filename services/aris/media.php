@@ -122,9 +122,8 @@ class Media extends Module
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		//Update this record
-		$query = "UPDATE {$prefix}_media 
+		$query = "UPDATE media 
 					SET name = '{$strName}' 
-					media = '{$strFileName}'
 					WHERE media_id = '{$intMediaID}' and game_id = '{$intGameID}'";
 		
 		NetDebug::trace("updateNpc: Running a query = $query");	
@@ -144,7 +143,7 @@ class Media extends Module
 	public function deleteMedia($intGameID, $intMediaID)
 	{
 		
-		$query = "SELECT * FROM {$prefix}_media 
+		$query = "SELECT * FROM media 
 					WHERE media_id = {$intMediaID} and game_id = {$intGameID}";
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:". mysql_error());
@@ -152,23 +151,17 @@ class Media extends Module
 		$mediaRow = mysql_fetch_array($rsResult);
 		if ($mediaRow === FALSE) return new returnData(2, NULL, "Invalid Media Record");
 
-
-		//Delete the file		
-		$fileToDelete = Config::gamedataFSPath . "/{$intGameID}/" . $mediaRow['file_name'];
-		if (!@unlink($fileToDelete)) 
-			return new returnData(4, NULL, "Could not delete: $fileToDelete");
-		
-		
 		//Delete the Record
-		$query = "DELETE FROM {$prefix}_media 
+		$query = "DELETE FROM media 
 					WHERE media_id = {$intMediaID} and game_id = {$intGameID}";
 		
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
-		
-		if (mysql_affected_rows()) {
-			return new returnData(0, TRUE);
-		}
+
+		//Delete the file		
+		$fileToDelete = Config::gamedataFSPath . "/{$intGameID}/" . $mediaRow['file_name'];
+		if (!@unlink($fileToDelete)) 
+			return new returnData(4, NULL, "Record Deleted but file was not: $fileToDelete");
 		else {
 			return new returnData(0, FALSE);
 		}

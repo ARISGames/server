@@ -172,6 +172,10 @@ class Games extends Module
 			media_id int(10) unsigned NOT NULL default '0',
 			dropable enum('0','1') NOT NULL default '0',
 			destroyable enum('0','1') NOT NULL default '0',
+			creator_player_id int(10) unsigned NOT NULL default '0',
+  			origin_latitude double NOT NULL default '0',
+  			origin_longitude double NOT NULL default '0',
+  			origin_timestamp timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
 			PRIMARY KEY  (item_id)
 			)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
 		NetDebug::trace($query);
@@ -408,17 +412,22 @@ class Games extends Module
 	{	
 		$prefix = $this->getPrefix($intGameID);
 
-		$query = "ALTER TABLE `{$prefix}_requirements` CHANGE `requirement_detail` `requirement_detail_1` varchar(30) NULL";
+		$query = "ALTER TABLE `{$prefix}_items` ADD creator_player_id int(10) unsigned NOT NULL default '0'";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
 
-		$query = "ALTER TABLE `{$prefix}_requirements` ADD `requirement_detail_2` varchar(30) NULL";
+		$query = "ALTER TABLE `{$prefix}_items` ADD origin_latitude double NOT NULL default '0'";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
 		
-		$query = "ALTER TABLE `{$prefix}_requirements` ADD `requirement_detail_3` varchar(30) NULL";
+		$query = "ALTER TABLE `{$prefix}_items` ADD origin_longitude double NOT NULL default '0'";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());		
+		
+		$query = "ALTER TABLE `{$prefix}_items` ADD origin_timestamp timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+		
 	}
 	
 	/**
