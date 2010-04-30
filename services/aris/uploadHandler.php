@@ -1,10 +1,10 @@
 <?php
-
 /*
  * This file assumes a $_FILES['file'] and a $_POST['gameID']
  * If called from the iPhone client, the file name is instead passed in $_REQUEST['fileName']
  * @returns the filename for the newly created file or an Error
 */ 
+set_time_limit(0);
 
 include ('media.php');
 
