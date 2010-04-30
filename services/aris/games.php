@@ -26,11 +26,12 @@ class Games extends Module
 	    $query = "SELECT games.* 
 	    			FROM games";
 		$gamesRs = @mysql_query($query);
-		
+		NetDebug::trace(mysql_error());
+
 		$games = array();
 		
 		
-		while ($game = mysql_fetch_object($gamesRs)) {
+		while ($game = @mysql_fetch_object($gamesRs)) {
 			
 			NetDebug::trace("Starting GameID: {$game->game_id}");
 	
@@ -38,26 +39,28 @@ class Games extends Module
 			$query = "SELECT * 
 	    			FROM {$game->prefix}locations";
 			$locationsRs = @mysql_query($query);
-			
+			NetDebug::trace(mysql_error());
+
 			$latAve = 0;
 			$longAve = 0;
 			$latTotal = 0;
 			$longTotal = 0;
 			
-			while ($location = mysql_fetch_array($locationsRs)) {
+			
+			while ($location = @mysql_fetch_array($locationsRs)) {
 				$latTotal += $location['latitude'];
 				$longTotal += $location['longitude'];
 			}
 			
-			if (mysql_num_rows($locationsRs) < 1) {
+			if (@mysql_num_rows($locationsRs) < 1) {
 				NetDebug::trace("GameID {$game->game_id} Has no locations, skip");
 				continue;
 			}
 			NetDebug::trace("GameID {$game->game_id} Has ". mysql_num_rows($locationsRs) . "locations, calc the center of them");
 
 			
-			$latAve = $latTotal/mysql_num_rows($locationsRs);
-			$longAve = $longTotal/mysql_num_rows($locationsRs);
+			$latAve = $latTotal/@mysql_num_rows($locationsRs);
+			$longAve = $longTotal/@mysql_num_rows($locationsRs);
 			NetDebug::trace("GameID {$game->game_id} has average position of ({$latTotal}, {$longTotal})");
 			$game->latitude = $latAve;
 			$game->longitude = $longAve;
@@ -68,9 +71,9 @@ class Games extends Module
 	    			AND game_editors.game_id = {$game->game_id}";
 			$editorsRs = @mysql_query($query);
 			
-			$editor = mysql_fetch_array($editorsRs);
+			$editor = @mysql_fetch_array($editorsRs);
 			$editorsString = $editor['name'];
-			while ($editor = mysql_fetch_array($editorsRs)) {
+			while ($editor = @mysql_fetch_array($editorsRs)) {
 				$editorsString .= ', ' . $editor['name'];
 			}
 			
@@ -81,7 +84,7 @@ class Games extends Module
 			$query = "SELECT * FROM players
 					WHERE last_game_id = {$game->game_id}";
 			$playersRs = @mysql_query($query);
-			$game->numPlayers = mysql_num_rows($playersRs);
+			$game->numPlayers = @mysql_num_rows($playersRs);
 	
 			$games[] = $game;
 		}
