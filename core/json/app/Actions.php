@@ -40,12 +40,14 @@ function deserializationAction(&$body)
 		{
 			if($value[0] != '[' && $value[0] != '{' && $value != "null" && $value != "false" && $value != "true")
 			{
+				
 				//check to see if it is a number
 				$char1 = ord($value[0]);
 				if($char1 >= 0x30 && $char1 <= 0x39)
 				{
 					//Then this is a number
-					$value = json_decode($value, true);
+					//This line was always setting the $value to an empty string
+					//$value = json_decode($value, true);
 				} //Else leave value as is
 			}
 			else
@@ -54,8 +56,8 @@ function deserializationAction(&$body)
 			}
 		}
 		$actualArgs[] = $value;
+
 	}
-	
 	$body->setValue($actualArgs);
 }
 
