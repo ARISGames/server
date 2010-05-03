@@ -49,6 +49,7 @@ abstract class Module
 	public function getPrefix($intGameID) {	
 		//Lookup game information
 		$query = "SELECT * FROM games WHERE game_id = '{$intGameID}'";
+		NetDebug::trace($query);
 		$rsResult = @mysql_query($query);
 		if (mysql_num_rows($rsResult) < 1) return FALSE;
 		$gameRecord = mysql_fetch_array($rsResult);
