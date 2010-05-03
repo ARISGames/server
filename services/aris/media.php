@@ -57,6 +57,43 @@ class Media extends Module
 	}
 	
 	/**
+     * Fetch one Media Item
+     * @returns the media item
+     */
+	public function getMediaObject($intGameID, $intMediaID)
+	{
+		$prefix = $this->getPrefix($intGameID);
+		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+
+		$query = "SELECT * FROM media WHERE game_id = {$prefix} AND media_id = {$intMediaID} LIMIT 1";
+		NetDebug::trace($query);
+
+		
+		$rsResult = @mysql_query($query);
+		if (mysql_error()) return new returnData(1, NULL, "SQL Error");
+		
+		$mediaRow = mysql_fetch_array($rsResult);
+		if (!$mediaRow) return new returnData(2, NULL, "No matching media");
+
+		$mediaItem = array();
+		$mediaItem['media_id'] = $mediaRow['media_id'];
+		$mediaItem['name'] = $mediaRow['name'];
+		$mediaItem['file_name'] = $mediaRow['file_name'];
+
+		$mediaItem['url_path'] = Config::gamedataWWWPath . "/{$mediaRow['game_id']}/" . Config::gameMediaSubdir;
+			
+		if ($mediaRow['is_icon'] == '1') $mediaItem['type'] = self::MEDIA_ICON;
+		else $mediaItem['type'] = $this->getMediaType($mediaRow['file_name']);
+			
+		if ($mediaRow['game_id'] == 0) $mediaItem['is_default'] = 1;
+		else $mediaItem['is_default'] = 0;
+		
+
+		return new returnData(0, $mediaItem);
+	}	
+	
+	
+	/**
      * Fetch the valid file extensions
      * @returns the extensions
      */
@@ -162,9 +199,11 @@ class Media extends Module
 		$fileToDelete = Config::gamedataFSPath . "/{$intGameID}/" . $mediaRow['file_name'];
 		if (!@unlink($fileToDelete)) 
 			return new returnData(4, NULL, "Record Deleted but file was not: $fileToDelete");
-		else {
-			return new returnData(0, FALSE);
-		}
+		
+		//Done
+		if (mysql_affected_rows()) return new returnData(0, TRUE);
+		else return new returnData(0, FALSE);	
+
 		
 	}	
 	
