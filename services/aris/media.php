@@ -67,13 +67,19 @@ class Media extends Module
 
 		$query = "SELECT * FROM media WHERE game_id = {$prefix} AND media_id = {$intMediaID} LIMIT 1";
 		NetDebug::trace($query);
-
-		
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(1, NULL, "SQL Error");
 		
 		$mediaRow = mysql_fetch_array($rsResult);
-		if (!$mediaRow) return new returnData(2, NULL, "No matching media");
+		if (!$mediaRow) {
+			NetDebug::trace("No matching media id within the game, checking for a default");
+			$query = "SELECT * FROM media WHERE game_id = 0 AND media_id = {$intMediaID} LIMIT 1";
+			NetDebug::trace($query);
+			$rsResult = @mysql_query($query);
+			if (mysql_error()) return new returnData(1, NULL, "SQL Error");	
+			$mediaRow = mysql_fetch_array($rsResult);
+			if (!$mediaRow) return new returnData(2, NULL, "No matching media for game");
+		}
 
 		$mediaItem = array();
 		$mediaItem['media_id'] = $mediaRow['media_id'];
@@ -83,7 +89,7 @@ class Media extends Module
 		$mediaItem['url_path'] = Config::gamedataWWWPath . "/{$mediaRow['game_id']}/" . Config::gameMediaSubdir;
 			
 		if ($mediaRow['is_icon'] == '1') $mediaItem['type'] = self::MEDIA_ICON;
-		else $mediaItem['type'] = $this->getMediaType($mediaRow['file_name']);
+		else $mediaItem['type'] = Media::getMediaType($mediaRow['file_name']);
 			
 		if ($mediaRow['game_id'] == 0) $mediaItem['is_default'] = 1;
 		else $mediaItem['is_default'] = 0;
@@ -132,6 +138,8 @@ class Media extends Module
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
+		$strName = addslashes($strName);
+		
 		if ($boolIsIcon && $this->getMediaType($strFileName) != self::MEDIA_IMAGE)
 			return new returnData(4, NULL, "Icons must have a valid Image file extension");
 		            	
@@ -157,6 +165,8 @@ class Media extends Module
 	{
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+
+		$strName = addslashes($strName);
 
 		//Update this record
 		$query = "UPDATE media 

@@ -3,6 +3,7 @@ require_once("module.php");
 require_once("nodes.php");
 require_once("items.php");
 require_once("npcs.php");
+require_once("media.php");
 
 class EditorFoldersAndContent extends Module
 {
@@ -51,7 +52,14 @@ class EditorFoldersAndContent extends Module
 				$content->name = $contentDetails->name;
 			}
 
+			
+			//Get the Media
 			$content->icon_media_id = $contentDetails->icon_media_id;
+			$mediaHelper = new Media;
+			$mediaReturnObject = $mediaHelper->getMediaObject($intGameID, $contentDetails->icon_media_id);
+			$media = $mediaReturnObject->data;
+			$content->icon_media = $media;
+			
 			
 			//Save the modified copy to the array
 			$arrayContents[] = $content;
