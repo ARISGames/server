@@ -339,9 +339,7 @@ abstract class Module
      */
 	protected function appendLog($intPlayerID, $intGameID, $strEventType, $strEventDetail1=null, $strEventDetail2=null)
 	{
-	
-		if (!$intGameID) $intGameID = "NULL";
-		
+			
 		$query = "INSERT INTO player_log 
 					(player_id, game_id, event_type, event_detail_1,event_detail_2) 
 				  VALUES 
