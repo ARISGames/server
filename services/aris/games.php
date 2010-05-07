@@ -401,6 +401,10 @@ class Games extends Module
 			$upgradeResult = Games::upgradeGameDatabase($game->game_id);
 		}
 		
+		$query = "ALTER TABLE `games` CHANGE `description` `description` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+		   
 		return new returnData(0, FALSE);
 	}
 	
