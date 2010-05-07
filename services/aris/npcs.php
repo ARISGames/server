@@ -76,7 +76,7 @@ class Npcs extends Module
      * Create a NPC
      * @returns the new npcID on success
      */
-	public function createNpc($intGameID, $strName, $strDescription, $strGreeting, $intMediaID)
+	public function createNpc($intGameID, $strName, $strDescription, $strGreeting, $intMediaID, $intIconMediaID)
 	{
 		
 		$strName = addslashes($strName);	
@@ -87,8 +87,8 @@ class Npcs extends Module
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
 		$query = "INSERT INTO {$prefix}_npcs 
-					(name, description, text, media_id)
-					VALUES ('{$strName}', '{$strDescription}', '{$strGreeting}','{$intMediaID}')";
+					(name, description, text, media_id, icon_media_id)
+					VALUES ('{$strName}', '{$strDescription}', '{$strGreeting}','{$intMediaID}','{$intIconMediaID}')";
 		
 		NetDebug::trace("createNpc: Running a query = $query");	
 		
@@ -105,7 +105,7 @@ class Npcs extends Module
      * @returns true if a record was updated, false if it was not
      */
 	public function updateNpc($intGameID, $intNpcID, 
-								$strName, $strDescription, $strGreeting, $intMediaID)
+								$strName, $strDescription, $strGreeting, $intMediaID, $intIconMediaID)
 	{
 		
 		$strName = addslashes($strName);	
@@ -117,7 +117,7 @@ class Npcs extends Module
 		
 		$query = "UPDATE {$prefix}_npcs 
 					SET name = '{$strName}', description = '{$strDescription}',
-					text = '{$strGreeting}', media_id = '{$intMediaID}'
+					text = '{$strGreeting}', media_id = '{$intMediaID}', icon_media_id = '{$intIconMediaID}'
 					WHERE npc_id = '{$intNpcID}'";
 		
 		NetDebug::trace("updateNpc: Running a query = $query");	
@@ -264,22 +264,12 @@ class Npcs extends Module
 					type  = 'Npc' and type_id = {$intNpcID}";
 		$rsLocations = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error in Locations query");
-		
-		//Find qrcodes
-		$query = "SELECT qrcode_id FROM {$prefix}_qrcodes WHERE 
-						type  = 'Npc' and type_id = {$intNpcID}";
-		$rsQRCodes = @mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, "SQL Error in QR query");
 				
-		
-		//Combine them together
 		$referrers = array();
 		while ($row = mysql_fetch_array($rsLocations)){
 			$referrers[] = array('type'=>'Location', 'id' => $row['location_id']);
 		}
-		while ($row = mysql_fetch_array($rsQRCodes)){
-			$referrers[] = array('type'=>'QRCode', 'id' => $row['qrcode_id']);
-		}
+
 		
 		return new returnData(0,$referrers);
 	}	

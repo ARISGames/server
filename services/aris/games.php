@@ -415,19 +415,7 @@ class Games extends Module
 	{	
 		$prefix = $this->getPrefix($intGameID);
 
-		$query = "ALTER TABLE `{$prefix}_items` ADD creator_player_id int(10) unsigned NOT NULL default '0'";
-		mysql_query($query);
-		NetDebug::trace("$query" . ":" . mysql_error());
-
-		$query = "ALTER TABLE `{$prefix}_items` ADD origin_latitude double NOT NULL default '0'";
-		mysql_query($query);
-		NetDebug::trace("$query" . ":" . mysql_error());
-		
-		$query = "ALTER TABLE `{$prefix}_items` ADD origin_longitude double NOT NULL default '0'";
-		mysql_query($query);
-		NetDebug::trace("$query" . ":" . mysql_error());		
-		
-		$query = "ALTER TABLE `{$prefix}_items` ADD origin_timestamp timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP";
+		$query = "ALTER TABLE {$prefix}_npcs ADD `icon_media_id` INT UNSIGNED NOT NULL DEFAULT '0'";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
 		

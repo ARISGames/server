@@ -48,7 +48,7 @@ class Nodes extends Module
      * Create a node
      * @returns the new nodeID on success
      */
-	public function createNode($intGameID, $strTitle, $strText, $intMediaID,
+	public function createNode($intGameID, $strTitle, $strText, $intMediaID, $intIconMediaID,
 								$strOpt1Text, $intOpt1NodeID, 
 								$strOpt2Text, $intOpt2NodeID,
 								$strOpt3Text, $intOpt3NodeID,
@@ -65,14 +65,14 @@ class Nodes extends Module
 		
 		$prefix = $this->getPrefix($intGameID);
 		$query = "INSERT INTO {$prefix}_nodes 
-					(title, text, media_id, 
+					(title, text, media_id, icon_media_id,
 						opt1_text, opt1_node_id, 
 						opt2_text, opt2_node_id, 
 						opt3_text, opt3_node_id,
 						require_answer_string, 
 						require_answer_incorrect_node_id, 
 						require_answer_correct_node_id)
-					VALUES ('{$strTitle}', '{$strText}', '{$intMediaID}',
+					VALUES ('{$strTitle}', '{$strText}', '{$intMediaID}', '{$intIconMediaID}',
 						'{$strOpt1Text}', '{$intOpt1NodeID}',
 						'{$strOpt2Text}','{$intOpt2NodeID}',
 						'{$strOpt3Text}','{$intOpt3NodeID}',
@@ -97,7 +97,7 @@ class Nodes extends Module
      * Update a specific node
      * @returns true if a record was updated, falso if no changes were made
      */
-	public function updateNode($intGameID, $intNodeID, $strTitle, $strText, $intMediaID,
+	public function updateNode($intGameID, $intNodeID, $strTitle, $strText, $intMediaID, $intIconMediaID,
 								$strOpt1Text, $intOpt1NodeID, 
 								$strOpt2Text, $intOpt2NodeID,
 								$strOpt3Text, $intOpt3NodeID,
@@ -116,7 +116,7 @@ class Nodes extends Module
 		
 		$query = "UPDATE {$prefix}_nodes 
 					SET title = '{$strTitle}', text = '{$strText}',
-					media_id = '{$intMediaID}',
+					media_id = '{$intMediaID}', icon_media_id = '{$intIconMediaID}',
 					opt1_text = '{$strOpt1Text}', opt1_node_id = '{$intOpt1NodeID}',
 					opt2_text = '{$strOpt2Text}', opt2_node_id = '{$intOpt2NodeID}',
 					opt3_text = '{$strOpt3Text}', opt3_node_id = '{$intOpt3NodeID}',
@@ -169,13 +169,7 @@ class Nodes extends Module
 					type  = 'Node' and type_id = {$intNodeID}";
 		$rsLocations = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error in Locations query");
-		
-		//Find qrcodes
-		$query = "SELECT qrcode_id FROM {$prefix}_qrcodes WHERE 
-						type  = 'Node' and type_id = {$intNodeID}";
-		$rsQRCodes = @mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, "SQL Error in QR query");
-		
+				
 		//Find Nodes
 		$query = "SELECT node_id FROM {$prefix}_nodes WHERE
 					opt1_node_id  = {$intNodeID} or
@@ -200,9 +194,6 @@ class Nodes extends Module
 		$referrers = array();
 		while ($row = mysql_fetch_array($rsLocations)){
 			$referrers[] = array('type'=>'Location', 'id' => $row['location_id']);
-		}
-		while ($row = mysql_fetch_array($rsQRCodes)){
-			$referrers[] = array('type'=>'QRCode', 'id' => $row['qrcode_id']);
 		}
 		while ($row = mysql_fetch_array($rsNodes)){
 			$referrers[] = array('type'=>'Node', 'id' => $row['node_id']);
