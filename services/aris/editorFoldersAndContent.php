@@ -41,15 +41,15 @@ class EditorFoldersAndContent extends Module
 			if ($content->content_type == 'Node') {
 				//Fetch the corresponding node
 				$contentDetails = Nodes::getNode($intGameID,$content->content_id)->data;
-				$content->object = $contentDetails;
+				$content->content = $contentDetails;
 			}
 			else if ($content->content_type == 'Item') {
 				$contentDetails = Items::getItem($intGameID,$content->content_id)->data;
-				$content->object = $contentDetails;
+				$content->content = $contentDetails;
 			}
 			else if ($content->content_type == 'Npc') {
 				$contentDetails = Npcs::getNpc($intGameID,$content->content_id)->data;
-				$content->object = $contentDetails;
+				$content->content = $contentDetails;
 			}
 
 			
@@ -57,13 +57,13 @@ class EditorFoldersAndContent extends Module
 			$mediaHelper = new Media;
 			$mediaReturnObject = $mediaHelper->getMediaObject($intGameID, $contentDetails->icon_media_id);
 			$media = $mediaReturnObject->data;
-			$content->object->icon_media = $media;
+			$content->content->icon_media = $media;
 			
 			//Get the Media
 			$mediaHelper = new Media;
 			$mediaReturnObject = $mediaHelper->getMediaObject($intGameID, $contentDetails->media_id);
 			$media = $mediaReturnObject->data;
-			$content->object->media = $media;
+			$content->content->media = $media;
 			
 			
 			//Save the modified copy to the array
