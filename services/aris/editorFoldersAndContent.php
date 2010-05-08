@@ -11,7 +11,6 @@ class EditorFoldersAndContent extends Module
 	const EDITORCONTENT = 1;
 	const EDITORFOLDER = 2;
 	
-	
 	/**
      * Fetch all Folders and Content Refrences
      * @returns the folders and folder contents rs as arrays
@@ -37,7 +36,53 @@ class EditorFoldersAndContent extends Module
 		$arrayContents = array();
 		
 		while ($content = mysql_fetch_object($rsContents)) {
-			
+			//Save the modified copy to the array
+			$arrayContents[] = self::hydrateContent($content, $intGameID);
+		}	
+		
+		//fake out amfphp to package this array as a flex array collection
+		$arrayCollectionContents = (object) array('_explicitType' => "flex.messaging.io.ArrayCollection",
+												'source' => $arrayContents);
+											
+		$foldersAndContents = (object) array('folders' => $folders, 'contents' => $arrayCollectionContents);
+		return new returnData(0, $foldersAndContents);
+	}
+	
+	
+	
+	/**
+     * Fetch a single content object
+     * @returns a content object with additional details from the game object it refrences
+     */
+	public function getContent($intGameID, $intObjectContentID)
+	{
+		$prefix = $this->getPrefix($intGameID);
+		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+		
+		//Get the Contents with some of the content's data
+		$query = "SELECT * FROM {$prefix}_folder_contents 
+					WHERE object_content_id = '{$intObjectContentID}' LIMIT 1";
+		NetDebug::trace($query);
+		$rsContents = @mysql_query($query);
+		if (mysql_error()) return new returnData(1, NULL, "SQL Error:". mysql_error());
+		
+		$content = @mysql_fetch_object($rsContents);
+		if (!$content) return new returnData(2, NULL, "invalid object content id for this game");
+		
+		$content = self::hydrateContent($content, $intGameID);
+		return new returnData(0, $content);
+		
+	}	
+	
+	
+	
+	/**
+     * Helper Function to lookup the details of the node/npc/item including media details
+     * @returns the content object with additional data integrated
+     */	
+
+	private function hydrateContent($folderContentObject, $intGameID) {
+			$content = $folderContentObject;
 			if ($content->content_type == 'Node') {
 				//Fetch the corresponding node
 				$contentDetails = Nodes::getNode($intGameID,$content->content_id)->data;
@@ -66,20 +111,8 @@ class EditorFoldersAndContent extends Module
 			$media = $mediaReturnObject->data;
 			$content->media = $media;
 			$content->media_id = $contentDetails->media_id;
-
-			
-			
-			//Save the modified copy to the array
-			$arrayContents[] = $content;
-		}	
-		
-		//fake out amfphp to package this array as a flex array collection
-		$arrayCollectionContents = (object) array('_explicitType' => "flex.messaging.io.ArrayCollection",
-												'source' => $arrayContents);
-												
-		$foldersAndContents = (object) array('folders' => $folders, 'contents' => $arrayCollectionContents);
-		return new returnData(0, $foldersAndContents);
-		
+	
+			return $content;
 	}
 	
 	
