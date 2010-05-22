@@ -1,5 +1,5 @@
 <?php
-require("module.php");
+require_once("module.php");
 require_once("media.php");
 
 class Games extends Module
@@ -16,6 +16,24 @@ class Games extends Module
 		if (mysql_error())  return new returnData(3, NULL, 'SQL error');
 		return new returnData(0, $rs, NULL);		
 	}
+
+	/**
+     * Fetch one game
+     * @returns Object Recordset for each Game.
+     */
+	public function getGame($intGameID)
+	{
+	    $query = "SELECT * FROM games WHERE game_id = {$intGameID} LIMIT 1";
+		$rs = @mysql_query($query);
+		if (mysql_error())  return new returnData(3, NULL, 'SQL error');
+
+		$game = @mysql_fetch_object($rs);
+		if (!$game) return new returnData(2, NULL, "invalid game id");
+		
+		return new returnData(0, $game);
+
+	}
+
 
 	/**
      * Fetch all games with distences from the current location
@@ -130,7 +148,8 @@ class Games extends Module
      * Create a new game
      * @returns an integer of the newly created game_id
      */	
-	public function createGame($intEditorID, $strFullName, $strDescription)
+	public function createGame($intEditorID, $strFullName, $strDescription, $intPCMediaID=0, 
+								$intIconMediaID=0, $boolAllowPlayerCreatedLocations=0)
 	{
 
 		$strFullName = addslashes($strFullName);	
@@ -145,7 +164,8 @@ class Games extends Module
 		
 		
 		//Create the game record in SQL
-		$query = "INSERT INTO games (name, description) VALUES ('{$strFullName}','{$strDescription}')";
+		$query = "INSERT INTO games (name, description,pc_media_id,icon_media_id,allow_player_created_locations)
+					VALUES ('{$strFullName}','{$strDescription}','{$intPCMediaID}','{$intIconMediaID}','{$boolAllowPlayerCreatedLocations}')";
 		@mysql_query($query);
 		if (mysql_error())  return new returnData(6, NULL, 'cannot create game record');
 		$newGameID = mysql_insert_id();
@@ -351,7 +371,7 @@ class Games extends Module
      * Updates a game's information
      * @returns true if a record was updated, false otherwise
      */	
-	public function updateGame($intGameID, $strNewName, $strNewDescription, $intPCMediaID=0, $intIconMediaID=0)
+	public function updateGame($intGameID, $strNewName, $strNewDescription, $intPCMediaID=0, $intIconMediaID=0, $boolAllowPlayerCreatedLocations=0)
 	{
 		$strNewGameName = addslashes($strNewGameName);	
 	
@@ -359,7 +379,8 @@ class Games extends Module
 				SET name = '{$strNewName}',
 				description = '{$strNewDescription}',
 				pc_media_id = '{$intPCMediaID}',
-				icon_media_id = '{$intIconMediaID}'
+				icon_media_id = '{$intIconMediaID}',
+				allow_player_created_locations = '{$boolAllowPlayerCreatedLocations}'
 				WHERE game_id = {$intGameID}";
 		mysql_query($query);
 		if (mysql_error()) return new returnData(3, false, "SQL Error");
@@ -402,6 +423,10 @@ class Games extends Module
 		}
 		
 		$query = "ALTER TABLE `games` CHANGE `description` `description` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+		
+		$query = "ALTER TABLE `games` ADD `allow_player_created_locations` BOOL NOT NULL DEFAULT '0'";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
 		   

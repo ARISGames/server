@@ -1,6 +1,7 @@
 <?php
 require_once("module.php");
 require_once("media.php");
+require_once("games.php");
 
 class Items extends Module
 {
@@ -116,9 +117,17 @@ class Items extends Module
 		$strName = addslashes($strName);
 		$strDescription = ($strDescription);
 		
+		//Create the Media
 		$newMediaResultData = Media::createMedia($intGameID, $strName, $strFileName, 0);
 		$newMediaID = $newMediaResultData->data;
 		
+		//Does game allow players to drop items?
+		if ($boolDropable) { 
+			$game = Games::getGame($intGameID);
+			$boolDropable = $game->data->allow_player_created_locations;
+		}
+		
+		//Create the Item
 		$query = "INSERT INTO {$prefix}_items 
 					(name, description, media_id, dropable, destroyable,
 					creator_player_id, origin_latitude, origin_longitude)
