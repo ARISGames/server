@@ -81,6 +81,7 @@ abstract class Module
     	$query = "INSERT INTO {$strGamePrefix}_player_items 
 										  (player_id, item_id) VALUES ($intPlayerID, $intItemID)
 										  ON duplicate KEY UPDATE item_id = $intItemID";
+		NetDebug::trace($query);
 		@mysql_query($query);
 		
     }
@@ -93,7 +94,7 @@ abstract class Module
 
     	$query = "DELETE FROM {$strGamePrefix}_player_items 
 					WHERE player_id = $intPlayerID AND item_id = $intItemID";
-    	
+    	NetDebug::trace($query);
     	@mysql_query($query);    	
     }
 	
@@ -105,6 +106,7 @@ abstract class Module
 		$query = "UPDATE {$strGamePrefix}_locations 
 					SET item_qty = item_qty-{$intQty}
 					WHERE location_id = '{$intLocationID}'";
+   		NetDebug::trace($query);	
     	@mysql_query($query);    	
 	}
 	
@@ -119,6 +121,7 @@ abstract class Module
 		
 		$query = "INSERT INTO {$strGamePrefix}_locations (name, type, type_id, icon_media_id, latitude, longitude, error, item_qty)
 										  VALUES ('{$itemName}','Item','{$intItemID}', '{$icon_media_id}', '{$floatLat}','{$floatLong}', '{$error}','{$intQty}')";
+ 		NetDebug::trace($query);   	
     	@mysql_query($query);    	
     }
 	
