@@ -141,7 +141,7 @@ class Locations extends Module
 							'{$strObjectType}','{$intObjectID}','{$intQuantity}',
 							'{$boolHidden}','{$boolForceView}')";
 		
-		NetDebug::trace("createLocationForItem: Running a query = $query");	
+		NetDebug::trace("createLocation: Running a query = $query");	
 	
 		@mysql_query($query);
 		
@@ -150,10 +150,11 @@ class Locations extends Module
 			return new returnData(3, NULL, "SQL Error");
 		}
 		
+		$newId = mysql_insert_id();
 		//Create a coresponding QR Code
-		QRCodes::createQRCode($intGameID, "Location", mysql_insert_id());
+		QRCodes::createQRCode($intGameID, "Location", $newId);
 
-		return new returnData(0, mysql_insert_id());
+		return new returnData(0, $newId);
 
 	}
 
