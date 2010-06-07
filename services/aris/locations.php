@@ -125,6 +125,7 @@ class Locations extends Module
 														
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+		if (!$intQuantity) $intQuantity = 1;
 		
 		$strLocationName = addslashes($strLocationName);
 		if ($dblError < 5) $dblError = 25;

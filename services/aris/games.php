@@ -302,6 +302,7 @@ class Games extends Module
 			description tinytext NOT NULL,
 			text tinytext NOT NULL,
 			media_id int(10) unsigned NOT NULL default '0',
+			icon_media_id int(10) unsigned NOT NULL default '0',
 			PRIMARY KEY  (npc_id)
 			)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
 		@mysql_query($query);
