@@ -114,11 +114,25 @@ class Players extends Module
      */
 	public function getOtherPlayersForGame($intGameID, $intPlayerID)
 	{
-		$query = "SELECT player_id, user_name, latitude, longitude FROM players 
-				WHERE last_game_id = '{$intGameID}' AND
-				player_id != '{$intPlayerID}'";
+		$timeLimitInMinutes = 20;
+		
+		$query = "SELECT players.player_id, players.user_name, 
+				players.latitude, players.longitude, 
+				player_log.timestamp 
+				FROM players, player_log
+				WHERE 
+				players.player_id = player_log.player_id AND
+				players.last_game_id = '{$intGameID}' AND
+				players.player_id != '{$intPlayerID}' AND
+				UNIX_TIMESTAMP( NOW( ) ) - UNIX_TIMESTAMP( player_log.timestamp ) <= ( $timeLimitInMinutes * 60 )
+				GROUP BY player_id
+				";
+		NetDebug::trace($query);
+
 
 		$rs = @mysql_query($query);
+		NetDebug::trace(mysql_error());
+
 		
 		$array = array();
 		while ($object = mysql_fetch_object($rs)) {
