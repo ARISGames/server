@@ -2,6 +2,7 @@
 require_once("module.php");
 require_once("media.php");
 require_once("games.php");
+require_once("locations.php");
 
 class Items extends Module
 {
@@ -115,7 +116,7 @@ class Items extends Module
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
 		$strName = addslashes($strName);
-		$strDescription = ($strDescription);
+		$strDescription = addslashes($strDescription);
 		
 		//Create the Media
 		$newMediaResultData = Media::createMedia($intGameID, $strName, $strFileName, 0);
@@ -152,6 +153,56 @@ class Items extends Module
 		return new returnData(0, TRUE);
 	}	
 
+	/**
+     * Create an Item and add it to the players inventory
+     * @returns with returnData object (0 on success) 
+     */
+	public function createItemAndPlaceOnMap($intGameID, $intPlayerID, $strName, $strDescription, 
+								$strFileName, $boolDropable, $boolDestroyable, $latitude, $longitude)
+	{
+		$prefix = $this->getPrefix($intGameID);
+		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+		
+		$strName = addslashes($strName);
+		$strDescription = ($strDescription);
+		
+		//Create the Media
+		$newMediaResultData = Media::createMedia($intGameID, $strName, $strFileName, 0);
+		$newMediaID = $newMediaResultData->data;
+		
+		//Does game allow players to drop items?
+		if ($boolDropable) { 
+			$game = Games::getGame($intGameID);
+			$boolDropable = $game->data->allow_player_created_locations;
+		}
+		
+		//Create the Item
+		$query = "INSERT INTO {$prefix}_items 
+					(name, description, media_id, dropable, destroyable,
+					creator_player_id, origin_latitude, origin_longitude)
+					VALUES ('{$strName}', 
+							'{$strDescription}',
+							'{$newMediaID}', 
+							'$boolDropable',
+							'$boolDestroyable',
+							'$intPlayerID', '$latitude', '$longitude')";
+		
+		NetDebug::trace("createItem: Running a query = $query");	
+		
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
+		
+		$newItemID = mysql_insert_id();
+		
+		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_UPLOAD_MEDIA_ITEM, $newItemID);
+
+		Locations::createLocation($intGameID, $strName, 0, 
+								$latitude, $longitude, 25,
+								"Item", $newItemID,
+								1, 0, 0);
+		
+		return new returnData(0, TRUE);
+	}	
 	
 	
 	/**

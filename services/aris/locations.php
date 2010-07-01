@@ -131,7 +131,7 @@ class Locations extends Module
 		if ($dblError < 5) $dblError = 25;
 		
 		//Check the object Type is good or null
-		if ( !$this->isValidObjectType($intGameID, $strObjectType) or !strlen($strObjectType) > 0 )
+		if ( !Locations::isValidObjectType($intGameID, $strObjectType) or !strlen($strObjectType) > 0 )
 			return new returnData(4, NULL, "invalid object type");
 
 		$query = "INSERT INTO {$prefix}_locations 
@@ -246,7 +246,7 @@ class Locations extends Module
      * @returns an array of strings
      */
 	public function objectTypeOptions($intGameID){	
-		$options = $this->lookupObjectTypeOptionsFromSQL($intGameID);
+		$options = Locations::lookupObjectTypeOptionsFromSQL($intGameID);
 		if (!$options) return new returnData(1, NULL, "invalid game id");
 		return new returnData(0, $options);
 	}
@@ -257,7 +257,7 @@ class Locations extends Module
      * @returns TRUE if valid
      */
 	private function isValidObjectType($intGameID, $strObjectType) {
-		$validTypes = $this->lookupObjectTypeOptionsFromSQL($intGameID);
+		$validTypes = Locations::lookupObjectTypeOptionsFromSQL($intGameID);
 		return in_array($strObjectType, $validTypes);
 	}
 	
