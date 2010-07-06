@@ -38,7 +38,7 @@ abstract class Module
 	
 	public function Module()
 	{
-		$this->conn = mysql_pconnect(Config::dbHost, Config::dbUser, Config::dbPass);
+		$this->conn = mysql_connect(Config::dbHost, Config::dbUser, Config::dbPass);
       	mysql_select_db (Config::dbSchema);
 	}	
 	
