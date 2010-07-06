@@ -53,12 +53,12 @@ class Editors extends Module
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 		
-		$subject = "Welcome to the ARIS Beta!";
- 		$body = "<p><strong>You signed up to become an editor for ARIS beta games!</strong> To get things started well, we wanted to make sure you 
+		$subject = "Welcome to the ARIS Alpha Editor!";
+ 		$body = "<p><strong>You signed up to become an editor for ARIS!</strong> To get things started well, we wanted to make sure you 
  		knew about a few things and had a few folks to call for help.</p>
- 		<p>For starters, you should head out to http://arisdocumentation.pbwiki.com for user created documentation</p>
- 		<p>If you have questions and want to talk with other users, go to http://groups.google.com/group/arisgames</p>
- 		<p>If you discover bugs, please tell us at http://code.google.com/p/arisgames/issues/entry</p>
+ 		<p>For starters, you should head out to go to http://groups.google.com/group/arisgames and view the 'Getting Started Videos'</p>
+ 		<p>If you have questions and want to talk with other users, go post a new discussion there or send an email to arisgames@googlegroups.com</p>
+ 		<p>If you discover bugs or have new ideas, please tell us at http://groups.google.com/group/arisgames/web/feature-requests</p>
  		<p>Just so you don't forget, your username is $strUser and your password is $strPassword</p>
  		<p>Good luck making games!</p>";
  			
