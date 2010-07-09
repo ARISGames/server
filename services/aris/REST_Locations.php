@@ -68,11 +68,12 @@ $query = "SELECT players.player_id, players.user_name,
 				FROM players, player_log
 				WHERE 
 				players.player_id = player_log.player_id AND
-				players.last_game_id = '{$intGameID}' AND
-				players.player_id != '{$intPlayerID}' AND
+				players.last_game_id = '{$_REQUEST['gameId']}' AND
 				UNIX_TIMESTAMP( NOW( ) ) - UNIX_TIMESTAMP( player_log.timestamp ) <= ( $timeLimitInMinutes * 60 )
 				GROUP BY player_id
 				";
+				
+//echo $query;				
 
 $playersRs = @mysql_query($query);
 while ($player = @mysql_fetch_object($playersRs)) {
