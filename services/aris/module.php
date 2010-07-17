@@ -29,6 +29,12 @@ abstract class Module
 	const kREQ_PLAYER_VIEWED_NPC = 'PLAYER_VIEWED_NPC';
 	const kREQ_PLAYER_HAS_NOT_VIEWED_NPC = 'PLAYER_HAS_NOT_VIEWED_NPC';
 	const kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM = 'PLAYER_HAS_UPLOADED_MEDIA_ITEM';
+	const kREQ_PLAYER_HAS_COMPLETED_QUEST = 'PLAYER_HAS_COMPLETED_QUEST';
+	
+	const kRESULT_DISPLAY_NODE = 'Node';
+	const kRESULT_DISPLAY_QUEST = 'QuestDisplay';
+	const kRESULT_COMPLETE_QUEST = 'QuestComplete';
+	const kRESULT_DISPLAY_LOCATION = 'Location';
 
 	//constants for player_state_changes table enums
 	const kPSC_GIVE_ITEM = 'GIVE_ITEM';
@@ -240,7 +246,8 @@ abstract class Module
      * @return boolean
      */	
 	protected function objectMeetsRequirements ($strPrefix, $intPlayerID, $strObjectType, $intObjectID) {		
-		
+		NetDebug::trace("Checking Requirements for {$strObjectType}:{$intObjectID} for playerID:$intPlayerID in gameID:$strPrefix");
+
 		//Fetch the requirements
 		$query = "SELECT * FROM {$strPrefix}_requirements 
 					WHERE content_type = '{$strObjectType}' AND content_id = '{$intObjectID}'";
@@ -291,6 +298,10 @@ abstract class Module
 						$requirement['requirement_detail_1'], $requirement['requirement_detail_2'], 
 						$requirement['requirement_detail_3'])) { NetDebug::trace("FAILED"); return FALSE;}
 					break;
+				case Module::kREQ_PLAYER_HAS_COMPLETED_QUEST:
+					if (!Module::objectMeetsRequirements ($strPrefix, $intPlayerID, Module::kRESULT_COMPLETE_QUEST, 
+						$requirement['requirement_detail_1'])) { NetDebug::trace("FAILED"); return FALSE;}
+					break;	
 			}
 		}
 		return TRUE;
