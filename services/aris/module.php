@@ -46,6 +46,8 @@ abstract class Module
 	{
 		$this->conn = mysql_connect(Config::dbHost, Config::dbUser, Config::dbPass);
       	mysql_select_db (Config::dbSchema);
+      	mysql_query("set names utf8");
+		mysql_query("set charset set utf8");
 	}	
 	
 	/**
