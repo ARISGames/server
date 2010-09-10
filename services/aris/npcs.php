@@ -1,5 +1,6 @@
 <?php
 require_once("module.php");
+require_once("players.php");
 
 class Npcs extends Module
 {
@@ -70,7 +71,23 @@ class Npcs extends Module
 		return new returnData(0, $npc);
 		
 	}
+	
+	/**
+     * Fetch the conversation options from a paticular npc for a player, after viewing a node 
+     * @returns nm array of conversaion options
+     */
+	public function getNpcConversationsForPlayerAfterViewingNode($intGameID, $intNpcID, $intPlayerID, $intNodeID)
+	{	
+		//update the player log
+		Players::nodeViewed($intGameID, $intPlayerID, $intNodeID);
 
+		//get the options for this npc and player
+		$conversationsReturnData = Npcs::getConversationsForPlayer($intGameID, $intNpcID, $intPlayerID);
+		if ($npcReturnData->returnCode > 0) return $optionsReturnData;
+		$conversationsArray = $conversationsReturnData->data;
+		
+		return new returnData(0, $conversationsArray);	
+	}
 
 	/**
      * Create a NPC
