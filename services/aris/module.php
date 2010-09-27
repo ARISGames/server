@@ -113,7 +113,7 @@ abstract class Module
    		//If this location has a null item_qty, decrementing it will still be a null
 		$query = "UPDATE {$strGamePrefix}_locations 
 					SET item_qty = item_qty-{$intQty}
-					WHERE location_id = '{$intLocationID}'";
+					WHERE location_id = '{$intLocationID}' AND item_qty > 0";
    		NetDebug::trace($query);	
     	@mysql_query($query);    	
 	}
