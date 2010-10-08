@@ -116,6 +116,9 @@ class Players extends Module
 	{
 		$timeLimitInMinutes = 20;
 		
+		/*
+		Unoptimized becasue an index cant be used for the timestamp
+	
 		$query = "SELECT players.player_id, players.user_name, 
 				players.latitude, players.longitude, 
 				player_log.timestamp 
@@ -127,6 +130,18 @@ class Players extends Module
 				UNIX_TIMESTAMP( NOW( ) ) - UNIX_TIMESTAMP( player_log.timestamp ) <= ( $timeLimitInMinutes * 60 )
 				GROUP BY player_id
 				";
+		 */
+		
+		$query = "SELECT players.player_id, players.user_name, 
+					players.latitude, players.longitude, player_log.timestamp
+					FROM players
+					LEFT JOIN player_log ON players.player_id = player_log.player_id
+					WHERE players.last_game_id =  '{$intGameID}' AND 
+					players.player_id != '{$intPlayerID}' AND
+					player_log.timestamp > DATE_SUB( NOW( ) , INTERVAL 20 MINUTE ) 
+					GROUP BY player_id";
+		
+		
 		NetDebug::trace($query);
 
 
