@@ -183,6 +183,8 @@ CREATE TABLE `players` (
   `longitude` double NOT NULL default '0',
   `last_game_id` int(10) unsigned NOT NULL default '0',
   PRIMARY KEY  (`player_id`)
+  KEY `position` (`latitude`,`longitude`),
+  KEY `last_game_id` (`last_game_id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=98 ;
 
 
@@ -201,6 +203,13 @@ CREATE TABLE `player_log` (
   `event_detail_1` varchar(50) collate utf8_unicode_ci default NULL,
   `event_detail_2` varchar(50) collate utf8_unicode_ci default NULL,
   `deleted` tinyint(1) NOT NULL default '0',
-  PRIMARY KEY  (`id`)
+  PRIMARY KEY  (`id`),
+  KEY `player_id` (`player_id`),
+  KEY `game_id` (`game_id`),
+  KEY `event_type` (`event_type`),
+  KEY `event_detail_1` (`event_detail_1`),
+  KEY `deleted` (`deleted`),
+  KEY `event` (`event_type`,`event_detail_1`,`event_detail_2`,`event_detail_3`),
+  KEY `timestamp` (`timestamp`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=5498 ;
 
