@@ -121,11 +121,12 @@ class Locations extends Module
 	public function createLocation($intGameID, $strLocationName, $intIconMediaID, 
 								$dblLatitude, $dblLongitude, $dblError,
 								$strObjectType, $intObjectID,
-								$intQuantity, $boolHidden, $boolForceView) {
+								$intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel) {
 														
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		if (!$intQuantity) $intQuantity = 1;
+		if (!$boolAllowQuickTravel) $boolAllowQuickTravel = 0;
 		
 		$strLocationName = addslashes($strLocationName);
 		if ($dblError < 5) $dblError = 25;
@@ -136,11 +137,11 @@ class Locations extends Module
 
 		$query = "INSERT INTO {$prefix}_locations 
 					(name, icon_media_id, latitude, longitude, error, 
-					type, type_id, item_qty, hidden, force_view)
+					type, type_id, item_qty, hidden, force_view, allow_quick_travel)
 					VALUES ('{$strLocationName}', '{$intIconMediaID}',
 							'{$dblLatitude}','{$dblLongitude}','{$dblError}',
 							'{$strObjectType}','{$intObjectID}','{$intQuantity}',
-							'{$boolHidden}','{$boolForceView}')";
+							'{$boolHidden}','{$boolForceView}', '{$boolAllowQuickTravel}')";
 		
 		NetDebug::trace("createLocation: Running a query = $query");	
 	
@@ -169,7 +170,7 @@ class Locations extends Module
 	public function updateLocation($intGameID, $intLocationID, $strLocationName, $intIconMediaID, 
 								$dblLatitude, $dblLongitude, $dblError,
 								$strObjectType, $intObjectID,
-								$intQuantity, $boolHidden, $boolForceView)
+								$intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel = 0)
 	{
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
@@ -192,7 +193,8 @@ class Locations extends Module
 				type_id = '{$intObjectID}',
 				item_qty = '{$intQuantity}',
 				hidden = '{$boolHidden}',
-				force_view = '{$boolForceView}'
+				force_view = '{$boolForceView}',
+				allow_quick_travel = '{$boolAllowQuickTravel}'
 				WHERE location_id = '{$intLocationID}'";
 		
 		NetDebug::trace("updateLocation: Query: $query");		

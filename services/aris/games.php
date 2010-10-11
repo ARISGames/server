@@ -249,6 +249,7 @@ class Games extends Module
 			item_qty int(11) NOT NULL default '0',
 			hidden enum('0','1') NOT NULL default '0',
 			force_view enum('0','1') NOT NULL default '0',
+			allow_quick_travel enum('0','1') NOT NULL default '0',
 			PRIMARY KEY  (location_id)
 			)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
 		NetDebug::trace($query);	
@@ -424,14 +425,6 @@ class Games extends Module
 			$upgradeResult = Games::upgradeGameDatabase($game->game_id);
 		}
 		
-		$query = "ALTER TABLE `games` CHANGE `description` `description` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL";
-		mysql_query($query);
-		NetDebug::trace("$query" . ":" . mysql_error());
-		
-		$query = "ALTER TABLE `games` ADD `allow_player_created_locations` BOOL NOT NULL DEFAULT '0'";
-		mysql_query($query);
-		NetDebug::trace("$query" . ":" . mysql_error());
-		   
 		return new returnData(0, FALSE);
 	}
 	
@@ -447,7 +440,7 @@ class Games extends Module
 		$prefix = $this->getPrefix($intGameID);
 
 
-		$query = "ALTER TABLE  {$prefix}_requirements CHANGE  `requirement`  `requirement` ENUM(  'PLAYER_HAS_ITEM',  'PLAYER_DOES_NOT_HAVE_ITEM',  'PLAYER_VIEWED_ITEM', 'PLAYER_HAS_NOT_VIEWED_ITEM',  'PLAYER_VIEWED_NODE',  'PLAYER_HAS_NOT_VIEWED_NODE',  'PLAYER_VIEWED_NPC',  'PLAYER_HAS_NOT_VIEWED_NPC', 'PLAYER_HAS_UPLOADED_MEDIA_ITEM',  'PLAYER_HAS_COMPLETED_QUEST' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL";
+		$query = "ALTER TABLE  {$prefix}_locations ADD allow_quick_travel enum('0','1') NOT NULL default '0'";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
 		
