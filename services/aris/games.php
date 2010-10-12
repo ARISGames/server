@@ -444,6 +444,12 @@ class Games extends Module
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
 		
+		$query = "ALTER TABLE  `{$prefix}_requirements` ADD  `boolean_operator` ENUM(  'AND',  'OR' ) NOT NULL DEFAULT  'AND' AFTER  `requirement`,
+					ADD INDEX (  `boolean_operator` )";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+		
+		
 	}
 	
 	/**

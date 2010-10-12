@@ -255,58 +255,93 @@ abstract class Module
 					WHERE content_type = '{$strObjectType}' AND content_id = '{$intObjectID}'";
 		$rsRequirments = @mysql_query($query);
 		
+		$andsMet = FALSE;
+		$requirementsExist = FALSE;
 		while ($requirement = mysql_fetch_array($rsRequirments)) {
+			$requirementsExist = TRUE;
 			NetDebug::trace("Requirement for {$strObjectType}:{$intObjectID} is {$requirement['requirement']}:{$requirement['requirement_detail_1']}");
-
 			//Check the requirement
+			
+			$requirementMet = FALSE;
+			
 			switch ($requirement['requirement']) {
 				//Log related
 				case Module::kREQ_PLAYER_VIEWED_ITEM:
-					if (!Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_ITEM, 
-						$requirement['requirement_detail_1'])) { NetDebug::trace("FAILED"); return FALSE;}
+					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_ITEM, 
+						$requirement['requirement_detail_1']);
 					break;
 				case Module::kREQ_PLAYER_HAS_NOT_VIEWED_ITEM:
-					if (Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_ITEM, 
-						$requirement['requirement_detail_1'])) { NetDebug::trace("FAILED"); return FALSE;}
+					$requirementMet = !Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_ITEM, 
+						$requirement['requirement_detail_1']);
 					break;
 				case Module::kREQ_PLAYER_VIEWED_NODE:
-					if (!Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NODE, 
-						$requirement['requirement_detail_1'])) { NetDebug::trace("FAILED"); return FALSE;}
+					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NODE, 
+						$requirement['requirement_detail_1']);
 					break;
 				case Module::kREQ_PLAYER_HAS_NOT_VIEWED_NODE:
-					if (Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NODE, 
-						$requirement['requirement_detail_1'])) { NetDebug::trace("FAILED"); return FALSE;}
+					$requirementMet =  !Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NODE, 
+						$requirement['requirement_detail_1']);
 					break;
 				case Module::kREQ_PLAYER_VIEWED_NPC:
-					if (!Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NPC, 
-						$requirement['requirement_detail_1'])) { NetDebug::trace("FAILED"); return FALSE;}
+					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NPC, 
+						$requirement['requirement_detail_1']);
 					break;
 				case Module::kREQ_PLAYER_HAS_NOT_VIEWED_NPC:
-					if (Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NPC, 
-						$requirement['requirement_detail_1'])) { NetDebug::trace("FAILED"); return FALSE;}
+					$requirementMet = !Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NPC, 
+						$requirement['requirement_detail_1']);
 					break;					
 				//Inventory related	
 				case Module::kREQ_PLAYER_HAS_ITEM:
-					if (!Module::playerHasItem($strPrefix, $intPlayerID, 
-						$requirement['requirement_detail_1'])) { NetDebug::trace("FAILED"); return FALSE;}
+					$requirementMet = Module::playerHasItem($strPrefix, $intPlayerID, 
+						$requirement['requirement_detail_1']);
 					break;
 				case Module::kREQ_PLAYER_DOES_NOT_HAVE_ITEM:
-					if (Module::playerHasItem($strPrefix, $intPlayerID, 
-						$requirement['requirement_detail_1'])) { NetDebug::trace("FAILED"); return FALSE;}
+					$requirementMet = !Module::playerHasItem($strPrefix, $intPlayerID, 
+						$requirement['requirement_detail_1']);
 					break;
 				//Data Collection
 				case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM:
-					if (!Module::playerHasUploadedMediaItemWithinDistence($strPrefix, $intPlayerID, 
+					$requirementMet = Module::playerHasUploadedMediaItemWithinDistence($strPrefix, $intPlayerID, 
 						$requirement['requirement_detail_1'], $requirement['requirement_detail_2'], 
-						$requirement['requirement_detail_3'])) { NetDebug::trace("FAILED"); return FALSE;}
+						$requirement['requirement_detail_3']);
 					break;
 				case Module::kREQ_PLAYER_HAS_COMPLETED_QUEST:
-					if (!Module::objectMeetsRequirements ($strPrefix, $intPlayerID, Module::kRESULT_COMPLETE_QUEST, 
-						$requirement['requirement_detail_1'])) { NetDebug::trace("FAILED"); return FALSE;}
+					$requirementMet = Module::objectMeetsRequirements ($strPrefix, $intPlayerID, Module::kRESULT_COMPLETE_QUEST, 
+						$requirement['requirement_detail_1']);
 					break;	
+			}//switch
+			if ($requirement['boolean_operator'] == "AND" && $requirementMet == FALSE) {
+				NetDebug::trace("An AND requirement was not met. Requirements Failed.");
+				return FALSE;
 			}
+
+			if ($requirement['boolean_operator'] == "AND" && $requirementMet == TRUE) {
+				NetDebug::trace("An AND requirement was met. Remembering");
+				$andsMet = TRUE;
+			}
+			
+			if ($requirement['boolean_operator'] == "OR" && $requirementMet == TRUE){
+				NetDebug::trace("An OR requirement was met. Requirements Passed.");
+				return TRUE;
+			}
+			
+			if ($requirement['boolean_operator'] == "AND" && $requirementMet == FALSE) $requirementsMet = FALSE;
+
+		}//while
+		NetDebug::trace("At the end of all the requirements for this object and any AND were passed, no ORs were passed.");
+		//So no ORs were met, and possibly all ands were met
+		if (!$requirementsExist) {
+			NetDebug::trace("No requirements exist. Requirements Passed.");
+			return TRUE;
 		}
-		return TRUE;
+		if ($andsMet) {
+			NetDebug::trace("All AND requirements exist. Requirements Passed.");
+			return TRUE;
+		}
+		else {
+			NetDebug::trace("At end. Requirements Not Passed.");			
+			return FALSE;
+		}
 	}	
 	
 	
