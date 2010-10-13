@@ -39,11 +39,12 @@ class Items extends Module
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		
-		$query = "SELECT * FROM {$prefix}_items
-									 JOIN {$prefix}_player_items 
-									 ON {$prefix}_items.item_id = {$prefix}_player_items.item_id
-									 WHERE player_id = $intPlayerID";
-		//NetDebug::trace($query);
+		$query = "SELECT {$prefix}_items.*, {$prefix}_player_items.qty 
+					FROM {$prefix}_items
+					JOIN {$prefix}_player_items 
+					ON {$prefix}_items.item_id = {$prefix}_player_items.item_id
+					WHERE player_id = $intPlayerID";
+		NetDebug::trace($query);
 		
 		$rsResult = @mysql_query($query);
 		if (!$rsResult) return new returnData(0, NULL);
@@ -80,7 +81,7 @@ class Items extends Module
      * @returns the new itemID on success
      */
 	public function createItem($intGameID, $strName, $strDescription, 
-								$intIconMediaID, $intMediaID, $boolDropable, $boolDestroyable)
+								$intIconMediaID, $intMediaID, $boolDropable, $boolDestroyable, $intMaxQuantityInPlayerInventory)
 	{
 		$strName = addslashes($strName);	
 		$strDescription = addslashes($strDescription);	
@@ -89,13 +90,14 @@ class Items extends Module
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$query = "INSERT INTO {$prefix}_items 
-					(name, description, icon_media_id, media_id, dropable, destroyable)
+					(name, description, icon_media_id, media_id, dropable, destroyable,max_qty_in_inventory)
 					VALUES ('{$strName}', 
 							'{$strDescription}',
 							'{$intIconMediaID}', 
 							'{$intMediaID}', 
 							'$boolDropable',
-							'$boolDestroyable')";
+							'$boolDestroyable',
+							'$intMaxQuantityInPlayerInventory')";
 		
 		NetDebug::trace("createItem: Running a query = $query");	
 		
@@ -148,13 +150,14 @@ class Items extends Module
 		
 		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_UPLOAD_MEDIA_ITEM, $newItemID);
 
-		Module::giveItemToPlayer($prefix, $newItemID, $intPlayerID); 
+		$qty = 1;
+		Module::giveItemToPlayer($prefix, $newItemID, $intPlayerID, $qty); 
 		
 		return new returnData(0, TRUE);
 	}	
 
 	/**
-     * Create an Item and add it to the players inventory
+     * Create an Item and place it on the map
      * @returns with returnData object (0 on success) 
      */
 	public function createItemAndPlaceOnMap($intGameID, $intPlayerID, $strName, $strDescription, 
@@ -210,7 +213,7 @@ class Items extends Module
      * @returns true if edit was done, false if no changes were made
      */
 	public function updateItem($intGameID, $intItemID, $strName, $strDescription, 
-								$intIconMediaID, $intMediaID, $boolDropable, $boolDestroyable)
+								$intIconMediaID, $intMediaID, $boolDropable, $boolDestroyable, $intMaxQuantityInPlayerInventory)
 	{
 		$prefix = $this->getPrefix($intGameID);
 		
@@ -226,6 +229,7 @@ class Items extends Module
 						media_id = '{$intMediaID}', 
 						dropable = '{$boolDropable}',
 						destroyable = '{$boolDestroyable}'
+						max_qty_in_inventory = '{$intMaxQuantityInPlayerInventory}',
 					WHERE item_id = '{$intItemID}'";
 		
 		NetDebug::trace("updateNpc: Running a query = $query");	

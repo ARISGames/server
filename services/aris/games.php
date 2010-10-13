@@ -195,6 +195,7 @@ class Games extends Module
 			media_id int(10) unsigned NOT NULL default '0',
 			dropable enum('0','1') NOT NULL default '0',
 			destroyable enum('0','1') NOT NULL default '0',
+			max_qty_in_inventory INT NOT NULL DEFAULT  '-1' COMMENT  '-1 for infinite, 0 if it can''t be picked up',
 			creator_player_id int(10) unsigned NOT NULL default '0',
   			origin_latitude double NOT NULL default '0',
   			origin_longitude double NOT NULL default '0',
@@ -209,10 +210,13 @@ class Games extends Module
 		$query = "CREATE TABLE {$strShortName}_player_state_changes (
 			id int(10) unsigned NOT NULL auto_increment,
 			event_type enum('VIEW_ITEM', 'VIEW_NODE', 'VIEW_NPC' ) NOT NULL,
-			event_detail VARCHAR( 50 ) NOT NULL,
+			event_detail INT UNSIGNED NOT NULL,
 			action enum('GIVE_ITEM','TAKE_ITEM') NOT NULL,
 			action_detail int(10) unsigned NOT NULL,
-			PRIMARY KEY  (id)
+			action_amount INT NOT NULL DEFAULT  '1',
+			PRIMARY KEY  (id),
+			KEY `action_amount` (`action_amount`),
+  			KEY `event_lookup` (`event_type`,`event_detail`)
 			)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(6, NULL, 'cannot create player_state_changes table' . mysql_error());
@@ -246,7 +250,7 @@ class Games extends Module
 			type enum('Node','Event','Item','Npc') NOT NULL DEFAULT 'Node',
 			type_id int(11) NOT NULL,
 			icon_media_id int(10) unsigned NOT NULL default '0',
-			item_qty int(11) NOT NULL default '0',
+			item_qty int(11) NOT NULL default '0' COMMENT  '-1 for infinite. Only effective for items',
 			hidden enum('0','1') NOT NULL default '0',
 			force_view enum('0','1') NOT NULL default '0',
 			allow_quick_travel enum('0','1') NOT NULL default '0',
@@ -312,14 +316,16 @@ class Games extends Module
 		
 	
 		$query = "CREATE TABLE {$strShortName}_player_items (
-			id int(11) NOT NULL auto_increment,
-			player_id int(11) unsigned NOT NULL default '0',
-			item_id int(11) unsigned NOT NULL default '0',
-			timestamp timestamp NOT NULL default CURRENT_TIMESTAMP,
-			PRIMARY KEY  (id),
-			UNIQUE KEY `unique` (player_id,item_id),
-			KEY player_id (player_id),
-			KEY item_id (item_id)
+ 			`id` int(11) NOT NULL auto_increment,
+  			`player_id` int(11) unsigned NOT NULL default '0',
+  			`item_id` int(11) unsigned NOT NULL default '0',
+  			`qty` int(11) NOT NULL default '0',
+  			`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+  			PRIMARY KEY  (`id`),
+  			UNIQUE KEY `unique` (`player_id`,`item_id`),
+  			KEY `player_id` (`player_id`),
+  			KEY `item_id` (`item_id`),
+  			KEY `qty` (`qty`)
 			)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(6, NULL, 'cannot create player_items table');
@@ -449,7 +455,35 @@ class Games extends Module
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
 		
+		$query = "ALTER TABLE  `{$prefix}_player_items` ADD  `qty` INT NOT NULL DEFAULT  '0' AFTER  `item_id` ,
+					ADD INDEX (  `qty` )";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
 		
+		
+		$query = "ALTER TABLE  `{$prefix}_player_state_changes` ADD  `action_amount` INT NOT NULL DEFAULT  '1',
+					ADD INDEX (  `action_amount` )";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+				
+		$query = "ALTER TABLE  `{$prefix}_player_state_changes` CHANGE  `event_detail`  `event_detail` INT UNSIGNED NOT NULL";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+
+		$query = "ALTER TABLE {$prefix}_player_state_changes ADD INDEX  event_lookup ( event_type , event_detail )";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+
+		$query = "ALTER TABLE  `222_items` ADD  `max_qty_in_inventory` INT NOT NULL DEFAULT  '-1' COMMENT  '-1 for infinite, 0 if it can''t be picked up' AFTER  `destroyable`";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+
+		
+
+
+		
+		
+	
 	}
 	
 	/**

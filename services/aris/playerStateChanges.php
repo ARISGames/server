@@ -52,7 +52,8 @@ class PlayerStateChanges extends Module
      * Create a Player State Change
      * @returns the new playerStateChangeID on success
      */
-	public function createPlayerStateChange($intGameID, $strEventType, $strEventDetail, $strActionType, $strActionDetail)
+	public function createPlayerStateChange($intGameID, $strEventType, $intEventDetail, 
+											$strActionType, $strActionDetail, $intActionAmount)
 	{
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
@@ -65,8 +66,8 @@ class PlayerStateChanges extends Module
 		
 		
 		$query = "INSERT INTO {$prefix}_player_state_changes 
-					(event_type, event_detail, action, action_detail)
-					VALUES ('{$strEventType}','{$strEventDetail}','{$strActionType}','{$strActionDetail}')";
+					(event_type, event_detail, action, action_detail, action_amount)
+					VALUES ('{$strEventType}','{$intEventDetail}','{$strActionType}','{$strActionDetail}','{$intActionAmount}')";
 		
 		NetDebug::trace("Running a query = $query");	
 		
@@ -82,7 +83,8 @@ class PlayerStateChanges extends Module
      * Update a specific Player State Change
      * @returns true if edit was done, false if no changes were made
      */
-	public function updatePlayerStateChange($intGameID, $intPlayerStateChangeID, $strEventType, $strEventDetail, $strActionType, $strActionDetail)
+	public function updatePlayerStateChange($intGameID, $intPlayerStateChangeID, $strEventType, 
+								$intEventDetail, $strActionType, $strActionDetail, $intActionAmount)
 	{
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
@@ -98,9 +100,10 @@ class PlayerStateChanges extends Module
 		$query = "UPDATE {$prefix}_player_state_changes 
 					SET 
 					event_type = '{$strEventType}',
-					event_detail = '{$strEventDetail}',
+					event_detail = '{$intEventDetail}',
 					action = '{$strActionType}',
 					action_detail = '{$strActionDetail}'
+					action_amount = '{$intActionAmount}'
 					WHERE id = '{$intPlayerStateChangeID}'";
 		
 		NetDebug::trace("Running a query = $query");	
@@ -141,7 +144,7 @@ class PlayerStateChanges extends Module
      * @returns an array of strings
      */
 	public function eventTypeOptions($intGameID){	
-		$options = $this->lookupContentTypeOptionsFromSQL($intGameID);
+		$options = $this->lookupEventTypeOptionsFromSQL($intGameID);
 		if (!$options) return new returnData(1, NULL, "invalid game id");
 		return new returnData(0, $options);
 	}
