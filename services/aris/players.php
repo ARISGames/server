@@ -1,6 +1,6 @@
 <?php
 require_once("module.php");
-
+require_once("items.php");
 
 class Players extends Module
 {	
@@ -263,12 +263,20 @@ class Players extends Module
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
+		$currentQty = Module::itemQtyInPlayerInventory($intGameID, $intPlayerID, $intItemID);
+		$item = Items::getItem($intGameID, $intItemID)->data;
+		if ($currentQty+$qty > $item->maxQty && $item->maxQty != -1) {
+			//we are going over the limit
+			$quantity =  $item->maxQty - $currentQty+$qty;
+			if ($quantity < 1) return new returnData(0, FALSE);
+		}
+		
 		Module::giveItemToPlayer($prefix, $intItemID, $intPlayerID, $qty);
 		Module::decrementItemQtyAtLocation($prefix, $intLocationID, $qty); 
 		
 		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_PICKUP_ITEM, $intItemID, $qty);
 
-		return new returnData(0, FALSE);
+		return new returnData(0, TRUE);
 	}
 	
 	/**

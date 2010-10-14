@@ -284,6 +284,27 @@ abstract class Module
 		else return false;
     }		
     
+    
+	/** 
+	 * itemQtyInPlayerInventory
+	 *
+     * Checks if the specified user has the specified item in the specified game.
+     * @return qty a player has of a given item
+     */
+    protected function itemQtyInPlayerInventory($intGameID, $intPlayerID, $intItemID) {
+    	$prefix = $this->getPrefix($intGameID);
+		if (!$prefix) return FALSE;
+    
+		$query = "SELECT * FROM {$prefix}_player_items 
+									  WHERE player_id = '{$intPlayerID}' 
+									  AND item_id = '{$intItemID}'";
+		
+		$rsResult = @mysql_query($query);
+		$playerItem = mysql_fetch_object($rsResult);
+		
+		return $playerItem->qty;
+    }	    
+    
 	/** 
 	 * playerHasUploadedMedia
 	 *
