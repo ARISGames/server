@@ -1,5 +1,5 @@
 <?php
-require("module.php");
+require_once("module.php");
 
 
 class Requirements extends Module
@@ -141,6 +141,54 @@ class Requirements extends Module
 		}
 		
 	}	
+	
+	
+	public function deleteRequirementsForRequirementObject($intGameID, $strObjectType, $intObjectId)
+	{
+		$prefix = $this->getPrefix($intGameID);
+		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+
+		$requirementString = '';
+		
+		switch ($strObjectType) {
+			case 'Node':
+				$requirementString = "requirement = 'PLAYER_VIEWED_NODE' OR 
+										requirement = 'PLAYER_HAS_NOT_VIEWED_NODE'";
+				break;			
+			case 'Item':
+				$requirementString = "requirement = 'PLAYER_HAS_ITEM' OR
+									requirement = 'PLAYER_DOES_NOT_HAVE_ITEM' OR
+									requirement = 'PLAYER_VIEWED_ITEM' OR
+									requirement = 'PLAYER_HAS_NOT_VIEWED_ITEM'";
+				break;
+			case 'Npc':
+				$requirementString = "requirement = 'PLAYER_VIEWED_NPC' OR
+									requirement = 'PLAYER_HAS_NOT_VIEWED_NPC'";
+				break;
+			default:
+				return new returnData(4, NULL, "invalid object type");
+		}
+			
+		//Delete the Locations and related QR Codes
+		$query = "DELETE FROM {$prefix}_requirements
+			WHERE ({$requirementString}) AND requirement_detail_1 = '{$intObjectId}'";
+		
+		@mysql_query($query);
+		
+		NetDebug::trace("Query: $query" . mysql_error());		
+
+		
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+		
+			
+		if (mysql_affected_rows()) {
+			return new returnData(0, TRUE);
+		}
+		else {
+			return new returnData(0, FALSE);
+		}	
+	}		
+	
 	
 	/**
      * Fetch the valid content types from the requirements table

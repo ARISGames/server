@@ -334,7 +334,6 @@ class QRCodes extends Module
 		}
 	}		
 	
-	
 	/**
      * Fetch the valid content types from the requirements table
      * @returns an array of strings

@@ -240,8 +240,41 @@ class Locations extends Module
 		}
 		else {
 			return new returnData(0, FALSE);
-		}	}
+		}	
+	}
+	
+	public function deleteLocationsForObject($intGameID, $strObjectType, $intObjectId)
+	{
+		$prefix = $this->getPrefix($intGameID);
+		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+
+		//Check the object Type is good or null
+		if ( !Locations::isValidObjectType($intGameID, $strObjectType) or !strlen($strObjectType) > 0 )
+			return new returnData(4, NULL, "invalid object type");
 			
+		//Delete the Locations and related QR Codes
+		$query = "DELETE {$prefix}_locations,{$prefix}_qrcodes 
+			FROM {$prefix}_locations OUTER JOIN {$prefix}_qrcodes
+			WHERE 
+			{$prefix}_qrcodes.link_type='Location' AND 
+			{$prefix}_locations.location_id={$prefix}_qrcodes.link_id AND
+			{$prefix}_locations.type = '{$strObjectType}' AND
+			{$prefix}_locations.type_id = '{$intObjectId}'";
+
+		NetDebug::trace("Query: $query");		
+		
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+		
+			
+		if (mysql_affected_rows()) {
+			return new returnData(0, TRUE);
+		}
+		else {
+			return new returnData(0, FALSE);
+		}	
+	}	
+	
 	
 	/**
      * Fetch the valid content types from the requirements table

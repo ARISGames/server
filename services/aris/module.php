@@ -95,7 +95,15 @@ abstract class Module
     protected function takeItemFromPlayer($strGamePrefix, $intItemID, $intPlayerID, $qtyToTake=1) {
 		Module::adjustQtyForPlayerItem($strGamePrefix, $intItemID, $intPlayerID, -$qtyToTake);
     }
-    
+ 
+
+     protected function removeItemFromAllPlayerInventories($strGamePrefix, $intItemID ) {
+		$query = "DELETE FROM {$strGamePrefix}_player_items 
+					WHERE item_id = $intItemID";
+    	$result = @mysql_query($query);
+    	NetDebug::trace($query . mysql_error());    
+    }
+ 
     /**
     * Updates the qty a player has of an item
     */ 

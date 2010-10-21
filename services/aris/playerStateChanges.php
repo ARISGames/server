@@ -1,5 +1,5 @@
 <?php
-require("module.php");
+require_once("module.php");
 
 
 class PlayerStateChanges extends Module
@@ -137,7 +137,50 @@ class PlayerStateChanges extends Module
 			return new returnData(2, NULL, 'invalid player state change id');
 		}
 		
-	}	
+	}
+	
+
+	public function deletePlayerStateChangesThatRefrenceObject($intGameID, $strObjectType, $intObjectId)
+	{
+		$prefix = $this->getPrefix($intGameID);
+		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+
+		$whereClause = '';
+		
+		switch ($strObjectType) {
+			case 'Node':
+				$whereClause = "event_type = 'VIEW_NODE' AND event_detail = '{$intObjectId}'";
+				break;			
+			case 'Item':
+				$whereClause = "(event_type = 'VIEW_ITEM' AND event_detail = '{$intObjectId}') OR
+								((action = 'GIVE_ITEM' OR action = 'TAKE_ITEM') AND action_detail = '{$intObjectId}')";
+				break;
+			case 'Npc':
+				$whereClause = "event_type = 'VIEW_NPC' AND event_detail = '{$intObjectId}'";
+				break;
+			default:
+				return new returnData(4, NULL, "invalid object type");
+		}
+			
+		//Delete the Locations and related QR Codes
+		$query = "DELETE FROM {$prefix}_player_state_changes WHERE {$whereClause}";
+		
+		@mysql_query($query);
+		
+		NetDebug::trace("Query: $query" . mysql_error());		
+
+		
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+		
+			
+		if (mysql_affected_rows()) {
+			return new returnData(0, TRUE);
+		}
+		else {
+			return new returnData(0, FALSE);
+		}	
+	}			
+	
 	
 	/**
      * Fetch the valid content types from the requirements table

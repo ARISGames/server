@@ -1,5 +1,8 @@
 <?php
 require_once("module.php");
+require_once("locations.php");
+require_once("requirements.php");
+require_once("playerStateChanges.php");
 
 class Nodes extends Module
 {	
@@ -145,6 +148,11 @@ class Nodes extends Module
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
+		Locations::deleteLocationsForObject($intGameID, 'Node', $intNodeID);
+		Requirements::deleteRequirementsForRequirementObject($intGameID, 'Node', $intNodeID);
+		PlayerStateChanges::deletePlayerStateChangesThatRefrenceObject($intGameID, 'Node', $intNodeID);
+
+		
 		$query = "DELETE FROM {$prefix}_nodes WHERE node_id = {$intNodeID}";
 		
 		$rsResult = @mysql_query($query);

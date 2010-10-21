@@ -3,6 +3,7 @@ require_once("module.php");
 require_once("media.php");
 require_once("games.php");
 require_once("locations.php");
+require_once("playerStateChanges.php");
 
 class Items extends Module
 {
@@ -252,6 +253,11 @@ class Items extends Module
 	{
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+		
+		Locations::deleteLocationsForObject($intGameID, 'Item', $intItemID);
+		Requirements::deleteRequirementsForRequirementObject($intGameID, 'Item', $intItemID);
+		PlayerStateChanges::deletePlayerStateChangesThatRefrenceObject($intGameID, 'Item', $intItemID);
+		Module::removeItemFromAllPlayerInventories($prefix, $intItemID );
 		
 		$query = "DELETE FROM {$prefix}_items WHERE item_id = {$intItemID}";
 		

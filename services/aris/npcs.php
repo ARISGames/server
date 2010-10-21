@@ -1,6 +1,9 @@
 <?php
 require_once("module.php");
 require_once("players.php");
+require_once("locations.php");
+require_once("requirements.php");
+require_once("playerStateChanges.php");
 
 class Npcs extends Module
 {
@@ -156,6 +159,10 @@ class Npcs extends Module
 	{
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");		
+		
+		Locations::deleteLocationsForObject($intGameID, 'Npc', $intNpcID);
+		Requirements::deleteRequirementsForRequirementObject($intGameID, 'Npc', $intNpcID);
+		PlayerStateChanges::deletePlayerStateChangesThatRefrenceObject($intGameID, 'Npc', $intNpcID);
 		
 		$query = "DELETE FROM {$prefix}_npcs WHERE npc_id = {$intNpcID}";
 		
