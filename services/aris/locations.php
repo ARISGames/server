@@ -8,8 +8,12 @@ class Locations extends Module
 {
 
 	/**
-     * Fetch all Locations
-     * @returns the locations rs
+     * Fetch all location in a game
+     *
+     * @param integer $intGameID The game identifier
+     * @return returnData
+     * @returns a returnData object containing an array of locations
+     * @see returnData
      */
 	public function getLocations($intGameID)
 	{
@@ -24,10 +28,14 @@ class Locations extends Module
 		return new returnData(0, $rsResult);	
 	}
 	
-	
 	/**
-     * Fetch all locations for a given player
-     * @returns the locations that meet requirements and have a qty > 0
+     * Fetch locations with fulfilled requirements and other player positions
+     *
+     * @param integer $intGameID The game identifier
+     * @param integer $intPlayerID The player identifier
+     * @return returnData
+     * @returns a returnData object containing an array of locations
+     * @see returnData
      */
 	public function getLocationsForPlayer($intGameID, $intPlayerID)
 	{
@@ -51,8 +59,33 @@ class Locations extends Module
 				AND
 				$this->objectMeetsRequirements ($prefix, $intPlayerID, $location->type, $location->type_id)) {
 				
-					$arrayLocations[] = $location;
 					NetDebug::trace('Reqs Met. Adding to Result');	
+
+					//If location's icon is not defined, use the object's icon
+					if (!$location->icon_media_id) {
+						switch ($location->type) {
+							case 'Item':
+								$query = "SELECT icon_media_id FROM {$prefix}_items WHERE item_id = {$location->type_id}";
+								break;
+							case 'Node':
+								$query = "SELECT icon_media_id FROM {$prefix}_nodes WHERE node_id = {$location->type_id}";
+								break;
+							case 'Npc':
+								$query = "SELECT icon_media_id FROM {$prefix}_npcs WHERE npc_id = {$location->type_id}";
+								break;
+						}
+						$rsObject = @mysql_query($query);
+						NetDebug::trace(mysql_error());	
+						$object = @mysql_fetch_object($rsObject);
+						NetDebug::trace(mysql_error());	
+						$objectsIconMediaId = $object->icon_media_id;
+						$location->icon_media_id = $objectsIconMediaId;
+						NetDebug::trace("Icon media changed to {$location->icon_media_id}");	
+
+					}
+					
+					//Add it
+					$arrayLocations[] = $location;
 
 			}
 			else NetDebug::trace('Reqs Failed. Moving On');	
@@ -95,7 +128,12 @@ class Locations extends Module
 	
 	/**
      * Fetch a specific location
-     * @returns a single location
+     *
+     * @param integer $intGameID The game identifier
+     * @param integer $intLocationID The location to fetch
+     * @return returnData
+     * @returns a returnData object containing a location
+     * @see returnData
      */
 	public function getLocation($intGameID, $intLocationID)
 	{
@@ -113,10 +151,24 @@ class Locations extends Module
 		
 	
 	
-	
-	/**
-     * Places a location placeholder on the map which links to an aris game object type and id
-     * @returns the new locationID on success
+     /**
+     * Creates a location that points to a given object
+     *
+     * @param integer $intGameID The game identifier
+     * @param string $strLocationName The new name
+     * @param integer $intIconMediaID The new icon media id
+     * @param double $dblLatitude The new latitude
+     * @param double $dblLongitude The new longitude
+     * @param integer $dblError The radius in meters from the lat/log point in which this locaiton is triggered
+     * @param string $strObjectType A valid object type (see objectTypeOptions())
+     * @param string $intObjectID Id for the object
+     * @param string $intQuantity Quantity at this location (only used if item)
+     * @param bool $boolHidden 0 to display normally, 1 to hide from the player's map
+     * @param bool $boolForceView 0 to display normally, 1 to display immediately when player enters range
+     * @param bool $boolAllowQuickTravel 0 to disallow, 1 to allow
+     * @return returnData
+     * @returns a returnData object containing the new locationID
+     * @see returnData
      */
 	public function createLocation($intGameID, $strLocationName, $intIconMediaID, 
 								$dblLatitude, $dblLongitude, $dblError,
@@ -161,16 +213,30 @@ class Locations extends Module
 	}
 
 
-
-
-	/**
+     /**
      * Updates the attributes of a Location
-     * @returns true if a record was modified, false if no changes were required (could be from not matching the location id)
-     */
+     *
+     * @param integer $intGameID The game identifier
+     * @param string $intLocationID The location identifier     
+     * @param string $strLocationName The new name
+     * @param integer $intIconMediaID The new icon media id
+     * @param double $dblLatitude The new latitude
+     * @param double $dblLongitude The new longitude
+     * @param integer $dblError The radius in meters from the lat/log point in which this locaiton is triggered
+     * @param string $strObjectType A valid object type (see objectTypeOptions())
+     * @param string $intObjectID Id for the object
+     * @param string $intQuantity Quantity at this location (only used if item)
+     * @param bool $boolHidden 0 to display normally, 1 to hide from the player's map
+     * @param bool $boolForceView 0 to display normally, 1 to display immediately when player enters range
+     * @param bool $boolAllowQuickTravel 0 to disallow, 1 to allow
+     * @return returnData
+     * @returns a returnData object containing true if a record was modified
+     * @see returnData
+     */     
 	public function updateLocation($intGameID, $intLocationID, $strLocationName, $intIconMediaID, 
 								$dblLatitude, $dblLongitude, $dblError,
 								$strObjectType, $intObjectID,
-								$intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel = 0)
+								$intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel)
 	{
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
@@ -214,10 +280,16 @@ class Locations extends Module
 		
 	}	
 
-	/**
+
+     /**
      * Deletes a Location
-     * @returns true if a location was deleted, false if no changes were required (could be from not matching the location id)
-     */
+     *
+     * @param integer $intGameID The game identifier
+     * @param string $intLocationID The location identifier     
+     * @return returnData
+     * @returns a returnData object containing true if a record was deleted
+     * @see returnData
+     */ 
 	public function deleteLocation($intGameID, $intLocationId)
 	{
 		$prefix = $this->getPrefix($intGameID);
@@ -242,7 +314,17 @@ class Locations extends Module
 			return new returnData(0, FALSE);
 		}	
 	}
-	
+
+     /**
+     * Deletes all locations that refer to the given object
+     *
+     * @param integer $intGameID The game identifier
+     * @param string $strObjectType A valid object type (see objectTypeOptions())
+     * @param string $intObjectID Id for the object
+     * @return returnData
+     * @returns a returnData object containing true if a record was deleted
+     * @see returnData
+     */ 
 	public function deleteLocationsForObject($intGameID, $strObjectType, $intObjectId)
 	{
 		$prefix = $this->getPrefix($intGameID);
@@ -276,10 +358,14 @@ class Locations extends Module
 	}	
 	
 	
-	/**
-     * Fetch the valid content types from the requirements table
-     * @returns an array of strings
-     */
+     /**
+     * Fetch the valid content types for use in other location operations
+     *
+     * @param integer $intGameID The game identifier
+     * @return returnData
+     * @returns a returnData object containing an array of valid objectType strings
+     * @see returnData
+     */      
 	public function objectTypeOptions($intGameID){	
 		$options = Locations::lookupObjectTypeOptionsFromSQL($intGameID);
 		if (!$options) return new returnData(1, NULL, "invalid game id");
@@ -287,20 +373,26 @@ class Locations extends Module
 	}
 	
 	
-	/**
+     /**
      * Check if a content type is valid
-     * @returns TRUE if valid
-     */
+     *
+     * @param integer $intGameID The game identifier
+     * @return bool
+     * @returns TRUE if valid, FALSE otherwise
+     */  
 	private function isValidObjectType($intGameID, $strObjectType) {
 		$validTypes = Locations::lookupObjectTypeOptionsFromSQL($intGameID);
 		return in_array($strObjectType, $validTypes);
 	}
 	
 	
-	/**
-     * Fetch the valid requirement types from the requirements table
+     /**
+     * Fetch the valid content types for use in other location operations
+     *
+     * @param integer $intGameID The game identifier
+     * @return array
      * @returns an array of strings
-     */
+     */  
 	private function lookupObjectTypeOptionsFromSQL($intGameID){
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return FALSE;
@@ -313,11 +405,6 @@ class Locations extends Module
 		$enum_fields = $enum_array[1];
 		return( $enum_fields );
 	}	
-	
-	
-
-	
-	
-	
+		
 	
 }
