@@ -57,7 +57,7 @@ abstract class Module
 	public function getPrefix($intGameID) {	
 		//Lookup game information
 		$query = "SELECT * FROM games WHERE game_id = '{$intGameID}'";
-		NetDebug::trace($query);
+		//NetDebug::trace($query);
 		$rsResult = @mysql_query($query);
 		if (mysql_num_rows($rsResult) < 1) return FALSE;
 		$gameRecord = mysql_fetch_array($rsResult);
@@ -272,23 +272,24 @@ abstract class Module
     }
     
 
-	/** 
-	 * playerHasItem
-	 *
-     * Checks if the specified user has the specified item in the specified game.
-     * @return boolean
-     */
-    protected function playerHasItem($intGameID, $intPlayerID, $intItemID) {
-    	$prefix = $this->getPrefix($intGameID);
-		if (!$prefix) return FALSE;
-    
-		$query = "SELECT * FROM {$prefix}_player_items 
-									  WHERE player_id = '{$intPlayerID}' 
-									  AND item_id = '{$intItemID}'";
-		
-		$rsResult = @mysql_query($query);
-		
-		if (mysql_num_rows($rsResult) > 0) return true;
+	/**
+     * Checks if a player has an item with a minimum quantity
+     *
+     * When this service runs, locations, requirements, playerStatechanges and player inventories
+     * are updated to remove any refrence to the deleted item.
+     *
+     * @param integer $gameId The game identifier
+     * @param integer $playerID The player identifier
+     * @param integer $itemId The item identifier
+     * @param integer $minItemQuantity The minimum quantity to qualify, 1 if unspecified
+     * @return bool
+     * @returns TRUE if the player has >= the minimum quantity, FALSE otherwise
+     */     
+    protected function playerHasItem($gameID, $playerID, $itemID, $minItemQuantity) {
+    	if (!$minItemQuantity) $minItemQuantity = 1;
+    	NetDebug::trace("checking if player $playerID has atleast $minItemQuantity of item $itemID in inventory");		
+    	$qty = Module::itemQtyInPlayerInventory($gameID, $playerID, $itemID);
+    	if ($qty >= $minItemQuantity) return TRUE;
 		else return false;
     }		
     
@@ -305,12 +306,18 @@ abstract class Module
     
 		$query = "SELECT * FROM {$prefix}_player_items 
 									  WHERE player_id = '{$intPlayerID}' 
-									  AND item_id = '{$intItemID}'";
+									  AND item_id = '{$intItemID}' LIMIT 1";
 		
 		$rsResult = @mysql_query($query);
 		$playerItem = mysql_fetch_object($rsResult);
-		
-		return $playerItem->qty;
+		if ($playerItem) {
+			NetDebug::trace("player has {$playerItem->qty} of item $intItemID in inventory");
+			return $playerItem->qty;
+		}
+		else {
+			NetDebug::trace("player has does not have $intItemID in inventory");
+			return 0;
+		}
     }	    
     
 	/** 
@@ -394,11 +401,11 @@ abstract class Module
 				//Inventory related	
 				case Module::kREQ_PLAYER_HAS_ITEM:
 					$requirementMet = Module::playerHasItem($strPrefix, $intPlayerID, 
-						$requirement['requirement_detail_1']);
+						$requirement['requirement_detail_1'], $requirement['requirement_detail_2']);
 					break;
 				case Module::kREQ_PLAYER_DOES_NOT_HAVE_ITEM:
 					$requirementMet = !Module::playerHasItem($strPrefix, $intPlayerID, 
-						$requirement['requirement_detail_1']);
+						$requirement['requirement_detail_1'], $requirement['requirement_detail_2']);
 					break;
 				//Data Collection
 				case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM:
