@@ -76,7 +76,7 @@ class Items extends Module
 	public static function getItem($gameId, $itemId)
 	{
 		
-		$prefix = $this->getPrefix($gameId);
+		$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$query = "SELECT * FROM {$prefix}_items WHERE item_id = {$itemId} LIMIT 1";
