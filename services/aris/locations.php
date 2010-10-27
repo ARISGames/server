@@ -28,6 +28,34 @@ class Locations extends Module
 		return new returnData(0, $rsResult);	
 	}
 	
+	
+	/**
+     * Fetch all locations in a game with matching QR Code information
+     *
+     * @param integer $intGameID The game identifier
+     * @return returnData
+     * @returns a returnData object containing an array of locations with the QR code record id and code
+     * @see returnData
+     */
+	public function getLocationsWithQrCode($intGameID)
+	{
+		$prefix = $this->getPrefix($intGameID);
+		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+		
+		
+		$query = "SELECT {$prefix}_locations.*,{$prefix}_qrcodes.qrcode_id,{$prefix}_qrcodes.code
+					FROM {$prefix}_locations JOIN {$prefix}_qrcodes
+					ON {$prefix}_qrcodes.link_id = {$prefix}_locations.location_id
+					WHERE {$prefix}_qrcodes.link_type = 'Location'";
+		NetDebug::trace($query);	
+
+		$rsResult = @mysql_query($query);
+		NetDebug::trace(mysql_error());	
+		
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+		return new returnData(0, $rsResult);	
+	}	
+	
 	/**
      * Fetch locations with fulfilled requirements and other player positions
      *
