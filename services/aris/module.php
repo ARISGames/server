@@ -275,9 +275,6 @@ abstract class Module
 	/**
      * Checks if a player has an item with a minimum quantity
      *
-     * When this service runs, locations, requirements, playerStatechanges and player inventories
-     * are updated to remove any refrence to the deleted item.
-     *
      * @param integer $gameId The game identifier
      * @param integer $playerID The player identifier
      * @param integer $itemId The item identifier
@@ -294,24 +291,27 @@ abstract class Module
     }		
     
     
-	/** 
-	 * itemQtyInPlayerInventory
-	 *
-     * Checks if the specified user has the specified item in the specified game.
-     * @return qty a player has of a given item
-     */
-    protected function itemQtyInPlayerInventory($intGameID, $intPlayerID, $intItemID) {
-    	$prefix = $this->getPrefix($intGameID);
+	/**
+     * Checks the quantity a player has of an item in their inventory
+     *
+     * @param integer $gameId The game identifier
+     * @param integer $playerId The player identifier
+     * @param integer $itemId The item identifier
+     * @return integer
+     * @returns the quantity of the item in the player's inventory
+     */       
+    protected function itemQtyInPlayerInventory($gameId, $playerId, $itemId) {
+    	$prefix = $this->getPrefix($gameId);
 		if (!$prefix) return FALSE;
     
 		$query = "SELECT * FROM {$prefix}_player_items 
-									  WHERE player_id = '{$intPlayerID}' 
-									  AND item_id = '{$intItemID}' LIMIT 1";
+									  WHERE player_id = '{$playerId}' 
+									  AND item_id = '{$itemId}' LIMIT 1";
 		
 		$rsResult = @mysql_query($query);
 		$playerItem = mysql_fetch_object($rsResult);
 		if ($playerItem) {
-			NetDebug::trace("player has {$playerItem->qty} of item $intItemID in inventory");
+			NetDebug::trace("player has {$playerItem->qty} of item $itemId in inventory");
 			return $playerItem->qty;
 		}
 		else {
