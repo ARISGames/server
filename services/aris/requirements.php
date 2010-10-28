@@ -9,16 +9,16 @@ class Requirements extends Module
      * Fetch all Requirements for a Game Object
      * @returns the requirements
      */
-	public function getRequirementsForObject($intGameID, $strObjectType, $intObjectID)
+	public function getRequirementsForObject($gameId, $objectType, $objectId)
 	{
 		
-		$prefix = Module::getPrefix($intGameID);
+		$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		if (!$this->isValidObjectType($intGameID, $strObjectType)) return new returnData(4, NULL, "Invalid object type");
+		if (!$this->isValidObjectType($gameId, $objectType)) return new returnData(4, NULL, "Invalid object type");
 		
 		$query = "SELECT * FROM {$prefix}_requirements
-					WHERE content_type = '{$strObjectType}' and content_id = '{$intObjectID}'";
+					WHERE content_type = '{$objectType}' and content_id = '{$objectId}'";
 		NetDebug::trace($query);
 
 		
@@ -32,12 +32,12 @@ class Requirements extends Module
      * Fetch a specific requirement
      * @returns a single requirement
      */
-	public function getRequirement($intGameID, $intRequirementID)
+	public function getRequirement($gameId, $requirementId)
 	{
-		$prefix = Module::getPrefix($intGameID);
+		$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		$query = "SELECT * FROM {$prefix}_requirements WHERE requirement_id = {$intRequirementID} LIMIT 1";
+		$query = "SELECT * FROM {$prefix}_requirements WHERE requirement_id = {$requirementId} LIMIT 1";
 		
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -49,27 +49,38 @@ class Requirements extends Module
 	}
 	
 	/**
-     * Create a Requirement
-     * @returns the new requirementID on success
+     * Updates a requirement
+     *
+     * @param integer $gameId The game identifier
+     * @param string $objectType The object this req controls. Must be a valid object type (see objectTypeOptions())
+     * @param integer $objectId 
+     * @param string $requirementType The kind of requirement. Must be a valid requirement type (see requirementTypeOptions())
+     * @param mixed $requirementDetail1 See http://code.google.com/p/arisgames/wiki/ServerTechnicalDocs
+     * @param mixed $requirementDetail2 See http://code.google.com/p/arisgames/wiki/ServerTechnicalDocs
+     * @param mixed $requirementDetail3 See http://code.google.com/p/arisgames/wiki/ServerTechnicalDocs
+     * @param string $booleanOperator The bool operation to use when computing all reqs for this object. Either 'AND' or 'OR'
+     * @return returnData
+     * @returns a returnData object containing the newly created requirement's id
+     * @see returnData
      */
-	public function createRequirement($intGameID, $strObjectType, $intObjectID, 
-		$strRequirementType, $strRequirementDetail1 = null, $strRequirementDetail2 = null,$strRequirementDetail3 = null)
+	public function createRequirement($gameId, $objectType, $objectId, 
+		$requirementType, $requirementDetail1, $requirementDetail2, $requirementDetail3, $booleanOperator)
 	{
-		$prefix = Module::getPrefix($intGameID);
+		$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		//test the object type 
-		if (!$this->isValidObjectType($intGameID, $strObjectType)) return new returnData(4, NULL, "Invalid object type");
+		if (!$this->isValidObjectType($gameId, $objectType)) return new returnData(4, NULL, "Invalid object type");
 				
 		//test the requirement type
-		if (!$this->isValidRequirementType($intGameID, $strRequirementType)) return new returnData(5, NULL, "Invalid requirement type");
+		if (!$this->isValidRequirementType($gameId, $requirementType)) return new returnData(5, NULL, "Invalid requirement type");
 		
 		
 		$query = "INSERT INTO {$prefix}_requirements 
 					(content_type, content_id, requirement, 
-					requirement_detail_1,requirement_detail_2,requirement_detail_3)
-				VALUES ('{$strObjectType}','{$intObjectID}','{$strRequirementType}',
-					'{$strRequirementDetail1}', '{$strRequirementDetail2}', '{$strRequirementDetail3}')";
+					requirement_detail_1,requirement_detail_2,requirement_detail_3,boolean_operator)
+				VALUES ('{$objectType}','{$objectId}','{$requirementType}',
+					'{$requirementDetail1}', '{$requirementDetail2}', '{$requirementDetail3}', '{$booleanOperator}')";
 		
 		NetDebug::trace("Running a query = $query");	
 		
@@ -82,32 +93,46 @@ class Requirements extends Module
 	
 	
 	/**
-     * Update a specific Requirement
-     * @returns true if edit was done, false if no changes were made
+     * Updates a requirement
+     *
+     * @param integer $gameId The game identifier
+     * @param integer $requirementId The item identifier
+     * @param string $objectType The object this req controls. Must be a valid object type (see objectTypeOptions())
+     * @param integer $objectId 
+     * @param string $requirementType The kind of requirement. Must be a valid requirement type (see requirementTypeOptions())
+     * @param mixed $requirementDetail1 See http://code.google.com/p/arisgames/wiki/ServerTechnicalDocs
+     * @param mixed $requirementDetail2 See http://code.google.com/p/arisgames/wiki/ServerTechnicalDocs
+     * @param mixed $requirementDetail3 See http://code.google.com/p/arisgames/wiki/ServerTechnicalDocs
+     * @param string $booleanOperator The bool operation to use when computing all reqs for this object. Either 'AND' or 'OR'
+     * @return returnData
+     * @returns a returnData object containing a TRUE if an change was made, FALSE otherwise
+     * @see returnData
      */
-	public function updateRequirement($intGameID, $intRequirementID, $strObjectType, $intObjectID, 
-		$strRequirementType, $strRequirementDetail1 = null, $strRequirementDetail2 = null,$strRequirementDetail3 = null)
+	public function updateRequirement($gameId, $requirementId, $objectType, $objectId, 
+		$requirementType, $requirementDetail1, $requirementDetail2,$requirementDetail3,
+		$booleanOperator)
 	{
-		$prefix = Module::getPrefix($intGameID);
+		$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		//test the object type 
-		if (!$this->isValidObjectType($intGameID, $strObjectType)) return new returnData(4, NULL, "Invalid object type");
+		if (!$this->isValidObjectType($gameId, $objectType)) return new returnData(4, NULL, "Invalid object type");
 				
 		//test the requirement type
-		if (!$this->isValidRequirementType($intGameID, $strRequirementType)) return new returnData(5, NULL, "Invalid requirement type");
+		if (!$this->isValidRequirementType($gameId, $requirementType)) return new returnData(5, NULL, "Invalid requirement type");
 		
 		
 
 		$query = "UPDATE {$prefix}_requirements 
 					SET 
-					content_type = '{$strObjectType}',
-					content_id = '{$intObjectID}',
-					requirement = '{$strRequirementType}',
-					requirement_detail_1 = '{$strRequirementDetail1}',
-					requirement_detail_2 = '{$strRequirementDetail2}',
-					requirement_detail_3 = '{$strRequirementDetail3}'
-					WHERE requirement_id = '{$intRequirementID}'";
+					content_type = '{$objectType}',
+					content_id = '{$objectId}',
+					requirement = '{$requirementType}',
+					requirement_detail_1 = '{$requirementDetail1}',
+					requirement_detail_2 = '{$requirementDetail2}',
+					requirement_detail_3 = '{$requirementDetail3}',
+					boolean_operator = '{$booleanOperator}'
+					WHERE requirement_id = '{$requirementId}'";
 		
 		NetDebug::trace("Running a query = $query");	
 		
@@ -123,12 +148,12 @@ class Requirements extends Module
      * Delete an Requirement
      * @returns 0 on success
      */
-	public function deleteRequirement($intGameID, $intRequirementID)
+	public function deleteRequirement($gameId, $requirementId)
 	{
-		$prefix = Module::getPrefix($intGameID);
+		$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
-		$query = "DELETE FROM {$prefix}_requirements WHERE requirement_id = {$intRequirementID}";
+		$query = "DELETE FROM {$prefix}_requirements WHERE requirement_id = {$requirementId}";
 		
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -143,14 +168,14 @@ class Requirements extends Module
 	}	
 	
 	
-	public function deleteRequirementsForRequirementObject($intGameID, $strObjectType, $intObjectId)
+	public function deleteRequirementsForRequirementObject($gameId, $objectType, $objectId)
 	{
-		$prefix = Module::getPrefix($intGameID);
+		$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$requirementString = '';
 		
-		switch ($strObjectType) {
+		switch ($objectType) {
 			case 'Node':
 				$requirementString = "requirement = 'PLAYER_VIEWED_NODE' OR 
 										requirement = 'PLAYER_HAS_NOT_VIEWED_NODE'";
@@ -171,7 +196,7 @@ class Requirements extends Module
 			
 		//Delete the Locations and related QR Codes
 		$query = "DELETE FROM {$prefix}_requirements
-			WHERE ({$requirementString}) AND requirement_detail_1 = '{$intObjectId}'";
+			WHERE ({$requirementString}) AND requirement_detail_1 = '{$objectId}'";
 		
 		@mysql_query($query);
 		
@@ -194,8 +219,8 @@ class Requirements extends Module
      * Fetch the valid content types from the requirements table
      * @returns an array of strings
      */
-	public function contentTypeOptions($intGameID){	
-		$options = $this->lookupContentTypeOptionsFromSQL($intGameID);
+	public function contentTypeOptions($gameId){	
+		$options = $this->lookupContentTypeOptionsFromSQL($gameId);
 		if (!$options) return new returnData(1, NULL, "invalid game id");
 		return new returnData(0, $options);
 	}
@@ -204,8 +229,8 @@ class Requirements extends Module
      * Fetch the valid content types from the requirements table
      * @returns an array of strings
      */
-	public function requirementTypeOptions($intGameID){	
-		$options = $this->lookupRequirementTypeOptionsFromSQL($intGameID);
+	public function requirementTypeOptions($gameId){	
+		$options = $this->lookupRequirementTypeOptionsFromSQL($gameId);
 		if (!$options) return new returnData(1, NULL, "invalid game id");
 		return new returnData(0, $options);	
 	}
@@ -216,8 +241,8 @@ class Requirements extends Module
      * Fetch the valid content types from the requirements table
      * @returns an array of strings
      */
-	private function lookupContentTypeOptionsFromSQL($intGameID){
-		$prefix = Module::getPrefix($intGameID);
+	private function lookupContentTypeOptionsFromSQL($gameId){
+		$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return FALSE;
 		
 		$query = "SHOW COLUMNS FROM {$prefix}_requirements LIKE 'content_type'";
@@ -235,8 +260,8 @@ class Requirements extends Module
      * Fetch the valid requirement types from the requirements table
      * @returns an array of strings
      */
-	private function lookupRequirementTypeOptionsFromSQL($intGameID){
-		$prefix = Module::getPrefix($intGameID);
+	private function lookupRequirementTypeOptionsFromSQL($gameId){
+		$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return FALSE;
 		
 		$query = "SHOW COLUMNS FROM {$prefix}_requirements LIKE 'requirement'";
@@ -253,20 +278,20 @@ class Requirements extends Module
      * Check if a content type is valid
      * @returns TRUE if valid
      */
-	private function isValidObjectType($intGameID, $strObjectType) {
-		$validTypes = $this->lookupContentTypeOptionsFromSQL($intGameID);
-		return in_array($strObjectType, $validTypes);
+	private function isValidObjectType($gameId, $objectType) {
+		$validTypes = $this->lookupContentTypeOptionsFromSQL($gameId);
+		return in_array($objectType, $validTypes);
 	}
 
 	/**
      * Check if a requirement type is valid
      * @returns TRUE if valid
      */
-	private function isValidRequirementType($intGameID, $strRequirementType) {
-		$validTypes = $this->lookupRequirementTypeOptionsFromSQL($intGameID);
+	private function isValidRequirementType($gameId, $requirementType) {
+		$validTypes = $this->lookupRequirementTypeOptionsFromSQL($gameId);
 		NetDebug::trace($validTypes);
 
-		return in_array($strRequirementType, $validTypes);
+		return in_array($requirementType, $validTypes);
 	}	
 	
 
