@@ -20,7 +20,7 @@ class Media extends Module
      */
 	public function getMedia($intGameID)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$query = "SELECT * FROM media WHERE game_id = {$prefix} or game_id = 0";
@@ -62,7 +62,7 @@ class Media extends Module
      */
 	public function getMediaObject($intGameID, $intMediaID)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$query = "SELECT * FROM media WHERE game_id = {$prefix} AND media_id = {$intMediaID} LIMIT 1";
@@ -135,7 +135,7 @@ class Media extends Module
 	public function createMedia($intGameID, $strName, $strFileName, $boolIsIcon)
 	{
 		
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
 		$strName = addslashes($strName);
@@ -163,7 +163,7 @@ class Media extends Module
      */
 	public function renameMedia($intGameID, $intMediaID, $strName)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$strName = addslashes($strName);

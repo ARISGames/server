@@ -443,7 +443,7 @@ class Games extends Module
      */	
 	public function upgradeGameDatabase($intGameID)
 	{	
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 
 
 		$query = "ALTER TABLE  {$prefix}_locations ADD allow_quick_travel enum('0','1') NOT NULL default '0'";
@@ -528,7 +528,7 @@ class Games extends Module
 	{
 		$returnData = new returnData(0, NULL, NULL);
 		
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "game does not exist");
 	
 		//Delete the files
@@ -584,7 +584,7 @@ class Games extends Module
 	public function backupGame($intGameID)
 	{
 	
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 	    if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		

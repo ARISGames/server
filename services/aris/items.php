@@ -19,7 +19,7 @@ class Items extends Module
 	public static function getItems($gameId)
 	{
 		
-		$prefix = $this->getPrefix($gameId);
+		$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		
@@ -45,7 +45,7 @@ class Items extends Module
 	public static function getItemsForPlayer($gameId, $playerId)
 	{
 		
-		$prefix = $this->getPrefix($gameId);
+		$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		
@@ -112,7 +112,7 @@ class Items extends Module
 		$name = addslashes($name);	
 		$description = addslashes($description);	
 		
-		$prefix = $this->getPrefix($gameId);
+		$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$query = "INSERT INTO {$prefix}_items 
@@ -156,7 +156,7 @@ class Items extends Module
 	public static function createItemAndGiveToPlayer($gameId, $playerId, $name, $description, 
 								$fileName, $droppable, $destroyable, $latitude, $longitude)
 	{
-		$prefix = $this->getPrefix($gameId);
+		$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
 		$name = addslashes($name);
@@ -220,7 +220,7 @@ class Items extends Module
 	public static function createItemAndPlaceOnMap($gameId, $playerId, $name, $description, 
 								$fileName, $droppable, $destroyable, $latitude, $longitude)
 	{
-		$prefix = $this->getPrefix($gameId);
+		$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
 		$name = addslashes($name);
@@ -284,7 +284,7 @@ class Items extends Module
 	public static function updateItem($gameId, $itemId, $name, $description, 
 								$iconMediaId, $mediaId, $droppable, $destroyable, $maxQuantityInPlayerInventory)
 	{
-		$prefix = $this->getPrefix($gameId);
+		$prefix = Module::getPrefix($gameId);
 		
 		$name = addslashes($name);	
 		$description = addslashes($description);	
@@ -297,8 +297,8 @@ class Items extends Module
 						icon_media_id = '{$iconMediaId}',
 						media_id = '{$mediaId}', 
 						dropable = '{$droppable}',
-						destroyable = '{$destroyable}'
-						max_qty_in_inventory = '{$maxQuantityInPlayerInventory}',
+						destroyable = '{$destroyable}',
+						max_qty_in_inventory = '{$maxQuantityInPlayerInventory}'
 					WHERE item_id = '{$itemId}'";
 		
 		NetDebug::trace("updateNpc: Running a query = $query");	
@@ -327,7 +327,7 @@ class Items extends Module
      */
 	public static function deleteItem($gameId, $itemId)
 	{
-		$prefix = $this->getPrefix($gameId);
+		$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
 		Locations::deleteLocationsForObject($gameId, 'Item', $itemId);

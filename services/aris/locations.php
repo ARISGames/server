@@ -17,7 +17,7 @@ class Locations extends Module
      */
 	public function getLocations($intGameID)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
 		
@@ -39,7 +39,7 @@ class Locations extends Module
      */
 	public function getLocationsWithQrCode($intGameID)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
 		
@@ -67,7 +67,7 @@ class Locations extends Module
      */
 	public function getLocationsForPlayer($intGameID, $intPlayerID)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
 		$query = "SELECT * FROM {$prefix}_locations 
@@ -165,7 +165,7 @@ class Locations extends Module
      */
 	public function getLocation($intGameID, $intLocationID)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$query = "SELECT * FROM {$prefix}_locations WHERE location_id = {$intLocationID} LIMIT 1";
@@ -203,7 +203,7 @@ class Locations extends Module
 								$strObjectType, $intObjectID,
 								$intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel) {
 														
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		if (!$intQuantity) $intQuantity = 1;
 		if (!$boolAllowQuickTravel) $boolAllowQuickTravel = 0;
@@ -266,7 +266,7 @@ class Locations extends Module
 								$strObjectType, $intObjectID,
 								$intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$strLocationName = addslashes($strLocationName);
@@ -320,7 +320,7 @@ class Locations extends Module
      */ 
 	public function deleteLocation($intGameID, $intLocationId)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		//Lookup the name of the item
@@ -355,7 +355,7 @@ class Locations extends Module
      */ 
 	public function deleteLocationsForObject($intGameID, $strObjectType, $intObjectId)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		//Check the object Type is good or null
@@ -422,7 +422,7 @@ class Locations extends Module
      * @returns an array of strings
      */  
 	private function lookupObjectTypeOptionsFromSQL($intGameID){
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return FALSE;
 		
 		$query = "SHOW COLUMNS FROM {$prefix}_locations LIKE 'type'";

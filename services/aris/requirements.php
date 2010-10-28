@@ -12,7 +12,7 @@ class Requirements extends Module
 	public function getRequirementsForObject($intGameID, $strObjectType, $intObjectID)
 	{
 		
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		if (!$this->isValidObjectType($intGameID, $strObjectType)) return new returnData(4, NULL, "Invalid object type");
@@ -34,7 +34,7 @@ class Requirements extends Module
      */
 	public function getRequirement($intGameID, $intRequirementID)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$query = "SELECT * FROM {$prefix}_requirements WHERE requirement_id = {$intRequirementID} LIMIT 1";
@@ -55,7 +55,7 @@ class Requirements extends Module
 	public function createRequirement($intGameID, $strObjectType, $intObjectID, 
 		$strRequirementType, $strRequirementDetail1 = null, $strRequirementDetail2 = null,$strRequirementDetail3 = null)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		//test the object type 
@@ -88,7 +88,7 @@ class Requirements extends Module
 	public function updateRequirement($intGameID, $intRequirementID, $strObjectType, $intObjectID, 
 		$strRequirementType, $strRequirementDetail1 = null, $strRequirementDetail2 = null,$strRequirementDetail3 = null)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		//test the object type 
@@ -125,7 +125,7 @@ class Requirements extends Module
      */
 	public function deleteRequirement($intGameID, $intRequirementID)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
 		$query = "DELETE FROM {$prefix}_requirements WHERE requirement_id = {$intRequirementID}";
@@ -145,7 +145,7 @@ class Requirements extends Module
 	
 	public function deleteRequirementsForRequirementObject($intGameID, $strObjectType, $intObjectId)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$requirementString = '';
@@ -217,7 +217,7 @@ class Requirements extends Module
      * @returns an array of strings
      */
 	private function lookupContentTypeOptionsFromSQL($intGameID){
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return FALSE;
 		
 		$query = "SHOW COLUMNS FROM {$prefix}_requirements LIKE 'content_type'";
@@ -236,7 +236,7 @@ class Requirements extends Module
      * @returns an array of strings
      */
 	private function lookupRequirementTypeOptionsFromSQL($intGameID){
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return FALSE;
 		
 		$query = "SHOW COLUMNS FROM {$prefix}_requirements LIKE 'requirement'";

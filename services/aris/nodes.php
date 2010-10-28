@@ -13,7 +13,7 @@ class Nodes extends Module
      */
 	public function getNodes($intGameID)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		
@@ -31,7 +31,7 @@ class Nodes extends Module
      */
 	public function getNode($intGameID, $intNodeID)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$query = "SELECT * FROM {$prefix}_nodes WHERE node_id = {$intNodeID} LIMIT 1";
@@ -66,7 +66,7 @@ class Nodes extends Module
 		$strQACorrectAnswer = addslashes($strQACorrectAnswer);		
 		
 		
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		$query = "INSERT INTO {$prefix}_nodes 
 					(title, text, media_id, icon_media_id,
 						opt1_text, opt1_node_id, 
@@ -113,7 +113,7 @@ class Nodes extends Module
 		$strOpt3Text = addslashes($strOpt3Text);	
 		$strQACorrectAnswer = addslashes($strQACorrectAnswer);
 		
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		
@@ -145,7 +145,7 @@ class Nodes extends Module
      */
 	public function deleteNode($intGameID, $intNodeID)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		Locations::deleteLocationsForObject($intGameID, 'Node', $intNodeID);
@@ -169,7 +169,7 @@ class Nodes extends Module
      */
 	public function getReferrers($intGameID, $intNodeID)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		//Find locations

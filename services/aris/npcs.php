@@ -15,7 +15,7 @@ class Npcs extends Module
 	public function getNpcs($intGameID)
 	{
 		
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
 		$query = "SELECT * FROM {$prefix}_npcs";
@@ -34,7 +34,7 @@ class Npcs extends Module
 	public function getNpc($intGameID, $intNpcID)
 	{
 		
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
 		$query = "SELECT * FROM {$prefix}_npcs WHERE npc_id = {$intNpcID} LIMIT 1";
@@ -56,7 +56,7 @@ class Npcs extends Module
 	public function getNpcWithConversationsForPlayer($intGameID, $intNpcID, $intPlayerID)
 	{
 		
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
 		//get the npc
@@ -103,7 +103,7 @@ class Npcs extends Module
 		$strDescription = addslashes($strDescription);	
 		$strGreeting = addslashes($strGreeting);	
 			
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
 		$query = "INSERT INTO {$prefix}_npcs 
@@ -132,7 +132,7 @@ class Npcs extends Module
 		$strDescription = addslashes($strDescription);	
 		$strGreeting = addslashes($strGreeting);			
 		
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");		
 		
 		$query = "UPDATE {$prefix}_npcs 
@@ -157,7 +157,7 @@ class Npcs extends Module
      */
 	public function deleteNpc($intGameID, $intNpcID)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");		
 		
 		Locations::deleteLocationsForObject($intGameID, 'Npc', $intNpcID);
@@ -183,7 +183,7 @@ class Npcs extends Module
 	{
 		$strText = addslashes($strText);	
 		
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");		
 		
 		$query = "INSERT INTO {$prefix}_npc_conversations 
@@ -208,7 +208,7 @@ class Npcs extends Module
      */
 	public function getConversations($intGameID, $intNpcID) {
 		
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");		
 		
 		$query = "SELECT * FROM {$prefix}_npc_conversations WHERE npc_id = '{$intNpcID}'";
@@ -228,7 +228,7 @@ class Npcs extends Module
      */
 	public function getConversationsForPlayer($intGameID, $intNpcID, $intPlayerID) {
 		
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");		
 		
 		NetDebug::trace("getConversationsForPlayer beginning");	
@@ -258,7 +258,7 @@ class Npcs extends Module
 	{
 		$strText = addslashes($strText);	
 		
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
 		$query = "UPDATE {$prefix}_npc_conversations 
@@ -280,7 +280,7 @@ class Npcs extends Module
      */
 	public function getReferrers($intGameID, $intNpcID)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		//Find locations
@@ -306,7 +306,7 @@ class Npcs extends Module
      */
 	public function deleteConversation($intGameID, $intConverationID)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
 		$query = "DELETE FROM {$prefix}_npc_conversations WHERE conversation_id = {$intConverationID}";

@@ -12,7 +12,7 @@ class Quests extends Module
 	public function getQuests($intGameID)
 	{
 		
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		
@@ -32,7 +32,7 @@ class Quests extends Module
 	public function getQuestsForPlayer($intGameID,$intPlayerID)
 	{
 		
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$query = "SELECT * FROM {$prefix}_quests";
@@ -77,7 +77,7 @@ class Quests extends Module
 	public function getQuest($intGameID, $intQuestID)
 	{
 		
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$query = "SELECT * FROM {$prefix}_quests WHERE quest_id = {$intQuestID} LIMIT 1";
@@ -103,7 +103,7 @@ class Quests extends Module
 		$strIncompleteDescription = addslashes($strIncompleteDescription);	
 		$strCompleteDescription = addslashes($strCompleteDescription);	
 		
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$query = "INSERT INTO {$prefix}_quests 
@@ -131,7 +131,7 @@ class Quests extends Module
 		$strIncompleteDescription = addslashes($strIncompleteDescription);	
 		$strCompleteDescription = addslashes($strCompleteDescription);	
 		
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$query = "UPDATE {$prefix}_quests 
@@ -160,7 +160,7 @@ class Quests extends Module
      */
 	public function deleteQuest($intGameID, $intQuestID)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
 		$query = "DELETE FROM {$prefix}_quests WHERE quest_id = {$intQuestID}";

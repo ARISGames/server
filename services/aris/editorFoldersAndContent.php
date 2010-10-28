@@ -17,7 +17,7 @@ class EditorFoldersAndContent extends Module
      */
 	public function getFoldersAndContent($intGameID)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
 		//Get the folders
@@ -56,7 +56,7 @@ class EditorFoldersAndContent extends Module
      */
 	public function getContent($intGameID, $intObjectContentID)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
 		//Get the Contents with some of the content's data
@@ -124,7 +124,7 @@ class EditorFoldersAndContent extends Module
 	{
 		$strName = addslashes($strName);	
 
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		
@@ -170,7 +170,7 @@ class EditorFoldersAndContent extends Module
 								$strContentType, $intContentID, $intSortOrder )
 	{
 		
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
 		if ($intObjectContentID) {
@@ -214,7 +214,7 @@ class EditorFoldersAndContent extends Module
      */
 	public function deleteFolder($intGameID, $intFolderID)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");		
 				
 		$query = "DELETE FROM {$prefix}_folders WHERE folder_id = {$intFolderID}";
@@ -232,7 +232,7 @@ class EditorFoldersAndContent extends Module
      */
 	public function deleteContent($intGameID, $intContentID)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");		
 		
 		$query = "DELETE FROM {$prefix}_folder_contents WHERE object_content_id = {$intContentID}";
