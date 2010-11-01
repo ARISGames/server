@@ -308,6 +308,86 @@ class Locations extends Module
 		
 	}	
 
+     /**
+     * Updates the attributes of a Location
+     *
+     * @param integer $intGameID The game identifier
+     * @param string $intLocationID The location identifier     
+     * @param string $strLocationName The new name
+     * @param integer $intIconMediaID The new icon media id
+     * @param double $dblLatitude The new latitude
+     * @param double $dblLongitude The new longitude
+     * @param integer $dblError The radius in meters from the lat/log point in which this locaiton is triggered
+     * @param string $strObjectType A valid object type (see objectTypeOptions())
+     * @param string $intObjectID Id for the object
+     * @param string $intQuantity Quantity at this location (only used if item)
+     * @param bool $boolHidden 0 to display normally, 1 to hide from the player's map
+     * @param bool $boolForceView 0 to display normally, 1 to display immediately when player enters range
+     * @param bool $boolAllowQuickTravel 0 to disallow, 1 to allow
+     * @param string $qrCode a code to set for the QR image and the decoder    
+     * @return returnData
+     * @returns a returnData object containing true if a record was modified
+     * @see returnData
+     */     
+	public function updateLocationWithQrCode($intGameID, $intLocationID, $strLocationName, $intIconMediaID, 
+								$dblLatitude, $dblLongitude, $dblError,
+								$strObjectType, $intObjectID,
+								$intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $qrCode)
+	{
+		$prefix = Module::getPrefix($intGameID);
+		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+
+		$strLocationName = addslashes($strLocationName);
+		if ($dblError < 5) $dblError = 25;
+
+		//Check the object Type is good or null
+		if ( !$this->isValidObjectType($intGameID, $strObjectType) or !strlen($strObjectType) > 0 )
+			return new returnData(4, NULL, "invalid object type");
+		
+		$query = "UPDATE {$prefix}_locations
+				SET 
+				name = '{$strLocationName}',
+				icon_media_id = '{$intIconMediaID}', 
+				latitude = '{$dblLatitude}', 
+				longitude = '{$dblLongitude}', 
+				error = '{$dblError}',
+				type = '{$strObjectType}',
+				type_id = '{$intObjectID}',
+				item_qty = '{$intQuantity}',
+				hidden = '{$boolHidden}',
+				force_view = '{$boolForceView}',
+				allow_quick_travel = '{$boolAllowQuickTravel}'
+				WHERE location_id = '{$intLocationID}'";
+		NetDebug::trace("updateLocation: Query: $query");		
+		@mysql_query($query);
+		if (mysql_error()) {
+			NetDebug::trace("MySQL Error:" . mysql_error());
+			return new returnData(3, NULL, "SQL Error");		
+		}
+		
+		
+		$query = "UPDATE {$prefix}_qrcodes
+				SET 
+				code = '{$qrCode}'
+				WHERE link_type = 'Location' and link_id = '{$intLocationID}'";
+		NetDebug::trace("updateLocation: Query: $query");		
+		@mysql_query($query);
+		
+		
+		if (mysql_error()) {
+			NetDebug::trace("MySQL Error:" . mysql_error());
+			return new returnData(3, NULL, "SQL Error");		
+		}		
+		
+		if (mysql_affected_rows()) {
+			return new returnData(0, TRUE);
+		}
+		else {
+			return new returnData(0, FALSE);
+		}
+		
+	}	
+
 
      /**
      * Deletes a Location
