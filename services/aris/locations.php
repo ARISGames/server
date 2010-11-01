@@ -178,8 +178,7 @@ class Locations extends Module
 	}
 		
 	
-	
-     /**
+	/**
      * Creates a location that points to a given object
      *
      * @param integer $intGameID The game identifier
@@ -201,7 +200,38 @@ class Locations extends Module
 	public function createLocation($intGameID, $strLocationName, $intIconMediaID, 
 								$dblLatitude, $dblLongitude, $dblError,
 								$strObjectType, $intObjectID,
-								$intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel) {
+								$intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel) {	
+			
+			Locations::createLocationWithQrCode($intGameID, $strLocationName, $intIconMediaID, 
+								$dblLatitude, $dblLongitude, $dblError,
+								$strObjectType, $intObjectID,
+								$intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $qrCode = '');
+	}
+	
+     /**
+     * Creates a location that points to a given object
+     *
+     * @param integer $intGameID The game identifier
+     * @param string $strLocationName The new name
+     * @param integer $intIconMediaID The new icon media id
+     * @param double $dblLatitude The new latitude
+     * @param double $dblLongitude The new longitude
+     * @param integer $dblError The radius in meters from the lat/log point in which this locaiton is triggered
+     * @param string $strObjectType A valid object type (see objectTypeOptions())
+     * @param string $intObjectID Id for the object
+     * @param string $intQuantity Quantity at this location (only used if item)
+     * @param bool $boolHidden 0 to display normally, 1 to hide from the player's map
+     * @param bool $boolForceView 0 to display normally, 1 to display immediately when player enters range
+     * @param bool $boolAllowQuickTravel 0 to disallow, 1 to allow
+     * @param string $qrCode Code to use with the decoder
+     * @return returnData
+     * @returns a returnData object containing the new locationID
+     * @see returnData
+     */
+	public function createLocationWithQrCode($intGameID, $strLocationName, $intIconMediaID, 
+								$dblLatitude, $dblLongitude, $dblError,
+								$strObjectType, $intObjectID,
+								$intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $qrCode = '') {
 														
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
@@ -234,11 +264,14 @@ class Locations extends Module
 		
 		$newId = mysql_insert_id();
 		//Create a coresponding QR Code
-		QRCodes::createQRCode($intGameID, "Location", $newId);
+		QRCodes::createQRCode($intGameID, "Location", $newId, $qrCode);
 
 		return new returnData(0, $newId);
 
 	}
+
+
+
 
 
      /**
