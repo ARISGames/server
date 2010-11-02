@@ -139,12 +139,14 @@ class Quests extends Module
 					name = '{$strName}',
 					description = '{$strIncompleteDescription}',
 					text_when_complete = '{$strCompleteDescription}',
-					media_id = '{$intIconMediaID}'
+					icon_media_id = '{$intIconMediaID}'
 					WHERE quest_id = '{$intQuestID}'";
 		
 		NetDebug::trace("Running a query = $query");	
 		
 		@mysql_query($query);
+		NetDebug::trace(mysql_error());	
+
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 		
 		if (mysql_affected_rows()) return new returnData(0, TRUE);
