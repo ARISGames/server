@@ -477,16 +477,19 @@ class Locations extends Module
 			
 		//Delete the Locations and related QR Codes
 		$query = "DELETE {$prefix}_locations,{$prefix}_qrcodes 
-			FROM {$prefix}_locations OUTER JOIN {$prefix}_qrcodes
+			FROM {$prefix}_locations LEFT OUTER JOIN {$prefix}_qrcodes
+			ON
+			{$prefix}_locations.location_id={$prefix}_qrcodes.link_id
 			WHERE 
 			{$prefix}_qrcodes.link_type='Location' AND 
-			{$prefix}_locations.location_id={$prefix}_qrcodes.link_id AND
 			{$prefix}_locations.type = '{$strObjectType}' AND
 			{$prefix}_locations.type_id = '{$intObjectId}'";
 
 		NetDebug::trace("Query: $query");		
 		
 		@mysql_query($query);
+		NetDebug::trace(mysql_error());		
+
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 		
 			

@@ -235,10 +235,26 @@ class EditorFoldersAndContent extends Module
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");		
 		
+		//Lookup the object
+		$query = "SELECT content_type,content_id FROM {$prefix}_folder_contents WHERE object_content_id = {$intContentID} LIMIT 1";
+		NetDebug::trace($query);
+		$contentQueryResult = @mysql_query($query);
+		NetDebug::trace(mysql_error());
+		$content = @mysql_fetch_object($contentQueryResult);
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+		
+		//Delete the content record
 		$query = "DELETE FROM {$prefix}_folder_contents WHERE object_content_id = {$intContentID}";
 		NetDebug::trace($query);
 		@mysql_query($query);
+		NetDebug::trace(mysql_error());
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+		
+		//Delete the object
+		if ($content->content_type == "Node") Nodes::deleteNode($intGameID, $content->content_id);
+		else if ($content->content_type == "Item") Items::deleteItem($intGameID, $content->content_id);
+		else if ($content->content_type == "Npc") Npcs::deleteNpc($intGameID, $content->content_id);
+
 		
 		if (mysql_affected_rows()) return new returnData(0);
 		else return new returnData(2, 'invalid folder id');
