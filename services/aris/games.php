@@ -231,13 +231,14 @@ class Games extends Module
 							'PLAYER_HAS_NOT_VIEWED_ITEM', 'PLAYER_VIEWED_NODE', 'PLAYER_HAS_NOT_VIEWED_NODE',
 							'PLAYER_VIEWED_NPC', 'PLAYER_HAS_NOT_VIEWED_NPC', 
 							'PLAYER_HAS_UPLOADED_MEDIA_ITEM',  'PLAYER_HAS_COMPLETED_QUEST'  ) NOT NULL,
+			boolean_operator enum('AND','OR') NOT NULL DEFAULT 'AND',				
 			requirement_detail_1 VARCHAR(30) NULL,
 			requirement_detail_2 VARCHAR(30) NULL,
 			requirement_detail_3 VARCHAR(30) NULL,
 			PRIMARY KEY  (requirement_id)
 			)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
 		@mysql_query($query);
-		if (mysql_error()) return new returnData(6, NULL, 'cannot create requirments table');
+		if (mysql_error()) return new returnData(6, NULL, 'cannot create requirments table' . mysql_error());
 		
 	
 		$query = "CREATE TABLE {$strShortName}_locations (
