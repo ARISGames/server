@@ -49,7 +49,7 @@ class Requirements extends Module
 	}
 	
 	/**
-     * Updates a requirement
+     * Creates a requirement
      *
      * @param integer $gameId The game identifier
      * @param string $objectType The object this req controls. Must be a valid object type (see objectTypeOptions())
@@ -85,6 +85,8 @@ class Requirements extends Module
 		NetDebug::trace("Running a query = $query");	
 		
 		@mysql_query($query);
+				NetDebug::trace(mysql_error());	
+
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 		
 		return new returnData(0, mysql_insert_id());
