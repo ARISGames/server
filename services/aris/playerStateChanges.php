@@ -102,13 +102,15 @@ class PlayerStateChanges extends Module
 					event_type = '{$strEventType}',
 					event_detail = '{$intEventDetail}',
 					action = '{$strActionType}',
-					action_detail = '{$strActionDetail}'
+					action_detail = '{$strActionDetail}',
 					action_amount = '{$intActionAmount}'
 					WHERE id = '{$intPlayerStateChangeID}'";
 		
 		NetDebug::trace("Running a query = $query");	
 		
 		@mysql_query($query);
+		NetDebug::trace(mysql_error());	
+
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 		
 		if (mysql_affected_rows()) return new returnData(0, TRUE);
