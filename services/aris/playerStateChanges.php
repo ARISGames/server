@@ -12,7 +12,7 @@ class PlayerStateChanges extends Module
 	public function getPlayerStateChangesForObject($intGameID, $strEventType, $strEventDetail)
 	{
 		
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		if (!$this->isValidEventType($intGameID, $strEventType)) return new returnData(4, NULL, "Invalid event type");
@@ -34,7 +34,7 @@ class PlayerStateChanges extends Module
      */
 	public function getPlayerStateChange($intGameID, $intPlayerStateChangeID)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$query = "SELECT * FROM {$prefix}_player_state_changes WHERE id = {$intPlayerStateChangeID} LIMIT 1";
@@ -55,7 +55,7 @@ class PlayerStateChanges extends Module
 	public function createPlayerStateChange($intGameID, $strEventType, $intEventDetail, 
 											$strActionType, $strActionDetail, $intActionAmount)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		//test the object type 
@@ -86,7 +86,7 @@ class PlayerStateChanges extends Module
 	public function updatePlayerStateChange($intGameID, $intPlayerStateChangeID, $strEventType, 
 								$intEventDetail, $strActionType, $strActionDetail, $intActionAmount)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		//test the object type 
@@ -122,7 +122,7 @@ class PlayerStateChanges extends Module
      */
 	public function deletePlayerStateChange($intGameID, $intPlayerStateChangeID)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
 		$query = "DELETE FROM {$prefix}_player_state_changes WHERE id = {$intPlayerStateChangeID}";
@@ -142,7 +142,7 @@ class PlayerStateChanges extends Module
 
 	public function deletePlayerStateChangesThatRefrenceObject($intGameID, $strObjectType, $intObjectId)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$whereClause = '';
@@ -187,7 +187,7 @@ class PlayerStateChanges extends Module
      * @returns an array of strings
      */
 	public function eventTypeOptions($intGameID){	
-		$options = $this->lookupEventTypeOptionsFromSQL($intGameID);
+		$options = PlayerStateChanges::lookupEventTypeOptionsFromSQL($intGameID);
 		if (!$options) return new returnData(1, NULL, "invalid game id");
 		return new returnData(0, $options);
 	}
@@ -197,7 +197,7 @@ class PlayerStateChanges extends Module
      * @returns an array of strings
      */
 	public function actionTypeOptions($intGameID){	
-		$options = $this->lookupActionTypeOptionsFromSQL($intGameID);
+		$options = PlayerStateChanges::lookupActionTypeOptionsFromSQL($intGameID);
 		if (!$options) return new returnData(1, NULL, "invalid game id");
 		return new returnData(0, $options);	
 	}
@@ -208,7 +208,7 @@ class PlayerStateChanges extends Module
      * @returns an array of strings
      */
 	private function lookupEventTypeOptionsFromSQL($intGameID){
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return FALSE;
 		
 		$query = "SHOW COLUMNS FROM {$prefix}_player_state_changes LIKE 'event_type'";
@@ -227,7 +227,7 @@ class PlayerStateChanges extends Module
      * @returns an array of strings
      */
 	private function lookupActionTypeOptionsFromSQL($intGameID){
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return FALSE;
 		
 		$query = "SHOW COLUMNS FROM {$prefix}_player_state_changes LIKE 'action'";
