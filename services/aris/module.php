@@ -54,7 +54,7 @@ abstract class Module
      * Fetch the prefix of a game
      * @returns a prefix string without the trailing _
      */
-	public function getPrefix($intGameID) {	
+	protected function getPrefix($intGameID) {	
 		//Lookup game information
 		$query = "SELECT * FROM games WHERE game_id = '{$intGameID}'";
 		//NetDebug::trace($query);
@@ -69,7 +69,7 @@ abstract class Module
      * Fetch the GameID from a prefix
      * @returns a gameID int
      */
-	public function getGameIdFromPrefix($strPrefix) {	
+	protected function getGameIdFromPrefix($strPrefix) {	
 		//Lookup game information
 		$query = "SELECT * FROM games WHERE prefix= '{$strPrefix}_'";
 		$rsResult = @mysql_query($query);
