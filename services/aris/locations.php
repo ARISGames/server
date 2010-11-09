@@ -75,7 +75,7 @@ class Locations extends Module
 				AND (type != 'Item' OR (item_qty IS NULL OR item_qty != 0))
 				";
 		$rsLocations = @mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error" . mysql_error());
 		
 		$arrayLocations = array();
 		
