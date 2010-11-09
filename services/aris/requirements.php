@@ -75,6 +75,9 @@ class Requirements extends Module
 		//test the requirement type
 		if (!$this->isValidRequirementType($gameId, $requirementType)) return new returnData(5, NULL, "Invalid requirement type");
 		
+		//if the requirement type refers to an item, make sure the QTY is set to 1 or more
+		if (($requirementType == "PLAYER_HAS_ITEM" || $requirementType == "PLAYER_DOES_NOT_HAVE_ITEM") && $requirementDetail2 < 1) 
+			$requirementDetail2 = 1;
 		
 		$query = "INSERT INTO {$prefix}_requirements 
 					(content_type, content_id, requirement, 
