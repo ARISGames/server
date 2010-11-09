@@ -106,7 +106,7 @@ class Conversations extends Module
 		$nodeId = $nodeIdObject->node_id;
 		
 		
-		$query = "UPDATE {$prefix}_nodes SET text = '{$nodeText}' WHERE node_id = {$nodeId}";
+		$query = "UPDATE {$prefix}_nodes SET text = '{$nodeText}', title = '{$conversationText}' WHERE node_id = {$nodeId}";
 		NetDebug::trace("Running a query = $query");	
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);	
