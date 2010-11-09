@@ -395,7 +395,7 @@ class Locations extends Module
 		@mysql_query($query);
 		if (mysql_error()) {
 			NetDebug::trace("MySQL Error:" . mysql_error());
-			return new returnData(3, NULL, "SQL Error");		
+			return new returnData(3, NULL, "SQL Error" . mysql_error());		
 		}
 		
 		
@@ -409,7 +409,7 @@ class Locations extends Module
 		
 		if (mysql_error()) {
 			NetDebug::trace("MySQL Error:" . mysql_error());
-			return new returnData(3, NULL, "SQL Error");		
+			return new returnData(3, NULL, "SQL Error on query: {$query} Error:" . mysql_error());		
 		}		
 		
 		if (mysql_affected_rows()) {
@@ -490,7 +490,7 @@ class Locations extends Module
 		@mysql_query($query);
 		NetDebug::trace(mysql_error());		
 
-		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error" . mysql_error());
 		
 			
 		if (mysql_affected_rows()) {
