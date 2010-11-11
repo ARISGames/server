@@ -83,40 +83,48 @@ class Locations extends Module
 			//If location and object it links to meet requirments, add it to the array
 			NetDebug::trace('Location ' . $location->location_id . ' Found. Checking Reqs');	
 
-			if ($this->objectMeetsRequirements ($prefix, $intPlayerID, 'Location', $location->location_id)
-				AND
-				$this->objectMeetsRequirements ($prefix, $intPlayerID, $location->type, $location->type_id)) {
-				
-					NetDebug::trace('Reqs Met. Adding to Result');	
-
-					//If location's icon is not defined, use the object's icon
-					if (!$location->icon_media_id) {
-						switch ($location->type) {
-							case 'Item':
-								$query = "SELECT icon_media_id FROM {$prefix}_items WHERE item_id = {$location->type_id}";
-								break;
-							case 'Node':
-								$query = "SELECT icon_media_id FROM {$prefix}_nodes WHERE node_id = {$location->type_id}";
-								break;
-							case 'Npc':
-								$query = "SELECT icon_media_id FROM {$prefix}_npcs WHERE npc_id = {$location->type_id}";
-								break;
-						}
-						$rsObject = @mysql_query($query);
-						NetDebug::trace(mysql_error());	
-						$object = @mysql_fetch_object($rsObject);
-						NetDebug::trace(mysql_error());	
-						$objectsIconMediaId = $object->icon_media_id;
-						$location->icon_media_id = $objectsIconMediaId;
-						NetDebug::trace("Icon media changed to {$location->icon_media_id}");	
-
-					}
-					
-					//Add it
-					$arrayLocations[] = $location;
-
+			//Does it Exist?
+			switch ($location->type) {
+				case 'Item':
+					$query = "SELECT icon_media_id FROM {$prefix}_items WHERE item_id = {$location->type_id}";
+					break;
+				case 'Node':
+					$query = "SELECT icon_media_id FROM {$prefix}_nodes WHERE node_id = {$location->type_id}";
+					break;
+				case 'Npc':
+					$query = "SELECT icon_media_id FROM {$prefix}_npcs WHERE npc_id = {$location->type_id}";
+					break;
 			}
-			else NetDebug::trace('Reqs Failed. Moving On');	
+			
+			$rsObject = @mysql_query($query);
+			$object = @mysql_fetch_object($rsObject);
+			
+			if (!$object) {
+				NetDebug::trace("Skipping Location:{$location->location_id} becasue it points to something bogus");	
+				continue;
+			}
+
+			//Does it meet it's requirements?
+			if (!$this->objectMeetsRequirements ($prefix, $intPlayerID, 'Location', $location->location_id)
+				OR
+				!$this->objectMeetsRequirements ($prefix, $intPlayerID, $location->type, $location->type_id)) {
+			
+				NetDebug::trace("Skipping Location:{$location->location_id} becasue it doesn't meet it's requirements");
+				continue;
+			}
+				
+			
+			NetDebug::trace('Location:{$location->location_id} is ok');	
+
+			//If location's icon is not defined, use the object's icon
+			if (!$location->icon_media_id) {
+					$objectsIconMediaId = $object->icon_media_id;
+					$location->icon_media_id = $objectsIconMediaId;
+			}
+			
+			//Add it
+			$arrayLocations[] = $location;
+
 		}
 		
 		//Add the others players from this game, making them look like reqular locations
