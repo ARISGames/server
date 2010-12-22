@@ -311,11 +311,9 @@ abstract class Module
 		$rsResult = @mysql_query($query);
 		$playerItem = mysql_fetch_object($rsResult);
 		if ($playerItem) {
-			NetDebug::trace("player has {$playerItem->qty} of item $itemId in inventory");
 			return $playerItem->qty;
 		}
 		else {
-			NetDebug::trace("player has does not have $intItemID in inventory");
 			return 0;
 		}
     }	    
