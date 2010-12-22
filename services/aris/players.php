@@ -265,23 +265,10 @@ class Players extends Module
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
-		$currentQty = Module::itemQtyInPlayerInventory($intGameID, $intPlayerID, $intItemID);
-		$item = Items::getItem($intGameID, $intItemID)->data;
-		$maxQty = $item->max_qty_in_inventory; 
+		$qtyGiven = Module::giveItemToPlayer($prefix, $intItemID, $intPlayerID, $qty);
+		Module::decrementItemQtyAtLocation($prefix, $intLocationID, $qtyGiven); 
 		
-		NetDebug::trace("Player currently has $currentQty - Item max is $maxQty");
-
-		
-		if ($currentQty+$qty > $maxQty  && $maxQty != -1) {
-			//we are going over the limit
-			$quantity =  $maxQty - $currentQty+$qty;
-			if ($quantity < 1) return new returnData(0, FALSE);
-		}
-		
-		Module::giveItemToPlayer($prefix, $intItemID, $intPlayerID, $qty);
-		Module::decrementItemQtyAtLocation($prefix, $intLocationID, $qty); 
-		
-		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_PICKUP_ITEM, $intItemID, $qty);
+		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_PICKUP_ITEM, $intItemID, $qtyGiven);
 
 		return new returnData(0, TRUE);
 	}

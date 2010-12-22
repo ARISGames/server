@@ -82,10 +82,27 @@ abstract class Module
 	
 	
     /**
-     * Adds the specified item to the specified player.
+     * Adds the specified item to the specified player. Returns the actual number added after concidering item max
      */
      protected function giveItemToPlayer($strGamePrefix, $intItemID, $intPlayerID, $qtyToGive=1) {
-		Module::adjustQtyForPlayerItem($strGamePrefix, $intItemID, $intPlayerID, $qtyToGive);
+		$currentQty = Module::itemQtyInPlayerInventory($strGamePrefix, $intPlayerID, $intItemID);
+		$item = Items::getItem($strGamePrefix, $intItemID)->data;
+		$maxQty = $item->max_qty_in_inventory; 
+		
+		NetDebug::trace("Module: giveItemToPlayer: Player currently has $currentQty - Item max is $maxQty");
+
+		
+		if ($currentQty + $qtyToGive > $maxQty  && $maxQty != -1) {
+			//we are going over the limit
+			$qtyToGive =  $maxQty - $currentQty;
+			NetDebug::trace("Module: giveItemToPlayer: Attempted to go over item max qty. Request change to $qtyToGive");
+		}
+		
+		if ($qtyToGive < 1) return 0;
+		else {
+			Module::adjustQtyForPlayerItem($strGamePrefix, $intItemID, $intPlayerID, $qtyToGive);
+			return $qtyToGive;
+		}
     }
 	
 	
