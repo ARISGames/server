@@ -318,7 +318,7 @@ abstract class Module
      * @returns the quantity of the item in the player's inventory
      */       
     protected function itemQtyInPlayerInventory($gameId, $playerId, $itemId) {
-    	$prefix = $this->getPrefix($gameId);
+    	$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return FALSE;
     
 		$query = "SELECT * FROM {$prefix}_player_items 
@@ -342,7 +342,7 @@ abstract class Module
      * @return boolean
      */
     protected function playerHasUploadedMediaItemWithinDistence($intGameID, $intPlayerID, $dblLatitude, $dblLongitude, $dblDistenceInMeters) {
-    	$prefix = $this->getPrefix($intGameID);
+    	$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return FALSE;
 
 		$query = "SELECT {$prefix}_items.*
@@ -352,6 +352,7 @@ abstract class Module
 						player_log.game_id = '{$intGameID}' AND
 						player_log.event_type = '". Module::kLOG_UPLOAD_MEDIA_ITEM ."' AND
 						player_log.event_detail_1 = {$prefix}_items.item_id AND
+						player_log.deleted = 0 AND
 						
 						(((acos(sin(({$dblLatitude}*pi()/180)) * sin((origin_latitude*pi()/180))+cos(({$dblLatitude}*pi()/180)) * 
 						cos((origin_latitude*pi()/180)) * 
