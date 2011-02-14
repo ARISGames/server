@@ -192,18 +192,23 @@ abstract class Module
 		$query = "SELECT *,((ACOS(SIN($floatLat * PI() / 180) * SIN(latitude * PI() / 180) + 
 					COS($floatLat * PI() / 180) * COS(latitude * PI() / 180) * 
 					COS(($floatLong - longitude) * PI() / 180)) * 180 / PI()) * 60 * 1.1515) * 1609.344
-				AS `distance` FROM `{$strGamePrefix}_locations` HAVING `distance`<= {$clumpingRangeInMeters} ORDER BY `distance` ASC"; 	
+				AS `distance`, location_id 
+				FROM {$strGamePrefix}_locations 
+				WHERE type = 'item' AND type_id = '{$intItemID}'
+				HAVING distance<= {$clumpingRangeInMeters}
+				ORDER BY distance ASC"; 	
     	$result = @mysql_query($query);
-    	NetDebug::trace($query . mysql_error());  
+    	NetDebug::trace($query . ' ' . mysql_error());  
     	
     	if ($closestLocationWithinClumpingRange = @mysql_fetch_object($result)) {
     		//We have a match
     		NetDebug::trace("An item exists nearby, adding to that location");   	
 
     		$query = "UPDATE {$strGamePrefix}_locations
-    				SET item_qty = item_qty + {$intQty}";
-			NetDebug::trace($query);   	
-			@mysql_query($query);
+    				SET item_qty = item_qty + {$intQty}
+    				WHERE location_id = {$closestLocationWithinClumpingRange->location_id}";
+    		NetDebug::trace($query . ' ' . mysql_error());  
+    		@mysql_query($query);
     	}
 		else {
 			NetDebug::trace("No item exists nearby, creating a new location");   	
@@ -214,8 +219,8 @@ abstract class Module
 			
 			$query = "INSERT INTO {$strGamePrefix}_locations (name, type, type_id, icon_media_id, latitude, longitude, error, item_qty)
 											  VALUES ('{$itemName}','Item','{$intItemID}', '{$icon_media_id}', '{$floatLat}','{$floatLong}', '{$error}','{$intQty}')";
-			NetDebug::trace($query);   	
-			@mysql_query($query);
+    		NetDebug::trace($query . ' ' . mysql_error());  
+    		@mysql_query($query);
     	}
     }
 	
