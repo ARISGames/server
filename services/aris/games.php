@@ -1,6 +1,7 @@
 <?php
 require_once("module.php");
 require_once("media.php");
+require_once("quests.php");
 
 class Games extends Module
 {	
@@ -39,10 +40,11 @@ class Games extends Module
      * Fetch all games with distences from the current location
      * @returns Object Recordset for each Game.
      */
-	public function getGamesWithDetails()
+	public function getGamesWithDetails($player_id=NULL, $latitude=NULL, $longitude=NULL)
 	{
 	    $query = "SELECT games.* 
 	    			FROM games";
+	    				    	
 		$gamesRs = @mysql_query($query);
 		NetDebug::trace(mysql_error());
 
@@ -50,38 +52,54 @@ class Games extends Module
 		
 		
 		while ($game = @mysql_fetch_object($gamesRs)) {
-			
-			NetDebug::trace("Starting GameID: {$game->game_id}");
+			//Calculate the nearest Location
+	    	if ($player_id != NULL) {
+				//Calculate the game distances from the player position
+				$query = "SELECT latitude, longitude,((ACOS(SIN($latitude * PI() / 180) * SIN(latitude * PI() / 180) + 
+						COS($latitude * PI() / 180) * COS(latitude * PI() / 180) * 
+						COS(($longitude - longitude) * PI() / 180)) * 180 / PI()) * 60 * 1.1515) * 1609.344
+					AS `distance`
+					FROM {$game->game_id}_locations
+					WHERE type != 'Item' OR item_qty > 0
+					ORDER BY distance ASC";
+				NetDebug::trace($query);	
+				$nearestLocationRs = @mysql_query($query);
+				NetDebug::trace(mysql_error());	
+				$nearestLocation = @mysql_fetch_object($nearestLocationRs);
+				$game->distance = $nearestLocation->distance;
+				$game->latitude = $nearestLocation->latitude;
+				$game->longitude = $nearestLocation->longitude;
+				
+				//Calculate the quest info
+				$questsReturnData = Quests::getQuestsForPlayer($game->game_id,$player_id);
+				$game->totalQuests = $questsReturnData->data->totalQuests;
+				$game->completedQuests = count($questsReturnData->data->completed);
+			}
+			else {
+				//Calculate the "center" of the game
+				while ($location = @mysql_fetch_array($locationsRs)) {
+					$latTotal += $location['latitude'];
+					$longTotal += $location['longitude'];
+				}
+				
+				if (@mysql_num_rows($locationsRs) < 1) {
+					NetDebug::trace("GameID {$game->game_id} Has no locations, skip");
+					continue;
+				}
+				NetDebug::trace("GameID {$game->game_id} Has ". mysql_num_rows($locationsRs) . "locations, calc the center of them");
 	
-			//Calculate the centroid of the locations for this game
-			$query = "SELECT * 
-	    			FROM {$game->prefix}locations";
-			$locationsRs = @mysql_query($query);
-			NetDebug::trace(mysql_error());
+				
+				$latAve = $latTotal/@mysql_num_rows($locationsRs);
+				$longAve = $longTotal/@mysql_num_rows($locationsRs);
+				NetDebug::trace("GameID {$game->game_id} has average position of ({$latTotal}, {$longTotal})");
+				$game->latitude = $latAve;
+				$game->longitude = $longAve;
+				
+				$game->distance = 0;
+				$game->totalQuests = 0;
+				$game->completedQuests = 0;
 
-			$latAve = 0;
-			$longAve = 0;
-			$latTotal = 0;
-			$longTotal = 0;
-			
-			
-			while ($location = @mysql_fetch_array($locationsRs)) {
-				$latTotal += $location['latitude'];
-				$longTotal += $location['longitude'];
 			}
-			
-			if (@mysql_num_rows($locationsRs) < 1) {
-				NetDebug::trace("GameID {$game->game_id} Has no locations, skip");
-				continue;
-			}
-			NetDebug::trace("GameID {$game->game_id} Has ". mysql_num_rows($locationsRs) . "locations, calc the center of them");
-
-			
-			$latAve = $latTotal/@mysql_num_rows($locationsRs);
-			$longAve = $longTotal/@mysql_num_rows($locationsRs);
-			NetDebug::trace("GameID {$game->game_id} has average position of ({$latTotal}, {$longTotal})");
-			$game->latitude = $latAve;
-			$game->longitude = $longAve;
 			
 			//Calculate the editors
 			$query = "SELECT editors.* FROM editors, game_editors
@@ -306,8 +324,9 @@ class Games extends Module
 		$query = "CREATE TABLE {$strShortName}_npcs (
 			npc_id int(10) unsigned NOT NULL auto_increment,
 			name varchar(255) NOT NULL default '',
-			description tinytext NOT NULL,
-			text tinytext NOT NULL,
+			description TEXT NOT NULL,
+			text TEXT NOT NULL,
+			closing TEXT NOT NULL,
 			media_id int(10) unsigned NOT NULL default '0',
 			icon_media_id int(10) unsigned NOT NULL default '0',
 			PRIMARY KEY  (npc_id)
@@ -432,6 +451,18 @@ class Games extends Module
 			$upgradeResult = Games::upgradeGameDatabase($game->game_id);
 		}
 		
+		$query = "ALTER TABLE `games` ADD `delete_player_locations_on_reset` BOOLEAN NOT NULL DEFAULT '0'";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+		
+		$query = "ALTER TABLE `games` ADD `game_icon_media_id` INT UNSIGNED NOT NULL DEFAULT '0'";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+		
+		$query = "ALTER TABLE `games` ADD `on_launch_node_id` INT UNSIGNED NOT NULL DEFAULT '0'";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+		
 		return new returnData(0, FALSE);
 	}
 	
@@ -479,11 +510,9 @@ class Games extends Module
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
 
-		
-
-
-		
-		
+		$query = "ALTER TABLE  `{$prefix}_npcs` ADD  `closing` TEXT NOT NULL AFTER `text`";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
 	
 	}
 	

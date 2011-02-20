@@ -179,7 +179,25 @@ class Players extends Module
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 		
+		$gameReturnData = Games::getGame($intGameID);
+		$game = $gameReturnData->data;
+		if ($game->delete_player_locations_on_reset) {
+			NetDebug::trace("Deleting all player created items");
 		
+			$query = "SELECT item_id FROM {$prefix}_items WHERE creator_player_id = {$intPlayerID}";	
+			NetDebug::trace($query);
+			$itemsRs = @mysql_query($query);
+			if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+
+			while ($item = @mysql_fetch_object($itemsRs)) {			
+				$query = "DELETE FROM {$prefix}_locations
+							WHERE {$prefix}_locations.type = 'Item' 
+							AND {$prefix}_locations.type_id = '{$item->item_id}'";
+				NetDebug::trace("Delete Location Query: $query");		
+				@mysql_query($query);
+				NetDebug::trace(mysql_error());		
+			}	
+		}	
 		
 		if (mysql_affected_rows()) return new returnData(0, TRUE);
 		else return new returnData(0, FALSE);

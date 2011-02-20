@@ -1,5 +1,5 @@
 <?php
-require("module.php");
+require_once("module.php");
 
 
 class Quests extends Module
@@ -60,11 +60,14 @@ class Quests extends Module
 			
 			if ($display && !$complete) $activeQuests[] = $quest;
 			if ($display && $complete) $completedQuests[] = $quest;
-			
-
-
 		}	
-		$quests = (object) array('active' => $activeQuests, 'completed' => $completedQuests);
+		
+		$query = "SELECT count(quest_id) as `count` FROM {$prefix}_quests";
+		$countRs = @mysql_query($query);
+		if (mysql_error()) return new returnData(1, NULL, "SQL Error");
+		$count = @mysql_fetch_object($countRs);
+		
+		$quests = (object) array('totalQuests' => $count->count, 'active' => $activeQuests, 'completed' => $completedQuests);
 	
 		return new returnData(0, $quests);
 	}	

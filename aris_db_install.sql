@@ -56,7 +56,10 @@ CREATE TABLE `games` (
   `description` text NOT NULL,
   `pc_media_id` int(10) unsigned NOT NULL default '0',
   `icon_media_id` int(10) unsigned NOT NULL default '0',
-  `allow_player_created_locations` tinyint(1) NOT NULL default '0',
+  `allow_player_created_locations` BOOLEAN NOT NULL DEFAULT '0' ,
+  `delete_player_locations_on_reset` BOOLEAN NOT NULL DEFAULT '0' ,
+  `game_icon_media_id` INT UNSIGNED NOT NULL DEFAULT '0',
+  `on_launch_node_id` INT UNSIGNED NOT NULL DEFAULT '0',
   PRIMARY KEY  (`game_id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=172 ;
 
