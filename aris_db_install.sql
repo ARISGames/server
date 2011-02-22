@@ -60,6 +60,7 @@ CREATE TABLE `games` (
   `delete_player_locations_on_reset` BOOLEAN NOT NULL DEFAULT '0' ,
   `game_icon_media_id` INT UNSIGNED NOT NULL DEFAULT '0',
   `on_launch_node_id` INT UNSIGNED NOT NULL DEFAULT '0',
+  `game_complete_node_id` INT UNSIGNED NOT NULL DEFAULT  '0',
   PRIMARY KEY  (`game_id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=172 ;
 
