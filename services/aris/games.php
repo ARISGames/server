@@ -76,7 +76,18 @@ class Games extends Module
 				$game->completedQuests = count($questsReturnData->data->completed);
 			}
 			else {
-				//Calculate the "center" of the game
+				//Calculate the centroid of the locations for this game
+				$query = "SELECT * 
+						FROM {$game->prefix}locations";
+				$locationsRs = @mysql_query($query);
+				NetDebug::trace(mysql_error());
+	
+				$latAve = 0;
+				$longAve = 0;
+				$latTotal = 0;
+				$longTotal = 0;
+				
+				
 				while ($location = @mysql_fetch_array($locationsRs)) {
 					$latTotal += $location['latitude'];
 					$longTotal += $location['longitude'];
@@ -86,6 +97,7 @@ class Games extends Module
 					NetDebug::trace("GameID {$game->game_id} Has no locations, skip");
 					continue;
 				}
+
 				NetDebug::trace("GameID {$game->game_id} Has ". mysql_num_rows($locationsRs) . "locations, calc the center of them");
 	
 				
