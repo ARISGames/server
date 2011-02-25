@@ -164,14 +164,14 @@ class QRCodes extends Module
 		//Check for a valid QR Code
 		if (!$qrcode) { 
 			Module::appendLog($intPlayerID, $intGameID, Module::kLOG_ENTER_QRCODE, $strCode, 'INVALID');
-			return new returnData(2, NULL, "invalid QRCode code");
+			return new returnData(0, NULL, "invalid QRCode code");
 		}
 			
 		
 		//Check the requirements of the QR Code's link object
 		if (!$this->objectMeetsRequirements ($prefix, $intPlayerID, $qrcode->link_type, $qrcode->link_id)) {
 			Module::appendLog($intPlayerID, $intGameID, Module::kLOG_ENTER_QRCODE, $strCode, 'REQS_OR_QTY_NOT_MET');
-			return new returnData(4, NULL, "QRCode requirements not met");
+			return new returnData(0, NULL, "QRCode requirements not met");
 		}
 		
 		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_ENTER_QRCODE, $strCode, 'SUCCESSFUL');
