@@ -377,7 +377,7 @@ abstract class Module
      * @return boolean
      */	
 	protected function objectMeetsRequirements ($strPrefix, $intPlayerID, $strObjectType, $intObjectID) {		
-		NetDebug::trace("Checking Requirements for {$strObjectType}:{$intObjectID} for playerID:$intPlayerID in gameID:$strPrefix");
+		//NetDebug::trace("Checking Requirements for {$strObjectType}:{$intObjectID} for playerID:$intPlayerID in gameID:$strPrefix");
 
 		//Fetch the requirements
 		$query = "SELECT * FROM {$strPrefix}_requirements 
@@ -440,17 +440,17 @@ abstract class Module
 					break;	
 			}//switch
 			if ($requirement['boolean_operator'] == "AND" && $requirementMet == FALSE) {
-				NetDebug::trace("An AND requirement was not met. Requirements Failed.");
+				//NetDebug::trace("An AND requirement was not met. Requirements Failed.");
 				return FALSE;
 			}
 
 			if ($requirement['boolean_operator'] == "AND" && $requirementMet == TRUE) {
-				NetDebug::trace("An AND requirement was met. Remembering");
+				//NetDebug::trace("An AND requirement was met. Remembering");
 				$andsMet = TRUE;
 			}
 			
 			if ($requirement['boolean_operator'] == "OR" && $requirementMet == TRUE){
-				NetDebug::trace("An OR requirement was met. Requirements Passed.");
+				//NetDebug::trace("An OR requirement was met. Requirements Passed.");
 				return TRUE;
 			}
 			
