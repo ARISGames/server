@@ -62,7 +62,7 @@ class Games extends Module
 					FROM {$game->game_id}_locations
 					WHERE type != 'Item' OR item_qty > 0
 					ORDER BY distance ASC";
-				NetDebug::trace($query);	
+				//NetDebug::trace($query);	
 				$nearestLocationRs = @mysql_query($query);
 				NetDebug::trace(mysql_error());	
 				$nearestLocation = @mysql_fetch_object($nearestLocationRs);
@@ -94,16 +94,16 @@ class Games extends Module
 				}
 				
 				if (@mysql_num_rows($locationsRs) < 1) {
-					NetDebug::trace("GameID {$game->game_id} Has no locations, skip");
+					//NetDebug::trace("GameID {$game->game_id} Has no locations, skip");
 					continue;
 				}
 
-				NetDebug::trace("GameID {$game->game_id} Has ". mysql_num_rows($locationsRs) . "locations, calc the center of them");
+				//NetDebug::trace("GameID {$game->game_id} Has ". mysql_num_rows($locationsRs) . "locations, calc the center of them");
 	
 				
 				$latAve = $latTotal/@mysql_num_rows($locationsRs);
 				$longAve = $longTotal/@mysql_num_rows($locationsRs);
-				NetDebug::trace("GameID {$game->game_id} has average position of ({$latTotal}, {$longTotal})");
+				//NetDebug::trace("GameID {$game->game_id} has average position of ({$latTotal}, {$longTotal})");
 				$game->latitude = $latAve;
 				$game->longitude = $longAve;
 				
@@ -125,7 +125,7 @@ class Games extends Module
 				$editorsString .= ', ' . $editor['name'];
 			}
 			
-			NetDebug::trace("GameID {$game->game_id} has editors: {$editorsString}");
+			//NetDebug::trace("GameID {$game->game_id} has editors: {$editorsString}");
 			$game->editors = $editorsString;
 			
 			//Number of Players
