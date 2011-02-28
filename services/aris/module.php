@@ -285,7 +285,7 @@ abstract class Module
 						event_type = '{$strEventType}' AND
 						event_detail_1 = '{$strEventDetail}' AND
 						deleted = 0";
-		NetDebug::trace($query);
+		//NetDebug::trace($query);
 		
 		$rsResult = @mysql_query($query);
 		
@@ -306,7 +306,7 @@ abstract class Module
      */     
     protected function playerHasItem($gameID, $playerID, $itemID, $minItemQuantity) {
     	if (!$minItemQuantity) $minItemQuantity = 1;
-    	NetDebug::trace("checking if player $playerID has atleast $minItemQuantity of item $itemID in inventory");		
+    	//NetDebug::trace("checking if player $playerID has atleast $minItemQuantity of item $itemID in inventory");		
     	$qty = Module::itemQtyInPlayerInventory($gameID, $playerID, $itemID);
     	if ($qty >= $minItemQuantity) return TRUE;
 		else return false;
