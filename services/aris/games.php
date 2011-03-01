@@ -560,7 +560,7 @@ class Games extends Module
      */	
 	public function copyGame($intSourceGameID, $strNewShortName, $strNewFullName)
 	{
-	    return new returnData(1, NULL, "Copy Game Not Implemented on Server");
+	    return new returnData(5, NULL, "Copy Game Not Implemented on Server");
 	}	
 	
 	
@@ -759,7 +759,7 @@ class Games extends Module
 	{
 		$query = "DELETE FROM game_editors WHERE editor_id = '{$intEditorID}' AND game_id = '{$intGameID}'";
 		$rsResult = mysql_query($query);
-		if (mysql_error()) return new returnData(1, NULL, 'SQL Error');
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 		
 		if (mysql_affected_rows()) return new returnData(0, TRUE);
         else return new returnData(0, FALSE);

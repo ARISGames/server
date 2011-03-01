@@ -24,13 +24,13 @@ class EditorFoldersAndContent extends Module
 		$query = "SELECT * FROM {$prefix}_folders";
 		NetDebug::trace($query);
 		$folders = @mysql_query($query);
-		if (mysql_error()) return new returnData(1, NULL, "SQL Error:". mysql_error());
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error:". mysql_error());
 
 		//Get the Contents with some of the content's data
 		$query = "SELECT * FROM {$prefix}_folder_contents";
 		NetDebug::trace($query);
 		$rsContents = @mysql_query($query);
-		if (mysql_error()) return new returnData(1, NULL, "SQL Error:". mysql_error());
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error:". mysql_error());
 		
 		//Walk the rs adding the corresponding name and icon and saving to a new array
 		$arrayContents = array();
@@ -57,14 +57,14 @@ class EditorFoldersAndContent extends Module
 	public function getContent($intGameID, $intObjectContentID)
 	{
 		$prefix = Module::getPrefix($intGameID);
-		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+		if (!$prefix) return new returnData(3, NULL, "invalid game id");
 		
 		//Get the Contents with some of the content's data
 		$query = "SELECT * FROM {$prefix}_folder_contents 
 					WHERE object_content_id = '{$intObjectContentID}' LIMIT 1";
 		NetDebug::trace($query);
 		$rsContents = @mysql_query($query);
-		if (mysql_error()) return new returnData(1, NULL, "SQL Error:". mysql_error());
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error:". mysql_error());
 		
 		$content = @mysql_fetch_object($rsContents);
 		if (!$content) return new returnData(2, NULL, "invalid object content id for this game");
@@ -142,7 +142,7 @@ class EditorFoldersAndContent extends Module
 						
 			NetDebug::trace($query);
 			@mysql_query($query);
-			if (mysql_error()) return new returnData(1, NULL, "SQL Error:" . mysql_error());
+			if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
 			else return new returnData(0, NULL, NULL);
 		}	
 		else {		
@@ -154,7 +154,7 @@ class EditorFoldersAndContent extends Module
 			@mysql_query($query);
 			$newFolderID = mysql_insert_id();
 			
-			if (mysql_error()) return new returnData(1, NULL, "SQL Error:" . mysql_error());
+			if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
 			else return new returnData(0, $newFolderID, NULL);
 		}
 		
@@ -188,7 +188,7 @@ class EditorFoldersAndContent extends Module
 						
 			NetDebug::trace($query);
 			@mysql_query($query);
-			if (mysql_error()) return new returnData(1, NULL, "SQL Error:" . mysql_error());
+			if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
 			else return new returnData(0, NULL, NULL);
 		}	
 		else {		
@@ -202,7 +202,7 @@ class EditorFoldersAndContent extends Module
 			@mysql_query($query);
 			$newContentID = mysql_insert_id();
 						
-			if (mysql_error()) return new returnData(1, NULL, "SQL Error:" . mysql_error());
+			if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
 			else return new returnData(0, $newContentID, NULL);
 		}
 

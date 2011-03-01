@@ -20,7 +20,7 @@ class Quests extends Module
 		//NetDebug::trace($query);
 
 		$rsResult = @mysql_query($query);
-		if (mysql_error()) return new returnData(1, NULL, "SQL Error");
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 		
 		return new returnData(0, $rsResult);
 	}
@@ -39,7 +39,7 @@ class Quests extends Module
 		//NetDebug::trace($query);
 
 		$rsResult = @mysql_query($query);
-		if (mysql_error()) return new returnData(1, NULL, "SQL Error");
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 		
 		$activeQuests = array();
 		$completedQuests = array();
@@ -64,7 +64,7 @@ class Quests extends Module
 		
 		$query = "SELECT count(quest_id) as `count` FROM {$prefix}_quests";
 		$countRs = @mysql_query($query);
-		if (mysql_error()) return new returnData(1, NULL, "SQL Error");
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 		$count = @mysql_fetch_object($countRs);
 		
 		$quests = (object) array('totalQuests' => $count->count, 'active' => $activeQuests, 'completed' => $completedQuests);

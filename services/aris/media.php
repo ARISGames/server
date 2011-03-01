@@ -28,7 +28,7 @@ class Media extends Module
 
 		
 		$rsResult = @mysql_query($query);
-		if (mysql_error()) return new returnData(1, NULL, "SQL Error");
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 		
 		$returnData = new returnData(0, array());
 		
@@ -68,7 +68,7 @@ class Media extends Module
 		$query = "SELECT * FROM media WHERE game_id = {$prefix} AND media_id = {$intMediaID} LIMIT 1";
 		NetDebug::trace($query);
 		$rsResult = @mysql_query($query);
-		if (mysql_error()) return new returnData(1, NULL, "SQL Error");
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 		
 		$mediaRow = mysql_fetch_array($rsResult);
 		if (!$mediaRow) {
@@ -76,7 +76,7 @@ class Media extends Module
 			$query = "SELECT * FROM media WHERE game_id = 0 AND media_id = {$intMediaID} LIMIT 1";
 			NetDebug::trace($query);
 			$rsResult = @mysql_query($query);
-			if (mysql_error()) return new returnData(1, NULL, "SQL Error");	
+			if (mysql_error()) return new returnData(3, NULL, "SQL Error");	
 			$mediaRow = mysql_fetch_array($rsResult);
 			if (!$mediaRow) return new returnData(2, NULL, "No matching media for game");
 		}

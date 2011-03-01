@@ -29,7 +29,7 @@ class Items extends Module
 		
 		$rsResult = @mysql_query($query);
 		
-		if (mysql_error()) return new returnData(1, NULL, "SQL Error");
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 		return new returnData(0, $rsResult);
 	}
 	
@@ -58,7 +58,7 @@ class Items extends Module
 		
 		$rsResult = @mysql_query($query);
 		if (!$rsResult) return new returnData(0, NULL);
-		if (mysql_error()) return new returnData(1, NULL, "SQL Error");
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 		return new returnData(0, $rsResult);
 	}	
 	

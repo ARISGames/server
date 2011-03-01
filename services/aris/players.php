@@ -38,6 +38,28 @@ class Players extends Module
 	
 	/**
      * Login
+     * @returns player id in data for success, null otherwise
+     */
+	public function loginPlayer($strUser,$strPassword)
+	{
+
+		$query = "SELECT * FROM players 
+				WHERE user_name = '{$strUser}' and password = MD5('{$strPassword}') LIMIT 1";
+		
+		NetDebug::trace($query);
+
+		$rs = @mysql_query($query);
+		if (mysql_num_rows($rs) < 1) return new returnData(0, NULL, 'bad username or password');
+		
+		$player = @mysql_fetch_object($rs);
+		
+		Module::appendLog($intPlayerID, NULL, Module::kLOG_LOGIN);
+		
+		return new returnData(0, intval($player->player_id));
+	}
+
+	/**
+     * Login - DEPRECIATED
      * @returns 0 with player id for success, 4 for failure
      */
 	public function login($strUser,$strPassword)
