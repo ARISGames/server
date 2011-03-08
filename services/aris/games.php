@@ -62,7 +62,7 @@ class Games extends Module
 					FROM {$game->game_id}_locations
 					WHERE type != 'Item' OR item_qty > 0
 					ORDER BY distance ASC";
-				//NetDebug::trace($query);	
+				NetDebug::trace($query);	
 				$nearestLocationRs = @mysql_query($query);
 				NetDebug::trace(mysql_error());	
 				$nearestLocation = @mysql_fetch_object($nearestLocationRs);
@@ -178,8 +178,9 @@ class Games extends Module
      * Create a new game
      * @returns an integer of the newly created game_id
      */	
-	public function createGame($intEditorID, $strFullName, $strDescription, $intPCMediaID=0, 
-								$intIconMediaID=0, $boolAllowPlayerCreatedLocations=0)
+	public function createGame($intEditorID, $strFullName, $strDescription, $intPCMediaID, $intIconMediaID, 
+								$boolAllowPlayerCreatedLocations, $boolResetDeletesPlayerCreatedLocations,
+								$intIntroNodeId, $intCompleteNodeId)
 	{
 
 		$strFullName = addslashes($strFullName);	
@@ -194,8 +195,12 @@ class Games extends Module
 		
 		
 		//Create the game record in SQL
-		$query = "INSERT INTO games (name, description,pc_media_id,icon_media_id,allow_player_created_locations)
-					VALUES ('{$strFullName}','{$strDescription}','{$intPCMediaID}','{$intIconMediaID}','{$boolAllowPlayerCreatedLocations}')";
+		$query = "INSERT INTO games (name, description, pc_media_id, game_icon_media_id,
+									allow_player_created_locations, delete_player_locations_on_reset,
+									on_launch_node_id, game_complete_node_id)
+					VALUES ('{$strFullName}','{$strDescription}','{$intPCMediaID}','{$intIconMediaID}',
+							'{$boolAllowPlayerCreatedLocations}','{$boolResetDeletesPlayerCreatedLocations}',
+							'{$intIntroNodeId}','{$intCompleteNodeId}')";
 		@mysql_query($query);
 		if (mysql_error())  return new returnData(6, NULL, 'cannot create game record');
 		$newGameID = mysql_insert_id();
@@ -412,19 +417,25 @@ class Games extends Module
      * Updates a game's information
      * @returns true if a record was updated, false otherwise
      */	
-	public function updateGame($intGameID, $strNewName, $strNewDescription, $intPCMediaID=0, $intIconMediaID=0, $boolAllowPlayerCreatedLocations=0)
+	public function updateGame($intGameID, $strName, $strDescription, $intPCMediaID, $intIconMediaID, 
+								$boolAllowPlayerCreatedLocations, $boolResetDeletesPlayerCreatedLocations,
+								$intIntroNodeId, $intCompleteNodeId)
 	{
 		$strNewGameName = addslashes($strNewGameName);	
 	
 		$query = "UPDATE games 
-				SET name = '{$strNewName}',
-				description = '{$strNewDescription}',
+				SET 
+				name = '{$strName}',
+				description = '{$strDescription}',
 				pc_media_id = '{$intPCMediaID}',
-				icon_media_id = '{$intIconMediaID}',
-				allow_player_created_locations = '{$boolAllowPlayerCreatedLocations}'
+				game_icon_media_id = '{$intIconMediaID}',
+				allow_player_created_locations = '{$boolAllowPlayerCreatedLocations}',
+				delete_player_locations_on_reset = '{$boolResetDeletesPlayerCreatedLocations}',
+				on_launch_node_id = '{$intIntroNodeId}',
+				game_complete_node_id = '{$intCompleteNodeId}'
 				WHERE game_id = {$intGameID}";
 		mysql_query($query);
-		if (mysql_error()) return new returnData(3, false, "SQL Error");
+		if (mysql_error()) return new returnData(3, false, "SQL Error: " . mysql_error());
 		
 		if (mysql_affected_rows()) return new returnData(0, TRUE);
 		else return new returnData(0, FALSE);		
