@@ -93,60 +93,84 @@ class Npcs extends Module
 	}
 
 	/**
-     * Create a NPC
-     * @returns the new npcID on success
+     * Create a new NPC
+     *
+	 * @param integer $gameID The game identifier
+	 * @param string $name The NPC's name
+	 * @param string $description Authoring notes
+	 * @param string $greeting The script that plays when the charecter is greeted
+	 * @param string $closing The script that plays when no conversations remain
+	 * @param integer $mediaID The image media for the NPC
+	 * @param integer $iconMediaID The icon image media for the NPC 
+     * @return returnData
+     * @returns a returnData object containing the NpcID of the newly created NPC in the data
+     * @see returnData
      */
-	public function createNpc($intGameID, $strName, $strDescription, $strGreeting, $intMediaID, $intIconMediaID)
+	public function createNpc($gameID, $name, $description, $greeting, $closing, $mediaID, $iconMediaID)
 	{
 		
-		$strName = addslashes($strName);	
-		$strDescription = addslashes($strDescription);	
-		$strGreeting = addslashes($strGreeting);	
-			
-		$prefix = Module::getPrefix($intGameID);
+		$name = addslashes($name);	
+		$description = addslashes($description);	
+		$greeting = addslashes($greeting);	
+		$closing = addslashes($closing);
+		
+		$prefix = Module::getPrefix($gameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
 		$query = "INSERT INTO {$prefix}_npcs 
-					(name, description, text, media_id, icon_media_id)
-					VALUES ('{$strName}', '{$strDescription}', '{$strGreeting}','{$intMediaID}','{$intIconMediaID}')";
+					(name, description, text, closing, media_id, icon_media_id)
+					VALUES ('{$name}', '{$description}', '{$greeting}', '{$closing}','{$mediaID}','{$iconMediaID}')";
 		
 		NetDebug::trace("createNpc: Running a query = $query");	
 		
 		@mysql_query($query);
 		
-		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
 		return new returnData(0, mysql_insert_id());		
 	}
 
 	
 	
 	/**
-     * Update a specific NPC
-     * @returns true if a record was updated, false if it was not
+     * Update an NPC
+     *
+	 * @param integer $gameID The game identifier
+	 * @param integer $npcID The NPC identifier	 
+	 * @param string $name The NPC's new name
+	 * @param string $description new Authoring notes
+	 * @param string $greeting The new script that plays when the charecter is greeted
+	 * @param string $closing The new script that plays when no conversations remain
+	 * @param integer $mediaID The new image media for the NPC
+	 * @param integer $iconMediaID The new icon image media for the NPC 
+     * @return returnData
+     * @returns a returnData object containing TRUE if the NPC was changed, FALSE otherwise
+     * @see returnData
      */
-	public function updateNpc($intGameID, $intNpcID, 
-								$strName, $strDescription, $strGreeting, $intMediaID, $intIconMediaID)
+	public function updateNpc($gameID, $npcID, 
+								$name, $description, $greeting, $closing, $mediaID, $iconMediaID)
 	{
 		
-		$strName = addslashes($strName);	
-		$strDescription = addslashes($strDescription);	
-		$strGreeting = addslashes($strGreeting);			
+		$name = addslashes($name);	
+		$description = addslashes($description);	
+		$greeting = addslashes($greeting);			
+		$closing = addslashes($closing);			
 		
-		$prefix = Module::getPrefix($intGameID);
+		$prefix = Module::getPrefix($gameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");		
 		
 		$query = "UPDATE {$prefix}_npcs 
-					SET name = '{$strName}', description = '{$strDescription}',
-					text = '{$strGreeting}', media_id = '{$intMediaID}', icon_media_id = '{$intIconMediaID}'
-					WHERE npc_id = '{$intNpcID}'";
+					SET name = '{$name}', description = '{$description}',
+					text = '{$greeting}', closing = '{$closing}', 
+					media_id = '{$mediaID}', icon_media_id = '{$iconMediaID}'
+					WHERE npc_id = '{$npcID}'";
 		
 		NetDebug::trace("updateNpc: Running a query = $query");	
 		
 		@mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);	
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());	
 	
-		if (mysql_affected_rows()) return new returnData(0, TRUE, "Success Running:" . $query);
-		else return new returnData(0, FALSE, "Success Running:" . $query);
+		if (mysql_affected_rows()) return new returnData(0, TRUE, "");
+		else return new returnData(0, FALSE, "");
 
 	}
 	
