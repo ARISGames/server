@@ -421,7 +421,8 @@ class Games extends Module
 								$boolAllowPlayerCreatedLocations, $boolResetDeletesPlayerCreatedLocations,
 								$intIntroNodeId, $intCompleteNodeId)
 	{
-		$strNewGameName = addslashes($strNewGameName);	
+		$strName = addslashes($strName);	
+		$strDescription = addslashes($strDescription);
 	
 		$query = "UPDATE games 
 				SET 
