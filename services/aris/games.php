@@ -62,7 +62,7 @@ class Games extends Module
 					FROM {$game->game_id}_locations
 					WHERE type != 'Item' OR item_qty > 0
 					ORDER BY distance ASC";
-				NetDebug::trace($query);	
+				//NetDebug::trace($query);	
 				$nearestLocationRs = @mysql_query($query);
 				NetDebug::trace(mysql_error());	
 				$nearestLocation = @mysql_fetch_object($nearestLocationRs);
