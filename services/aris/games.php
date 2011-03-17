@@ -270,7 +270,8 @@ class Games extends Module
 			requirement_detail_1 VARCHAR(30) NULL,
 			requirement_detail_2 VARCHAR(30) NULL,
 			requirement_detail_3 VARCHAR(30) NULL,
-			PRIMARY KEY  (requirement_id)
+			PRIMARY KEY  (requirement_id),
+			KEY `contentIndex` (  `content_type` ,  `content_id` ),
 			)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(6, NULL, 'cannot create requirments table' . mysql_error());
@@ -491,6 +492,14 @@ class Games extends Module
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
 		
+		$query = "ALTER TABLE  `player_log` ADD INDEX  `check_for_log` (  `player_id` ,  `game_id` ,  `event_type` ,  `event_detail_1` ,  `deleted` )";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+		
+		$query = "ALTER TABLE  `games` ADD INDEX  `prefixKey` (  `prefix` )";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+		
 		return new returnData(0, FALSE);
 	}
 	
@@ -542,6 +551,11 @@ class Games extends Module
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
 	
+		$query = "ALTER TABLE `{$prefix}_requirements` ADD INDEX  `contentIndex` (  `content_type` ,  `content_id` )";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());	
+		
+
 	}
 	
 	/**

@@ -56,12 +56,12 @@ abstract class Module
      */
 	protected function getPrefix($intGameID) {	
 		//Lookup game information
-		$query = "SELECT * FROM games WHERE game_id = '{$intGameID}'";
+		$query = "SELECT prefix FROM games WHERE game_id = '{$intGameID}' LIMIT 1";
 		//NetDebug::trace($query);
 		$rsResult = @mysql_query($query);
 		if (mysql_num_rows($rsResult) < 1) return FALSE;
 		$gameRecord = mysql_fetch_array($rsResult);
-		return substr($gameRecord['prefix'],0,strlen($row['prefix'])-1);
+		return substr($gameRecord['prefix'],0,strlen($gameRecord['prefix'])-1);
 		
 	}
 	
@@ -71,7 +71,7 @@ abstract class Module
      */
 	protected function getGameIdFromPrefix($strPrefix) {	
 		//Lookup game information
-		$query = "SELECT * FROM games WHERE prefix= '{$strPrefix}_'";
+		$query = "SELECT game_id FROM games WHERE prefix= '{$strPrefix}_'";
 		$rsResult = @mysql_query($query);
 		if (mysql_num_rows($rsResult) < 1) return FALSE;
 		$gameRecord = mysql_fetch_array($rsResult);
@@ -279,12 +279,13 @@ abstract class Module
 		
 		$intGameID = Module::getGameIdFromPrefix($strPrefix);
 
-		$query = "SELECT * FROM player_log 
+		$query = "SELECT id FROM player_log 
 					WHERE player_id = '{$intPlayerID}' AND
 						game_id = '{$intGameID}' AND
 						event_type = '{$strEventType}' AND
 						event_detail_1 = '{$strEventDetail}' AND
-						deleted = 0";
+						deleted = 0
+					LIMIT 1";
 		//NetDebug::trace($query);
 		
 		$rsResult = @mysql_query($query);
@@ -326,7 +327,7 @@ abstract class Module
     	$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return FALSE;
     
-		$query = "SELECT * FROM {$prefix}_player_items 
+		$query = "SELECT qty FROM {$prefix}_player_items 
 									  WHERE player_id = '{$playerId}' 
 									  AND item_id = '{$itemId}' LIMIT 1";
 		
@@ -380,7 +381,10 @@ abstract class Module
 		//NetDebug::trace("Checking Requirements for {$strObjectType}:{$intObjectID} for playerID:$intPlayerID in gameID:$strPrefix");
 
 		//Fetch the requirements
-		$query = "SELECT * FROM {$strPrefix}_requirements 
+		$query = "SELECT requirement,
+						requirement_detail_1,requirement_detail_2,requirement_detail_3,
+						boolean_operator 
+					FROM {$strPrefix}_requirements 
 					WHERE content_type = '{$strObjectType}' AND content_id = '{$intObjectID}'";
 		$rsRequirments = @mysql_query($query);
 		
