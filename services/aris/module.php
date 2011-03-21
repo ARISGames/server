@@ -276,22 +276,40 @@ abstract class Module
      * @return boolean
      */
     protected function playerHasLog($strPrefix, $intPlayerID, $strEventType, $strEventDetail) {
-		
+
 		$intGameID = Module::getGameIdFromPrefix($strPrefix);
 
-		$query = "SELECT id FROM player_log 
+/*	
+		$query = "SELECT 1 FROM player_log 
 					WHERE player_id = '{$intPlayerID}' AND
 						game_id = '{$intGameID}' AND
 						event_type = '{$strEventType}' AND
 						event_detail_1 = '{$strEventDetail}' AND
 						deleted = 0
 					LIMIT 1";
-		//NetDebug::trace($query);
-		
+				
+		NetDebug::trace($query);
 		$rsResult = @mysql_query($query);
-		
 		if (mysql_num_rows($rsResult) > 0) return true;
-		else return false;
+		else return false;	
+*/		
+
+//For some reason, this version of the query seems about 5-10% faster!
+
+
+		$query = "SELECT EXISTS(
+						SELECT 1 FROM player_log 
+						WHERE player_id = '{$intPlayerID}' AND
+						game_id = '{$intGameID}' AND
+						event_type = '{$strEventType}' AND
+						event_detail_1 = '{$strEventDetail}' AND
+						deleted = 0) as exists";
+					
+		NetDebug::trace($query);
+		$rsResult = @mysql_query($query);
+		return $rsResult;
+		
+//	return true;
     }
     
 

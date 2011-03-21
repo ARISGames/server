@@ -86,13 +86,13 @@ class Locations extends Module
 			//Does it Exist?
 			switch ($location->type) {
 				case 'Item':
-					$query = "SELECT icon_media_id FROM {$prefix}_items WHERE item_id = {$location->type_id}";
+					$query = "SELECT icon_media_id FROM {$prefix}_items WHERE item_id = {$location->type_id} LIMIT 1";
 					break;
 				case 'Node':
-					$query = "SELECT icon_media_id FROM {$prefix}_nodes WHERE node_id = {$location->type_id}";
+					$query = "SELECT icon_media_id FROM {$prefix}_nodes WHERE node_id = {$location->type_id} LIMIT 1";
 					break;
 				case 'Npc':
-					$query = "SELECT icon_media_id FROM {$prefix}_npcs WHERE npc_id = {$location->type_id}";
+					$query = "SELECT icon_media_id FROM {$prefix}_npcs WHERE npc_id = {$location->type_id} LIMIT 1";
 					break;
 			}
 			
@@ -105,9 +105,7 @@ class Locations extends Module
 			}
 
 			//Does it meet it's requirements?
-			if (!$this->objectMeetsRequirements ($prefix, $intPlayerID, 'Location', $location->location_id)
-				OR
-				!$this->objectMeetsRequirements ($prefix, $intPlayerID, $location->type, $location->type_id)) {
+			if (!$this->objectMeetsRequirements ($prefix, $intPlayerID, 'Location', $location->location_id)) {
 			
 				NetDebug::trace("Skipping Location:{$location->location_id} becasue it doesn't meet it's requirements");
 				continue;
