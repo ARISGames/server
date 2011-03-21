@@ -279,7 +279,7 @@ abstract class Module
 
 		$intGameID = Module::getGameIdFromPrefix($strPrefix);
 
-/*	
+
 		$query = "SELECT 1 FROM player_log 
 					WHERE player_id = '{$intPlayerID}' AND
 						game_id = '{$intGameID}' AND
@@ -292,11 +292,11 @@ abstract class Module
 		$rsResult = @mysql_query($query);
 		if (mysql_num_rows($rsResult) > 0) return true;
 		else return false;	
-*/		
+	
 
 //For some reason, this version of the query seems about 5-10% faster!
 
-
+/*
 		$query = "SELECT EXISTS(
 						SELECT 1 FROM player_log 
 						WHERE player_id = '{$intPlayerID}' AND
@@ -308,8 +308,8 @@ abstract class Module
 		NetDebug::trace($query);
 		$rsResult = @mysql_query($query);
 		return $rsResult;
-		
-//	return true;
+*/		
+
     }
     
 
