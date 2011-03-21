@@ -61,7 +61,8 @@ CREATE TABLE `games` (
   `game_icon_media_id` INT UNSIGNED NOT NULL DEFAULT '0',
   `on_launch_node_id` INT UNSIGNED NOT NULL DEFAULT '0',
   `game_complete_node_id` INT UNSIGNED NOT NULL DEFAULT  '0',
-  PRIMARY KEY  (`game_id`)
+  PRIMARY KEY  (`game_id`),
+  KEY `prefixKey` (  `prefix` )
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=172 ;
 
 -- --------------------------------------------------------
@@ -214,6 +215,7 @@ CREATE TABLE `player_log` (
   KEY `event_detail_1` (`event_detail_1`),
   KEY `deleted` (`deleted`),
   KEY `event` (`event_type`,`event_detail_1`,`event_detail_2`,`event_detail_3`),
+  KEY `check_for_log` (  `player_id` ,  `game_id` ,  `event_type` ,  `event_detail_1` ,  `deleted` ),
   KEY `timestamp` (`timestamp`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=5498 ;
 
