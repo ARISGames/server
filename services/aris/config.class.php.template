@@ -6,9 +6,11 @@ class Config
 	const dbPass 				= 'aris_db_password';
 	const dbSchema 				= 'aris_schema';
 	const dbHost 				= 'localhost';
+	const adminEmail			= ''; //This email address, if specified, will be notified of server errors
 	
-	const gamedataFSPath		= '/path/to/gamedata';
+	const gamedataFSPath		= '/path/to/gamedata'; //Make Sure this directory is writable
 	const gamedataWWWPath		= 'http://server/path/to/gamedata';
+	const serverErrorLog		= '/path/to/aris_error_log.txt'; //Make sure this file is writable
 	const gameMediaSubdir		= ''; //if this is used, you must include the trailing slash
 
 	const mysqlBinPath			= '/Applications/MAMP/Library/bin';

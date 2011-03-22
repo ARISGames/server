@@ -62,7 +62,7 @@ class Editors extends Module
  		<p>Just so you don't forget, your username is $strUser and your password is $strPassword</p>
  		<p>Good luck making games!</p>";
  			
- 		if (self::email($strEmail, $subject, $body)) return new returnData(0, mysql_insert_id());
+ 		if (Module::sendEmail($strEmail, $subject, $body)) return new returnData(0, mysql_insert_id());
 		else return new returnData(4, mysql_insert_id(), "Account created but email not sent");
 	}
 	
@@ -116,15 +116,10 @@ class Editors extends Module
 		//email it to them
  		$subject = "Reset ARIS Password";
  		$body = "Your new password is: $newPass";
- 		if (self::email($strEmail, $subject, $body)) return new returnData(0, NULL);
+ 		if (Module::sendEmail($strEmail, $subject, $body)) return new returnData(0, NULL);
   		else return new returnData(5, NULL, "Mail could not be sent");
 	}
 	
-		
-	/**
-     * Email editor account name
-     * @returns 0 on success
-     */
 	public function emailUserName($strEmail) {
 		//set the editor record to this pw
 		$query = "SELECT * FROM editors	WHERE email = '{$strEmail}'";
@@ -137,41 +132,12 @@ class Editors extends Module
 		$subject = "Recover ARIS Login Information";
  		$body = "Your ARIS username is: {$editor['name']}";
  			
- 		if (self::email($strEmail, $subject, $body)) return new returnData(0, NULL);
+ 		if (Module::sendEmail($strEmail, $subject, $body)) return new returnData(0, NULL);
   		else return new returnData(5, NULL, "Mail could not be sent");
 
 	}
 
-
-	private function email($to, $subject, $body) {
-	  	include_once('../../libraries/phpmailer/class.phpmailer.php');
 	
-	  	if (empty($to)) {
-			  return false;
-	  	}
-	  	
-	  	NetDebug::trace("TO: $to");
-		NetDebug::trace("SUBJECT: $subject");
-		NetDebug::trace("BODY: $body");
-	  	
-	  	$mail = new phpmailer;
-	  	$mail->PluginDir = '../../libraries/phpmailer';      // plugin directory (eg smtp plugin)
-	
-	  	$mail->CharSet = 'UTF-8';
-		$mail->Subject = substr(stripslashes($subject), 0, 900);
-	  	$mail->From = 'noreply@arisgames.org';
-	  	$mail->FromName = 'ARIS Mailer';
-	
-	  	$mail->AddAddress($to, 'ARIS Author');
-		$mail->MsgHTML($body);
-	
-	
-	  	$mail->WordWrap = 79;                               // set word wrap
-	
-	  	if ($mail->Send()) return true;
-	  	else return false;
-
-	}
 
 	
 	

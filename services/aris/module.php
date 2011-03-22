@@ -44,7 +44,11 @@ abstract class Module
 	
 	public function Module()
 	{
-		$this->conn = mysql_connect(Config::dbHost, Config::dbUser, Config::dbPass);
+		$this->conn = @mysql_connect(Config::dbHost, Config::dbUser, Config::dbPass);
+		if (!$this->conn) {
+			Module::serverErrorLog("Problem Connecting to MySQL: " . mysql_error());
+			if(Config::adminEmail) Module::sendEmail(Config::adminEmail,"ARIS Server Error", mysql_error());
+		}
       	mysql_select_db (Config::dbSchema);
       	mysql_query("set names utf8");
 		mysql_query("set charset set utf8");
@@ -279,7 +283,6 @@ abstract class Module
 
 		$intGameID = Module::getGameIdFromPrefix($strPrefix);
 
-
 		$query = "SELECT 1 FROM player_log 
 					WHERE player_id = '{$intPlayerID}' AND
 						game_id = '{$intGameID}' AND
@@ -292,23 +295,6 @@ abstract class Module
 		$rsResult = @mysql_query($query);
 		if (mysql_num_rows($rsResult) > 0) return true;
 		else return false;	
-	
-
-//For some reason, this version of the query seems about 5-10% faster!
-
-/*
-		$query = "SELECT EXISTS(
-						SELECT 1 FROM player_log 
-						WHERE player_id = '{$intPlayerID}' AND
-						game_id = '{$intGameID}' AND
-						event_type = '{$strEventType}' AND
-						event_detail_1 = '{$strEventDetail}' AND
-						deleted = 0) as exists";
-					
-		NetDebug::trace($query);
-		$rsResult = @mysql_query($query);
-		return $rsResult;
-*/		
 
     }
     
@@ -560,8 +546,51 @@ abstract class Module
 		else return true;
 	}		
 	
+	/**
+     * Add a row to the server error log
+     * @returns void
+     */
+	protected function serverErrorLog($message)
+	{
+		NetDebug::trace("Logging an Error: $message");
+		$errorLogFile = fopen(Config::serverErrorLog, "a");
+		$errorData = date('c') . ' "' . $message . '"' ."\n";
+		fwrite($errorLogFile, $errorData);
+		fclose($errorLogFile);
+	}
+	
+	/**
+     * Sends an Email
+     * @returns 0 on success
+     */
+	protected function sendEmail($to, $subject, $body) {
+	  	include_once('../../libraries/phpmailer/class.phpmailer.php');
+	
+	  	if (empty($to)) {
+			  return false;
+	  	}
+	  	
+	  	NetDebug::trace("TO: $to");
+		NetDebug::trace("SUBJECT: $subject");
+		NetDebug::trace("BODY: $body");
+	  	
+	  	$mail = new phpmailer;
+	  	$mail->PluginDir = '../../libraries/phpmailer';      // plugin directory (eg smtp plugin)
+	
+	  	$mail->CharSet = 'UTF-8';
+		$mail->Subject = substr(stripslashes($subject), 0, 900);
+	  	$mail->From = 'noreply@arisgames.org';
+	  	$mail->FromName = 'ARIS Mailer';
+	
+	  	$mail->AddAddress($to, 'ARIS Author');
+		$mail->MsgHTML($body);
 	
 	
+	  	$mail->WordWrap = 79;                               // set word wrap
 	
+	  	if ($mail->Send()) return true;
+	  	else return false;
+
+	}
 	
 }
