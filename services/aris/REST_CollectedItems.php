@@ -91,13 +91,25 @@ while ($row = @mysql_fetch_assoc($result))
  
 } 
 
-// End XML file
+// End KML file
 $kml[] = ' </Document>';
 $kml[] = '</kml>';
 $kmlOutput = join("\n", $kml);
-header('Content-type: application/vnd.google-earth.kml+xml');
-header('Content-Disposition: attachment; filename="ARISGame.kml"');
-echo $kmlOutput;
+
+switch ($_REQUEST['type']) {
+	case 'kml':
+		header('Content-type: application/vnd.google-earth.kml+xml');
+		header('Content-Disposition: attachment; filename="PlayerCollectedItems.kml"');
+		echo $kmlOutput;
+		break;
+	case 'map':
+		$kmlPath = 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['PHP_SELF'] . '?type=kml&gameId=' . $_REQUEST['gameId'];
+		//echo $kmlPath;
+		include ('REST_GoogleMapWithKMLVariable.inc.php');
+		break;
+	default:
+		echo 'Please add a "type" GET variable of "kml" or "map"';	
+}
 
 
 ?>
