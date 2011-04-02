@@ -42,7 +42,7 @@ else {
 	$pathInfo = pathinfo($_FILES['file']['name']);
 }
 
-$newMediaFileName = 'aris' . md5( date("YmdGis") . $_FILES['file']['name']) . '.' . $pathInfo['extension'];
+$newMediaFileName = 'aris' . md5( date("YmdGis") . strtolower($_FILES['file']['name'])) . '.' . strtolower($pathInfo['extension']);
 $newMediaFilePath = $gameMediaDirectory . $newMediaFileName;
 
 if (!move_uploaded_file( $_FILES['file']['tmp_name'], $newMediaFilePath))
