@@ -21,7 +21,7 @@ class Players extends Module
 				  WHERE user_name = '{$strNewUserName}' LIMIT 1";
 			
 		if (mysql_fetch_array(mysql_query($query))) {
-			return new returnData(4, NULL, 'user exists');
+			return new returnData(0, 0, 'user exists');
 		}
 		
 		$query = "INSERT INTO players (user_name, password, 
