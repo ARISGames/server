@@ -214,7 +214,7 @@ CREATE TABLE `player_log` (
   KEY `event_type` (`event_type`),
   KEY `event_detail_1` (`event_detail_1`),
   KEY `deleted` (`deleted`),
-  KEY `event` (`event_type`,`event_detail_1`,`event_detail_2`,`event_detail_3`),
+  KEY `event` (`event_type`,`event_detail_1`,`event_detail_2`),
   KEY `check_for_log` (  `player_id` ,  `game_id` ,  `event_type` ,  `event_detail_1` ,  `deleted` ),
   KEY `timestamp` (`timestamp`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=5498 ;
