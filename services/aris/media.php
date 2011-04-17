@@ -150,9 +150,18 @@ class Media extends Module
 		NetDebug::trace("Running a query = $query");	
 		
 		@mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error:".mysql_error());
 		
-		return new returnData(0, mysql_insert_id());
+		$media->media_id = mysql_insert_id();
+		$media->name = $strName;
+		$media->file_name = $strFileName;
+		$media->is_icon = $boolIsIcon;
+		$media->url_path = Config::gamedataWWWPath . "/{$intGameID}/" . Config::gameMediaSubdir;
+			
+		if ($media->is_icon == '1') $media->type = self::MEDIA_ICON;
+		else $media->type = Media::getMediaType($media->file_name);
+		
+		return new returnData(0,$media);
 	}
 
 	
