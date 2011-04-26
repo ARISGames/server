@@ -231,7 +231,7 @@ class QRCodes extends Module
      */
 	public function createQRCode($intGameID, $strLinkType, $intLinkID, $strCode = '')
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		if (!QRCodes::isValidObjectType($intGameID, $strLinkType)) return new returnData(4, NULL, "Invalid link type");
@@ -350,7 +350,7 @@ class QRCodes extends Module
      * @returns an array of strings
      */
 	private function lookupContentTypeOptionsFromSQL($intGameID){
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return FALSE;
 		
 		$query = "SHOW COLUMNS FROM {$prefix}_qrcodes LIKE 'link_type'";

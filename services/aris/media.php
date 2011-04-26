@@ -249,9 +249,13 @@ class Media extends Module
 		$mediaParts = pathinfo($strMediaFileName);
  		$mediaExtension = $mediaParts['extension'];
  		
- 		if (in_array($mediaExtension, $this->validImageAndIconTypes )) return Media::MEDIA_IMAGE;
- 		else if (in_array($mediaExtension, $this->validAudioTypes )) return Media::MEDIA_AUDIO;
-		else if (in_array($mediaExtension, $this->validVideoTypes )) return Media::MEDIA_VIDEO;
+ 		$validImageAndIconTypes = array('jpg','png');
+		$validAudioTypes = array('mp3','m4a','caf');
+		$validVideoTypes = array('mp4','m4v','3gp');
+ 		
+ 		if (in_array($mediaExtension, $validImageAndIconTypes )) return Media::MEDIA_IMAGE;
+ 		else if (in_array($mediaExtension, $validAudioTypes )) return Media::MEDIA_AUDIO;
+		else if (in_array($mediaExtension, $validVideoTypes )) return Media::MEDIA_VIDEO;
  		
  		return '';
  	}	

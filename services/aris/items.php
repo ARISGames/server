@@ -164,7 +164,7 @@ class Items extends Module
 		
 		//Create the Media
 		$newMediaResultData = Media::createMedia($gameId, $name, $fileName, 0);
-		$newMediaID = $newMediaResultData->data;
+		$newMediaID = $newMediaResultData->data->media_id;
 		
 		//Does game allow players to drop items?
 		if ($droppable) { 
@@ -228,7 +228,7 @@ class Items extends Module
 		
 		//Create the Media
 		$newMediaResultData = Media::createMedia($gameId, $name, $fileName, 0);
-		$newMediaID = $newMediaResultData->data;
+		$newMediaID = $newMediaResultData->data->media_id;
 		
 		//Does game allow players to drop items?
 		if ($droppable) { 
@@ -259,7 +259,7 @@ class Items extends Module
 		Locations::createLocation($gameId, $name, 0, 
 								$latitude, $longitude, 25,
 								"Item", $newItemID,
-								1, 0, 0);
+								1, 0, 0, 0);
 		
 		return new returnData(0, TRUE);
 	}	
