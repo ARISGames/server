@@ -385,6 +385,7 @@ class Games extends Module
   			name varchar(50) collate utf8_unicode_ci NOT NULL,
  			parent_id int(11) NOT NULL default '0',
   			previous_id int(11) NOT NULL default '0',
+  			is_open ENUM('0','1') NOT NULL DEFAULT  '0',
   			PRIMARY KEY  (folder_id)
 			) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
 		@mysql_query($query);
@@ -499,7 +500,7 @@ class Games extends Module
 		$query = "ALTER TABLE  `games` ADD INDEX  `prefixKey` (  `prefix` )";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
-		
+
 		return new returnData(0, FALSE);
 	}
 	
@@ -555,6 +556,10 @@ class Games extends Module
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());	
 		
+				
+		$query = "ALTER TABLE  `{$prefix}_folders` ADD  `is_open` ENUM(  '0',  '1' ) NOT NULL DEFAULT  '0';";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
 
 	}
 	

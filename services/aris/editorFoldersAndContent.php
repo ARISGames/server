@@ -120,7 +120,7 @@ class EditorFoldersAndContent extends Module
      * Create or Update a Folder. Use 0 or null for FolderID to create a new record. If update, it will also update the sorting info
      * @returns the new folderID on insert	
      */
-	public function saveFolder($intGameID, $intFolderID, $strName, $intParentID, $intSortOrder )
+	public function saveFolder($intGameID, $intFolderID, $strName, $intParentID, $intSortOrder, $boolIsOpen )
 	{
 		$strName = addslashes($strName);	
 
@@ -135,7 +135,8 @@ class EditorFoldersAndContent extends Module
 						SET 
 						name = '{$strName}',
 						parent_id = '{$intParentID}',
-						previous_id = '{$intSortOrder}'
+						previous_id = '{$intSortOrder}',
+						is_open = '{$boolIsOpen}'
 						WHERE 
 						folder_id = {$intFolderID}
 						";
@@ -148,8 +149,8 @@ class EditorFoldersAndContent extends Module
 		else {		
 			//This is an insert
 				
-			$query = "INSERT INTO {$prefix}_folders (name, parent_id, previous_id)
-					VALUES ('{$strName}', '{$intParentID}', '{$intSortOrder}')";
+			$query = "INSERT INTO {$prefix}_folders (name, parent_id, previous_id, is_open)
+					VALUES ('{$strName}', '{$intParentID}', '{$intSortOrder}', '{$boolIsOpen}')";
 					
 			@mysql_query($query);
 			$newFolderID = mysql_insert_id();
