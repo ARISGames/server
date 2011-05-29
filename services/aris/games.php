@@ -195,7 +195,7 @@ class Games extends Module
 		
 		
 		//Create the game record in SQL
-		$query = "INSERT INTO games (name, description, pc_media_id, game_icon_media_id,
+		$query = "INSERT INTO games (name, description, pc_media_id, icon_media_id,
 									allow_player_created_locations, delete_player_locations_on_reset,
 									on_launch_node_id, game_complete_node_id)
 					VALUES ('{$strFullName}','{$strDescription}','{$intPCMediaID}','{$intIconMediaID}',
@@ -337,7 +337,16 @@ class Games extends Module
 			)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(6, NULL, 'cannot create conversations table');
-		
+
+
+		$query = "CREATE TABLE  `{$strShortName}_npc_greetings` (
+			`npc_greeting_id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY ,
+			`npc_id` INT UNSIGNED NOT NULL ,
+			`script` TEXT NOT NULL
+			) ENGINE = INNODB;";
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(6, NULL, 'cannot create npc greetings table');
+
 	
 		$query = "CREATE TABLE {$strShortName}_npcs (
 			npc_id int(10) unsigned NOT NULL auto_increment,
@@ -431,7 +440,7 @@ class Games extends Module
 				name = '{$strName}',
 				description = '{$strDescription}',
 				pc_media_id = '{$intPCMediaID}',
-				game_icon_media_id = '{$intIconMediaID}',
+				icon_media_id = '{$intIconMediaID}',
 				allow_player_created_locations = '{$boolAllowPlayerCreatedLocations}',
 				delete_player_locations_on_reset = '{$boolResetDeletesPlayerCreatedLocations}',
 				on_launch_node_id = '{$intIntroNodeId}',
@@ -480,11 +489,7 @@ class Games extends Module
 		$query = "ALTER TABLE `games` ADD `delete_player_locations_on_reset` BOOLEAN NOT NULL DEFAULT '0'";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
-		
-		$query = "ALTER TABLE `games` ADD `game_icon_media_id` INT UNSIGNED NOT NULL DEFAULT '0'";
-		mysql_query($query);
-		NetDebug::trace("$query" . ":" . mysql_error());
-		
+			
 		$query = "ALTER TABLE `games` ADD `on_launch_node_id` INT UNSIGNED NOT NULL DEFAULT '0'";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
@@ -529,7 +534,6 @@ class Games extends Module
 					ADD INDEX (  `qty` )";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
-		
 		
 		$query = "ALTER TABLE  `{$prefix}_player_state_changes` ADD  `action_amount` INT NOT NULL DEFAULT  '1',
 					ADD INDEX (  `action_amount` )";
