@@ -516,6 +516,10 @@ class Games extends Module
 		$query = "ALTER TABLE  `games` ADD  `ready_for_public` TINYINT( 1 ) NOT NULL DEFAULT  '0'";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
+		
+		$query = "ALTER TABLE  `games` ADD  `is_locational` TINYINT( 1 ) NOT NULL DEFAULT  '0'";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
 
 		$query = "ALTER TABLE  `games` ADD  `media_id` INT( 10 ) UNSIGNED NOT NULL DEFAULT  '0' AFTER  `icon_media_id`";
 		mysql_query($query);
