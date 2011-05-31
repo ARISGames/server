@@ -178,7 +178,8 @@ class Games extends Module
      * Create a new game
      * @returns an integer of the newly created game_id
      */	
-	public function createGame($intEditorID, $strFullName, $strDescription, $intPCMediaID, $intIconMediaID, 
+	public function createGame($intEditorID, $strFullName, $strDescription, $intPCMediaID, $intIconMediaID, $intMediaID,
+								$boolIsLocational, $boolReadyForPublic, 
 								$boolAllowPlayerCreatedLocations, $boolResetDeletesPlayerCreatedLocations,
 								$intIntroNodeId, $intCompleteNodeId)
 	{
@@ -195,10 +196,12 @@ class Games extends Module
 		
 		
 		//Create the game record in SQL
-		$query = "INSERT INTO games (name, description, pc_media_id, icon_media_id,
+		$query = "INSERT INTO games (name, description, pc_media_id, icon_media_id, media_id,
+									is_locational, ready_for_public,
 									allow_player_created_locations, delete_player_locations_on_reset,
 									on_launch_node_id, game_complete_node_id)
-					VALUES ('{$strFullName}','{$strDescription}','{$intPCMediaID}','{$intIconMediaID}',
+					VALUES ('{$strFullName}','{$strDescription}','{$intPCMediaID}','{$intIconMediaID}', '{$intMediaID}',
+							'{$boolIsLocational}', '{$boolReadyForPublic}', 
 							'{$boolAllowPlayerCreatedLocations}','{$boolResetDeletesPlayerCreatedLocations}',
 							'{$intIntroNodeId}','{$intCompleteNodeId}')";
 		@mysql_query($query);
@@ -428,7 +431,8 @@ class Games extends Module
      * Updates a game's information
      * @returns true if a record was updated, false otherwise
      */	
-	public function updateGame($intGameID, $strName, $strDescription, $intPCMediaID, $intIconMediaID, 
+	public function updateGame($intGameID, $strName, $strDescription, $intPCMediaID, $intIconMediaID, $intMediaID,
+								$boolIsLocational, $boolReadyForPublic,
 								$boolAllowPlayerCreatedLocations, $boolResetDeletesPlayerCreatedLocations,
 								$intIntroNodeId, $intCompleteNodeId)
 	{
@@ -441,8 +445,11 @@ class Games extends Module
 				description = '{$strDescription}',
 				pc_media_id = '{$intPCMediaID}',
 				icon_media_id = '{$intIconMediaID}',
+				media_id = '{$intMediaID}',
 				allow_player_created_locations = '{$boolAllowPlayerCreatedLocations}',
 				delete_player_locations_on_reset = '{$boolResetDeletesPlayerCreatedLocations}',
+				is_locational = '{$boolIsLocational}',
+				ready_for_public = '{$boolReadyForPublic}',
 				on_launch_node_id = '{$intIntroNodeId}',
 				game_complete_node_id = '{$intCompleteNodeId}'
 				WHERE game_id = {$intGameID}";
@@ -503,6 +510,14 @@ class Games extends Module
 		NetDebug::trace("$query" . ":" . mysql_error());
 		
 		$query = "ALTER TABLE  `games` ADD INDEX  `prefixKey` (  `prefix` )";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+
+		$query = "ALTER TABLE  `games` ADD  `ready_for_public` TINYINT( 1 ) NOT NULL DEFAULT  '0'";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+
+		$query = "ALTER TABLE  `games` ADD  `media_id` INT( 10 ) UNSIGNED NOT NULL DEFAULT  '0' AFTER  `icon_media_id`";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
 
