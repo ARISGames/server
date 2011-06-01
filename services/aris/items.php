@@ -4,6 +4,7 @@ require_once("media.php");
 require_once("games.php");
 require_once("locations.php");
 require_once("playerStateChanges.php");
+require_once("editorFoldersAndContent.php");
 
 class Items extends Module
 {
@@ -172,16 +173,18 @@ class Items extends Module
 			$droppable = $game->data->allow_player_created_locations;
 		}
 		
+		$iconNum = Module::kPLAYER_CREATED_ITEM_DEFAULT_ICON_NUM;
 		//Create the Item
 		$query = "INSERT INTO {$prefix}_items 
 					(name, description, media_id, dropable, destroyable,
-					creator_player_id, origin_latitude, origin_longitude)
+					creator_player_id, origin_latitude, origin_longitude, icon_media_id)
 					VALUES ('{$name}', 
 							'{$description}',
 							'{$newMediaID}', 
 							'$droppable',
 							'$destroyable',
-							'$playerId', '$latitude', '$longitude')";
+							'$playerId', '$latitude', '$longitude',
+							'$iconNum')";
 		
 		NetDebug::trace("createItem: Running a query = $query");	
 		
@@ -194,6 +197,16 @@ class Items extends Module
 
 		$qty = 1;
 		Module::giveItemToPlayer($prefix, $newItemID, $playerId, $qty); 
+		
+		$pciContentType = Module::kPLAYER_CREATED_ITEM_CONTENT_TYPE;
+		//Add to Editor Palette
+		//Module::saveContent($gameId, 0, 0, "Item", $newItemID, 0);
+		$query = "INSERT INTO {$prefix}_folder_contents 
+					(folder_id, content_type, content_id, previous_id)
+					VALUES 
+					('0', '$pciContentType', '{$newItemID}', '0')";
+					
+		@mysql_query($query);
 		
 		return new returnData(0, TRUE);
 	}	
@@ -236,16 +249,18 @@ class Items extends Module
 			$droppable = $game->data->allow_player_created_locations;
 		}
 		
+		$iconNum = Module::kPLAYER_CREATED_ITEM_DEFAULT_ICON_NUM;
 		//Create the Item
 		$query = "INSERT INTO {$prefix}_items 
 					(name, description, media_id, dropable, destroyable,
-					creator_player_id, origin_latitude, origin_longitude)
+					creator_player_id, origin_latitude, origin_longitude, icon_media_id)
 					VALUES ('{$name}', 
 							'{$description}',
 							'{$newMediaID}', 
 							'$droppable',
 							'$destroyable',
-							'$playerId', '$latitude', '$longitude')";
+							'$playerId', '$latitude', '$longitude',
+							'$iconNum')";
 		
 		NetDebug::trace("createItem: Running a query = $query");	
 		
@@ -260,6 +275,16 @@ class Items extends Module
 								$latitude, $longitude, 25,
 								"Item", $newItemID,
 								1, 0, 0, 0);
+								
+		$pciContentType = Module::kPLAYER_CREATED_ITEM_CONTENT_TYPE;
+		//Add to Editor Palette
+		//Module::saveContent($gameId, 0, 0, "Item", $newItemID, 0);
+		$query = "INSERT INTO {$prefix}_folder_contents 
+					(folder_id, content_type, content_id, previous_id)
+					VALUES 
+					('0', '$pciContentType', '{$newItemID}', '0')";
+					
+		@mysql_query($query);
 		
 		return new returnData(0, TRUE);
 	}	

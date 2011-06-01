@@ -1,6 +1,7 @@
 <?php
 require_once('config.class.php');
 require_once('returnData.class.php');
+require_once('qrcodes.php');
 
 abstract class Module
 {
@@ -40,7 +41,10 @@ abstract class Module
 	const kPSC_GIVE_ITEM = 'GIVE_ITEM';
 	const kPSC_TAKE_ITEM = 'TAKE_ITEM';	
 	
-
+	//constants for player created items (pictures, etc...)
+	const kPLAYER_CREATED_ITEM_CONTENT_TYPE = 'Item';
+	const kPLAYER_CREATED_ITEM_DEFAULT_ICON_NUM = '2';
+	
 	
 	public function Module()
 	{
@@ -225,6 +229,10 @@ abstract class Module
 											  VALUES ('{$itemName}','Item','{$intItemID}', '{$icon_media_id}', '{$floatLat}','{$floatLong}', '{$error}','{$intQty}')";
     		NetDebug::trace($query . ' ' . mysql_error());  
     		@mysql_query($query);
+    		
+    		$newId = mysql_insert_id();
+    		//Create a coresponding QR Code
+			QRCodes::createQRCode($strGamePrefix, "Location", $newId, '');
     	}
     }
 	
