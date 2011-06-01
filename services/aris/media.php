@@ -21,9 +21,11 @@ class Media extends Module
 	public function getMedia($intGameID)
 	{
 		$prefix = Module::getPrefix($intGameID);
-		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+		if (!$prefix && $intGameID != 0) return new returnData(1, NULL, "invalid game id");
 
-		$query = "SELECT * FROM media WHERE game_id = {$prefix} or game_id = 0";
+		if ($intGameID == 0) $query = "SELECT * FROM media WHERE game_id = 0";
+		else $query = "SELECT * FROM media WHERE game_id = {$prefix} or game_id = 0";
+
 		NetDebug::trace($query);
 
 		
