@@ -781,7 +781,7 @@ class Games extends Module
      */	
 	public function getGameEditors($intGameID)
 	{
-		$query = "SELECT * FROM editors LEFT JOIN game_editors ON (editors.editor_id = game_editors.editor_id) WHERE editor_id = {$intGameID}";
+		$query = "SELECT game_editors.*, editors.* FROM game_editors LEFT JOIN editors ON game_editors.editor_id=editors.editor_id WHERE game_editors.game_id = {$intGameID}";
 		$rsResult = mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 		return new returnData(0, $rsResult);
