@@ -491,7 +491,7 @@ class Games extends Module
 
 		$query = "CREATE TABLE {$strShortName}_folder_contents (
   			object_content_id int(10) unsigned NOT NULL auto_increment,
-  			folder_id int(10) unsigned NOT NULL default '0',
+  			folder_id int(10) NOT NULL default '0',
   			content_type enum('Node','Item','Npc') collate utf8_unicode_ci NOT NULL default 'Node',
   			content_id int(10) unsigned NOT NULL default '0',
   			previous_id int(10) unsigned NOT NULL default '0',
@@ -668,6 +668,9 @@ class Games extends Module
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
 
+		$query = "ALTER TABLE  `{$prefix}_folder_contents` CHANGE  `folder_id`  `folder_id` INT( 10 ) NOT NULL DEFAULT  '0'";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
 	}
 	
 	/**

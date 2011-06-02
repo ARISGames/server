@@ -199,12 +199,12 @@ class Items extends Module
 		Module::giveItemToPlayer($prefix, $newItemID, $playerId, $qty); 
 		
 		$pciContentType = Module::kPLAYER_CREATED_ITEM_CONTENT_TYPE;
-		//Add to Editor Palette
-		//Module::saveContent($gameId, 0, 0, "Item", $newItemID, 0);
+
+		$folderId = Module::kPLAYER_CREATED_ITEM_DEFAULT_PARENT_FOLDER_ID;
 		$query = "INSERT INTO {$prefix}_folder_contents 
 					(folder_id, content_type, content_id, previous_id)
 					VALUES 
-					('0', '$pciContentType', '{$newItemID}', '0')";
+					('$folderId', '$pciContentType', '{$newItemID}', '0')";
 					
 		@mysql_query($query);
 		
@@ -277,12 +277,12 @@ class Items extends Module
 								1, 0, 0, 0);
 								
 		$pciContentType = Module::kPLAYER_CREATED_ITEM_CONTENT_TYPE;
-		//Add to Editor Palette
-		//Module::saveContent($gameId, 0, 0, "Item", $newItemID, 0);
+		
+		$folderId = Module::kPLAYER_CREATED_ITEM_DEFAULT_PARENT_FOLDER_ID;
 		$query = "INSERT INTO {$prefix}_folder_contents 
 					(folder_id, content_type, content_id, previous_id)
 					VALUES 
-					('0', '$pciContentType', '{$newItemID}', '0')";
+					('$folderId', '$pciContentType', '{$newItemID}', '0')";
 					
 		@mysql_query($query);
 		
