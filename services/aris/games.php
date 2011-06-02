@@ -37,7 +37,7 @@ class Games extends Module
 
 
 	/**
-     * Fetch all games with distences from the current location
+     * Fetch all games with distences from the current location - DEPRICATED
      * @returns Object Recordset for each Game.
      */
 	public function getGamesWithDetails($player_id=NULL, $latitude=NULL, $longitude=NULL)
@@ -140,7 +140,91 @@ class Games extends Module
 		return new returnData(0, $games, NULL);		
 	}	
 		
-	
+
+	/**
+     * Fetch all game info needed for the game list
+     * @param integer $playerId The player identifier
+     * @param float $latitude The player's current latitude
+     * @param float $longitude The player's current longitude
+     * @return returnData
+     * @returns a returnData object containing an array of games
+     * @see returnData
+     */
+
+	public function getGamesForPlayerAtLocation($playerId, $latitude, $longitude)
+	{
+	    $query = "SELECT games.* 
+        FROM games";
+        
+		$gamesRs = @mysql_query($query);
+		NetDebug::trace(mysql_error());
+        
+		$games = array();
+		
+		while ($game = @mysql_fetch_object($gamesRs)) {
+			
+            //Calculate the game distances from the player position
+            $query = "SELECT latitude, longitude,((ACOS(SIN($latitude * PI() / 180) * SIN(latitude * PI() / 180) + 
+            COS($latitude * PI() / 180) * COS(latitude * PI() / 180) * 
+            COS(($longitude - longitude) * PI() / 180)) * 180 / PI()) * 60 * 1.1515) * 1609.344
+            AS `distance`
+            FROM {$game->game_id}_locations
+            WHERE type != 'Item' OR item_qty > 0
+            ORDER BY distance ASC";
+            //NetDebug::trace($query);	
+            $nearestLocationRs = @mysql_query($query);
+            NetDebug::trace(mysql_error());	
+            $nearestLocation = @mysql_fetch_object($nearestLocationRs);
+            $game->distance = $nearestLocation->distance;
+            $game->latitude = $nearestLocation->latitude;
+            $game->longitude = $nearestLocation->longitude;
+            
+            //Calculate the quest info
+            $questsReturnData = Quests::getQuestsForPlayer($game->game_id,$playerId);
+            $game->totalQuests = $questsReturnData->data->totalQuests;
+            $game->completedQuests = count($questsReturnData->data->completed);
+
+						
+			//Calculate the editors
+			$query = "SELECT editors.* FROM editors, game_editors
+            WHERE game_editors.editor_id = editors.editor_id
+            AND game_editors.game_id = {$game->game_id}";
+			$editorsRs = @mysql_query($query);
+			
+			$editor = @mysql_fetch_array($editorsRs);
+			$editorsString = $editor['name'];
+			while ($editor = @mysql_fetch_array($editorsRs)) {
+				$editorsString .= ', ' . $editor['name'];
+			}
+			
+			//NetDebug::trace("GameID {$game->game_id} has editors: {$editorsString}");
+			$game->editors = $editorsString;
+			
+			//Calculate the Number of Players
+			$query = "SELECT * FROM players
+            WHERE last_game_id = {$game->game_id}";
+			$playersRs = @mysql_query($query);
+			$game->numPlayers = @mysql_num_rows($playersRs);
+            
+            //Calculate the media URLs
+            NetDebug::trace("Fetch Media for game_id=" . $game->game_id . " media_id=" . $game->icon_media_id);	
+            $icon_media_data = Media::getMediaObject($game->game_id, $game->icon_media_id);
+            $icon_media = $icon_media_data->data; 
+            $game->icon_media_url = $icon_media->url_path . $icon_media->file_name;
+            
+            $media_data = Media::getMediaObject($game->game_id, $game->media_id);
+            $media = $media_data->data; 
+            $game->media_url = $media->url_path . $media->file_name;
+            
+
+            
+			$games[] = $game;
+		}
+        
+		return new returnData(0, $games, NULL);		
+	}		
+    
+    
 	/**
      * Fetch the games an editor may edit
      * @returns Object Recordset for each Game.

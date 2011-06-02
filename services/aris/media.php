@@ -67,12 +67,12 @@ class Media extends Module
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		$query = "SELECT * FROM media WHERE game_id = {$prefix} AND media_id = {$intMediaID} LIMIT 1";
+		$query = "SELECT * FROM media WHERE game_id = {$prefix} OR game_id = 0 AND media_id = {$intMediaID} LIMIT 1";
 		NetDebug::trace($query);
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 		
-		$mediaRow = mysql_fetch_array($rsResult);
+		$mediaRow = mysql_fetch_object($rsResult);
 		if (!$mediaRow) {
 			NetDebug::trace("No matching media id within the game, checking for a default");
 			$query = "SELECT * FROM media WHERE game_id = 0 AND media_id = {$intMediaID} LIMIT 1";
@@ -83,18 +83,18 @@ class Media extends Module
 			if (!$mediaRow) return new returnData(2, NULL, "No matching media for game");
 		}
 
-		$mediaItem = array();
-		$mediaItem['media_id'] = $mediaRow['media_id'];
-		$mediaItem['name'] = $mediaRow['name'];
-		$mediaItem['file_name'] = $mediaRow['file_name'];
+		$mediaItem = new stdClass;
+		$mediaItem->media_id = $mediaRow->media_id;
+		$mediaItem->name = $mediaRow->name;
+		$mediaItem->file_name = $mediaRow->file_name;
 
-		$mediaItem['url_path'] = Config::gamedataWWWPath . "/{$mediaRow['game_id']}/" . Config::gameMediaSubdir;
+		$mediaItem->url_path = Config::gamedataWWWPath . "/" .$mediaRow->game_id . "/" . Config::gameMediaSubdir;
 			
-		if ($mediaRow['is_icon'] == '1') $mediaItem['type'] = self::MEDIA_ICON;
-		else $mediaItem['type'] = Media::getMediaType($mediaRow['file_name']);
+		if ($mediaRow->is_icon == '1') $mediaItem->type = self::MEDIA_ICON;
+		else $mediaItem->type = Media::getMediaType($mediaRow->file_name);
 			
-		if ($mediaRow['game_id'] == 0) $mediaItem['is_default'] = 1;
-		else $mediaItem['is_default'] = 0;
+		if ($mediaRow->game_id == 0) $mediaItem->is_default = 1;
+		else $mediaItem->is_default = 0;
 		
 
 		return new returnData(0, $mediaItem);
