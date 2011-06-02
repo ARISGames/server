@@ -357,6 +357,7 @@ class AMFDeserializer extends AMFBaseDeserializer {
 	/// of each byte as a continuation flag.
 	/// </summary>
 	/// <returns></returns>
+	/*
 	function readAmf3Int()
 	{
 		$int = $this->readByte();
@@ -394,6 +395,84 @@ class AMFDeserializer extends AMFBaseDeserializer {
 			}
 		}
 	}
+	*/
+	
+  function readAmf3Int()
+
+  {
+
+    $res = 0;
+
+    $int = $this->readByte();
+
+    if($int < 128)
+
+      return $int;
+
+    else
+
+    {
+
+      $int = ($int & 0x7f) << 7;
+
+      $tmp = $this->readByte();
+
+      if($tmp < 128)
+
+      {
+
+        $int |= $tmp;
+
+      }
+
+      else
+
+      {
+
+        $int = ($int | ($tmp & 0x7f)) << 7;
+
+        $tmp = $this->readByte();
+
+        if($tmp < 128)
+
+        {
+
+          $int |= $tmp;
+
+        }
+
+        else
+
+        {
+
+          $int = ($int | ($tmp & 0x7f)) << 8;
+
+          $tmp = $this->readByte();
+
+          $int |= $tmp;
+
+        }
+
+      }
+
+    }
+
+    
+
+    $mask = 1<<28;
+
+    $res = -($int & $mask) | $int;
+
+    
+
+    return $res;
+
+  }
+
+	
+	
+	
+	
 
     function readAmf3Date() 
     {
