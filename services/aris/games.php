@@ -69,6 +69,8 @@ class Games extends Module
 				$game->distance = $nearestLocation->distance;
 				$game->latitude = $nearestLocation->latitude;
 				$game->longitude = $nearestLocation->longitude;
+				$game->icon_media_id = 0;
+				$game->media_id = 0;
 				
 				//Calculate the quest info
 				$questsReturnData = Quests::getQuestsForPlayer($game->game_id,$player_id);
