@@ -67,7 +67,7 @@ class Media extends Module
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		$query = "SELECT * FROM media WHERE game_id = {$prefix} OR game_id = 0 AND media_id = {$intMediaID} LIMIT 1";
+		$query = "SELECT * FROM media WHERE (game_id = {$prefix} OR game_id = 0) AND media_id = {$intMediaID} LIMIT 1";
 		NetDebug::trace($query);
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
