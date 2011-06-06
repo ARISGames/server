@@ -66,7 +66,7 @@ class Games extends Module
             NetDebug::trace("Game " . $game->game_id . "'s nearest location is: " . $nearestLocation->distance);
             
             //Check for distance requirement
-            if (!$nearestLocation || $nearestLocation->distance > $maxDistance) {
+            if ($locational && (!$nearestLocation || $nearestLocation->distance > $maxDistance)) {
                 NetDebug::trace("Skip");	
                 continue;
             }
