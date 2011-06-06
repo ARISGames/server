@@ -425,6 +425,7 @@ class Games extends Module
 		
 	}
 	
+	
 	/**
      * Updates a game's information
      * @returns true if a record was updated, false otherwise
@@ -839,6 +840,25 @@ class Games extends Module
         else return new returnData(0, FALSE);
 	}
 
+	
+	/**
+     * Saves a user comment on a game from client
+     * @param integer $intPlayerId The player identifier
+     * @param integer $intGameId The game identifier
+     * @param integer $intRating Either -1 (thumbs down) or +1 (thumbs up)
+	 * @param String $comment The user's comment
+     * @return void
+     */
+	
+	public function saveComment($intPlayerId, $intGameId, $intRating, $comment) {
+		$query = "INSERT INTO game_comments (game_id, player_id, rating, comment) VALUES ('{$intGameId}', '{$intPlayerId}', '{$intRating}', '{$comment}')";
+		mysql_query($query);
+		
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
+		else return new returnData(0);
+			
+	}
+	
 	
 }
 ?>

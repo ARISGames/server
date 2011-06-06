@@ -1,5 +1,11 @@
 <?php
-
+/*
+ return codes:
+	0-success
+	1-bad gameId
+	2-
+	3-SQL error
+ */
 class ReturnData {
 
 	public $data;
