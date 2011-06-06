@@ -143,6 +143,21 @@ class Games extends Module
 		return new returnData(0, $games, NULL);		
 	}		
     
+	
+	/**
+	 * Returns:
+	 * a 'game' object consisting of Game's name, id, description, editors, location(lat/lon), distance, is_locational,
+	 * ready_for_public, comments, rating, allow_player_created_locations, delete_player_locations_on_reset, numCompletedQuests, 
+	 * totalQuests, on_launch_node_id, game_complete_node_id, game_icon_media_id, icon_media_id, icon_media_url, numPlayers, pc_media_id,
+	 * lastUpdated, prefix 
+	 * @param integer $intGameId
+	 * @returns a whole bunch of stuff
+	 */
+	
+	protected function getFullGameObject($intGameId){
+	
+	}
+	
     
 	/**
      * Fetch the games an editor may edit
@@ -875,31 +890,33 @@ class Games extends Module
 	
 	public function getGamesWithLocations($latitude, $longitude, $boolIncludeDevGames = 0) {
 		$games = array();
-		$x = 0;
 		
-		if($boolIncludeDevGames) $query = "SELECT game_id FROM games WHERE is_locational = 0";
-		else $query = "SELECT game_id FROM games WHERE ready_for_public = 1 AND is_locational = 0";
+		if($boolIncludeDevGames) $query = "SELECT game_id FROM games WHERE is_locational = 1";
+		else $query = "SELECT game_id FROM games WHERE ready_for_public = 1 AND is_locational = 1";
 		$idResult = mysql_query($query);
 
 		
 		while($gameId = mysql_fetch_assoc($idResult)){
-			$games[$x]->id = $gameId['game_id'];
+			$game = new stdClass;
+			$game->id = $gameId['game_id'];
 			
 			$query = "SELECT SUM(rating) AS rating FROM game_comments WHERE game_id = {$gameId['game_id']}";
 			$ratingResult = mysql_query($query);
 			
 			
 			$rating = mysql_fetch_assoc($ratingResult);
-			if($rating['rating'] != NULL) $games[$x]->rating = $rating['rating'];
-			else $games[$x]->rating = 0;
+			if($rating['rating'] != NULL) $game->rating = $rating['rating'];
+			else $game->rating = 0;
 			
 			
 			//Get locations
 			$nearestLocation = Games::getNearestLocationOfGameToUser($latitude, $longitude, $gameId['game_id']);
-			$games[$x]->latitude = $nearestLocation->latitude;
-			$games[$x]->longitude = $nearestLocation->longitude;
+			$game->latitude = $nearestLocation->latitude;
+			$game->longitude = $nearestLocation->longitude;
 		
-			$x++;
+			if($game->latitude != NULL){
+				$games[] = $game;
+			}
 		}
 		
 		return new returnData(0, $games);
@@ -914,7 +931,7 @@ class Games extends Module
 	 * @returns nearestLocation distance, latitude, and longitude
 	 */
 
-	public function getNearestLocationOfGameToUser($latitude, $longitude, $gameId){
+	protected function getNearestLocationOfGameToUser($latitude, $longitude, $gameId){
 		$query = "SELECT latitude, longitude,((ACOS(SIN($latitude * PI() / 180) * SIN(latitude * PI() / 180) + 
 		COS($latitude * PI() / 180) * COS(latitude * PI() / 180) * 
 		COS(($longitude - longitude) * PI() / 180)) * 180 / PI()) * 60 * 1.1515) * 1609.344
@@ -945,6 +962,38 @@ class Games extends Module
 		return new returnData(0, $result);
 	}
 	
+	
+	/**
+	 * Gets a player's 10 most recently played games
+	 * @param integer $intPlayerId The player to look for
+	 * @param boolean $boolIncludeDevGames Search all games or just the polished ones
+	 * @returns array of up to 10 gameId's that the player has most recently played
+	 */
+	
+	public function getRecentGamesForPlayer($intPlayerId, $boolIncludeDevGames = 1){
+		$query = "SELECT player_log.game_id, player_log.timestamp, games.ready_for_public FROM player_log, games WHERE player_id = '{$intPlayerId}' AND player_log.game_id = games.game_id GROUP BY game_id ORDER BY timestamp ASC";
+
+		$result = mysql_query($query);
+		
+		$x = 0;
+		$games = array();
+		if(!$boolIncludeDevGames) {
+			while($x < 10 && $game = mysql_fetch_assoc($result)){
+				if($game['ready_for_public']){
+					$games[$x] = $game['game_id'];
+					$x++;
+				}
+			}
+		}
+		else {
+			while($x < 10 && $game = mysql_fetch_assoc($result)){
+				$games[$x] = $game['game_id'];
+				$x++;
+			}
+		}
+		
+		return $games;
+	}
 	
 }
 ?>
