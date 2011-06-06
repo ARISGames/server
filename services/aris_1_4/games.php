@@ -37,18 +37,21 @@ class Games extends Module
 
 	/**
      * Fetch all game info needed for the game list
-     * @param integer $playerId The player identifier
-     * @param float $latitude The player's current latitude
-     * @param float $longitude The player's current longitude
-     * @param float maxDistance The max distance in Meters  
+     * @param integer The player identifier
+     * @param float The player's current latitude
+     * @param float The player's current longitude
+     * @param float The max distance in Meters  
+     * @param bool Include locational or non-locational games  
+     * @param bool Include Games in Development 
      * @return returnData
      * @returns a returnData object containing an array of games
      * @see returnData
      */
 
-	public function getGamesForPlayerAtLocation($playerId, $latitude, $longitude, $maxDistance)
+	public function getGamesForPlayerAtLocation($playerId, $latitude, $longitude, $maxDistance, $locational, $includeGamesinDevelopment)
 	{
-	    $query = "SELECT games.* FROM games";
+	    if ($includeGamesinDevelopment) $query = "SELECT games.* FROM games WHERE is_locational = $locational";
+        else $query = "SELECT games.* FROM games WHERE is_locational = $locational AND ready_for_public = TRUE";
         
 		$gamesRs = @mysql_query($query);
 		NetDebug::trace(mysql_error());
