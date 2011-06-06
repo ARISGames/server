@@ -930,11 +930,19 @@ class Games extends Module
 
 	
 	/**
-	 Gets a set of games that contain the input string
+	 * Gets a set of games that contain the input string
+	 * @param String $textToFind Search String
+	 * @param boolean $boolIncludeDevGames Search all games or just the polished ones
+	 * @returns array of gameId's who's corresponding games contain the search string
 	 */
 	
-	public function getGamesContainingText($textToFind, $boolIncludeDevGames){
-		
+	public function getGamesContainingText($textToFind, $boolIncludeDevGames = 1){
+		if($boolIncludeDevGames) $query = "SELECT game_id FROM games WHERE (name LIKE '%{$textToFind}%' OR description LIKE '%{$textToFind}%')";
+		else $query = "SELECT game_id FROM games WHERE (name LIKE '%{$textToFind}%' OR description LIKE '%{$textToFind}%') AND ready_for_public = 1";
+
+		$result = mysql_query($query);
+
+		return new returnData(0, $result);
 	}
 	
 	
