@@ -875,5 +875,57 @@ class Games extends Module
 	}
 	
 	
+	/**
+	 * Gets a lightweight game list to populate map on client
+	 * @param 1:Include games in development 0:restrict list to polished games
+	 * @returns gameId, rating, and lat/lon location.
+	 */
+	
+	public function gamesWithLocations($boolIncludeDevGames = 0) {
+		$games = array();
+		$x = 0;
+		
+		if($boolIncludeDevGames) $query = "SELECT game_id FROM games";
+		else $query = "SELECT game_id FROM games WHERE ready_for_public = 1";
+		$idResult = mysql_query($query);
+
+		
+		while($gameId = mysql_fetch_assoc($idResult)){
+			$games[$x]->id = $gameId['game_id'];
+			
+			$query = "SELECT SUM(rating) AS rating FROM game_comments WHERE game_id = {$gameId['game_id']}";
+			$ratingResult = mysql_query($query);
+			
+			
+			$rating = mysql_fetch_assoc($ratingResult);
+			if($rating['rating'] != NULL) $games[$x]->rating = $rating['rating'];
+			else $games[$x]->rating = 0;
+			
+			
+			//Get locations
+			/*
+			$query = "SELECT latitude, longitude,((ACOS(SIN($latitude * PI() / 180) * SIN(latitude * PI() / 180) + 
+            COS($latitude * PI() / 180) * COS(latitude * PI() / 180) * 
+            COS(($longitude - longitude) * PI() / 180)) * 180 / PI()) * 60 * 1.1515) * 1609.344
+            AS `distance`
+            FROM {$gameId['game_id']}_locations
+            WHERE type != 'Item' OR item_qty > 0
+            ORDER BY distance ASC";
+			*/
+			$query = "SELECT latitude, longitude FROM {$gameId['game_id']}_locations";
+            $nearestLocationRs = @mysql_query($query);
+
+			$nearestLocation = @mysql_fetch_object($nearestLocationRs);
+			
+			$games[$x]->latitude = $nearestLocation->latitude;
+			$games[$x]->longitude = $nearestLocation->longitude;
+		
+			$x++;
+		}
+		
+		return new returnData(0, $games);
+	}
+	
+	
 }
 ?>
