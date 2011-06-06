@@ -126,11 +126,26 @@ class Games extends Module
             
             //Calculate the rating
             $game->rating = 0;
-            $query = "SELECT SUM(rating) FROM game_comments WHERE game_id = {$game->game_id} GROUP BY game_id";
+            $query = "SELECT SUM(rating) AS rating FROM game_comments WHERE game_id = {$game->game_id}";
 			$sumRs = @mysql_query($query);
             $sumRecord = @mysql_fetch_object($sumRs);
             $game->rating = $sumRecord->rating;
-        
+			
+			
+			//Getting Comments
+			$query = "SELECT * FROM game_comments WHERE game_id = {$game->game_id}";
+			$result = mysql_query($query);
+			$comments = array();
+			$x = 0;
+			while($row = mysql_fetch_assoc($result)){
+				$comments[$x]->playerId = $row['player_id'];
+				$comments[$x]->rating = $row['rating'];
+				$comments[$x]->text = $row['comment'];
+				$x++;
+			}
+			
+			$game->comments = $comments;
+			
             
 			$games[] = $game;
 		}
