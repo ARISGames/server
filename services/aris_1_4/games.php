@@ -61,17 +61,7 @@ class Games extends Module
 		while ($game = @mysql_fetch_object($gamesRs)) {
 			
             //Calculate the game distances from the player position
-            $query = "SELECT latitude, longitude,((ACOS(SIN($latitude * PI() / 180) * SIN(latitude * PI() / 180) + 
-            COS($latitude * PI() / 180) * COS(latitude * PI() / 180) * 
-            COS(($longitude - longitude) * PI() / 180)) * 180 / PI()) * 60 * 1.1515) * 1609.344
-            AS `distance`
-            FROM {$game->game_id}_locations
-            WHERE type != 'Item' OR item_qty > 0
-            ORDER BY distance ASC";
-            //NetDebug::trace($query);	
-            $nearestLocationRs = @mysql_query($query);
-            NetDebug::trace(mysql_error());	
-            $nearestLocation = @mysql_fetch_object($nearestLocationRs);
+			$nearestLocation = Games::getNearestLocationOfGameToUser($latitude, $longitude, $game->game_id);
                         
             NetDebug::trace("Game " . $game->game_id . "'s nearest location is: " . $nearestLocation->distance);
             
@@ -876,17 +866,19 @@ class Games extends Module
 	
 	
 	/**
-	 * Gets a lightweight game list to populate map on client
+	 * Gets a lightweight game list to populate map on client- ONLY RETURNS GAMES MARKED 'is_locational'
+	 * @param integer $latitude User's current latitude
+	 * @param integer $longitude User's current longitude
 	 * @param 1:Include games in development 0:restrict list to polished games
 	 * @returns gameId, rating, and lat/lon location.
 	 */
 	
-	public function gamesWithLocations($boolIncludeDevGames = 0) {
+	public function getGamesWithLocations($latitude, $longitude, $boolIncludeDevGames = 0) {
 		$games = array();
 		$x = 0;
 		
-		if($boolIncludeDevGames) $query = "SELECT game_id FROM games";
-		else $query = "SELECT game_id FROM games WHERE ready_for_public = 1";
+		if($boolIncludeDevGames) $query = "SELECT game_id FROM games WHERE is_locational = 0";
+		else $query = "SELECT game_id FROM games WHERE ready_for_public = 1 AND is_locational = 0";
 		$idResult = mysql_query($query);
 
 		
@@ -903,20 +895,7 @@ class Games extends Module
 			
 			
 			//Get locations
-			/*
-			$query = "SELECT latitude, longitude,((ACOS(SIN($latitude * PI() / 180) * SIN(latitude * PI() / 180) + 
-            COS($latitude * PI() / 180) * COS(latitude * PI() / 180) * 
-            COS(($longitude - longitude) * PI() / 180)) * 180 / PI()) * 60 * 1.1515) * 1609.344
-            AS `distance`
-            FROM {$gameId['game_id']}_locations
-            WHERE type != 'Item' OR item_qty > 0
-            ORDER BY distance ASC";
-			*/
-			$query = "SELECT latitude, longitude FROM {$gameId['game_id']}_locations";
-            $nearestLocationRs = @mysql_query($query);
-
-			$nearestLocation = @mysql_fetch_object($nearestLocationRs);
-			
+			$nearestLocation = Games::getNearestLocationOfGameToUser($latitude, $longitude, $gameId['game_id']);
 			$games[$x]->latitude = $nearestLocation->latitude;
 			$games[$x]->longitude = $nearestLocation->longitude;
 		
@@ -924,6 +903,38 @@ class Games extends Module
 		}
 		
 		return new returnData(0, $games);
+	}
+	
+	
+	/**
+	 * Gets a game's nearest location to user
+	 * @param integer $latitude User's current latitude
+	 * @param integer $longitude User's current longitud
+	 * @param integer $gameId Game to find nearest location of
+	 * @returns nearestLocation distance, latitude, and longitude
+	 */
+
+	public function getNearestLocationOfGameToUser($latitude, $longitude, $gameId){
+		$query = "SELECT latitude, longitude,((ACOS(SIN($latitude * PI() / 180) * SIN(latitude * PI() / 180) + 
+		COS($latitude * PI() / 180) * COS(latitude * PI() / 180) * 
+		COS(($longitude - longitude) * PI() / 180)) * 180 / PI()) * 60 * 1.1515) * 1609.344
+		AS `distance`
+		FROM {$gameId}_locations
+		WHERE type != 'Item' OR item_qty > 0
+		ORDER BY distance ASC";
+		$nearestLocationRs = @mysql_query($query);
+		$nearestLocation = @mysql_fetch_object($nearestLocationRs);
+		
+		return $nearestLocation;
+	}
+
+	
+	/**
+	 Gets a set of games that contain the input string
+	 */
+	
+	public function getGamesContainingText($textToFind, $boolIncludeDevGames){
+		
 	}
 	
 	
