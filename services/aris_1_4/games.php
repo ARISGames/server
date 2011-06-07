@@ -48,8 +48,28 @@ class Games extends Module
      * @see returnData
      */
 
-	public function getGamesForPlayerAtLocation($playerId, $latitude, $longitude, $maxDistance, $locational, $includeGamesinDevelopment)
+	public function getGamesForPlayerAtLocation($playerId, $latitude, $longitude, $maxDistance=99999999, $locational, $includeGamesinDevelopment)
 	{
+		if ($includeGamesinDevelopment) $query = "SELECT game_id FROM games WHERE is_locational = $locational";
+        else $query = "SELECT game_id FROM games WHERE is_locational = $locational AND ready_for_public = TRUE";
+        
+		$gamesRs = @mysql_query($query);
+		NetDebug::trace(mysql_error());
+        
+		$games = array();
+		
+		while ($game = @mysql_fetch_object($gamesRs)) {
+			$gameObj = new stdClass;
+			$gameObj = Games::getFullGameObject($game->game_id, $playerId, 1, $maxDistance, $latitude, $longitude);
+			if($gameObj != NULL){//->distance <= $maxDistance) {
+				NetDebug::trace("Select");
+				$games[] = $gameObj;
+			}
+			else NetDebug::trace("Skip");
+		}
+		return new returnData(0, $games, NULL);
+		
+		/*
 	    if ($includeGamesinDevelopment) $query = "SELECT games.* FROM games WHERE is_locational = $locational";
         else $query = "SELECT games.* FROM games WHERE is_locational = $locational AND ready_for_public = TRUE";
         
@@ -141,6 +161,7 @@ class Games extends Module
 		}
         
 		return new returnData(0, $games, NULL);		
+		 */
 	}		
     
 	
@@ -150,12 +171,92 @@ class Games extends Module
 	 * ready_for_public, comments, rating, allow_player_created_locations, delete_player_locations_on_reset, numCompletedQuests, 
 	 * totalQuests, on_launch_node_id, game_complete_node_id, game_icon_media_id, icon_media_id, icon_media_url, numPlayers, pc_media_id,
 	 * lastUpdated, prefix 
-	 * @param integer $intGameId
-	 * @returns a whole bunch of stuff
+	 * @param integer The Game to get info for
+	 * @param integer The Id of the player requesting the info
+	 * @param boolean If true, get all information relating to location. Otherwise, don't bother- saves time.
+	 * @param integer Distance at which games further than should be ignored. Not necessary if 'boolGetLocationalInfo' = 0
+	 * @param float Not necessary if 'boolGetLocationalInfo' = 0
+	 * @param float Not necessary if 'boolGetLocationalInfo' = 0
+	 * @returns a whole bunch of stuff. Returns NULL if $boolGetLocationalInfo is set (1) and game is at a distance further than $intSkipAtDistance.
 	 */
 	
-	protected function getFullGameObject($intGameId){
-	
+	public function getFullGameObject($intGameId, $intPlayerId, $boolGetLocationalInfo = 0, $intSkipAtDistance = 99999999, $latitude = 0, $longitude = 0){
+		$query = "SELECT * FROM games WHERE game_id = '{$intGameId}'";
+		$result = mysql_query($query);
+		$gameObj = mysql_fetch_object($result);
+		
+		//Get Locational Stuff
+		if($boolGetLocationalInfo){
+			$nearestLocation = Games::getNearestLocationOfGameToUser($latitude, $longitude, $intGameId);
+			$gameObj->latitude = $nearestLocation->latitude;
+			$gameObj->longitude = $nearestLocation->longitude;
+			$gameObj->distance = $nearestLocation->distance;
+			if($gameObj->distance == NULL || $gameObj->distance > $intSkipAtDistance) return NULL;
+		}
+		
+		//Get Quest Stuff
+		$questsReturnData = Quests::getQuestsForPlayer($intGameId, $intPlayerId);
+		$gameObj->totalQuests = $questsReturnData->data->totalQuests;
+		$gameObj->completedQuests = count($questsReturnData->data->completed);
+		
+		//Get Editors
+		$query = "SELECT editors.* FROM editors, game_editors
+		WHERE game_editors.editor_id = editors.editor_id
+		AND game_editors.game_id = {$intGameId}";
+		$editorsRs = @mysql_query($query);
+		$editor = @mysql_fetch_array($editorsRs);
+		$editorsString = $editor['name'];
+		while ($editor = @mysql_fetch_array($editorsRs)) {
+			$editorsString .= ', ' . $editor['name'];
+		}
+		$gameObj->editors = $editorsString;
+		
+		//Get Num Players
+		$query = "SELECT * FROM players
+		WHERE last_game_id = {$intGameId}";
+		$playersRs = @mysql_query($query);
+		$gameObj->numPlayers = @mysql_num_rows($playersRs);
+		
+		//Get the media URLs
+		NetDebug::trace("Fetch Media for game_id='{$intGameId}' media_id='{$gameObj->icon_media_id}'");	
+		//Icon
+		$icon_media_data = Media::getMediaObject($intGameId, $gameObj->icon_media_id);
+		$icon_media = $icon_media_data->data; 
+		$gameObj->icon_media_url = $icon_media->url_path . $icon_media->file_name;
+		//Media
+		$media_data = Media::getMediaObject($intGameId, $gameObj->media_id);
+		$media = $media_data->data; 
+		$gameObj->media_url = $media->url_path . $media->file_name;
+		
+		//Calculate the rating
+		$query = "SELECT AVG(rating) AS rating FROM game_comments WHERE game_id = {$intGameId}";
+		$avRs = @mysql_query($query);
+		$avRecord = @mysql_fetch_object($avRs);
+		$gameObj->rating = $avRecord->rating;
+		if($gameObj->rating == NULL) $gameObj->rating = 0;
+		
+		//Getting Comments
+		$query = "SELECT * FROM game_comments WHERE game_id = {$intGameId}";
+		$result = mysql_query($query);
+		$comments = array();
+		$x = 0;
+		while($row = mysql_fetch_assoc($result)){
+			$comments[$x]->playerId = $row['player_id'];
+			$query = "SELECT user_name FROM players WHERE player_id = '{$comments[$x]->playerId}'";
+			$player = mysql_query($query);
+			$playerOb = mysql_fetch_assoc($player);
+			$comments[$x]->username = $playerOb['user_name'];
+			$comments[$x]->rating = $row['rating'];
+			$comments[$x]->text = $row['comment'];
+			$x++;
+		}
+		$gameObj->comments = $comments;
+		
+		//Calculate score
+		$gameObj->calculatedScore = ($gameObj->rating - 3) * $x;
+		$gameObj->numComments = $x;
+		
+		return $gameObj;
 	}
 	
     
@@ -865,13 +966,16 @@ class Games extends Module
      * Saves a user comment on a game from client
      * @param integer $intPlayerId The player identifier
      * @param integer $intGameId The game identifier
-     * @param integer $intRating Either -1 (thumbs down) or +1 (thumbs up)
+     * @param integer $intRating 1-5
 	 * @param String $comment The user's comment
      * @return void
      */
 	
 	public function saveComment($intPlayerId, $intGameId, $intRating, $comment) {
-		$query = "INSERT INTO game_comments (game_id, player_id, rating, comment) VALUES ('{$intGameId}', '{$intPlayerId}', '{$intRating}', '{$comment}')";
+		$query = "SELECT * FROM game_comments WHERE game_id = '{$intGameId}' AND player_id = '{$intPlayerId}'";
+		$result = mysql_query($query);
+		if(mysql_num_rows($result) > 0) $query = "UPDATE game_comments SET rating='{$intRating}', comment='{$comment}' WHERE game_id = '{$intGameId}' AND player_id = '{$intPlayerId}'";
+		else $query = "INSERT INTO game_comments (game_id, player_id, rating, comment) VALUES ('{$intGameId}', '{$intPlayerId}', '{$intRating}', '{$comment}')";
 		mysql_query($query);
 		
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
@@ -948,18 +1052,24 @@ class Games extends Module
 	
 	/**
 	 * Gets a set of games that contain the input string
-	 * @param String $textToFind Search String
-	 * @param boolean $boolIncludeDevGames Search all games or just the polished ones
+	 * @param integer Player Id
+	 * @param String Search String
+	 * @param boolean Search all games or just the polished ones
 	 * @returns array of gameId's who's corresponding games contain the search string
 	 */
 	
-	public function getGamesContainingText($textToFind, $boolIncludeDevGames = 1){
+	public function getGamesContainingText($intPlayerId, $textToFind, $boolIncludeDevGames = 1){
 		if($boolIncludeDevGames) $query = "SELECT game_id FROM games WHERE (name LIKE '%{$textToFind}%' OR description LIKE '%{$textToFind}%')";
 		else $query = "SELECT game_id FROM games WHERE (name LIKE '%{$textToFind}%' OR description LIKE '%{$textToFind}%') AND ready_for_public = 1";
 
 		$result = mysql_query($query);
-
-		return new returnData(0, $result);
+		$games = array();
+		while($game = mysql_fetch_object($result)){
+			$gameObj = new stdClass;
+			$gameObj = Games::getFullGameObject($game->game_id, $intPlayerId, 0);
+			$games[] = $gameObj;
+		}
+		return new returnData(0, $games);
 	}
 	
 	
@@ -980,14 +1090,14 @@ class Games extends Module
 		if(!$boolIncludeDevGames) {
 			while($x < 10 && $game = mysql_fetch_assoc($result)){
 				if($game['ready_for_public']){
-					$games[$x] = $game['game_id'];
+					$games[$x] = Games::getFullGameObject($game['game_id'], $intPlayerId, 0);
 					$x++;
 				}
 			}
 		}
 		else {
 			while($x < 10 && $game = mysql_fetch_assoc($result)){
-				$games[$x] = $game['game_id'];
+				$games[$x] = Games::getFullGameObject($game['game_id'], $intPlayerId, 0);
 				$x++;
 			}
 		}
