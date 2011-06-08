@@ -986,8 +986,8 @@ class Games extends Module
 	
 	/**
 	 * Gets a lightweight game list to populate map on client- ONLY RETURNS GAMES MARKED 'is_locational'
-	 * @param integer $latitude User's current latitude
-	 * @param integer $longitude User's current longitude
+	 * @param float User's current latitude
+	 * @param float User's current longitude
 	 * @param 1:Include games in development 0:restrict list to polished games
 	 * @returns gameId, rating, and lat/lon location.
 	 */
@@ -1053,6 +1053,8 @@ class Games extends Module
 	/**
 	 * Gets a set of games that contain the input string
 	 * @param integer Player Id
+     * @param float Players Current Latitude
+     * @param float Players Current Longitude
 	 * @param String Search String
 	 * @param boolean Search all games or just the polished ones
 	 * @returns array of gameId's who's corresponding games contain the search string
@@ -1078,8 +1080,10 @@ class Games extends Module
 	
 	/**
 	 * Gets a player's 10 most recently played games
-	 * @param integer $intPlayerId The player to look for
-	 * @param boolean $boolIncludeDevGames Search all games or just the polished ones
+	 * @param integer The player to look for
+     * @param float Players Current Latitude
+     * @param float Players Current Longitude
+	 * @param boolean Search all games or just the polished ones
 	 * @returns array of up to 10 gameId's that the player has most recently played
 	 */
 	
