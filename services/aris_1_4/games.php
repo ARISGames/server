@@ -69,100 +69,36 @@ class Games extends Module
 		}
 		return new returnData(0, $games, NULL);
 		
-		/*
-	    if ($includeGamesinDevelopment) $query = "SELECT games.* FROM games WHERE is_locational = $locational";
-        else $query = "SELECT games.* FROM games WHERE is_locational = $locational AND ready_for_public = TRUE";
-        
-		$gamesRs = @mysql_query($query);
-		NetDebug::trace(mysql_error());
-        
+    }		
+    
+    
+	/**
+	 * Returns:
+	 * A single game in the same format as though an array of games was being searched
+	 * @param integer The Game to get info for
+	 * @param integer The Id of the player requesting the info
+	 * @param boolean If true, get all information relating to location. Otherwise, don't bother- saves time.
+	 * @param integer Distance at which games further than should be ignored. Not necessary if 'boolGetLocationalInfo' = 0
+	 * @param float Not necessary if 'boolGetLocationalInfo' = 0
+	 * @param float Not necessary if 'boolGetLocationalInfo' = 0
+	 * @returns a whole bunch of stuff. Returns NULL if $boolGetLocationalInfo is set (1) and game is at a distance further than $intSkipAtDistance.
+	 */
+    
+	public function getOneGame($intGameId, $intPlayerId, $boolGetLocationalInfo = 0, $intSkipAtDistance = 99999999, $latitude = 0, $longitude = 0)
+	{
 		$games = array();
 		
-		while ($game = @mysql_fetch_object($gamesRs)) {
-			
-            //Calculate the game distances from the player position
-			$nearestLocation = Games::getNearestLocationOfGameToUser($latitude, $longitude, $game->game_id);
-                        
-            NetDebug::trace("Game " . $game->game_id . "'s nearest location is: " . $nearestLocation->distance);
-            
-            //Check for distance requirement
-            if ($locational && (!$nearestLocation || $nearestLocation->distance > $maxDistance)) {
-                NetDebug::trace("Skip");	
-                continue;
-            }
-            
-            
-            NetDebug::trace("Select");	            
-            $game->distance = $nearestLocation->distance;
-            $game->latitude = $nearestLocation->latitude;
-            $game->longitude = $nearestLocation->longitude;
-            
-            //Calculate the quest info
-            $questsReturnData = Quests::getQuestsForPlayer($game->game_id,$playerId);
-            $game->totalQuests = $questsReturnData->data->totalQuests;
-            $game->completedQuests = count($questsReturnData->data->completed);
-
-			//Calculate the editors
-			$query = "SELECT editors.* FROM editors, game_editors
-            WHERE game_editors.editor_id = editors.editor_id
-            AND game_editors.game_id = {$game->game_id}";
-			$editorsRs = @mysql_query($query);
-			
-			$editor = @mysql_fetch_array($editorsRs);
-			$editorsString = $editor['name'];
-			while ($editor = @mysql_fetch_array($editorsRs)) {
-				$editorsString .= ', ' . $editor['name'];
-			}
-			
-			//NetDebug::trace("GameID {$game->game_id} has editors: {$editorsString}");
-			$game->editors = $editorsString;
-			
-			//Calculate the Number of Players
-			$query = "SELECT * FROM players
-            WHERE last_game_id = {$game->game_id}";
-			$playersRs = @mysql_query($query);
-			$game->numPlayers = @mysql_num_rows($playersRs);
-            
-            //Calculate the media URLs
-            NetDebug::trace("Fetch Media for game_id=" . $game->game_id . " media_id=" . $game->icon_media_id);	
-            $icon_media_data = Media::getMediaObject($game->game_id, $game->icon_media_id);
-            $icon_media = $icon_media_data->data; 
-            $game->icon_media_url = $icon_media->url_path . $icon_media->file_name;
-            
-            $media_data = Media::getMediaObject($game->game_id, $game->media_id);
-            $media = $media_data->data; 
-            $game->media_url = $media->url_path . $media->file_name;
-            
-            
-            //Calculate the rating
-            $game->rating = 0;
-            $query = "SELECT SUM(rating) AS rating FROM game_comments WHERE game_id = {$game->game_id}";
-			$sumRs = @mysql_query($query);
-            $sumRecord = @mysql_fetch_object($sumRs);
-            $game->rating = $sumRecord->rating;
-			
-			
-			//Getting Comments
-			$query = "SELECT * FROM game_comments WHERE game_id = {$game->game_id}";
-			$result = mysql_query($query);
-			$comments = array();
-			$x = 0;
-			while($row = mysql_fetch_assoc($result)){
-				$comments[$x]->playerId = $row['player_id'];
-				$comments[$x]->rating = $row['rating'];
-				$comments[$x]->text = $row['comment'];
-				$x++;
-			}
-			
-			$game->comments = $comments;
-			
-            
-			$games[] = $game;
-		}
-        
-		return new returnData(0, $games, NULL);		
-		 */
-	}		
+        $gameObj = new stdClass;
+        $gameObj = Games::getFullGameObject($intGameId, $intPlayerId, $boolGetLocationalInfo, $intSkipAtDistance, $latitude, $longitude);
+        if($gameObj != NULL){//->distance <= $maxDistance) {
+            NetDebug::trace("Select");
+            $games[] = $gameObj;
+        }
+    
+        return new returnData(0, $games, NULL);
+		
+    }	
+    
     
 	
 	/**
@@ -1005,14 +941,21 @@ class Games extends Module
 			$game->game_id = $gameId['game_id']; 
             $game->name = $gameId['name'];
 			
-			$query = "SELECT SUM(rating) AS rating FROM game_comments WHERE game_id = {$gameId['game_id']}";
+			$query = "SELECT AVG(rating) AS rating FROM game_comments WHERE game_id = {$gameId['game_id']}";
 			$ratingResult = mysql_query($query);
 			
 			
 			$rating = mysql_fetch_assoc($ratingResult);
-			if($rating['rating'] != NULL) $game->rating = $rating['rating'];
-			else $game->rating = 0;
-			
+			if($rating['rating'] != NULL){
+                $query = "SELECT rating FROM game_comments WHERE game_id = {$gameId['game_id']}";
+                $result = mysql_query($query);
+                $game->rating = $rating['rating'];
+                $game->calculatedScore = (($rating['rating']-3) * mysql_num_rows($result));
+            }
+            else {
+                $game->rating = 0;
+                $game->calculatedScore = 0;
+            }
 			
 			//Get locations
 			$nearestLocation = Games::getNearestLocationOfGameToUser($latitude, $longitude, $gameId['game_id']);
