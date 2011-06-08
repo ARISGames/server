@@ -995,14 +995,15 @@ class Games extends Module
 	public function getGamesWithLocations($latitude, $longitude, $boolIncludeDevGames = 0) {
 		$games = array();
 		
-		if($boolIncludeDevGames) $query = "SELECT game_id FROM games WHERE is_locational = 1";
-		else $query = "SELECT game_id FROM games WHERE ready_for_public = 1 AND is_locational = 1";
+		if($boolIncludeDevGames) $query = "SELECT game_id, name FROM games WHERE is_locational = 1";
+		else $query = "SELECT game_id, name FROM games WHERE ready_for_public = 1 AND is_locational = 1";
 		$idResult = mysql_query($query);
 
 		
 		while($gameId = mysql_fetch_assoc($idResult)){
 			$game = new stdClass;
-			$game->id = $gameId['game_id'];
+			$game->game_id = $gameId['game_id']; 
+            $game->name = $gameId['name'];
 			
 			$query = "SELECT SUM(rating) AS rating FROM game_comments WHERE game_id = {$gameId['game_id']}";
 			$ratingResult = mysql_query($query);
