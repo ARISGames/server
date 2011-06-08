@@ -1102,7 +1102,7 @@ class Games extends Module
 			}
 		}
 		
-		return $games;
+		return new returnData(0, $games);
 	}
 	
 }
