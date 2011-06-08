@@ -51,7 +51,7 @@ class Games extends Module
 	public function getGamesForPlayerAtLocation($playerId, $latitude, $longitude, $maxDistance=99999999, $locational, $includeGamesinDevelopment)
 	{
 		if ($includeGamesinDevelopment) $query = "SELECT game_id FROM games WHERE is_locational = $locational";
-        else $query = "SELECT game_id FROM games WHERE is_locational = $locational AND ready_for_public = TRUE";
+        else $query = "SELECT game_id FROM games WHERE is_locational = $locational AND ready_for_public = TRUE ";
         
 		$gamesRs = @mysql_query($query);
 		NetDebug::trace(mysql_error());
@@ -1006,7 +1006,7 @@ class Games extends Module
 	
 	public function getGamesContainingText($intPlayerId, $latitude, $longitude, $textToFind, $boolIncludeDevGames = 1){
 		if($boolIncludeDevGames) $query = "SELECT game_id FROM games WHERE (name LIKE '%{$textToFind}%' OR description LIKE '%{$textToFind}%')";
-		else $query = "SELECT game_id FROM games WHERE (name LIKE '%{$textToFind}%' OR description LIKE '%{$textToFind}%') AND ready_for_public = 1";
+		else $query = "SELECT game_id FROM games WHERE (name LIKE '%{$textToFind}%' OR description LIKE '%{$textToFind}%') AND ready_for_public = 1 ORDER BY name";
 
 		$result = mysql_query($query);
 		$games = array();
@@ -1032,7 +1032,7 @@ class Games extends Module
 	 */
 	
 	public function getRecentGamesForPlayer($intPlayerId, $latitude, $longitude, $boolIncludeDevGames = 1){
-		$query = "SELECT player_log.game_id, player_log.timestamp, games.ready_for_public FROM player_log, games WHERE player_id = '{$intPlayerId}' AND player_log.game_id = games.game_id GROUP BY game_id ORDER BY timestamp ASC";
+		$query = "SELECT player_log.game_id, player_log.timestamp, games.ready_for_public FROM player_log, games WHERE player_id = '{$intPlayerId}' AND player_log.game_id = games.game_id GROUP BY game_id ORDER BY timestamp DESC";
 
 		$result = mysql_query($query);
 		
