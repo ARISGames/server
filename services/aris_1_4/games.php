@@ -1058,7 +1058,7 @@ class Games extends Module
 	 * @returns array of gameId's who's corresponding games contain the search string
 	 */
 	
-	public function getGamesContainingText($intPlayerId, $textToFind, $boolIncludeDevGames = 1){
+	public function getGamesContainingText($intPlayerId, $latitude, $longitude, $textToFind, $boolIncludeDevGames = 1){
 		if($boolIncludeDevGames) $query = "SELECT game_id FROM games WHERE (name LIKE '%{$textToFind}%' OR description LIKE '%{$textToFind}%')";
 		else $query = "SELECT game_id FROM games WHERE (name LIKE '%{$textToFind}%' OR description LIKE '%{$textToFind}%') AND ready_for_public = 1";
 
@@ -1066,7 +1066,7 @@ class Games extends Module
 		$games = array();
 		while($game = mysql_fetch_object($result)){
 			$gameObj = new stdClass;
-			$gameObj = Games::getFullGameObject($game->game_id, $intPlayerId, 0);
+			$gameObj = Games::getFullGameObject($game->game_id, $intPlayerId, 1, 9999999999, $latitude, $longitude);
 			$games[] = $gameObj;
 		}
 		return new returnData(0, $games);
@@ -1080,7 +1080,7 @@ class Games extends Module
 	 * @returns array of up to 10 gameId's that the player has most recently played
 	 */
 	
-	public function getRecentGamesForPlayer($intPlayerId, $boolIncludeDevGames = 1){
+	public function getRecentGamesForPlayer($intPlayerId, $latitude, $longitude, $boolIncludeDevGames = 1){
 		$query = "SELECT player_log.game_id, player_log.timestamp, games.ready_for_public FROM player_log, games WHERE player_id = '{$intPlayerId}' AND player_log.game_id = games.game_id GROUP BY game_id ORDER BY timestamp ASC";
 
 		$result = mysql_query($query);
@@ -1090,14 +1090,14 @@ class Games extends Module
 		if(!$boolIncludeDevGames) {
 			while($x < 10 && $game = mysql_fetch_assoc($result)){
 				if($game['ready_for_public']){
-					$games[$x] = Games::getFullGameObject($game['game_id'], $intPlayerId, 0);
+					$games[$x] = Games::getFullGameObject($game['game_id'], $intPlayerId, 1, 9999999999, $latitude, $longitude);
 					$x++;
 				}
 			}
 		}
 		else {
 			while($x < 10 && $game = mysql_fetch_assoc($result)){
-				$games[$x] = Games::getFullGameObject($game['game_id'], $intPlayerId, 0);
+				$games[$x] = Games::getFullGameObject($game['game_id'], $intPlayerId, 1, 9999999999, $latitude, $longitude);
 				$x++;
 			}
 		}
