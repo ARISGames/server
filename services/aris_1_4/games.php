@@ -1005,8 +1005,8 @@ class Games extends Module
 	 */
 	
 	public function getGamesContainingText($intPlayerId, $latitude, $longitude, $textToFind, $boolIncludeDevGames = 1){
-		if($boolIncludeDevGames) $query = "SELECT game_id FROM games WHERE (name LIKE '%{$textToFind}%' OR description LIKE '%{$textToFind}%')";
-		else $query = "SELECT game_id FROM games WHERE (name LIKE '%{$textToFind}%' OR description LIKE '%{$textToFind}%') AND ready_for_public = 1 ORDER BY name";
+		if($boolIncludeDevGames) $query = "SELECT game_id, name FROM games WHERE (name LIKE '%{$textToFind}%' OR description LIKE '%{$textToFind}%') ORDER BY name ASC";
+		else $query = "SELECT game_id, name FROM games WHERE (name LIKE '%{$textToFind}%' OR description LIKE '%{$textToFind}%') AND ready_for_public = 1 ORDER BY name ASC";
 
 		$result = mysql_query($query);
 		$games = array();
@@ -1014,8 +1014,7 @@ class Games extends Module
 			$gameObj = new stdClass;
             $gameObj = Games::getFullGameObject($game->game_id, $intPlayerId, 1, 9999999999, $latitude, $longitude);
             if($gameObj != NULL){
-                $games[$x] = $gameObj;
-                $x++;
+                $games[] = $gameObj;
             }
 		}
 		return new returnData(0, $games);
