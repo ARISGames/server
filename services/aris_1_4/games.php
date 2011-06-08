@@ -1066,8 +1066,11 @@ class Games extends Module
 		$games = array();
 		while($game = mysql_fetch_object($result)){
 			$gameObj = new stdClass;
-			$gameObj = Games::getFullGameObject($game->game_id, $intPlayerId, 1, 9999999999, $latitude, $longitude);
-			$games[] = $gameObj;
+            $gameObj = Games::getFullGameObject($game->game_id, $intPlayerId, 1, 9999999999, $latitude, $longitude);
+            if($gameObj != NULL){
+                $games[$x] = $gameObj;
+                $x++;
+            }
 		}
 		return new returnData(0, $games);
 	}
@@ -1090,15 +1093,23 @@ class Games extends Module
 		if(!$boolIncludeDevGames) {
 			while($x < 10 && $game = mysql_fetch_assoc($result)){
 				if($game['ready_for_public']){
-					$games[$x] = Games::getFullGameObject($game['game_id'], $intPlayerId, 1, 9999999999, $latitude, $longitude);
-					$x++;
+                    $gameObj = new stdClass;
+                    $gameObj = Games::getFullGameObject($game['game_id'], $intPlayerId, 1, 9999999999, $latitude, $longitude);
+                    if($gameObj != NULL){
+                        $games[$x] = $gameObj;
+                        $x++;
+                    }
 				}
 			}
 		}
 		else {
 			while($x < 10 && $game = mysql_fetch_assoc($result)){
-				$games[$x] = Games::getFullGameObject($game['game_id'], $intPlayerId, 1, 9999999999, $latitude, $longitude);
-				$x++;
+				$gameObj = new stdClass;
+                $gameObj = Games::getFullGameObject($game['game_id'], $intPlayerId, 1, 9999999999, $latitude, $longitude);
+                if($gameObj != NULL){
+                    $games[$x] = $gameObj;
+                    $x++;
+                }
 			}
 		}
 		
