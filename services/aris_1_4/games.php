@@ -1031,7 +1031,7 @@ class Games extends Module
 	 */
 	
 	public function getRecentGamesForPlayer($intPlayerId, $latitude, $longitude, $boolIncludeDevGames = 1){
-		$query = "SELECT player_log.game_id, player_log.timestamp, games.ready_for_public FROM player_log, games WHERE player_id = '{$intPlayerId}' AND player_log.game_id = games.game_id GROUP BY game_id ORDER BY timestamp DESC";
+		$query = "SELECT player_log.game_id, player_log.timestamp, games.ready_for_public FROM player_log, games WHERE player_log.player_id = '{$intPlayerId}' AND player_log.game_id = games.game_id ORDER BY player_log.timestamp DESC";
 
 		$result = mysql_query($query);
 		
@@ -1039,23 +1039,39 @@ class Games extends Module
 		$games = array();
 		if(!$boolIncludeDevGames) {
 			while($x < 10 && $game = mysql_fetch_assoc($result)){
-				if($game['ready_for_public']){
+                $found = 0;
+                foreach($games as $oldGame){
+                    if($oldGame->game_id == $game['game_id']){
+                        $found = 1;
+                    }
+                }
+                if(!$found){
+                    if($game['ready_for_public']){
+                        $gameObj = new stdClass;
+                        $gameObj = Games::getFullGameObject($game['game_id'], $intPlayerId, 1, 9999999999, $latitude, $longitude);
+                        if($gameObj != NULL){
+                            $games[$x] = $gameObj;
+                            $x++;
+                        }
+                    }
+                }
+			}
+		}
+		else {
+			while($x < 10 && $game = mysql_fetch_assoc($result)){
+                $found = 0;
+                foreach($games as $oldGame){
+                    if($oldGame->game_id == $game['game_id']){
+                        $found = 1;
+                    }
+                }
+                if(!$found){
                     $gameObj = new stdClass;
                     $gameObj = Games::getFullGameObject($game['game_id'], $intPlayerId, 1, 9999999999, $latitude, $longitude);
                     if($gameObj != NULL){
                         $games[$x] = $gameObj;
                         $x++;
                     }
-				}
-			}
-		}
-		else {
-			while($x < 10 && $game = mysql_fetch_assoc($result)){
-				$gameObj = new stdClass;
-                $gameObj = Games::getFullGameObject($game['game_id'], $intPlayerId, 1, 9999999999, $latitude, $longitude);
-                if($gameObj != NULL){
-                    $games[$x] = $gameObj;
-                    $x++;
                 }
 			}
 		}
