@@ -322,8 +322,8 @@ class Games extends Module
 			content_id int(10) unsigned NOT NULL,
 			requirement enum( 'PLAYER_HAS_ITEM', 'PLAYER_DOES_NOT_HAVE_ITEM', 'PLAYER_VIEWED_ITEM',
 							'PLAYER_HAS_NOT_VIEWED_ITEM', 'PLAYER_VIEWED_NODE', 'PLAYER_HAS_NOT_VIEWED_NODE',
-							'PLAYER_VIEWED_NPC', 'PLAYER_HAS_NOT_VIEWED_NPC', 
-							'PLAYER_HAS_UPLOADED_MEDIA_ITEM',  'PLAYER_HAS_COMPLETED_QUEST'  ) NOT NULL,
+							'PLAYER_VIEWED_NPC', 'PLAYER_HAS_NOT_VIEWED_NPC', 'PLAYER_VIEWED_WEBPAGE', 'PLAYER_HAS_NOT_VIEWED_WEBPAGE', 
+							'PLAYER_HAS_UPLOADED_MEDIA_ITEM',  'PLAYER_HAS_COMPLETED_QUEST') NOT NULL,
 			boolean_operator enum('AND','OR') NOT NULL DEFAULT 'AND',				
 			requirement_detail_1 VARCHAR(30) NULL,
 			requirement_detail_2 VARCHAR(30) NULL,
@@ -342,7 +342,7 @@ class Games extends Module
 			latitude double NOT NULL default '43.0746561',
 			longitude double NOT NULL default '-89.384422',
 			error double NOT NULL default '5',
-			type enum('Node','Event','Item','Npc') NOT NULL DEFAULT 'Node',
+			type enum('Node','Event','Item','Npc','WebPage') NOT NULL DEFAULT 'Node',
 			type_id int(11) NOT NULL,
 			icon_media_id int(10) unsigned NOT NULL default '0',
 			item_qty int(11) NOT NULL default '0' COMMENT  '-1 for infinite. Only effective for items',
@@ -463,7 +463,7 @@ class Games extends Module
 		$query = "CREATE TABLE {$strShortName}_folder_contents (
   			object_content_id int(10) unsigned NOT NULL auto_increment,
   			folder_id int(10) NOT NULL default '0',
-  			content_type enum('Node','Item','Npc') collate utf8_unicode_ci NOT NULL default 'Node',
+  			content_type enum('Node','Item','Npc','WebPage') collate utf8_unicode_ci NOT NULL default 'Node',
   			content_id int(10) unsigned NOT NULL default '0',
   			previous_id int(10) unsigned NOT NULL default '0',
   			PRIMARY KEY  (object_content_id)
@@ -584,12 +584,12 @@ class Games extends Module
 		NetDebug::trace("$query" . ":" . mysql_error());
         
         
-        $query = "CREATE TABLE `game_comments` (
+        $query = "CREATE TABLE `aris`.`game_comments` (
                                       `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
                                       `game_id` int(10) unsigned NOT NULL,
                                       `player_id` int(10) unsigned NOT NULL,
                                       `time_stamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                                      `rating` enum('1','-1') NOT NULL,
+                                      `rating` int(3) unsigned NOT NULL,
                                       `comment` tinyint(4) NOT NULL,
                                       PRIMARY KEY (`id`),
                                       KEY `game_id` (`game_id`),
@@ -598,6 +598,31 @@ class Games extends Module
                                       ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        
+        $query = "CREATE TABLE  `aris`.`web_pages` (
+                                    `web_page_id` INT( 10 ) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY ,
+                                    `game_id` INT( 10 ) UNSIGNED NOT NULL ,
+                                    `icon_media_id` INT( 10 ) UNSIGNED NOT NULL DEFAULT  '4',
+                                    `name` VARCHAR( 20 ) NOT NULL ,
+                                    `url` TINYTEXT NOT NULL
+                                    ) ENGINE = MYISAM CHARACTER SET utf8 COLLATE utf8_general_ci";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "INSERT INTO  `aris`.`media` (
+        `media_id` ,
+        `game_id` ,
+        `name` ,
+        `file_name` ,
+        `is_icon`
+        )
+        VALUES (
+        '4',  '0',  'Default WebPage',  'webpage.png',  '1'
+        );";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
         
         
 		return new returnData(0, FALSE);
@@ -662,6 +687,20 @@ class Games extends Module
 		$query = "ALTER TABLE  `{$prefix}_folder_contents` CHANGE  `folder_id`  `folder_id` INT( 10 ) NOT NULL DEFAULT  '0'";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "ALTER TABLE  `{$prefix}_folder_contents` CHANGE  `content_type`  `content_type` ENUM(  'Node',  'Item',  'Npc',  'WebPage' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  'Node'";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "ALTER TABLE  `{$prefix}_locations` CHANGE  `type`  `type` ENUM(  'Node',  'Event',  'Item',  'Npc',  'WebPage' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  'Node'";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        
+        $query = "ALTER TABLE  `{$prefix}_requirements` CHANGE  `requirement`  `requirement` ENUM(  'PLAYER_HAS_ITEM',  'PLAYER_DOES_NOT_HAVE_ITEM',  'PLAYER_VIEWED_ITEM',  'PLAYER_HAS_NOT_VIEWED_ITEM', 'PLAYER_VIEWED_NODE',  'PLAYER_HAS_NOT_VIEWED_NODE',  'PLAYER_VIEWED_NPC',  'PLAYER_HAS_NOT_VIEWED_NPC',  'PLAYER_VIEWED_WEBPAGE',  'PLAYER_HAS_NOT_VIEWED_WEBPAGE', 'PLAYER_HAS_UPLOADED_MEDIA_ITEM',  'PLAYER_HAS_COMPLETED_QUEST' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
 	}
 	
 	/**
@@ -745,6 +784,12 @@ class Games extends Module
 		//Delete the game record
 		$query = "DELETE FROM games WHERE prefix = '{$prefix}_'";
 		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
+        
+        //Delete Web Pages
+        $query = "DELETE FROM web_pages WHERE game_id = '{$intGameID}'";
+        NetDebug::trace($query);
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
 		

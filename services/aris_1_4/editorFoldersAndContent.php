@@ -4,6 +4,7 @@ require_once("nodes.php");
 require_once("items.php");
 require_once("npcs.php");
 require_once("media.php");
+require_once("webpages.php");
 
 class EditorFoldersAndContent extends Module
 {
@@ -25,7 +26,7 @@ class EditorFoldersAndContent extends Module
 		NetDebug::trace($query);
 		$folders = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:". mysql_error());
-
+        
 		//Get the Contents with some of the content's data
 		$query = "SELECT * FROM {$prefix}_folder_contents";
 		NetDebug::trace($query);
@@ -38,14 +39,15 @@ class EditorFoldersAndContent extends Module
 		while ($content = mysql_fetch_object($rsContents)) {
 			//Save the modified copy to the array
 			$arrayContents[] = self::hydrateContent($content, $intGameID);
-		}	
-		
+        }
+        
 		//fake out amfphp to package this array as a flex array collection
 		$arrayCollectionContents = (object) array('_explicitType' => "flex.messaging.io.ArrayCollection",
 												'source' => $arrayContents);
 											
 		$foldersAndContents = (object) array('folders' => $folders, 'contents' => $arrayCollectionContents);
 		return new returnData(0, $foldersAndContents);
+
 	}
 	
 	
@@ -83,6 +85,7 @@ class EditorFoldersAndContent extends Module
 
 	private function hydrateContent($folderContentObject, $intGameID) {
 			$content = $folderContentObject;
+        
 			if ($content->content_type == 'Node') {
 				//Fetch the corresponding node
 				$contentDetails = Nodes::getNode($intGameID,$content->content_id)->data;
@@ -96,7 +99,12 @@ class EditorFoldersAndContent extends Module
 				$contentDetails = Npcs::getNpc($intGameID,$content->content_id)->data;
 				$content->name = $contentDetails->name;
 			}
-
+            else if ($content->content_type == 'WebPage') {
+				$contentDetails = WebPages::getWebPage($intGameID,$content->content_id)->data;
+				$content->name = $contentDetails->name;
+                $content->media = NULL;
+                $content->media_id = NULL;
+			}
 			
 			//Get the Icon Media
 			$mediaHelper = new Media;
@@ -105,12 +113,14 @@ class EditorFoldersAndContent extends Module
 			$content->icon_media = $media;
 			$content->icon_media_id = $contentDetails->icon_media_id;
 
+        if ($content->content_type != 'WebPage'){
 			//Get the Media
 			$mediaHelper = new Media;
 			$mediaReturnObject = $mediaHelper->getMediaObject($intGameID, $contentDetails->media_id);
 			$media = $mediaReturnObject->data;
 			$content->media = $media;
 			$content->media_id = $contentDetails->media_id;
+        }
 	
 			return $content;
 	}
@@ -255,6 +265,8 @@ class EditorFoldersAndContent extends Module
 		if ($content->content_type == "Node") Nodes::deleteNode($intGameID, $content->content_id);
 		else if ($content->content_type == "Item") Items::deleteItem($intGameID, $content->content_id);
 		else if ($content->content_type == "Npc") Npcs::deleteNpc($intGameID, $content->content_id);
+        else if ($content->content_type == "WebPage") WebPages::deleteWebPage($intGameID, $content->content_id);
+
 
 		
 		if (mysql_affected_rows()) return new returnData(0);
