@@ -221,6 +221,33 @@ class QRCodes extends Module
 		return $returnResult;
 		
 	}
+
+
+
+	/**
+     * Recieve an Image UL
+     */
+	public function getBestImageMatchNearbyObjectForPlayer($intGameId, $intPlayerId, $strFileName)
+	{    
+        $mediaDirectory = Media::getMediaDirectoryURL($intGameId);
+        $execCommand = 'ImageMatcher match ' . $mediaDirectory . '/' . $strFileName . ' ' . $mediaDirectory;
+        NetDebug::trace($execCommand);
+        
+        $consoleArray = exec($execCommand);
+        $consoleJSON = $consoleArray[count($consoleArray) - 1]; //Grab the last line of console output
+        NetDebug::trace($consoleJSON);
+            
+        $filenameStartIndex = strpos($consoleJSON, '"filename":"');
+        $filenameEndIndex = strpos($consoleJSON, '"', $filenameStartIndex);
+        $fileName = substr(consoleJSON, $filenameStartIndex, $filenameEndIndex-$filenameStartIndex);
+        
+        $simularityStartIndex = strpos($consoleJSON, '"simularity":"');
+        $simularityEndIndex = strpos($consoleJSON, '"', $simularityStartIndex);
+        $simularity = substr(consoleJSON, $simularityStartIndex, $simularityEndIndex-$simularityStartIndex);
+        
+        return new returnData(0, $fileName . ' ' . $simularity);		
+    }
+
 	
 	/**
      * Fetch a QRCode object

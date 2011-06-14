@@ -94,6 +94,9 @@ class Locations extends Module
 				case 'Npc':
 					$query = "SELECT icon_media_id FROM {$prefix}_npcs WHERE npc_id = {$location->type_id} LIMIT 1";
 					break;
+                case 'WebPage':
+					$query = "SELECT icon_media_id FROM web_pages WHERE web_page_id = {$location->type_id} LIMIT 1";
+					break;
 			}
 			
 			$rsObject = @mysql_query($query);

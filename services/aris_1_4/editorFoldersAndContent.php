@@ -5,6 +5,8 @@ require_once("items.php");
 require_once("npcs.php");
 require_once("media.php");
 require_once("webpages.php");
+require_once("augbubbles.php");
+
 
 class EditorFoldersAndContent extends Module
 {
@@ -105,6 +107,10 @@ class EditorFoldersAndContent extends Module
                 $content->media = NULL;
                 $content->media_id = NULL;
 			}
+            else if ($content->content_type == 'AugBubble') {
+				$contentDetails = AugBubbles::getAugBubble($intGameID,$content->content_id)->data;
+				$content->name = $contentDetails->name;
+			}
 			
 			//Get the Icon Media
 			$mediaHelper = new Media;
@@ -120,6 +126,14 @@ class EditorFoldersAndContent extends Module
 			$media = $mediaReturnObject->data;
 			$content->media = $media;
 			$content->media_id = $contentDetails->media_id;
+        }
+        if ($content->content_type == 'AugBubble'){
+			//Get the Alignment Media
+			$mediaHelper = new Media;
+			$mediaReturnObject = $mediaHelper->getMediaObject($intGameID, $contentDetails->alignment_media_id);
+			$alignmentMedia = $mediaReturnObject->data;
+			$content->alignment_media = $alignmentMedia;
+			$content->alignment_media_id = $alignmentMedia->media_id;
         }
 	
 			return $content;
