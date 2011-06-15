@@ -144,111 +144,86 @@ class QRCodes extends Module
 		return new returnData(0, Config::gamedataWWWPath . "/backups/{$zipFileName}");		
 	 }
 	
-	/**
-     * Fetch a QRCode object - DEPRICATED
-     * @returns a 0 with an NPC, Node or Item in addition to the latitute and longitude in the data, 2 for an invalid code, 4 for reqs not met or 5 for a data error
-     */
-	public function getQRCodeObjectForPlayer($intGameID, $strCode, $intPlayerID)
-	{
-		
-		$prefix = $this->getPrefix($intGameID);
-		if (!$prefix) return new returnData(1, NULL, "invalid game id");
-		
-		$query = "SELECT * FROM {$prefix}_qrcodes WHERE code = '{$strCode}' LIMIT 1";
-		
-		$rsResult = @mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, "SQL Error: ". mysql_error());
-		
-		$qrcode = @mysql_fetch_object($rsResult);
-		
-		//Check for a valid QR Code
-		if (!$qrcode) { 
-			Module::appendLog($intPlayerID, $intGameID, Module::kLOG_ENTER_QRCODE, $strCode, 'INVALID');
-			return new returnData(0, NULL, "invalid QRCode code");
-		}
-			
-		
-		//Check the requirements of the QR Code's link object
-		if (!$this->objectMeetsRequirements ($prefix, $intPlayerID, $qrcode->link_type, $qrcode->link_id)) {
-			Module::appendLog($intPlayerID, $intGameID, Module::kLOG_ENTER_QRCODE, $strCode, 'REQS_OR_QTY_NOT_MET');
-			return new returnData(0, NULL, "QRCode requirements not met");
-		}
-		
-		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_ENTER_QRCODE, $strCode, 'SUCCESSFUL');
-
-		//Get the data
-		switch ($qrcode->link_type) {
-			case 'Location':
-				NetDebug::trace("It is Location " . $qrcode->link_id);
-				$locationReturnData = Locations::getLocation($intGameID, $qrcode->link_id);
-				$location = $locationReturnData->data;
-				if (!$location) return new returnData(5, NULL, "bad link in qr code, no matching location found");
-				
-				NetDebug::trace("Location Found. Type:" . $location->type .". Look up the Object" );
-				switch ($location->type) {
-					case 'Npc': 
-						NetDebug::trace("It is an NPC");
-						$returnResult = Npcs::getNpcWithConversationsForPlayer($intGameID, $location->type_id, $intPlayerID);
-						$returnResult->data->type = "Npc";
-						break;
-					case 'Node': 
-						NetDebug::trace("It is an NPC");
-						$returnResult = Nodes::getNode($intGameID, $location->type_id);
-						$returnResult->data->type = "Node";
-						break;
-					case 'Item':
-						NetDebug::trace("It is an Item");
-						
-						//Check Item Quantity
-						if ($location->item_qty == 0) return new returnData(4, NULL, "Item Quantity is 0");
-
-						$returnResult = Items::getItem($intGameID, $location->type_id);
-						$returnResult->data->type = "Item";
-						break;	
-					default:
-						$returnResult = new returnData(5, NULL, "Invalid Location Record. type not recognized");
-				}
-				
-				//No matter the object type, tack on the position
-				$returnResult->data->latitude = $location->latitude;
-				$returnResult->data->longitude = $location->longitude;
-				break;
-			
-			default:
-				$returnResult = new returnData(5, NULL, "Invalid QR Code Record. link_type not recognized");
-		}
-		
-		return $returnResult;
-		
-	}
-
-
 
 	/**
      * Recieve an Image UL
      */
 	public function getBestImageMatchNearbyObjectForPlayer($intGameId, $intPlayerId, $strFileName)
 	{    
-        $mediaDirectory = Media::getMediaDirectoryURL($intGameId);
-        $execCommand = 'ImageMatcher match ' . $mediaDirectory . '/' . $strFileName . ' ' . $mediaDirectory;
+        //NetDebug::trace(getcwd());
+        
+        $gameMediaAndDescriptorsPath = Media::getMediaDirectory($intGameId)->data;
+        $execCommand = '../../ImageMatcher/OSXImageMatcher match ' . $gameMediaAndDescriptorsPath . $strFileName . ' ' . $gameMediaAndDescriptorsPath;
         NetDebug::trace($execCommand);
-        
-        $consoleArray = exec($execCommand);
-        $consoleJSON = $consoleArray[count($consoleArray) - 1]; //Grab the last line of console output
-        NetDebug::trace($consoleJSON);
-            
-        $filenameStartIndex = strpos($consoleJSON, '"filename":"');
-        $filenameEndIndex = strpos($consoleJSON, '"', $filenameStartIndex);
-        $fileName = substr(consoleJSON, $filenameStartIndex, $filenameEndIndex-$filenameStartIndex);
-        
-        $simularityStartIndex = strpos($consoleJSON, '"simularity":"');
-        $simularityEndIndex = strpos($consoleJSON, '"', $simularityStartIndex);
-        $simularity = substr(consoleJSON, $simularityStartIndex, $simularityEndIndex-$simularityStartIndex);
-        
-        return new returnData(0, $fileName . ' ' . $simularity);		
-    }
 
-	
+        $console = exec($execCommand); //Run it
+        NetDebug::trace('Console:' . $console);
+    
+        $consoleJSON = json_decode($console,true);
+        $fileName = $consoleJSON['filename'];        
+        $pathParts = pathinfo($fileName);
+        $fileName =  $pathParts['filename']; // requires PHP 5.2.0        
+        NetDebug::trace('fileName: ' . $fileName);
+        
+        $similarity = $consoleJSON['similarity'];
+        NetDebug::trace('similarity: ' . $similarity);
+        
+        
+        $prefix = $this->getPrefix($intGameId);
+		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+		
+		$query = "SELECT {$prefix}_qrcodes.* 
+                    FROM {$prefix}_qrcodes 
+                    JOIN media 
+                    ON ({$prefix}_qrcodes.image_decoder_media_id = media.media_id)
+                    WHERE media.file_name = '{$fileName}.jpg'
+                    OR media.file_name = '{$fileName}.png'
+                    LIMIT 1";
+		
+        NetDebug::trace('query: ' . $query);
+
+		$rsResult = @mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error: ". mysql_error());
+		
+		$qrcode = @mysql_fetch_object($rsResult);
+
+        
+        //Check for a valid QR Code
+		if (!$qrcode) { 
+			Module::appendLog($intPlayerId, $intGameId, Module::kLOG_ENTER_QRCODE, $fileName, 'INVALID');
+			return new returnData(0, NULL, "invalid QRCode code");
+		}
+        
+		//Check the requirements of the QR Code's link object
+		if (!$this->objectMeetsRequirements ($prefix, $intPlayerId, $qrcode->link_type, $qrcode->link_id)) {
+			Module::appendLog($intPlayerId, $intGameId, Module::kLOG_ENTER_QRCODE, $fileName, 'REQS_OR_QTY_NOT_MET');
+			return new returnData(0, NULL, "QRCode requirements not met");
+		}
+		
+		Module::appendLog($intPlayerId, $intGameId, Module::kLOG_ENTER_QRCODE, $fileName, 'SUCCESSFUL');
+        
+		$returnResult = new returnData(0, $qrcode);
+        
+		//Get the data
+		NetDebug::trace("QRCode link_type=" . $qrcode->link_type . " link_id=" . $qrcode->link_id);
+        
+		switch ($qrcode->link_type) {
+			case 'Location':
+				NetDebug::trace("It is Location " . $qrcode->link_id);
+				$returnResult->data->object = Locations::getLocation($intGameId, $qrcode->link_id)->data;
+				if (!$returnResult->data->object) return new returnData(5, NULL, "bad link in qr code, no matching location found");
+				break;
+			default:
+				return new returnData(5, NULL, "Invalid QR Code Record. link_type not recognized");
+		}
+		
+		return $returnResult;
+
+        //Delete the file since we will never use it again
+        //unlink($strFileName);
+
+    }
+    
 	/**
      * Fetch a QRCode object
      * @returns a 0 with a <NearbyObjectProtocol> Object, 2 for an invalid code, 4 for reqs not met or 5 for a data error

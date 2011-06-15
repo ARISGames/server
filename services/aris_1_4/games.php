@@ -715,6 +715,11 @@ class Games extends Module
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
+        $query = "ALTER TABLE  `{$prefix}_qrcodes` ADD  `image_decoder_media_id` INT NOT NULL DEFAULT  '0' AFTER  `code` ,
+        ADD INDEX (  `image_decoder_media_id` )";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
 	}
 	
 	/**
