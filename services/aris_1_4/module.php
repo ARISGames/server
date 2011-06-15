@@ -14,6 +14,8 @@ abstract class Module
 	const kLOG_VIEW_ITEM = 'VIEW_ITEM';
 	const kLOG_VIEW_NODE = 'VIEW_NODE';
 	const kLOG_VIEW_NPC = 'VIEW_NPC';
+    const kLOG_VIEW_WEBPAGE = 'VIEW_WEBPAGE';
+    const kLOG_VIEW_AUGBUBBLE = 'VIEW_AUGBUBBLE';
 	const kLOG_VIEW_MAP = 'VIEW_MAP';
 	const kLOG_VIEW_QUESTS = 'VIEW_QUESTS';
 	const kLOG_VIEW_INVENTORY = 'VIEW_INVENTORY';
@@ -29,6 +31,10 @@ abstract class Module
 	const kREQ_PLAYER_HAS_NOT_VIEWED_NODE = 'PLAYER_HAS_NOT_VIEWED_NODE';
 	const kREQ_PLAYER_VIEWED_NPC = 'PLAYER_VIEWED_NPC';
 	const kREQ_PLAYER_HAS_NOT_VIEWED_NPC = 'PLAYER_HAS_NOT_VIEWED_NPC';
+    const kREQ_PLAYER_VIEWED_WEBPAGE = 'PLAYER_VIEWED_WEBPAGE';
+	const kREQ_PLAYER_HAS_NOT_VIEWED_WEBPAGE = 'PLAYER_HAS_NOT_VIEWED_WEBPAGE';
+    const kREQ_PLAYER_VIEWED_AUGBUBBLE = 'PLAYER_VIEWED_AUGBUBBLE';
+	const kREQ_PLAYER_HAS_NOT_VIEWED_AUGBUBBLE = 'PLAYER_HAS_NOT_VIEWED_AUGBUBBLE';
 	const kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM = 'PLAYER_HAS_UPLOADED_MEDIA_ITEM';
 	const kREQ_PLAYER_HAS_COMPLETED_QUEST = 'PLAYER_HAS_COMPLETED_QUEST';
 	
@@ -430,12 +436,28 @@ abstract class Module
 					break;
 				case Module::kREQ_PLAYER_VIEWED_NPC:
 					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NPC, 
-						$requirement['requirement_detail_1']);
+                                                           $requirement['requirement_detail_1']);
 					break;
 				case Module::kREQ_PLAYER_HAS_NOT_VIEWED_NPC:
 					$requirementMet = !Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NPC, 
-						$requirement['requirement_detail_1']);
-					break;					
+                                                            $requirement['requirement_detail_1']);
+					break;	
+                case Module::kREQ_PLAYER_VIEWED_WEBPAGE:
+					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_WEBPAGE, 
+                                                           $requirement['requirement_detail_1']);
+					break;
+				case Module::kREQ_PLAYER_HAS_NOT_VIEWED_WEBPAGE:
+					$requirementMet = !Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_WEBPAGE, 
+                                                            $requirement['requirement_detail_1']);
+					break;
+                case Module::kREQ_PLAYER_VIEWED_AUGBUBBLE:
+					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_AUGBUBBLE, 
+                                                           $requirement['requirement_detail_1']);
+					break;
+				case Module::kREQ_PLAYER_HAS_NOT_VIEWED_AUGBUBBLE:
+					$requirementMet = !Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_AUGBUBBLE, 
+                                                            $requirement['requirement_detail_1']);
+					break;
 				//Inventory related	
 				case Module::kREQ_PLAYER_HAS_ITEM:
 					$requirementMet = Module::playerHasItem($strPrefix, $intPlayerID, 

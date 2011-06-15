@@ -291,7 +291,30 @@ class Players extends Module
 		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_VIEW_NPC, $intNpcID);
 		
 		return new returnData(0, TRUE);
-	}	
+	}
+	
+    
+    public function webPageViewed($intGameID, $intPlayerID, $intWebPageID)
+	{	
+		$prefix = Module::getPrefix($intGameID);
+		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+		
+		Module::applyPlayerStateChanges($prefix, $intPlayerID, Module::kLOG_VIEW_WEBPAGE, $intWebPageID);
+		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_VIEW_WEBPAGE, $intWebPageID);
+		
+		return new returnData(0, TRUE);
+	}
+    
+    public function augBubbleViewed($intGameID, $intPlayerID, $intAugBubbleID)
+	{	
+		$prefix = Module::getPrefix($intGameID);
+		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+		
+		Module::applyPlayerStateChanges($prefix, $intPlayerID, Module::kLOG_VIEW_AUGBUBBLE, $intAugBubbleID);
+		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_VIEW_AUGBUBBLE, $intAugBubbleID);
+		
+		return new returnData(0, TRUE);
+	}
 	
 
 	/**

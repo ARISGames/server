@@ -302,7 +302,7 @@ class Games extends Module
 		
 		$query = "CREATE TABLE {$strShortName}_player_state_changes (
 			id int(10) unsigned NOT NULL auto_increment,
-			event_type enum('VIEW_ITEM', 'VIEW_NODE', 'VIEW_NPC' ) NOT NULL,
+			event_type enum('VIEW_ITEM', 'VIEW_NODE', 'VIEW_NPC', 'VIEW_WEBPAGE', 'VIEW_AUGBUBBLE' ) NOT NULL,
 			event_detail INT UNSIGNED NOT NULL,
 			action enum('GIVE_ITEM','TAKE_ITEM') NOT NULL,
 			action_detail int(10) unsigned NOT NULL,
@@ -635,6 +635,12 @@ class Games extends Module
         ) ENGINE = MYISAM CHARACTER SET utf8 COLLATE utf8_general_ci";
         mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        
+        $query = "ALTER TABLE  `player_log` CHANGE  `event_type`  `event_type` ENUM(  'LOGIN',  'MOVE',  'PICKUP_ITEM',  'DROP_ITEM',  'DESTROY_ITEM',  'VIEW_ITEM',  'VIEW_NODE',  'VIEW_NPC',  'VIEW_WEBPAGE',  'VIEW_AUGBUBBLE',  'VIEW_MAP',  'VIEW_QUESTS', 'VIEW_INVENTORY',  'ENTER_QRCODE',  'UPLOAD_MEDIA_ITEM' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
         
         
         

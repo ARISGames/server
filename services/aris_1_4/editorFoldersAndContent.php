@@ -280,6 +280,8 @@ class EditorFoldersAndContent extends Module
 		else if ($content->content_type == "Item") Items::deleteItem($intGameID, $content->content_id);
 		else if ($content->content_type == "Npc") Npcs::deleteNpc($intGameID, $content->content_id);
         else if ($content->content_type == "WebPage") WebPages::deleteWebPage($intGameID, $content->content_id);
+        else if ($content->content_type == "AugBubble") AugBubbles::deleteAugBubble($intGameID, $content->content_id);
+
 
 
 		
