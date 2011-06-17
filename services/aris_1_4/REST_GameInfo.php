@@ -1,6 +1,6 @@
 <?php
 
-require_once('config.class.php');
+require_once('../../config.class.php');
 require_once('media.php');
 require_once('locations.php');
 
