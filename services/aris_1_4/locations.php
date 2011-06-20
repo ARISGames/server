@@ -43,7 +43,7 @@ class Locations extends Module
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
 		
-		$query = "SELECT {$prefix}_locations.*,{$prefix}_qrcodes.qrcode_id,{$prefix}_qrcodes.code
+		$query = "SELECT {$prefix}_locations.*,{$prefix}_qrcodes.qrcode_id,{$prefix}_qrcodes.code,{$prefix}_qrcodes.match_media_id
 					FROM {$prefix}_locations JOIN {$prefix}_qrcodes
 					ON {$prefix}_qrcodes.link_id = {$prefix}_locations.location_id
 					WHERE {$prefix}_qrcodes.link_type = 'Location'";
@@ -96,6 +96,9 @@ class Locations extends Module
 					break;
                 case 'WebPage':
 					$query = "SELECT icon_media_id FROM web_pages WHERE web_page_id = {$location->type_id} LIMIT 1";
+					break;
+                case 'AugBubble':
+					$query = "SELECT icon_media_id FROM aug_bubbles WHERE aug_bubble_id = {$location->type_id} LIMIT 1";
 					break;
 			}
 			
@@ -214,7 +217,7 @@ class Locations extends Module
 			Locations::createLocationWithQrCode($intGameID, $strLocationName, $intIconMediaID, 
 								$dblLatitude, $dblLongitude, $dblError,
 								$strObjectType, $intObjectID,
-								$intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $qrCode = '');
+								$intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $qrCode = '', 0);
 	}
 	
      /**
@@ -240,7 +243,7 @@ class Locations extends Module
 	public function createLocationWithQrCode($intGameID, $strLocationName, $intIconMediaID, 
 								$dblLatitude, $dblLongitude, $dblError,
 								$strObjectType, $intObjectID,
-								$intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $qrCode = '') {
+								$intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $qrCode = '', $imageMatchId) {
 														
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
@@ -273,7 +276,7 @@ class Locations extends Module
 		
 		$newId = mysql_insert_id();
 		//Create a coresponding QR Code
-		QRCodes::createQRCode($intGameID, "Location", $newId, $qrCode);
+		QRCodes::createQRCode($intGameID, "Location", $newId, $qrCode, $imageMatchId);
 
 		return new returnData(0, $newId);
 
@@ -374,7 +377,7 @@ class Locations extends Module
 	public function updateLocationWithQrCode($intGameID, $intLocationID, $strLocationName, $intIconMediaID, 
 								$dblLatitude, $dblLongitude, $dblError,
 								$strObjectType, $intObjectID,
-								$intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $qrCode)
+								$intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $qrCode, $imageMatchId)
 	{
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
@@ -410,7 +413,7 @@ class Locations extends Module
 		
 		$query = "UPDATE {$prefix}_qrcodes
 				SET 
-				code = '{$qrCode}'
+				code = '{$qrCode}', match_media_id = '{$imageMatchId}'
 				WHERE link_type = 'Location' and link_id = '{$intLocationID}'";
 		NetDebug::trace("updateLocation: Query: $query");		
 		@mysql_query($query);

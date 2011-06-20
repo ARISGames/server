@@ -283,7 +283,7 @@ class QRCodes extends Module
      * If no code is provided, a random 4 digit number will be generated
      * @returns the new QR Code ID on success.
      */
-	public function createQRCode($intGameID, $strLinkType, $intLinkID, $strCode = '')
+	public function createQRCode($intGameID, $strLinkType, $intLinkID, $strCode = '', $imageMatchId)
 	{
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
@@ -299,8 +299,8 @@ class QRCodes extends Module
 		}
 		
 		$query = "INSERT INTO {$prefix}_qrcodes 
-					(link_type, link_id, code)
-					VALUES ('{$strLinkType}','{$intLinkID}','{$strCode}')";
+					(link_type, link_id, code, match_media_id)
+					VALUES ('{$strLinkType}','{$intLinkID}','{$strCode}','{$imageMatchId}')";
 		
 		NetDebug::trace("Running a query = $query");	
 		
@@ -316,7 +316,7 @@ class QRCodes extends Module
      * Update a QR Code
      * @returns true if edit was done, false if no changes were made
      */
-	public function updateQRCode($intGameID, $intQRCodeID, $strLinkType, $intLinkID, $strCode)
+	public function updateQRCode($intGameID, $intQRCodeID, $strLinkType, $intLinkID, $strCode, $imageMatchId)
 	{
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
@@ -328,7 +328,8 @@ class QRCodes extends Module
 					SET 
 					link_type = '{$strLinkType}',
 					link_id = '{$intLinkID}',
-					code = '{$strCode}'
+					code = '{$strCode}',
+                    match_media_id = '{$imageMatchId}'
 					WHERE qrcode_id = '{$intQRCodeID}'";
 		
 		NetDebug::trace("Running a query = $query");	
