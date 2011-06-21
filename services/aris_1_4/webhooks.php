@@ -121,15 +121,43 @@ class WebHooks extends Module
 		
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
-		
-		if (mysql_affected_rows()) {
-			return new returnData(0, TRUE);
-		}
-		else {
+        
+        if (!mysql_affected_rows()) {
 			return new returnData(2, NULL, 'invalid event id');
 		}
+        
+        $query = "DELETE FROM {$prefix}_requirements WHERE content_type = 'OutgoingWebHook' AND content_id = '{$intWebHookID}'";
+		
+		$rsResult = @mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, "{$query} SQL Error");
+		
+        return new returnData(0, TRUE);
+
+		
 		
 	}	
+    
+    /**
+     * Deal with Receiving a Web Hook
+     * @returns 0
+     */
+    public function setWebHookReq($gameId, $webHookId, $lastLocationId, $playerId)
+    {
+        if($playerId != NULL){
+            $query = "INSERT INTO player_log (player_id, game_id, event_type, event_detail_1) VALUES ('{$playerId}', '{$gameId}', 'RECEIVE_WEBHOOK', '{$webHookId}')";
+            mysql_query($query);
+        }
+        else{
+            $query = "SELECT player_id FROM player_log WHERE game_id='{$gameId}', event_detail_1='{$lastLocationId}', deleted='0'";
+            $result = mysql_query($query);
+            while($pid = mysql_fetch_object($result)){
+                $query = "INSERT INTO player_log (player_id, game_id, event_type, event_detail_1) VALUES ('{$pid}', '{$gameId}', 'RECEIVE_WEBHOOK', '{$webHookId}')";
+                mysql_query($query);
+            }
+        }
+        return(0);
+    }
+    
 	
 	
 }

@@ -112,7 +112,7 @@ class Locations extends Module
 
 			//Does it meet it's requirements?
 			if (!$this->objectMeetsRequirements ($prefix, $intPlayerID, 'Location', $location->location_id)) {
-			
+               // NetDebug::trace($prefix . " " . $intPlayerID . " 'Location' " . $location->location_id);
 				NetDebug::trace("Skipping Location:{$location->location_id} becasue it doesn't meet it's requirements");
 				continue;
 			}

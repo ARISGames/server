@@ -195,6 +195,18 @@ class Requirements extends Module
 				$requirementString = "requirement = 'PLAYER_VIEWED_NPC' OR
 									requirement = 'PLAYER_HAS_NOT_VIEWED_NPC'";
 				break;
+            case 'AugBubble':
+				$requirementString = "requirement = 'PLAYER_VIEWED_AUGBUBBLE' OR
+                                    requirement = 'PLAYER_HAS_NOT_VIEWED_AUGBUBBLE'";
+				break;
+            case 'WebPage':
+				$requirementString = "requirement = 'PLAYER_VIEWED_WEBPAGE' OR
+                                    requirement = 'PLAYER_HAS_NOT_VIEWED_WEBPAGE'";
+				break;
+            case 'WebHook':
+				$requirementString = "requirement = 'PLAYER_HAS_RECEIVED_INCOMING_WEBHOOK' OR
+                                    requirement = 'PLAYER_HAS_NOT_RECEIVED_INCOMING_WEBHOOK'";
+				break;
 			default:
 				return new returnData(4, NULL, "invalid object type");
 		}

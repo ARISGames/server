@@ -21,6 +21,7 @@ abstract class Module
 	const kLOG_VIEW_INVENTORY = 'VIEW_INVENTORY';
 	const kLOG_ENTER_QRCODE = 'ENTER_QRCODE';
 	const kLOG_UPLOAD_MEDIA_ITEM = 'UPLOAD_MEDIA_ITEM';
+    const kLOG_RECEIVE_WEBHOOK = 'RECEIVE_WEBHOOK';
 	
 	//constants for gameID_requirements table enums
 	const kREQ_PLAYER_HAS_ITEM = 'PLAYER_HAS_ITEM';
@@ -37,11 +38,13 @@ abstract class Module
 	const kREQ_PLAYER_HAS_NOT_VIEWED_AUGBUBBLE = 'PLAYER_HAS_NOT_VIEWED_AUGBUBBLE';
 	const kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM = 'PLAYER_HAS_UPLOADED_MEDIA_ITEM';
 	const kREQ_PLAYER_HAS_COMPLETED_QUEST = 'PLAYER_HAS_COMPLETED_QUEST';
+    const kREQ_PLAYER_HAS_RECEIVED_INCOMING_WEBHOOK = 'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK';
 	
 	const kRESULT_DISPLAY_NODE = 'Node';
 	const kRESULT_DISPLAY_QUEST = 'QuestDisplay';
 	const kRESULT_COMPLETE_QUEST = 'QuestComplete';
 	const kRESULT_DISPLAY_LOCATION = 'Location';
+    const kRESULT_EXECUTE_WEBHOOK = 'OutgoingWebhook';
 
 	//constants for player_state_changes table enums
 	const kPSC_GIVE_ITEM = 'GIVE_ITEM';
@@ -366,6 +369,8 @@ abstract class Module
      * Checks if the specified user has uploaded media near the specified location.
      * @return boolean
      */
+    
+    //Spelled 'distAnce' wrong in function name and variable name... afraid to change it...
     protected function playerHasUploadedMediaItemWithinDistence($intGameID, $intPlayerID, $dblLatitude, $dblLongitude, $dblDistenceInMeters) {
     	$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return FALSE;
@@ -415,7 +420,6 @@ abstract class Module
 			//Check the requirement
 			
 			$requirementMet = FALSE;
-			
 			switch ($requirement['requirement']) {
 				//Log related
 				case Module::kREQ_PLAYER_VIEWED_ITEM:
@@ -456,6 +460,10 @@ abstract class Module
 					break;
 				case Module::kREQ_PLAYER_HAS_NOT_VIEWED_AUGBUBBLE:
 					$requirementMet = !Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_AUGBUBBLE, 
+                                                            $requirement['requirement_detail_1']);
+					break;
+                case Module::kREQ_PLAYER_HAS_RECEIVED_INCOMING_WEBHOOK:
+					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_RECEIVE_WEBHOOK, 
                                                             $requirement['requirement_detail_1']);
 					break;
 				//Inventory related	
