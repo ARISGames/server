@@ -189,7 +189,7 @@ CREATE TABLE `players` (
   `latitude` double NOT NULL default '0',
   `longitude` double NOT NULL default '0',
   `last_game_id` int(10) unsigned NOT NULL default '0',
-  PRIMARY KEY  (`player_id`)
+  PRIMARY KEY  (`player_id`),
   KEY `position` (`latitude`,`longitude`),
   KEY `last_game_id` (`last_game_id`)
 ) ENGINE=MyISAM  DEFAULT CHARSET=utf8 AUTO_INCREMENT=98 ;
