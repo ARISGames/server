@@ -570,9 +570,13 @@ abstract class Module
 	protected function appendLog($intPlayerID, $intGameID, $strEventType, $strEventDetail1=null, $strEventDetail2=null)
 	{
 			
-        Module::appendCompletedQuestsIfReady($intPlayerID, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2);
-        Module::fireOffWebHooksIfReady($intPlayerID, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2);
-
+        if($intGameID != ""){
+            Module::appendCompletedQuestsIfReady($intPlayerID, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2);
+            Module::fireOffWebHooksIfReady($intPlayerID, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2);
+        }
+        else{
+            NetDebug::trace("GameID = -" .$intGameID . "-");
+        }
         
         
 		$query = "INSERT INTO player_log 
@@ -597,8 +601,10 @@ abstract class Module
         if($strEventDetail1 == null) $strEventDetail1 = "N/A";
         if($strEventDetail2 == null) $strEventDetail2 = "N/A";
         
+        
         $query = "SELECT * FROM {$intGameID}_quests";
-        $result = mysql_query($query);
+        $result = @mysql_query($query);
+
         while($quest = mysql_fetch_object($result)){
             Module::appendCompletedQuestIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2, $quest->quest_id);
         }
