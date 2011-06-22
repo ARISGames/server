@@ -501,7 +501,9 @@ abstract class Module
 				return TRUE;
 			}
 			
-			if ($requirement['boolean_operator'] == "AND" && $requirementMet == FALSE) $requirementsMet = FALSE;
+			if ($requirement['boolean_operator'] == "OR" && $requirementMet == FALSE){
+                $requirementsMet = FALSE;
+            }
 
 		}//while
 		//NetDebug::trace("At the end of all the requirements for this object and any AND were passed, no ORs were passed.");
@@ -567,6 +569,8 @@ abstract class Module
 	protected function appendLog($intPlayerID, $intGameID, $strEventType, $strEventDetail1=null, $strEventDetail2=null)
 	{
 			
+        //Module::fireOffWebHooksIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2);
+        
 		$query = "INSERT INTO player_log 
 					(player_id, game_id, event_type, event_detail_1,event_detail_2) 
 				  VALUES 
@@ -583,7 +587,167 @@ abstract class Module
 		}
 		
 		else return true;
-	}		
+	}	
+	
+    /**
+     * Fire off outgoing web hook if requirement is final one needed
+     * @returns true on success
+     */
+    protected function fireOffWebHooksIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1=null, $strEventDetail2=null){
+        
+    }
+    
+   
+    protected function fireOffWebHookIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1=null, $strEventDetail2=null, $intWid){
+      //  $unfinishedBusiness = Module::getOutstandingRequirements($intGameID, $intPlayerId, 'OutgoingWebHook', $intWid);
+       /* if($unfinishedBusiness == 0) return;
+        for($x = 0, $x < count($unfinishedBusiness->unfinishedORRequirements), $x++){
+            if($strEventDetail1 == $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_1']){
+                if($strEventType == $unfinishedBusiness->unfinishedORRequirements[$x]['requirement']){
+                    if($strEventDetail2 == $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
+                        Module::fireOffWebHook($intWid);
+                    }
+                }
+            }
+        }
+       */ //if($unfinishedBusiness->unfinishedORRequirements[
+    }
+   
+    
+    protected function fireOffWebHook($intWid){
+        
+    }
+    
+    
+    /**
+     * Gets requirements that have not yet been met for an event
+     * @returns 0 if all requirements are met, returns array of requirements if any outstanding
+     */
+    /*
+    protected function getOutstandingRequirements($strPrefix, $intPlayerID, $strObjectType, $intObjectID){
+        //Fetch the requirements
+		$query = "SELECT requirement,
+        requirement_detail_1,requirement_detail_2,requirement_detail_3,
+        boolean_operator 
+        FROM {$strPrefix}_requirements 
+        WHERE content_type = '{$strObjectType}' AND content_id = '{$intObjectID}'";
+		$rsRequirments = @mysql_query($query);
+        
+        $unfinishedANDRequirements = array();
+        $unfinishedORRequirements = array();
+		
+		$andsMet = FALSE;
+		$requirementsExist = FALSE;
+		while ($requirement = mysql_fetch_array($rsRequirments)) {
+			$requirementsExist = TRUE;
+			//NetDebug::trace("Requirement for {$strObjectType}:{$intObjectID} is {$requirement['requirement']}:{$requirement['requirement_detail_1']}");
+			//Check the requirement
+			
+			$requirementMet = FALSE;
+			switch ($requirement['requirement']) {
+                    //Log related
+				case Module::kREQ_PLAYER_VIEWED_ITEM:
+					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_ITEM, 
+                                                           $requirement['requirement_detail_1']);
+					break;
+				case Module::kREQ_PLAYER_HAS_NOT_VIEWED_ITEM:
+					$requirementMet = !Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_ITEM, 
+                                                            $requirement['requirement_detail_1']);
+					break;
+				case Module::kREQ_PLAYER_VIEWED_NODE:
+					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NODE, 
+                                                           $requirement['requirement_detail_1']);
+					break;
+				case Module::kREQ_PLAYER_HAS_NOT_VIEWED_NODE:
+					$requirementMet =  !Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NODE, 
+                                                             $requirement['requirement_detail_1']);
+					break;
+				case Module::kREQ_PLAYER_VIEWED_NPC:
+					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NPC, 
+                                                           $requirement['requirement_detail_1']);
+					break;
+				case Module::kREQ_PLAYER_HAS_NOT_VIEWED_NPC:
+					$requirementMet = !Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NPC, 
+                                                            $requirement['requirement_detail_1']);
+					break;	
+                case Module::kREQ_PLAYER_VIEWED_WEBPAGE:
+					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_WEBPAGE, 
+                                                           $requirement['requirement_detail_1']);
+					break;
+				case Module::kREQ_PLAYER_HAS_NOT_VIEWED_WEBPAGE:
+					$requirementMet = !Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_WEBPAGE, 
+                                                            $requirement['requirement_detail_1']);
+					break;
+                case Module::kREQ_PLAYER_VIEWED_AUGBUBBLE:
+					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_AUGBUBBLE, 
+                                                           $requirement['requirement_detail_1']);
+					break;
+				case Module::kREQ_PLAYER_HAS_NOT_VIEWED_AUGBUBBLE:
+					$requirementMet = !Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_AUGBUBBLE, 
+                                                            $requirement['requirement_detail_1']);
+					break;
+                case Module::kREQ_PLAYER_HAS_RECEIVED_INCOMING_WEBHOOK:
+					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_RECEIVE_WEBHOOK, 
+                                                           $requirement['requirement_detail_1']);
+					break;
+                    //Inventory related	
+				case Module::kREQ_PLAYER_HAS_ITEM:
+					$requirementMet = Module::playerHasItem($strPrefix, $intPlayerID, 
+                                                            $requirement['requirement_detail_1'], $requirement['requirement_detail_2']);
+					break;
+				case Module::kREQ_PLAYER_DOES_NOT_HAVE_ITEM:
+					$requirementMet = !Module::playerHasItem($strPrefix, $intPlayerID, 
+                                                             $requirement['requirement_detail_1'], $requirement['requirement_detail_2']);
+					break;
+                    //Data Collection
+				case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM:
+					$requirementMet = Module::playerHasUploadedMediaItemWithinDistence($strPrefix, $intPlayerID, 
+                                                                                       $requirement['requirement_detail_1'], $requirement['requirement_detail_2'], 
+                                                                                       $requirement['requirement_detail_3']);
+					break;
+				case Module::kREQ_PLAYER_HAS_COMPLETED_QUEST:
+					$requirementMet = Module::objectMeetsRequirements ($strPrefix, $intPlayerID, Module::kRESULT_COMPLETE_QUEST, 
+                                                                       $requirement['requirement_detail_1']);
+					break;	
+			}//switch
+			if ($requirement['boolean_operator'] == "AND" && $requirementMet == FALSE) {
+				//NetDebug::trace("An AND requirement was not met. Requirements Failed.");
+				$unfinishedANDRequirements[] = $requirement;
+			}
+			if ($requirement['boolean_operator'] == "AND" && $requirementMet == TRUE) {
+				//NetDebug::trace("An AND requirement was met. Remembering");
+				$andsMet = TRUE;
+			}
+			
+			if ($requirement['boolean_operator'] == "OR" && $requirementMet == TRUE){
+				//NetDebug::trace("An OR requirement was met. Requirements Passed.");
+				return 0;
+			}
+			
+			if ($requirement['boolean_operator'] == "OR" && $requirementMet == FALSE){
+                unfinishedORRequirements[] = $requirement;
+            }
+            
+		}//while
+		//NetDebug::trace("At the end of all the requirements for this object and any AND were passed, no ORs were passed.");
+		//So no ORs were met, and possibly all ands were met
+		if (!$requirementsExist) {
+			//NetDebug::trace("No requirements exist. Requirements Passed.");
+			return 0;
+		}
+		if ($andsMet) {
+			//NetDebug::trace("All AND requirements exist. Requirements Passed.");
+			return 0;
+		}
+		else {
+			//NetDebug::trace("At end. Requirements Not Passed.");
+            $retObj->AND=$unfinishedANDRequirements;
+            $retObj->OR=$unfinishedORRequirements;
+			return $retObj;
+		}
+
+    }
+   */
 	
 	/**
      * Add a row to the server error log
