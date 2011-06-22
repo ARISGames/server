@@ -639,7 +639,7 @@ class Games extends Module
 		NetDebug::trace("$query" . ":" . mysql_error());
         
         
-        $query = "ALTER TABLE  `player_log` CHANGE  `event_type`  `event_type` ENUM(  'LOGIN',  'MOVE',  'PICKUP_ITEM',  'DROP_ITEM',  'DESTROY_ITEM',  'VIEW_ITEM',  'VIEW_NODE',  'VIEW_NPC',  'VIEW_WEBPAGE',  'VIEW_AUGBUBBLE',  'VIEW_MAP',  'VIEW_QUESTS', 'VIEW_INVENTORY',  'ENTER_QRCODE',  'UPLOAD_MEDIA_ITEM', 'RECEIVE_WEBHOOK' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL";
+        $query = "ALTER TABLE  `player_log` CHANGE  `event_type`  `event_type` ENUM(  'LOGIN',  'MOVE',  'PICKUP_ITEM',  'DROP_ITEM',  'DESTROY_ITEM',  'VIEW_ITEM',  'VIEW_NODE',  'VIEW_NPC',  'VIEW_WEBPAGE',  'VIEW_AUGBUBBLE',  'VIEW_MAP',  'VIEW_QUESTS', 'VIEW_INVENTORY',  'ENTER_QRCODE',  'UPLOAD_MEDIA_ITEM', 'RECEIVE_WEBHOOK', 'COMPLETE_QUEST' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL";
         mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
@@ -653,6 +653,13 @@ class Games extends Module
         ) ENGINE = MYISAM CHARACTER SET utf8 COLLATE utf8_general_ci";
         mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        
+        $query = "INSERT INTO `aris`.`media` (`media_id`, `game_id`, `name`, `file_name`, `is_icon`) VALUES ('5', '0', 'Default AugBubble', 'augbubble.png', '1')";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        
         
         
 		return new returnData(0, FALSE);

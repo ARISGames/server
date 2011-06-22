@@ -22,6 +22,7 @@ abstract class Module
 	const kLOG_ENTER_QRCODE = 'ENTER_QRCODE';
 	const kLOG_UPLOAD_MEDIA_ITEM = 'UPLOAD_MEDIA_ITEM';
     const kLOG_RECEIVE_WEBHOOK = 'RECEIVE_WEBHOOK';
+    const kLOG_COMPLETE_QUEST = 'COMPLETE_QUEST';
 	
 	//constants for gameID_requirements table enums
 	const kREQ_PLAYER_HAS_ITEM = 'PLAYER_HAS_ITEM';
@@ -482,8 +483,8 @@ abstract class Module
 						$requirement['requirement_detail_3']);
 					break;
 				case Module::kREQ_PLAYER_HAS_COMPLETED_QUEST:
-					$requirementMet = Module::objectMeetsRequirements ($strPrefix, $intPlayerID, Module::kRESULT_COMPLETE_QUEST, 
-						$requirement['requirement_detail_1']);
+					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_COMPLETE_QUEST, 
+                                                           $requirement['requirement_detail_1']);
 					break;	
 			}//switch
 			if ($requirement['boolean_operator'] == "AND" && $requirementMet == FALSE) {
@@ -569,7 +570,10 @@ abstract class Module
 	protected function appendLog($intPlayerID, $intGameID, $strEventType, $strEventDetail1=null, $strEventDetail2=null)
 	{
 			
-        //Module::fireOffWebHooksIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2);
+        Module::appendCompletedQuestsIfReady($intPlayerID, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2);
+        Module::fireOffWebHooksIfReady($intPlayerID, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2);
+
+        
         
 		$query = "INSERT INTO player_log 
 					(player_id, game_id, event_type, event_detail_1,event_detail_2) 
@@ -589,33 +593,114 @@ abstract class Module
 		else return true;
 	}	
 	
-    /**
-     * Fire off outgoing web hook if requirement is final one needed
-     * @returns true on success
-     */
-    protected function fireOffWebHooksIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1=null, $strEventDetail2=null){
+    protected function appendCompletedQuestsIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2){
+        if($strEventDetail1 == null) $strEventDetail1 = "N/A";
+        if($strEventDetail2 == null) $strEventDetail2 = "N/A";
         
+        $query = "SELECT * FROM {$intGameID}_quests";
+        $result = mysql_query($query);
+        while($quest = mysql_fetch_object($result)){
+            Module::appendCompletedQuestIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2, $quest->quest_id);
+        }
     }
     
-   
-    protected function fireOffWebHookIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1=null, $strEventDetail2=null, $intWid){
-      //  $unfinishedBusiness = Module::getOutstandingRequirements($intGameID, $intPlayerId, 'OutgoingWebHook', $intWid);
-       /* if($unfinishedBusiness == 0) return;
-        for($x = 0, $x < count($unfinishedBusiness->unfinishedORRequirements), $x++){
+    protected function appendCompletedQuestIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2, $intQid){
+        $unfinishedBusiness = Module::getOutstandingRequirements($intGameID, $intPlayerId, 'QuestComplete', $intQid);
+        for($x = 0; $x < count($unfinishedBusiness->unfinishedORRequirements); $x++){
             if($strEventDetail1 == $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_1']){
-                if($strEventType == $unfinishedBusiness->unfinishedORRequirements[$x]['requirement']){
+                if($strEventType == $unfinishedBusiness->unfinishedORRequirements[$x]['event']){
                     if($strEventDetail2 == $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
-                        Module::fireOffWebHook($intWid);
+                        Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+                        return;
                     }
                 }
             }
         }
-       */ //if($unfinishedBusiness->unfinishedORRequirements[
+        if(count($unfinishedBusiness->unfinishedANDRequirements) == 1){
+            if($strEventDetail1 == $unfinishedBusiness->unfinishedANDRequirements[0]['requirement_detail_1']){
+                if($strEventType == $unfinishedBusiness->unfinishedANDRequirements[0]['event']){
+                    if($strEventDetail2 == $unfinishedBusiness->unfinishedANDRequirements[0]['requirement_detail_2']){
+                        Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+                        return;
+                    }
+                }
+            }
+        }
+    }
+    
+    protected function appendCompletedQuest($intQid, $intPlayerId, $intGameId){
+        NetDebug::trace("APPEND ZE QVEST!");
+        $query = "INSERT INTO player_log 
+        (player_id, game_id, event_type, event_detail_1,event_detail_2) 
+        VALUES 
+        ({$intPlayerId},{$intGameId},'COMPLETE_QUEST','{$intQid}','N/A')";
+		
+		@mysql_query($query);
+		
+		NetDebug::trace($query);
+        
+		
+		if (mysql_error()) {
+			NetDebug::trace(mysql_error());
+			return false;
+		}
+		
+		else return true;
+
+    }
+    
+    
+    /**
+     * Fire off outgoing web hooks if requirement is final one needed
+     * @returns true on success
+     */
+    protected function fireOffWebHooksIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1="N/A", $strEventDetail2="N/A"){
+        if($strEventDetail1 == null) $strEventDetail1 = "N/A";
+        if($strEventDetail2 == null) $strEventDetail2 = "N/A";
+
+        $query = "SELECT * FROM web_hooks WHERE incoming = '0' AND game_id = '{$intGameID}'";
+        $result = mysql_query($query);
+        while($webHook = mysql_fetch_object($result)){
+            Module::fireOffWebHookIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2, $webHook->web_hook_id);
+        }
+    }
+    
+   
+    protected function fireOffWebHookIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1="N/A", $strEventDetail2="N/A", $intWid){
+        $unfinishedBusiness = Module::getOutstandingRequirements($intGameID, $intPlayerId, 'OutgoingWebHook', $intWid);
+        if($unfinishedBusiness == 0) return;
+        for($x = 0; $x < count($unfinishedBusiness->unfinishedORRequirements); $x++){
+            if($strEventDetail1 == $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_1']){
+                if($strEventType == $unfinishedBusiness->unfinishedORRequirements[$x]['event']){
+                    if($strEventDetail2 == $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
+                        Module::fireOffWebHook($intWid, $intPlayerId, $intGameID);
+                        return;
+                    }
+                }
+            }
+        }
+        if(count($unfinishedBusiness->unfinishedANDRequirements) == 1){
+            if($strEventDetail1 == $unfinishedBusiness->unfinishedANDRequirements[0]['requirement_detail_1']){
+                if($strEventType == $unfinishedBusiness->unfinishedANDRequirements[0]['event']){
+                    if($strEventDetail2 == $unfinishedBusiness->unfinishedANDRequirements[0]['requirement_detail_2']){
+                        Module::fireOffWebHook($intWid, $intPlayerId, $intGameID);
+                        return;
+                    }
+                }
+            }
+        }
     }
    
     
-    protected function fireOffWebHook($intWid){
-        
+    protected function fireOffWebHook($intWid, $intPlayerId, $intGameId){
+        $query = "SELECT * FROM web_hooks WHERE web_hook_id = '{$intWid}'";
+        $result = mysql_query($query);
+        $webHook = mysql_fetch_object($result);
+        $name = str_replace(" ", "", $webHook->name);
+        $url = $webHook->url . "?hook=" . $name . "&wid=" . $webHook->web_hook_id . "&gameid=" . $intGameId . "&playerid=" . $intPlayerId; 
+        NetDebug::trace($url);
+        file_get_contents($url);
+        return 0;
     }
     
     
@@ -623,7 +708,7 @@ abstract class Module
      * Gets requirements that have not yet been met for an event
      * @returns 0 if all requirements are met, returns array of requirements if any outstanding
      */
-    /*
+    
     protected function getOutstandingRequirements($strPrefix, $intPlayerID, $strObjectType, $intObjectID){
         //Fetch the requirements
 		$query = "SELECT requirement,
@@ -649,67 +734,83 @@ abstract class Module
 				case Module::kREQ_PLAYER_VIEWED_ITEM:
 					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_ITEM, 
                                                            $requirement['requirement_detail_1']);
+                    $requirement['event'] = Module::kLOG_VIEW_ITEM;
 					break;
 				case Module::kREQ_PLAYER_HAS_NOT_VIEWED_ITEM:
 					$requirementMet = !Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_ITEM, 
                                                             $requirement['requirement_detail_1']);
+                    $requirement['event'] = "DONT_VIEW_THE_THING";//Module::kLOG_VIEW_ITEM;
 					break;
 				case Module::kREQ_PLAYER_VIEWED_NODE:
 					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NODE, 
                                                            $requirement['requirement_detail_1']);
+                    $requirement['event'] = Module::kLOG_VIEW_NODE;
 					break;
 				case Module::kREQ_PLAYER_HAS_NOT_VIEWED_NODE:
 					$requirementMet =  !Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NODE, 
                                                              $requirement['requirement_detail_1']);
+                    $requirement['event'] = "DONT_VIEW_THE_NODE";//Module::kLOG_VIEW_NODE;
 					break;
 				case Module::kREQ_PLAYER_VIEWED_NPC:
 					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NPC, 
                                                            $requirement['requirement_detail_1']);
+                    $requirement['event'] = Module::kLOG_VIEW_NPC;
 					break;
 				case Module::kREQ_PLAYER_HAS_NOT_VIEWED_NPC:
 					$requirementMet = !Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NPC, 
                                                             $requirement['requirement_detail_1']);
+                    $requirement['event'] = "DONT_VIEW_THE_DUDE";//Module::kLOG_VIEW_NPC;
 					break;	
                 case Module::kREQ_PLAYER_VIEWED_WEBPAGE:
 					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_WEBPAGE, 
                                                            $requirement['requirement_detail_1']);
+                    $requirement['event'] = Module::kLOG_VIEW_WEBPAGE;
 					break;
 				case Module::kREQ_PLAYER_HAS_NOT_VIEWED_WEBPAGE:
 					$requirementMet = !Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_WEBPAGE, 
                                                             $requirement['requirement_detail_1']);
+                    $requirement['event'] = "DONT_VIEW_THE_WEB";//Module::kLOG_VIEW_WEBPAGE;
 					break;
                 case Module::kREQ_PLAYER_VIEWED_AUGBUBBLE:
 					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_AUGBUBBLE, 
                                                            $requirement['requirement_detail_1']);
+                    $requirement['event'] = Module::kLOG_VIEW_AUGBUBBLE;
 					break;
 				case Module::kREQ_PLAYER_HAS_NOT_VIEWED_AUGBUBBLE:
 					$requirementMet = !Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_AUGBUBBLE, 
                                                             $requirement['requirement_detail_1']);
+                    $requirement['event'] = "DONT_VIEW_THE_BUBBLE";//Module::kLOG_VIEW_AUGBUBBLE;
 					break;
                 case Module::kREQ_PLAYER_HAS_RECEIVED_INCOMING_WEBHOOK:
 					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_RECEIVE_WEBHOOK, 
                                                            $requirement['requirement_detail_1']);
+                    $requirement['event'] = Module::kLOG_RECEIVE_WEBHOOK;
 					break;
                     //Inventory related	
 				case Module::kREQ_PLAYER_HAS_ITEM:
 					$requirementMet = Module::playerHasItem($strPrefix, $intPlayerID, 
                                                             $requirement['requirement_detail_1'], $requirement['requirement_detail_2']);
+                    $requirement['event'] = Module::kLOG_PICKUP_ITEM;
 					break;
 				case Module::kREQ_PLAYER_DOES_NOT_HAVE_ITEM:
 					$requirementMet = !Module::playerHasItem($strPrefix, $intPlayerID, 
                                                              $requirement['requirement_detail_1'], $requirement['requirement_detail_2']);
+                    $requirement['event'] = Module::kLOG_DROP_ITEM;
 					break;
                     //Data Collection
 				case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM:
 					$requirementMet = Module::playerHasUploadedMediaItemWithinDistence($strPrefix, $intPlayerID, 
                                                                                        $requirement['requirement_detail_1'], $requirement['requirement_detail_2'], 
                                                                                        $requirement['requirement_detail_3']);
+                    $requirement['event'] = Module::kLOG_UPLOAD_MEDIA_ITEM;
 					break;
 				case Module::kREQ_PLAYER_HAS_COMPLETED_QUEST:
-					$requirementMet = Module::objectMeetsRequirements ($strPrefix, $intPlayerID, Module::kRESULT_COMPLETE_QUEST, 
-                                                                       $requirement['requirement_detail_1']);
+					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_COMPLETE_QUEST, 
+                                                           $requirement['requirement_detail_1']);
+                    $requirement['event'] = Module::kLOG_COMPLETE_QUEST;
 					break;	
 			}//switch
+            
 			if ($requirement['boolean_operator'] == "AND" && $requirementMet == FALSE) {
 				//NetDebug::trace("An AND requirement was not met. Requirements Failed.");
 				$unfinishedANDRequirements[] = $requirement;
@@ -725,10 +826,12 @@ abstract class Module
 			}
 			
 			if ($requirement['boolean_operator'] == "OR" && $requirementMet == FALSE){
-                unfinishedORRequirements[] = $requirement;
+                $unfinishedORRequirements[] = $requirement;
             }
             
-		}//while
+		}
+        
+        //while
 		//NetDebug::trace("At the end of all the requirements for this object and any AND were passed, no ORs were passed.");
 		//So no ORs were met, and possibly all ands were met
 		if (!$requirementsExist) {
@@ -741,13 +844,12 @@ abstract class Module
 		}
 		else {
 			//NetDebug::trace("At end. Requirements Not Passed.");
-            $retObj->AND=$unfinishedANDRequirements;
-            $retObj->OR=$unfinishedORRequirements;
+            $retObj->unfinishedANDRequirements=$unfinishedANDRequirements;
+            $retObj->unfinishedORRequirements=$unfinishedORRequirements;
 			return $retObj;
 		}
 
     }
-   */
 	
 	/**
      * Add a row to the server error log
