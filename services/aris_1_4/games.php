@@ -758,6 +758,10 @@ class Games extends Module
 		NetDebug::trace("$query" . ":" . mysql_error());
         
         
+        $query = "ALTER TABLE  `172_qrcodes` DROP INDEX  `code`";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
         
 
         

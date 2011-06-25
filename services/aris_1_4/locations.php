@@ -30,6 +30,103 @@ class Locations extends Module
 	
 	
 	/**
+     * Get all 'QR Code' entries for a location. The only purpose for this will be for the multiple entries for image matching.
+     * @param integer The Game ID
+     * @param integer The Location ID
+     * @returns An array of media ID's for a specific location
+     */
+    public function getAllImageMatchEntriesForLocation($intGameID, $intLocationID){
+       
+        $prefix = Module::getPrefix($intGameID);
+		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        
+        $query = "SELECT match_media_id FROM {$prefix}_qrcodes WHERE link_id = {$intLocationID}";
+        $result = mysql_query($query);
+        
+        $medias = array();
+        while($mid = mysql_fetch_object($result)){
+            NetDebug::trace($mid->match_media_id);
+            $medias[] = Media::getMediaObject($intGameID, $mid->match_media_id);
+        }
+        
+        return new returnData(0, $medias);
+    }
+    
+    
+    /**
+     * Adds a record in the QR database. Used for image matching
+     * @param integer The Game ID
+     * @param integer The Location ID
+     * @param integer The Image Match Media ID
+     * @returns 0 on success
+     */
+    public function addImageMatchEntryForLocation($intGameId, $intLocationId, $intMatchMediaID){
+        $prefix = Module::getPrefix($intGameId);
+		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        
+        //Check if location exists, and store code
+        $query = "SELECT * FROM {$prefix}_qrcodes WHERE link_id={$intLocationId}";
+        $result = mysql_query($query);
+        $code = 0;
+        if(mysql_num_rows($result) != 0){
+            $row = mysql_fetch_object($result);
+            $code = $row->code;
+        }
+        else return new returnData(1, NULL, "Location Doesn't Exist");
+        
+        //Check if this media/location pair already exists. If so, exit (our job is already done)
+        $query = "SELECT * FROM {$prefix}_qrcodes WHERE link_id ={$intLocationId} AND match_media_id ={$intMatchMediaID}";
+        $result = mysql_query($query);
+        if(mysql_num_rows($result) != 0) return new returnData(0); 
+
+        //Check if this is the only entry...
+        $query = "SELECT * FROM {$prefix}_qrcodes WHERE link_id ={$intLocationId} AND match_media_id ='0'";
+        $result = mysql_query($query);
+        if(mysql_num_rows($result) == 1){
+            $query = "UPDATE {$prefix}_qrcodes SET match_media_id = {$intMatchMediaID} WHERE link_id={$intLocationId}";
+            mysql_query($query);
+            return new returnData(0);
+        }
+
+ 
+        $query = "INSERT INTO {$prefix}_qrcodes (link_id, match_media_id, code) VALUES ({$intLocationId}, {$intMatchMediaID}, {$code})";
+        mysql_query($query);
+        
+        return new returnData(0);
+    }
+    
+    /**
+     * Removes a record in the QR database. Used for image Matching.
+     * @param integer The Game ID
+     * @param integer The Location ID
+     * @param integer The Image Match Media to remove
+     * @returns 0 on success
+     */
+    public function removeImageMatchEntryForLocation($intGameId, $intLocationId, $intMatchMediaID){
+        $prefix = Module::getPrefix($intGameId);
+		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        
+        //Check if this is the only remaining QR code entry. If so, ONLY clear the image match media ID, DO NOT delete the whole row.
+        $query = "SELECT * FROM {$prefix}_qrcodes WHERE link_id ={$intLocationId}";
+        $result = @mysql_query($query);
+        if(mysql_num_rows($result) == 1){
+            $query = "UPDATE {$prefix}_qrcodes SET match_media_id = '0' WHERE link_id={$intLocationId} AND match_media_id = {$intMatchMediaID}";
+            mysql_query($query);
+            return new returnData(0);
+        }
+        elseif(mysql_num_rows($result) > 1){
+            $query = "DELETE FROM {$prefix}_qrcodes WHERE link_id={$intLocationId} AND match_media_id={$intMatchMediaID}";
+            mysql_query($query);
+            return new returnData(0);
+        }
+        else{
+            return new returnData(1);
+        }
+    }
+    
+    
+    
+    /**
      * Fetch all locations in a game with matching QR Code information
      *
      * @param integer $intGameID The game identifier
@@ -413,7 +510,7 @@ class Locations extends Module
 		
 		$query = "UPDATE {$prefix}_qrcodes
 				SET 
-				code = '{$qrCode}', match_media_id = '{$imageMatchId}'
+				code = '{$qrCode}'
 				WHERE link_type = 'Location' and link_id = '{$intLocationID}'";
 		NetDebug::trace("updateLocation: Query: $query");		
 		@mysql_query($query);
