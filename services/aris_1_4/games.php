@@ -586,7 +586,7 @@ class Games extends Module
 		NetDebug::trace("$query" . ":" . mysql_error());
         
         
-        $query = "CREATE TABLE `aris`.`game_comments` (
+        $query = "CREATE TABLE `game_comments` (
                                       `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
                                       `game_id` int(10) unsigned NOT NULL,
                                       `player_id` int(10) unsigned NOT NULL,
@@ -602,7 +602,7 @@ class Games extends Module
 		NetDebug::trace("$query" . ":" . mysql_error());
         
         
-        $query = "CREATE TABLE  `aris`.`web_pages` (
+        $query = "CREATE TABLE  `web_pages` (
                                     `web_page_id` INT( 10 ) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY ,
                                     `game_id` INT( 10 ) UNSIGNED NOT NULL ,
                                     `icon_media_id` INT( 10 ) UNSIGNED NOT NULL DEFAULT  '4',
@@ -612,7 +612,7 @@ class Games extends Module
         mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
-        $query = "INSERT INTO  `aris`.`media` (
+        $query = "INSERT INTO  `media` (
         `media_id` ,
         `game_id` ,
         `name` ,
@@ -626,7 +626,7 @@ class Games extends Module
 		NetDebug::trace("$query" . ":" . mysql_error());
         
         
-        $query = "CREATE TABLE  `aris`.`aug_bubbles` (
+        $query = "CREATE TABLE  `aug_bubbles` (
         `aug_bubble_id` INT( 10 ) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY ,
         `game_id` INT( 10 ) UNSIGNED NOT NULL ,
         `name` VARCHAR( 30 ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ,
@@ -644,7 +644,7 @@ class Games extends Module
 		NetDebug::trace("$query" . ":" . mysql_error());
         
         
-        $query = "CREATE TABLE  `aris`.`web_hooks` (
+        $query = "CREATE TABLE  `web_hooks` (
         `web_hook_id` INT( 10 ) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY ,
         `game_id` INT( 10 ) UNSIGNED NOT NULL ,
         `name` VARCHAR( 30 ) NOT NULL ,
