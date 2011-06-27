@@ -63,6 +63,34 @@ class Items extends Module
 		return new returnData(0, $rsResult);
 	}	
 	
+	/**
+     * Gets the Attributes for a player
+     *
+	 * @param integer $gameID The game identifier
+     * @param integer $playerId The player identifier
+     * @return returnData
+     * @returns a returnData object containing an array of items
+     * @see returnData
+     */
+	public static function getAttributesForPlayer($gameId, $playerId)
+	{
+		
+		$prefix = Module::getPrefix($gameId);
+		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        
+		
+		$query = "SELECT {$prefix}_items.*, {$prefix}_player_items.qty 
+        FROM {$prefix}_items
+        JOIN {$prefix}_player_items 
+        ON {$prefix}_items.item_id = {$prefix}_player_items.item_id
+        WHERE {$prefix}_items.is_attribute = 1 AND player_id = $playerId";
+		NetDebug::trace($query);
+		
+		$rsResult = @mysql_query($query);
+		if (!$rsResult) return new returnData(0, NULL);
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+		return new returnData(0, $rsResult);
+	}
 	
 	
 	/**
@@ -108,7 +136,7 @@ class Items extends Module
      * @see returnData
      */
 	public static function createItem($gameId, $name, $description, 
-								$iconMediaId, $mediaId, $droppable, $destroyable, $maxQuantityInPlayerInventory)
+								$iconMediaId, $mediaId, $droppable, $destroyable, $attribute, $maxQuantityInPlayerInventory)
 	{
 		$name = addslashes($name);	
 		$description = addslashes($description);	
@@ -117,13 +145,14 @@ class Items extends Module
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$query = "INSERT INTO {$prefix}_items 
-					(name, description, icon_media_id, media_id, dropable, destroyable,max_qty_in_inventory)
+					(name, description, icon_media_id, media_id, dropable, destroyable, is_attribute, max_qty_in_inventory)
 					VALUES ('{$name}', 
 							'{$description}',
 							'{$iconMediaId}', 
 							'{$mediaId}', 
 							'$droppable',
 							'$destroyable',
+                            '$attribute',
 							'$maxQuantityInPlayerInventory')";
 		
 		NetDebug::trace("createItem: Running a query = $query");	
@@ -307,7 +336,7 @@ class Items extends Module
      * @see returnData
      */
 	public static function updateItem($gameId, $itemId, $name, $description, 
-								$iconMediaId, $mediaId, $droppable, $destroyable, $maxQuantityInPlayerInventory)
+								$iconMediaId, $mediaId, $droppable, $destroyable, $attribute, $maxQuantityInPlayerInventory)
 	{
 		$prefix = Module::getPrefix($gameId);
 		
@@ -323,6 +352,7 @@ class Items extends Module
 						media_id = '{$mediaId}', 
 						dropable = '{$droppable}',
 						destroyable = '{$destroyable}',
+                        is_attribute = '{$attribute}',
 						max_qty_in_inventory = '{$maxQuantityInPlayerInventory}'
 					WHERE item_id = '{$itemId}'";
 		

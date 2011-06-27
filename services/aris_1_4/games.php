@@ -284,6 +284,7 @@ class Games extends Module
 			item_id int(11) unsigned NOT NULL auto_increment,
 			name varchar(255) NOT NULL,
 			description text NOT NULL,
+            is_attribute ENUM(  '0',  '1' ) NOT NULL DEFAULT  '0',
 			icon_media_id int(10) unsigned NOT NULL default '0',
 			media_id int(10) unsigned NOT NULL default '0',
 			dropable enum('0','1') NOT NULL default '0',
@@ -758,7 +759,12 @@ class Games extends Module
 		NetDebug::trace("$query" . ":" . mysql_error());
         
         
-        $query = "ALTER TABLE  `172_qrcodes` DROP INDEX  `code`";
+        $query = "ALTER TABLE  `{$prefix}_qrcodes` DROP INDEX  `code`";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        
+        $query = "ALTER TABLE  `{$prefix}_items` ADD  `is_attribute` ENUM(  '0',  '1' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  '0' AFTER  `description`";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
@@ -1202,6 +1208,29 @@ class Games extends Module
 		
 		return new returnData(0, $games);
 	}
-	
+    
+    
+    /**
+     * Duplicate game in database
+     * @param The game Id to be duplicated
+     *
+     */
+	public function duplicateGame($intGameID){
+        
+        $query = "SELECT * FROM games WHERE game_id = {$intGameID} LIMIT 1";
+		$rs = @mysql_query($query);
+		if (mysql_error())  return new returnData(3, NULL, 'SQL error');
+        
+		$game = @mysql_fetch_object($rs);
+		if (!$game) return new returnData(2, NULL, "invalid game id");
+        
+        
+        $id = Games::createGame($intEditorID, $game->name . "copy", $game->description, $game->pc_media_id, $game->icon_media_id, $game->media_id,
+                          $game->is_locational, $game->ready_for_public, 
+                          $game->allow_player_created_locations, $game->delete_player_locations_on_reset,
+                          $game->on_launch_node_id, $game->game_complete_node_id);
+        
+        return $id;
+    }
 }
 ?>
