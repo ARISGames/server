@@ -1217,6 +1217,8 @@ class Games extends Module
      */
 	public function duplicateGame($intGameID){
         
+        $prefix = Module::getPrefix($intGameID);
+        
         $query = "SELECT * FROM games WHERE game_id = {$intGameID} LIMIT 1";
 		$rs = @mysql_query($query);
 		if (mysql_error())  return new returnData(3, NULL, 'SQL error');
@@ -1224,11 +1226,144 @@ class Games extends Module
 		$game = @mysql_fetch_object($rs);
 		if (!$game) return new returnData(2, NULL, "invalid game id");
         
+        $query = "SELECT editor_id FROM game_editors WHERE game_id = {$intGameID}";
+        $rs = mysql_query($query);
+        $editors = mysql_fetch_object($rs);
         
-        $id = Games::createGame($intEditorID, $game->name . "copy", $game->description, $game->pc_media_id, $game->icon_media_id, $game->media_id,
+        $newGameId = Games::createGame($editors->editor_id, $game->name . "_copy", $game->description, $game->pc_media_id, $game->icon_media_id, $game->media_id,
                           $game->is_locational, $game->ready_for_public, 
                           $game->allow_player_created_locations, $game->delete_player_locations_on_reset,
                           $game->on_launch_node_id, $game->game_complete_node_id);
+        
+        while($editors = mysql_fetch_object($rs)){
+            Games::addEditorToGame($editors->editor_id, $newGameId->data);
+        }
+        
+        $newPrefix = Module::getPrefix($newGameId->data);
+        
+        
+        $query = "INSERT INTO {$newPrefix}_folders (folder_id, name, parent_id, previous_id, is_open) SELECT folder_id, name, parent_id, previous_id, is_open FROM {$prefix}_folders";
+        mysql_query($query);
+        
+        $query = "INSERT INTO {$newPrefix}_folder_contents (object_content_id, folder_id, content_type, content_id, previous_id) SELECT object_content_id, folder_id, content_type, content_id, previous_id FROM {$prefix}_folder_contents";
+        mysql_query($query);
+        
+        $query = "INSERT INTO {$newPrefix}_items (item_id, name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp) SELECT item_id, name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp FROM {$prefix}_items";
+        mysql_query($query);
+        
+        $query = "INSERT INTO {$newPrefix}_locations (location_id, name, description, latitude, longitude, error, type, type_id, icon_media_id, item_qty, hidden, force_view, allow_quick_travel) SELECT location_id, name, description, latitude, longitude, error, type, type_id, icon_media_id, item_qty, hidden, force_view, allow_quick_travel FROM {$prefix}_locations";
+        mysql_query($query);
+        
+        $query = "INSERT INTO {$newPrefix}_nodes (node_id, title, text, opt1_text, opt1_node_id, opt2_text, opt2_node_id, opt3_text, opt3_node_id, require_answer_incorrect_node_id, require_answer_string, require_answer_correct_node_id, media_id, icon_media_id) SELECT node_id, title, text, opt1_text, opt1_node_id, opt2_text, opt2_node_id, opt3_text, opt3_node_id, require_answer_incorrect_node_id, require_answer_string, require_answer_correct_node_id, media_id, icon_media_id FROM {$prefix}_nodes";
+        mysql_query($query);
+        
+        $query = "INSERT INTO {$newPrefix}_npcs (npc_id, name, description, text, closing, media_id, icon_media_id) SELECT npc_id, name, description, text, closing, media_id, icon_media_id FROM {$prefix}_npcs";
+        mysql_query($query);
+        
+        $query = "INSERT INTO {$newPrefix}_npc_conversations (conversation_id, npc_id, node_id, text) SELECT conversation_id, npc_id, node_id, text FROM {$prefix}_npc_conversations";
+        mysql_query($query);
+        
+        $query = "INSERT INTO {$newPrefix}_npc_greetings (npc_greeting_id, npc_id, script) SELECT npc_greeting_id, npc_id, script FROM {$prefix}_npc_greetings";
+        mysql_query($query);
+        
+        $query = "INSERT INTO {$newPrefix}_player_items (id, player_id, item_id, qty, timestamp) SELECT id, player_id, item_id, qty, timestamp FROM {$prefix}_player_items";
+        mysql_query($query);
+        
+        $query = "INSERT INTO {$newPrefix}_player_state_changes (id, event_type, event_detail, action, action_detail, action_amount) SELECT id, event_type, event_detail, action, action_detail, action_amount FROM {$prefix}_player_state_changes";
+        mysql_query($query);
+        
+        $query = "INSERT INTO {$newPrefix}_qrcodes (qrcode_id, link_type, link_id, code, match_media_id) SELECT qrcode_id, link_type, link_id, code, match_media_id FROM {$prefix}_qrcodes";
+        mysql_query($query);
+        
+        $query = "INSERT INTO {$newPrefix}_quests (quest_id, name, description, tet_when_complete, icon_media_id) SELECT quest_id, name, description, tet_when_complete, icon_media_id FROM {$prefix}_quests";
+        mysql_query($query);
+        
+        $query = "INSERT INTO {$newPrefix}_requirements (requirement_id, content_type, content_id, requirement, boolean_operator, requirement_detail_1, requirement_detail_2, requirement_detail_3) SELECT requirement_id, content_type, content_id, requirement, boolean_operator, requirement_detail_1, requirement_detail_2, requirement_detail_3 FROM {$prefix}_requirements";
+        mysql_query($query);
+        
+        $query = "SELECT * FROM aug_bubbles WHERE game_id = {$prefix}";
+        $result = mysql_query($query);
+        while($row = mysql_fetch_object($result)){
+            $query = "INSERT INTO aug_bubbles (game_id, name, description, icon_media_id, media_id, alignment_media_id) VALUES ($newPrefix, $row->name, $row->description, $row->icon_media_id, $row->media_id, $row->alignment_media_id)";
+            mysql_query($query);
+            $newID = mysql_insert_id();
+            
+            $query = "UPDATE {$newPrefix}_locations SET type_id = {$newID} WHERE type = 'AugBubble' AND type_id = {$row->aug_bubble_id}";
+            mysql_query($query);
+            $query = "UPDATE {$newPrefix}_folder_contents SET content_id = {$newID} WHERE content_type = 'AugBubble' AND content_id = {$row->aug_bubble_id}";
+            mysql_query($query);
+            $query = "UPDATE {$newPrefix}_requirements SET requirement_detail_1 = {$newID} WHERE (requirement = 'PLAYER_HAS_NOT_VIEWED_AUGBUBBLE' OR requirement = 'PLAYER_VIEWED_AUGBUBBLE') AND requirement_detail_1 = {$row->aug_bubble_id}";
+            mysql_query($query);
+        }
+        
+        $query = "SELECT * FROM web_pages WHERE game_id = {$prefix}";
+        $result = mysql_query($query);
+        while($row = mysql_fetch_object($result)){
+            $query = "INSERT INTO web_pages (game_id, name, url, icon_media_id) VALUES ($newPrefix, $row->name, $row->url, $row->icon_media_id)";
+            mysql_query($query);
+            $newID = mysql_insert_id();
+            
+            $query = "UPDATE {$newPrefix}_locations SET type_id = {$newID} WHERE type = 'WebPage' AND type_id = {$row->web_page_id}";
+            mysql_query($query);
+            $query = "UPDATE {$newPrefix}_folder_contents SET content_id = {$newID} WHERE content_type = 'WebPage' AND content_id = {$row->web_page_id}";
+            mysql_query($query);
+            $query = "UPDATE {$newPrefix}_requirements SET requirement_detail_1 = {$newID} WHERE (requirement = 'PLAYER_HAS_NOT_VIEWED_WEBPAGE' OR requirement = 'PLAYER_VIEWED_WEBPAGE') AND requirement_detail_1 = {$row->web_page_id}";
+            mysql_query($query);
+        }
+        
+        $query = "SELECT * FROM web_hooks WHERE game_id = {$prefix}";
+        $result = mysql_query($query);
+        while($row = mysql_fetch_object($result)){
+            $query = "INSERT INTO web_hooks (game_id, name, url, incoming) VALUES ($newPrefix, $row->name, $row->url, $row->incoming)";
+            mysql_query($query);
+            $newID = mysql_insert_id();
+            
+            $query = "UPDATE {$newPrefix}_requirements SET content_id = {$newID} WHERE content_type = 'OutgoingWebHook' AND content_id = {$row->web_hook_id}";
+            mysql_query($query);
+        }
+        
+        $query = "SELECT * FROM media WHERE game_id = {$prefix}";
+        $result = mysql_query($query);
+        while($row = mysql_fetch_object($result)){
+            $query = "INSERT INTO media (game_id, name, file_name, is_icon) VALUES ($newPrefix, $row->name, $row->file_name, $row->is_icon)";
+            mysql_query($query);
+            $newID = mysql_insert_id();
+            
+            $query = "UPDATE {$newPrefix}_items SET icon_media_id = {$newID} WHERE icon_media_id = $row->media_id";
+            mysql_query($query);
+            $query = "UPDATE {$newPrefix}_items SET media_id = {$newID} WHERE icon_media_id = $row->media_id";
+            mysql_query($query);
+            $query = "UPDATE {$newPrefix}_locations SET icon_media_id = {$newID} WHERE icon_media_id = $row->media_id";
+            mysql_query($query);
+            $query = "UPDATE {$newPrefix}_nodes SET icon_media_id = {$newID} WHERE icon_media_id = $row->media_id";
+            mysql_query($query);
+            $query = "UPDATE {$newPrefix}_nodes SET media_id = {$newID} WHERE icon_media_id = $row->media_id";
+            mysql_query($query);
+            $query = "UPDATE {$newPrefix}_npcs SET icon_media_id = {$newID} WHERE icon_media_id = $row->media_id";
+            mysql_query($query);
+            $query = "UPDATE {$newPrefix}_npcs SET media_id = {$newID} WHERE icon_media_id = $row->media_id";
+            mysql_query($query);
+            $query = "UPDATE {$newPrefix}_qrcodes SET match_media_id = {$newID} WHERE match_media_id = $row->media_id";
+            mysql_query($query);
+            $query = "UPDATE {$newPrefix}_quests SET icon_media_id = {$newID} WHERE icon_media_id = $row->media_id";
+            mysql_query($query);
+            $query = "UPDATE aug_bubbles SET icon_media_id = {$newID} WHERE icon_media_id = $row->media_id AND game_id = {$newPrefix}";
+            mysql_query($query);
+            $query = "UPDATE aug_bubbles SET media_id = {$newID} WHERE media_id = $row->media_id AND game_id = {$newPrefix}";
+            mysql_query($query);
+            $query = "UPDATE aug_bubbles SET alignment_media_id = {$newID} WHERE alignment_media_id = $row->media_id AND game_id = {$newPrefix}";
+            mysql_query($query);
+            $query = "UPDATE games SET icon_media_id = {$newID} WHERE icon_media_id = $row->media_id AND game_id = {$newPrefix}";
+            mysql_query($query);
+            $query = "UPDATE games SET media_id = {$newID} WHERE media_id = $row->media_id AND game_id = {$newPrefix}";
+            mysql_query($query);
+            $query = "UPDATE games SET pc_media_id = {$newID} WHERE pc_media_id = $row->media_id AND game_id = {$newPrefix}";
+            mysql_query($query);
+            $query = "UPDATE web_pages SET icon_media_id = {$newID} WHERE icon_media_id = $row->media_id AND game_id = {$newPrefix}";
+            mysql_query($query);
+
+        }
+        
         
         return $id;
     }
