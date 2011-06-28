@@ -1240,8 +1240,7 @@ class Games extends Module
         }
         
         $newPrefix = Module::getPrefix($newGameId->data);
-        
-        
+
         $query = "INSERT INTO {$newPrefix}_folders (folder_id, name, parent_id, previous_id, is_open) SELECT folder_id, name, parent_id, previous_id, is_open FROM {$prefix}_folders";
         mysql_query($query);
         
@@ -1266,16 +1265,13 @@ class Games extends Module
         $query = "INSERT INTO {$newPrefix}_npc_greetings (npc_greeting_id, npc_id, script) SELECT npc_greeting_id, npc_id, script FROM {$prefix}_npc_greetings";
         mysql_query($query);
         
-        $query = "INSERT INTO {$newPrefix}_player_items (id, player_id, item_id, qty, timestamp) SELECT id, player_id, item_id, qty, timestamp FROM {$prefix}_player_items";
-        mysql_query($query);
-        
         $query = "INSERT INTO {$newPrefix}_player_state_changes (id, event_type, event_detail, action, action_detail, action_amount) SELECT id, event_type, event_detail, action, action_detail, action_amount FROM {$prefix}_player_state_changes";
         mysql_query($query);
         
         $query = "INSERT INTO {$newPrefix}_qrcodes (qrcode_id, link_type, link_id, code, match_media_id) SELECT qrcode_id, link_type, link_id, code, match_media_id FROM {$prefix}_qrcodes";
         mysql_query($query);
         
-        $query = "INSERT INTO {$newPrefix}_quests (quest_id, name, description, tet_when_complete, icon_media_id) SELECT quest_id, name, description, tet_when_complete, icon_media_id FROM {$prefix}_quests";
+        $query = "INSERT INTO {$newPrefix}_quests (quest_id, name, description, text_when_complete, icon_media_id) SELECT quest_id, name, description, text_when_complete, icon_media_id FROM {$prefix}_quests";
         mysql_query($query);
         
         $query = "INSERT INTO {$newPrefix}_requirements (requirement_id, content_type, content_id, requirement, boolean_operator, requirement_detail_1, requirement_detail_2, requirement_detail_3) SELECT requirement_id, content_type, content_id, requirement, boolean_operator, requirement_detail_1, requirement_detail_2, requirement_detail_3 FROM {$prefix}_requirements";
@@ -1284,8 +1280,8 @@ class Games extends Module
         $query = "SELECT * FROM aug_bubbles WHERE game_id = {$prefix}";
         $result = mysql_query($query);
         while($row = mysql_fetch_object($result)){
-            $query = "INSERT INTO aug_bubbles (game_id, name, description, icon_media_id, media_id, alignment_media_id) VALUES ($newPrefix, $row->name, $row->description, $row->icon_media_id, $row->media_id, $row->alignment_media_id)";
-            mysql_query($query);
+            $query = "INSERT INTO aug_bubbles (game_id, name, description, icon_media_id, media_id, alignment_media_id) VALUES ('{$newPrefix}', '{$row->name}', '{$row->description}', '{$row->icon_media_id}', '{$row->media_id}', '{$row->alignment_media_id}')";
+            @mysql_query($query);
             $newID = mysql_insert_id();
             
             $query = "UPDATE {$newPrefix}_locations SET type_id = {$newID} WHERE type = 'AugBubble' AND type_id = {$row->aug_bubble_id}";
@@ -1299,7 +1295,7 @@ class Games extends Module
         $query = "SELECT * FROM web_pages WHERE game_id = {$prefix}";
         $result = mysql_query($query);
         while($row = mysql_fetch_object($result)){
-            $query = "INSERT INTO web_pages (game_id, name, url, icon_media_id) VALUES ($newPrefix, $row->name, $row->url, $row->icon_media_id)";
+            $query = "INSERT INTO web_pages (game_id, name, url, icon_media_id) VALUES ('{$newPrefix}', '{$row->name}', '{$row->url}', '{$row->icon_media_id}')";
             mysql_query($query);
             $newID = mysql_insert_id();
             
@@ -1314,34 +1310,35 @@ class Games extends Module
         $query = "SELECT * FROM web_hooks WHERE game_id = {$prefix}";
         $result = mysql_query($query);
         while($row = mysql_fetch_object($result)){
-            $query = "INSERT INTO web_hooks (game_id, name, url, incoming) VALUES ($newPrefix, $row->name, $row->url, $row->incoming)";
-            mysql_query($query);
+            $query = "INSERT INTO web_hooks (game_id, name, url, incoming) VALUES ('{$newPrefix}', '{$row->name}', '".addSlashes($row->url)."', '{$row->incoming}')";
+            @mysql_query($query);
             $newID = mysql_insert_id();
             
             $query = "UPDATE {$newPrefix}_requirements SET content_id = {$newID} WHERE content_type = 'OutgoingWebHook' AND content_id = {$row->web_hook_id}";
             mysql_query($query);
         }
         
+        
         $query = "SELECT * FROM media WHERE game_id = {$prefix}";
         $result = mysql_query($query);
         while($row = mysql_fetch_object($result)){
-            $query = "INSERT INTO media (game_id, name, file_name, is_icon) VALUES ($newPrefix, $row->name, $row->file_name, $row->is_icon)";
+            $query = "INSERT INTO media (game_id, name, file_name, is_icon) VALUES ('{$newPrefix}', '{$row->name}', '{$row->file_name}', '{$row->is_icon}')";
             mysql_query($query);
             $newID = mysql_insert_id();
             
             $query = "UPDATE {$newPrefix}_items SET icon_media_id = {$newID} WHERE icon_media_id = $row->media_id";
             mysql_query($query);
-            $query = "UPDATE {$newPrefix}_items SET media_id = {$newID} WHERE icon_media_id = $row->media_id";
+            $query = "UPDATE {$newPrefix}_items SET media_id = {$newID} WHERE media_id = $row->media_id";
             mysql_query($query);
             $query = "UPDATE {$newPrefix}_locations SET icon_media_id = {$newID} WHERE icon_media_id = $row->media_id";
             mysql_query($query);
             $query = "UPDATE {$newPrefix}_nodes SET icon_media_id = {$newID} WHERE icon_media_id = $row->media_id";
             mysql_query($query);
-            $query = "UPDATE {$newPrefix}_nodes SET media_id = {$newID} WHERE icon_media_id = $row->media_id";
+            $query = "UPDATE {$newPrefix}_nodes SET media_id = {$newID} WHERE media_id = $row->media_id";
             mysql_query($query);
             $query = "UPDATE {$newPrefix}_npcs SET icon_media_id = {$newID} WHERE icon_media_id = $row->media_id";
             mysql_query($query);
-            $query = "UPDATE {$newPrefix}_npcs SET media_id = {$newID} WHERE icon_media_id = $row->media_id";
+            $query = "UPDATE {$newPrefix}_npcs SET media_id = {$newID} WHERE media_id = $row->media_id";
             mysql_query($query);
             $query = "UPDATE {$newPrefix}_qrcodes SET match_media_id = {$newID} WHERE match_media_id = $row->media_id";
             mysql_query($query);
