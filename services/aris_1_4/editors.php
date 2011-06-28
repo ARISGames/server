@@ -54,13 +54,23 @@ class Editors extends Module
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 		
 		$subject = "Welcome to the ARIS Alpha Editor!";
- 		$body = "<p><strong>You signed up to become an editor for ARIS!</strong> To get things started well, we wanted to make sure you 
+ 		
+        /* OLD BODY
+        $body = "<p><strong>You signed up to become an editor for ARIS!</strong> To get things started well, we wanted to make sure you 
  		knew about a few things and had a few folks to call for help.</p>
  		<p>For starters, you should head out to go to http://groups.google.com/group/arisgames and view the 'Getting Started Videos'</p>
  		<p>If you have questions and want to talk with other users, go post a new discussion there or send an email to arisgames@googlegroups.com</p>
  		<p>If you discover bugs or have new ideas, please tell us at http://groups.google.com/group/arisgames/web/feature-requests</p>
  		<p>Just so you don't forget, your username is $strUser and your password is $strPassword</p>
  		<p>Good luck making games!</p>";
+        */ 
+        
+        $body = "<p><strong>You signed up to become an editor for ARIS!</strong> To get things started well, we wanted to make sure you knew about a few things and had places to look for help.</p>
+            <p>For starters, there are demo videos and documentation at http://arisgames.org/make/training-videos/.</p>
+            <p>If you have questions and want to talk with other users, go to http://groups.google.com/group/arisgames. You can post a new discussion there or send an email to arisgames@googlegroups.com.</p>
+            <p>If you discover bugs or have new ideas, please tell us at http://arisgames.lighthouseapp.com.</p>
+            <p>Just so you don't forget, your username is $strUser and your password is $strPassword</p>
+            <p>Good luck making games!</p>";
  			
  		if (Module::sendEmail($strEmail, $subject, $body)) return new returnData(0, mysql_insert_id());
 		else return new returnData(4, mysql_insert_id(), "Account created but email not sent");

@@ -83,7 +83,7 @@ class Items extends Module
         FROM {$prefix}_items
         JOIN {$prefix}_player_items 
         ON {$prefix}_items.item_id = {$prefix}_player_items.item_id
-        WHERE {$prefix}_items.is_attribute = 1 AND player_id = $playerId";
+        WHERE {$prefix}_items.is_attribute = '1' AND player_id = $playerId";
 		NetDebug::trace($query);
 		
 		$rsResult = @mysql_query($query);
