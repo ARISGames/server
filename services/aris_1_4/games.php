@@ -1135,6 +1135,7 @@ class Games extends Module
 	 */
 	
 	public function getGamesContainingText($intPlayerId, $latitude, $longitude, $textToFind, $boolIncludeDevGames = 1){
+        //$textToFind = addSlashes($textToFind);
 		if($boolIncludeDevGames) $query = "SELECT game_id, name FROM games WHERE (name LIKE '%{$textToFind}%' OR description LIKE '%{$textToFind}%') ORDER BY name ASC";
 		else $query = "SELECT game_id, name FROM games WHERE (name LIKE '%{$textToFind}%' OR description LIKE '%{$textToFind}%') AND ready_for_public = 1 ORDER BY name ASC";
 
@@ -1145,6 +1146,12 @@ class Games extends Module
             $gameObj = Games::getFullGameObject($game->game_id, $intPlayerId, 1, 9999999999, $latitude, $longitude);
             if($gameObj != NULL){
                 $games[] = $gameObj;
+            }
+            else{
+                $gameObj = Games::getFullGameObject($game->game_id, $intPlayerId, 0, 9999999999, $latitude, $longitude);
+                if($gameObj != NULL){
+                    $games[] = $gameObj;
+                }
             }
 		}
 		return new returnData(0, $games);
