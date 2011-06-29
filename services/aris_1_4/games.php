@@ -1326,6 +1326,8 @@ class Games extends Module
             mysql_query($query);
             $newID = mysql_insert_id();
             
+            copy(("../../gamedata/" . $prefix . "/" . $row->file_name),("../../gamedata/" . $newPrefix . "/" . $row->file_name));
+            
             $query = "UPDATE {$newPrefix}_items SET icon_media_id = {$newID} WHERE icon_media_id = $row->media_id";
             mysql_query($query);
             $query = "UPDATE {$newPrefix}_items SET media_id = {$newID} WHERE media_id = $row->media_id";
@@ -1362,7 +1364,7 @@ class Games extends Module
         }
         
         
-        return $id;
+        return new returnData(0, $newPrefix, NULL);
     }
 }
 ?>
