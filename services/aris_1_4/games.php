@@ -660,7 +660,9 @@ class Games extends Module
         mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
-        
+        $query = "ALTER TABLE  `game_comments` CHANGE  `comment`  `comment` TINYTEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
         
         
 		return new returnData(0, FALSE);
@@ -739,8 +741,8 @@ class Games extends Module
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
-        $query = "ALTER TABLE  `{$prefix}_qrcodes` ADD  `image_decoder_media_id` INT NOT NULL DEFAULT  '0' AFTER  `code` ,
-        ADD INDEX (  `image_decoder_media_id` )";
+        $query = "ALTER TABLE  `{$prefix}_qrcodes` ADD  `match_media_id` INT NOT NULL DEFAULT  '0' AFTER  `code` ,
+        ADD INDEX (  `match_media_id` )";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
