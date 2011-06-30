@@ -210,7 +210,7 @@ class Items extends Module
 					VALUES ('{$name}', 
 							'{$description}',
 							'{$newMediaID}', 
-                            '0',
+                            '',
 							'$droppable',
 							'$destroyable',
 							'$playerId', '$latitude', '$longitude',
