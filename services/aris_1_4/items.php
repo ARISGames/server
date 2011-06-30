@@ -205,11 +205,12 @@ class Items extends Module
 		$iconNum = Module::kPLAYER_CREATED_ITEM_DEFAULT_ICON_NUM;
 		//Create the Item
 		$query = "INSERT INTO {$prefix}_items 
-					(name, description, media_id, dropable, destroyable,
+					(name, description, media_id, is_attribute, dropable, destroyable,
 					creator_player_id, origin_latitude, origin_longitude, icon_media_id)
 					VALUES ('{$name}', 
 							'{$description}',
 							'{$newMediaID}', 
+                            '0',
 							'$droppable',
 							'$destroyable',
 							'$playerId', '$latitude', '$longitude',
