@@ -18,6 +18,8 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <string>
+#include <vector>
+#include <utility>
 
 #include "MatchParam.h"
 
@@ -208,7 +210,7 @@ int main(int argc, const char* argv[])
 		Mat keypts_in_db;
 		Ptr<DescriptorMatcher> matcher=DescriptorMatcher::create(DESCRIPTOR_MATCHER);
 
-		vector<pair<double, string> > match_result;
+		vector<std::pair<double, string> > match_result;
 		while (NULL != (dirp=readdir(dp))) {
 			string filepath;
 			if (argv[3][strlen(argv[3])-1]=='/')
