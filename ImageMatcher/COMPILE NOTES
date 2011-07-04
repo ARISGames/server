@@ -1,15 +1,19 @@
 WORKING in OSX 10.6, 10.5, 10.4 as an i686 executable
 
-install cmake
+1. install cmake
 
-checkoput the 2.3 branch of opencv
+2. checkoput the 2.3 branch of opencv
 
-In opencv 2.3 ccmake, set arch to i686, no shared libs, no docs, no python support, no examples, min target of 10.4, no cuda, no tiff, build 3rd party, build carbon and extra compiler directives to  
+3. run ccmake in the opencv source dir
+
+set arch to i686, no shared libs, no docs, no python support, no examples, min target of 10.4, no cuda, no tiff, build 3rd party, build carbon and extra compiler directives to  
 -fno-stack-protector
 
-configure then generate inside of ccmake
+See the screenshots for every option
 
-Compile: make -j8
-install: sudo make install
+4. configure then generate inside of ccmake
 
-In the ImageMatcher folder, simply run make
+5. Compile: make -j8
+6. install: sudo make install
+
+7. Compile ImageMatcher: In the ImageMatcher folder, simply run make
