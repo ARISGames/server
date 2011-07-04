@@ -85,15 +85,34 @@ class Locations extends Module
         if(mysql_num_rows($result) == 1){
             $query = "UPDATE {$prefix}_qrcodes SET match_media_id = {$intMatchMediaID} WHERE link_id={$intLocationId}";
             mysql_query($query);
+            Locations::generateDescriptors($intMatchMediaID, $intGameId);
             return new returnData(0);
         }
 
  
         $query = "INSERT INTO {$prefix}_qrcodes (link_id, match_media_id, code) VALUES ({$intLocationId}, {$intMatchMediaID}, {$code})";
         mysql_query($query);
+        Locations::generateDescriptors($intMatchMediaID, $intGameId);
         
         return new returnData(0);
     }
+    
+    private function generateDescriptors($mediaId, $gameId) {
+        //Get the filename for the media
+		if ($mediaId) {
+			$query = "SELECT file_name FROM media WHERE media_id = '{$mediaId}' LIMIT 1";
+			$result = @mysql_query($query);
+			$fileName = mysql_fetch_object($result)->file_name;	
+			if (mysql_error()) NetDebug::trace("SQL Error: ". mysql_error());
+			
+			$gameMediaAndDescriptorsPath = Media::getMediaDirectory($gameId)->data;
+			$execCommand = '../../ImageMatcher/ImageMatcher generate ' . $gameMediaAndDescriptorsPath . $fileName;
+			NetDebug::trace($execCommand);
+			$console = exec($execCommand);
+			NetDebug::trace($console);
+		}
+    }
+    
     
     /**
      * Removes a record in the QR database. Used for image Matching.

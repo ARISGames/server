@@ -153,11 +153,13 @@ class QRCodes extends Module
         //NetDebug::trace(getcwd());
         
         $gameMediaAndDescriptorsPath = Media::getMediaDirectory($intGameId)->data;
-        $execCommand = '../../ImageMatcher/OSXImageMatcher match ' . $gameMediaAndDescriptorsPath . $strFileName . ' ' . $gameMediaAndDescriptorsPath;
+        $execCommand = '../../ImageMatcher/ImageMatcher match ' . $gameMediaAndDescriptorsPath . $strFileName . ' ' . $gameMediaAndDescriptorsPath;
         NetDebug::trace($execCommand);
 
         $console = exec($execCommand); //Run it
         NetDebug::trace('Console:' . $console);
+        Module::serverErrorLog('getBestImageMatchNearbyObjectForPlayer Console:' . $console);
+
     
         $consoleJSON = json_decode($console,true);
         $fileName = $consoleJSON['filename'];        
