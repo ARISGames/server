@@ -609,7 +609,7 @@ class Games extends Module
                                     `icon_media_id` INT( 10 ) UNSIGNED NOT NULL DEFAULT  '4',
                                     `name` VARCHAR( 20 ) NOT NULL ,
                                     `url` TINYTEXT NOT NULL
-                                    ) ENGINE = MYISAM CHARACTER SET utf8 COLLATE utf8_general_ci";
+                                    ) ENGINE = MYISAM CHARACTER SET utf8 COLLATE utf8_unicode_ci";
         mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
@@ -630,12 +630,12 @@ class Games extends Module
         $query = "CREATE TABLE  `aug_bubbles` (
         `aug_bubble_id` INT( 10 ) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY ,
         `game_id` INT( 10 ) UNSIGNED NOT NULL ,
-        `name` VARCHAR( 30 ) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ,
-        `description` TINYTEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL ,
+        `name` VARCHAR( 30 ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL ,
+        `description` TINYTEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL ,
         `icon_media_id` INT( 10 ) UNSIGNED NOT NULL ,
         `media_id` INT( 10 ) UNSIGNED NOT NULL ,
         `alignment_media_id` INT( 10 ) UNSIGNED NOT NULL
-        ) ENGINE = MYISAM CHARACTER SET utf8 COLLATE utf8_general_ci";
+        ) ENGINE = MYISAM CHARACTER SET utf8 COLLATE utf8_unicode_ci";
         mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
@@ -651,7 +651,7 @@ class Games extends Module
         `name` VARCHAR( 30 ) NOT NULL ,
         `url` TINYTEXT NOT NULL ,
         `incoming` TINYINT( 1 ) UNSIGNED NOT NULL
-        ) ENGINE = MYISAM CHARACTER SET utf8 COLLATE utf8_general_ci";
+        ) ENGINE = MYISAM CHARACTER SET utf8 COLLATE utf8_unicode_ci";
         mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
@@ -660,7 +660,7 @@ class Games extends Module
         mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
-        $query = "ALTER TABLE  `game_comments` CHANGE  `comment`  `comment` TINYTEXT CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL";
+        $query = "ALTER TABLE  `game_comments` CHANGE  `comment`  `comment` TINYTEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL";
         mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
