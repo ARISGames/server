@@ -1137,7 +1137,7 @@ class Games extends Module
 	 */
 	
 	public function getGamesContainingText($intPlayerId, $latitude, $longitude, $textToFind, $boolIncludeDevGames = 1){
-        //$textToFind = addSlashes($textToFind);
+        $textToFind = addSlashes($textToFind);
         $textToFind = urldecode($textToFind);
 		if($boolIncludeDevGames) $query = "SELECT game_id, name FROM games WHERE (name LIKE '%{$textToFind}%' OR description LIKE '%{$textToFind}%') ORDER BY name ASC";
 		else $query = "SELECT game_id, name FROM games WHERE (name LIKE '%{$textToFind}%' OR description LIKE '%{$textToFind}%') AND ready_for_public = 1 ORDER BY name ASC";
