@@ -169,6 +169,8 @@ class QRCodes extends Module
         
         $similarity = $consoleJSON['similarity'];
         NetDebug::trace('similarity: ' . $similarity);
+        if ($similarity > 0.2) return new returnData(0, NULL, "No match found. Best simularity was {$similarity}");
+
         
         
         $prefix = $this->getPrefix($intGameId);
