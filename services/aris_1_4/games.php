@@ -236,7 +236,7 @@ class Games extends Module
 	public function createGame($intEditorID, $strFullName, $strDescription, $intPCMediaID, $intIconMediaID, $intMediaID,
 								$boolIsLocational, $boolReadyForPublic, 
 								$boolAllowPlayerCreatedLocations, $boolResetDeletesPlayerCreatedLocations,
-								$intIntroNodeId, $intCompleteNodeId)
+								$intIntroNodeId, $intCompleteNodeId, $intInventoryCap)
 	{
 
 		$strFullName = addslashes($strFullName);	
@@ -254,11 +254,11 @@ class Games extends Module
 		$query = "INSERT INTO games (name, description, pc_media_id, icon_media_id, media_id,
 									is_locational, ready_for_public,
 									allow_player_created_locations, delete_player_locations_on_reset,
-									on_launch_node_id, game_complete_node_id)
+									on_launch_node_id, game_complete_node_id, inventory_weight_cap)
 					VALUES ('{$strFullName}','{$strDescription}','{$intPCMediaID}','{$intIconMediaID}', '{$intMediaID}',
 							'{$boolIsLocational}', '{$boolReadyForPublic}', 
 							'{$boolAllowPlayerCreatedLocations}','{$boolResetDeletesPlayerCreatedLocations}',
-							'{$intIntroNodeId}','{$intCompleteNodeId}')";
+							'{$intIntroNodeId}','{$intCompleteNodeId}','{$intInventoryCap}')";
 		@mysql_query($query);
 		if (mysql_error())  return new returnData(6, NULL, 'cannot create game record');
 		$newGameID = mysql_insert_id();
@@ -294,6 +294,7 @@ class Games extends Module
   			origin_latitude double NOT NULL default '0',
   			origin_longitude double NOT NULL default '0',
   			origin_timestamp timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+            weight INT UNSIGNED NOT NULL DEFAULT  '0',
 			PRIMARY KEY  (item_id)
 			)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
 		NetDebug::trace($query);
@@ -493,7 +494,7 @@ class Games extends Module
 	public function updateGame($intGameID, $strName, $strDescription, $intPCMediaID, $intIconMediaID, $intMediaID,
 								$boolIsLocational, $boolReadyForPublic,
 								$boolAllowPlayerCreatedLocations, $boolResetDeletesPlayerCreatedLocations,
-								$intIntroNodeId, $intCompleteNodeId)
+								$intIntroNodeId, $intCompleteNodeId, $intInventoryCap)
 	{
 		$strName = addslashes($strName);	
 		$strDescription = addslashes($strDescription);
@@ -510,7 +511,8 @@ class Games extends Module
 				is_locational = '{$boolIsLocational}',
 				ready_for_public = '{$boolReadyForPublic}',
 				on_launch_node_id = '{$intIntroNodeId}',
-				game_complete_node_id = '{$intCompleteNodeId}'
+				game_complete_node_id = '{$intCompleteNodeId}',
+                inventory_weight_cap = '{$intInventoryCap}'
 				WHERE game_id = {$intGameID}";
 		mysql_query($query);
 		if (mysql_error()) return new returnData(3, false, "SQL Error: " . mysql_error());
@@ -664,6 +666,9 @@ class Games extends Module
         mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
+        $query = "ALTER TABLE  `games` ADD  `inventory_weight_cap` INT NOT NULL DEFAULT  '0'";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
         
 		return new returnData(0, FALSE);
 	}
@@ -770,12 +775,10 @@ class Games extends Module
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
-        
+        $query = "ALTER TABLE  `{$prefix}_items` ADD  `weight` INT UNSIGNED NOT NULL DEFAULT  '0'";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
 
-        
-        
-        
-        
 	}
 	
 	/**
@@ -1243,7 +1246,7 @@ class Games extends Module
         $newGameId = Games::createGame($editors->editor_id, $game->name . "_copy", $game->description, $game->pc_media_id, $game->icon_media_id, $game->media_id,
                           $game->is_locational, $game->ready_for_public, 
                           $game->allow_player_created_locations, $game->delete_player_locations_on_reset,
-                          $game->on_launch_node_id, $game->game_complete_node_id);
+                          $game->on_launch_node_id, $game->game_complete_node_id, $game->inventory_weight_cap);
         
         while($editors = mysql_fetch_object($rs)){
             Games::addEditorToGame($editors->editor_id, $newGameId->data);
@@ -1257,7 +1260,7 @@ class Games extends Module
         $query = "INSERT INTO {$newPrefix}_folder_contents (object_content_id, folder_id, content_type, content_id, previous_id) SELECT object_content_id, folder_id, content_type, content_id, previous_id FROM {$prefix}_folder_contents";
         mysql_query($query);
         
-        $query = "INSERT INTO {$newPrefix}_items (item_id, name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp) SELECT item_id, name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp FROM {$prefix}_items";
+        $query = "INSERT INTO {$newPrefix}_items (item_id, name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight) SELECT item_id, name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight FROM {$prefix}_items";
         mysql_query($query);
         
         $query = "INSERT INTO {$newPrefix}_locations (location_id, name, description, latitude, longitude, error, type, type_id, icon_media_id, item_qty, hidden, force_view, allow_quick_travel) SELECT location_id, name, description, latitude, longitude, error, type, type_id, icon_media_id, item_qty, hidden, force_view, allow_quick_travel FROM {$prefix}_locations";
