@@ -324,16 +324,34 @@ class Players extends Module
 	public function pickupItemFromLocation($intGameID, $intPlayerID, $intItemID, $intLocationID, $qty=1)
 	{	
 		NetDebug::trace("Pickup $qty of item $intItemID");
-
+        
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        
+        $query = "SELECT item_qty from {$prefix}_locations WHERE location_id = $intLocationID";
+        $result = mysql_query($query);
+        $loc = mysql_fetch_object($result);
+        
+        if($loc->item_qty != -1 && $loc->item_qty < $qty){
+            if($loc->item_qty == 0){
+                return new returnData(1, FALSE, "Location has qty 0");
+            }
+            
+            $qtyGiven = Module::giveItemToPlayer($prefix, $intItemID, $intPlayerID, $loc->item_qty);
+            Module::decrementItemQtyAtLocation($prefix, $intLocationID, $qtyGiven); 
+            
+            Module::appendLog($intPlayerID, $intGameID, Module::kLOG_PICKUP_ITEM, $intItemID, $qtyGiven);
+            
+            return new returnData(1, $qtyGiven, "Location has qty 0");
+        }
 		
 		$qtyGiven = Module::giveItemToPlayer($prefix, $intItemID, $intPlayerID, $qty);
 		Module::decrementItemQtyAtLocation($prefix, $intLocationID, $qtyGiven); 
 		
 		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_PICKUP_ITEM, $intItemID, $qtyGiven);
-
+        
 		return new returnData(0, TRUE);
+     
 	}
 	
 	/**
