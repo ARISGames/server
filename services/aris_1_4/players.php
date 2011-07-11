@@ -334,7 +334,7 @@ class Players extends Module
         
         if($loc->item_qty != -1 && $loc->item_qty < $qty){
             if($loc->item_qty == 0){
-                return new returnData(1, FALSE, "Location has qty 0");
+                return new returnData(0, FALSE, "Location has qty 0");
             }
             
             $qtyGiven = Module::giveItemToPlayer($prefix, $intItemID, $intPlayerID, $loc->item_qty);
@@ -342,7 +342,7 @@ class Players extends Module
             
             Module::appendLog($intPlayerID, $intGameID, Module::kLOG_PICKUP_ITEM, $intItemID, $qtyGiven);
             
-            return new returnData(1, $qtyGiven, "Location has qty 0");
+            return new returnData(0, $qtyGiven, "Location has qty 0");
         }
 		
 		$qtyGiven = Module::giveItemToPlayer($prefix, $intItemID, $intPlayerID, $qty);
