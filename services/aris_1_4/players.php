@@ -405,6 +405,9 @@ class Players extends Module
      */	
 	public function questsViewed($intGameID, $intPlayerID)
 	{
+        $prefix = Module::getPrefix($intGameID);
+		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        
 		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_VIEW_QUESTS);
 		return new returnData(0, FALSE);
 
@@ -416,6 +419,7 @@ class Players extends Module
      */	
 	public function inventoryViewed($intGameID, $intPlayerID)
 	{
+        
 		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_VIEW_INVENTORY);
 		return new returnData(0, FALSE);
 

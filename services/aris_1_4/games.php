@@ -295,13 +295,13 @@ class Games extends Module
   			origin_longitude double NOT NULL default '0',
   			origin_timestamp timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
             weight INT UNSIGNED NOT NULL DEFAULT  '0',
+            url TINYINT NOT NULL,
 			PRIMARY KEY  (item_id)
 			)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
 		NetDebug::trace($query);
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(6, NULL, 'cannot create items table' . mysql_error());
 				
-		
 		$query = "CREATE TABLE {$strShortName}_player_state_changes (
 			id int(10) unsigned NOT NULL auto_increment,
 			event_type enum('VIEW_ITEM', 'VIEW_NODE', 'VIEW_NPC', 'VIEW_WEBPAGE', 'VIEW_AUGBUBBLE', 'RECEIVE_WEBHOOK' ) NOT NULL,
@@ -778,6 +778,12 @@ class Games extends Module
         $query = "ALTER TABLE  `{$prefix}_items` ADD  `weight` INT UNSIGNED NOT NULL DEFAULT  '0'";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "ALTER TABLE  `{$prefix}_items` ADD  `url` TINYINT NOT NULL";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        
 
 	}
 	
