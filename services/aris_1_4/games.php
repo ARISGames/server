@@ -295,7 +295,7 @@ class Games extends Module
   			origin_longitude double NOT NULL default '0',
   			origin_timestamp timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
             weight INT UNSIGNED NOT NULL DEFAULT  '0',
-            url TINYINT NOT NULL,
+            url TINYTEXT NOT NULL,
 			PRIMARY KEY  (item_id)
 			)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
 		NetDebug::trace($query);
@@ -779,7 +779,7 @@ class Games extends Module
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
-        $query = "ALTER TABLE  `{$prefix}_items` ADD  `url` TINYINT NOT NULL";
+        $query = "ALTER TABLE  `{$prefix}_items` ADD  `url` TINYTEXT NOT NULL";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         

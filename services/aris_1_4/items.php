@@ -136,7 +136,7 @@ class Items extends Module
      * @see returnData
      */
 	public static function createItem($gameId, $name, $description, 
-								$iconMediaId, $mediaId, $droppable, $destroyable, $attribute, $maxQuantityInPlayerInventory, $weight)
+								$iconMediaId, $mediaId, $droppable, $destroyable, $attribute, $maxQuantityInPlayerInventory, $weight, $url)
 	{
 		$name = addslashes($name);	
 		$description = addslashes($description);	
@@ -145,7 +145,7 @@ class Items extends Module
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$query = "INSERT INTO {$prefix}_items 
-					(name, description, icon_media_id, media_id, dropable, destroyable, is_attribute, max_qty_in_inventory, weight)
+					(name, description, icon_media_id, media_id, dropable, destroyable, is_attribute, max_qty_in_inventory, weight, url)
 					VALUES ('{$name}', 
 							'{$description}',
 							'{$iconMediaId}', 
@@ -154,7 +154,8 @@ class Items extends Module
 							'$destroyable',
                             '$attribute',
 							'$maxQuantityInPlayerInventory',
-                            '$weight')";
+                            '$weight',
+                            '$url')";
 		
 		NetDebug::trace("createItem: Running a query = $query");	
 		
@@ -338,7 +339,7 @@ class Items extends Module
      * @see returnData
      */
 	public static function updateItem($gameId, $itemId, $name, $description, 
-								$iconMediaId, $mediaId, $droppable, $destroyable, $attribute, $maxQuantityInPlayerInventory, $weight)
+								$iconMediaId, $mediaId, $droppable, $destroyable, $attribute, $maxQuantityInPlayerInventory, $weight, $url)
 	{
 		$prefix = Module::getPrefix($gameId);
 		
@@ -356,7 +357,8 @@ class Items extends Module
 						destroyable = '{$destroyable}',
                         is_attribute = '{$attribute}',
 						max_qty_in_inventory = '{$maxQuantityInPlayerInventory}',
-                        weight = '{$weight}'
+                        weight = '{$weight}',
+                        url = '{$url}'
 					WHERE item_id = '{$itemId}'";
 		
 		NetDebug::trace("updateNpc: Running a query = $query");	
