@@ -37,8 +37,9 @@
             	$mediaRS = @mysql_query($query);
             	if (mysql_error()) return new returnData(3, NULL, "SQL Error:".mysql_error());
             	
-            	//Jam in the media array
-            	$augBubble->media = $mediaRS;
+            	//extract the recordset
+            	$augBubble->media = array();
+            	while ($media = mysql_fetch_object($mediaRS)) $augBubble->media[] = $media;
 
             	//Add it to the array
             	$augBubbles[] = $augBubble;
@@ -74,12 +75,14 @@
             if (!$augBubble) return new returnData(2, NULL, "invalid aug bubble id");
             
             $query = "SELECT text, media_id FROM aug_bubble_media WHERE aug_bubble_id = '{$augBubble->aug_bubble_id}'";
-            	NetDebug::trace($query);
-            	$mediaRS = @mysql_query($query);
-            	if (mysql_error()) return new returnData(3, NULL, "SQL Error:".mysql_error());
-            	
-            //Jam in the media array
-            $augBubble->media = $mediaRS;
+			NetDebug::trace($query);
+			$mediaRS = @mysql_query($query);
+			if (mysql_error()) return new returnData(3, NULL, "SQL Error:".mysql_error());
+			
+			//extract the recordset
+			$augBubble->media = array();
+			while ($media = mysql_fetch_object($mediaRS)) $augBubble->media[] = $media;
+
             
             return new returnData(0, $augBubble);
             
