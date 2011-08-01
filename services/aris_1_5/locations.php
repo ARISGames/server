@@ -131,11 +131,13 @@ class Locations extends Module
         if(mysql_num_rows($result) == 1){
             $query = "UPDATE {$prefix}_qrcodes SET match_media_id = '0' WHERE link_id={$intLocationId} AND match_media_id = {$intMatchMediaID}";
             mysql_query($query);
+            deleteImageMatchXML($intMatchMediaID, $intGameId);
             return new returnData(0);
         }
         elseif(mysql_num_rows($result) > 1){
             $query = "DELETE FROM {$prefix}_qrcodes WHERE link_id={$intLocationId} AND match_media_id={$intMatchMediaID}";
             mysql_query($query);
+            deleteImageMatchXML($intMatchMediaID, $intGameId);
             return new returnData(0);
         }
         else{
@@ -143,7 +145,15 @@ class Locations extends Module
         }
     }
     
-    
+    public function deleteImageMatchXML($mediaId, $gameId){
+        $query = "SELECT file_name FROM media WHERE media_id = '{$mediaId}' AND (game_id = '{$gameId}' OR game_id = '0')";
+        $result = mysql_query($query);
+        
+        if($med = mysql_fetch_object($result)){
+            NetDebug::trace("../../gamedata/".$gameId."/".substr($med->file_name, 0, -4).".xml");
+            unlink("../../gamedata/".$gameId."/".substr($med->file_name, 0, -4).".xml");
+        }
+    }
     
     /**
      * Fetch all locations in a game with matching QR Code information
