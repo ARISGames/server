@@ -681,8 +681,13 @@ class Games extends Module
         
          
         $query = "INSERT INTO aug_bubble_media (aug_bubble_id, media_id)
-            SELECT aug_bubble_id, media_id
-            FROM aug_bubbles";
+        SELECT aug_bubble_id, media_id
+        FROM aug_bubbles";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "ALTER TABLE  `aug_bubble_media` ADD  `index` INT UNSIGNED NOT NULL DEFAULT  '0',
+        ADD  `game_id` INT UNSIGNED NOT NULL DEFAULT  '0'";
         mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         

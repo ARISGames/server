@@ -150,12 +150,24 @@ abstract class Module
 					WHERE player_id = $intPlayerID AND item_id = $intItemID LIMIT 1";
     	$result = @mysql_query($query);
     	NetDebug::trace($query . mysql_error());
+        
 
     	if ($existingPlayerItem = @mysql_fetch_object($result)) {
     		NetDebug::trace("We have an existing record for that player and item");
 
  			//Check if this change will make the qty go to < 1, if so delete the record
  			$newQty = $existingPlayerItem->qty + $amountOfAdjustment;
+            if ($newQty < 1) $newQty = 0;
+            
+            if($amountOfAdjustment > 0){
+                Module::appendCompletedQuestsIfReady($intPlayerID, $strGamePrefix, Module::kLOG_PICKUP_ITEM, $intItemID, $newQty);
+                Module::fireOffWebHooksIfReady($intPlayerID, $intGameID, Module::kLOG_PICKUP_ITEM, $intItemID, $newQty);
+            }
+            else{
+                Module::appendCompletedQuestsIfReady($intPlayerID, $strGamePrefix, Module::kLOG_DROP_ITEM, $intItemID, $newQty);
+                Module::fireOffWebHooksIfReady($intPlayerID, $intGameID, Module::kLOG_DROP_ITEM, $intItemID, $newQty);
+            }
+            
  			if ($newQty < 1) {
  				NetDebug::trace("Adjustment would result in a qty of $newQty so delete the record");
  				$query = "DELETE FROM {$strGamePrefix}_player_items 
@@ -175,6 +187,16 @@ abstract class Module
     	}
     	else if ($amountOfAdjustment > 0) {
     		//Create a record
+            
+            if($amountOfAdjustment > 0){
+                Module::appendCompletedQuestsIfReady($intPlayerID, $strGamePrefix, Module::kLOG_PICKUP_ITEM, $intItemID, $amountOfAdjustment);
+                Module::fireOffWebHooksIfReady($intPlayerID, $intGameID, Module::kLOG_PICKUP_ITEM, $intItemID, $amountOfAdjustment);
+            }
+            else{
+                Module::appendCompletedQuestsIfReady($intPlayerID, $strGamePrefix, Module::kLOG_DROP_ITEM, $intItemID, -1*$amountOfAdjustment);
+                Module::fireOffWebHooksIfReady($intPlayerID, $intGameID, Module::kLOG_DROP_ITEM, $intItemID, -1*$amountOfAdjustment);
+            }
+            
     		NetDebug::trace("Creating a new player_item record");
 
     		$query = "INSERT INTO {$strGamePrefix}_player_items 
@@ -615,7 +637,19 @@ abstract class Module
         for($x = 0; $x < count($unfinishedBusiness->unfinishedORRequirements); $x++){
             if($strEventDetail1 == $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_1']){
                 if($strEventType == $unfinishedBusiness->unfinishedORRequirements[$x]['event']){
-                    if($strEventDetail2 == $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
+                    if($strEventType == kLOG_PICKUP_ITEM){
+                        if($strEventDetail2 >= $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
+                            Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+                            return;
+                        }
+                    }
+                    else if($strEventType == kLOG_DROP_ITEM){
+                        if($strEventDetail2 <= $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
+                            Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+                            return;
+                        }
+                    }
+                    else{
                         Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
                         return;
                     }
@@ -625,10 +659,10 @@ abstract class Module
         if(count($unfinishedBusiness->unfinishedANDRequirements) == 1){
             if($strEventDetail1 == $unfinishedBusiness->unfinishedANDRequirements[0]['requirement_detail_1']){
                 if($strEventType == $unfinishedBusiness->unfinishedANDRequirements[0]['event']){
-                    if($strEventDetail2 == $unfinishedBusiness->unfinishedANDRequirements[0]['requirement_detail_2']){
+                   // if($strEventDetail2 == $unfinishedBusiness->unfinishedANDRequirements[0]['requirement_detail_2']){
                         Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
                         return;
-                    }
+                   // }
                 }
             }
         }
@@ -660,9 +694,9 @@ abstract class Module
      * Fire off outgoing web hooks if requirement is final one needed
      * @returns true on success
      */
-    protected function fireOffWebHooksIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1="N/A", $strEventDetail2="N/A"){
-        if($strEventDetail1 == null) $strEventDetail1 = "N/A";
-        if($strEventDetail2 == null) $strEventDetail2 = "N/A";
+    protected function fireOffWebHooksIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1="", $strEventDetail2=""){
+        if($strEventDetail1 == null) $strEventDetail1 = "";
+        if($strEventDetail2 == null) $strEventDetail2 = "";
 
         $query = "SELECT * FROM web_hooks WHERE incoming = '0' AND game_id = '{$intGameID}'";
         $result = mysql_query($query);
@@ -796,6 +830,7 @@ abstract class Module
 				case Module::kREQ_PLAYER_HAS_ITEM:
 					$requirementMet = Module::playerHasItem($strPrefix, $intPlayerID, 
                                                             $requirement['requirement_detail_1'], $requirement['requirement_detail_2']);
+                    $requirementMet = false;
                     $requirement['event'] = Module::kLOG_PICKUP_ITEM;
 					break;
 				case Module::kREQ_PLAYER_DOES_NOT_HAVE_ITEM:

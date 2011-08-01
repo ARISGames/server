@@ -32,7 +32,7 @@
 			$augBubbles = array();
 
             while ($augBubble = mysql_fetch_object($augBubblesRS)) {
-            	$query = "SELECT text, media_id FROM aug_bubble_media WHERE aug_bubble_id = '{$augBubble->aug_bubble_id}'";
+            	$query = "SELECT * FROM aug_bubble_media WHERE aug_bubble_id = '{$augBubble->aug_bubble_id}'";
             	NetDebug::trace($query);
             	$mediaRS = @mysql_query($query);
             	if (mysql_error()) return new returnData(3, NULL, "SQL Error:".mysql_error());
@@ -74,7 +74,7 @@
             $augBubble = @mysql_fetch_object($rsResult);
             if (!$augBubble) return new returnData(2, NULL, "invalid aug bubble id");
             
-            $query = "SELECT text, media_id FROM aug_bubble_media WHERE aug_bubble_id = '{$augBubble->aug_bubble_id}'";
+            $query = "SELECT * FROM aug_bubble_media WHERE aug_bubble_id = '{$augBubble->aug_bubble_id}'";
 			NetDebug::trace($query);
 			$mediaRS = @mysql_query($query);
 			if (mysql_error()) return new returnData(3, NULL, "SQL Error:".mysql_error());
@@ -86,6 +86,15 @@
             
             return new returnData(0, $augBubble);
             
+        }
+        
+        public static function getAugBubbleMedia($gameId, $augBubbleId){
+
+            
+            $query = "SELECT * FROM aug_bubble_media WHERE aug_bubble_id = '{$augBubbleId}'";
+            $result = mysql_query($query);
+            
+            return new returnData(0, $result);
         }
         
         /**
@@ -165,6 +174,34 @@
             
         }
         
+        public static function removeAugBubbleMediaIndex($intAugId, $intMediaId, $intIndex)
+        {
+            $prefix = Module::getPrefix($gameId);
+            $query = "DELETE FROM aug_bubble_media WHERE aug_bubble_id = '{$intAugId}' AND media_id = '{$intMediaId}'";
+            mysql_query($query);
+            
+            return new returnData(0);
+        }
+        
+        public static function updateAugBubbleMediaIndex($intAugId, $intMediaId, $intGameId, $intIndex)
+        {
+            $prefix = Module::getPrefix($gameId);
+            
+            /* This will be for when index is implemented
+            $query = "SELECT * FROM aug_bubble_media WHERE aug_bubble_id = '{$intAugId}' AND media_id = '{$intMediaId}'";
+            $result = mysql_query($query);
+            
+            if(mysql_num_rows($result)>0){
+                $query = "UPDATE aug_bubble_media SET";
+            }
+             */
+            
+            $query = "INSERT INTO aug_bubble_media (aug_bubble_id, media_id, index, game_id) VALUES ('{$intAugId}', '{$intMediaId}', '{$intIndex}', '{$intGameId}')";
+            mysql_query($query);
+            
+            return new returnData(0);
+
+        }
         
         /**
          * Deletes an Aug Bubble from a game, removing any refrence made to it in the rest of the game
