@@ -267,7 +267,7 @@ class Npcs extends Module
 			NetDebug::trace("Testing Conversation {$conversation['conversation_id']}");	
 
     		if (Module::objectMeetsRequirements ($prefix, $intPlayerID, 'Node',  $conversation['node_id']) ) {
-				$query = "SELECT * FROM player_log WHERE game_id = '{$intGameID}' AND player_id = '{$intPlayerID}' AND event_type = '".Module::kLOG_VIEW_NODE."' AND event_detail_1 = '".$conversation['node_id']."'";
+				$query = "SELECT * FROM player_log WHERE game_id = '{$intGameID}' AND player_id = '{$intPlayerID}' AND event_type = '".Module::kLOG_VIEW_NODE."' AND event_detail_1 = '".$conversation['node_id']."' AND deleted = '0'";
                 $result = mysql_query($query);
                 if(mysql_num_rows($result) > 0) $conversation['has_viewed'] = true;
                 else $conversation['has_viewed'] = false;
