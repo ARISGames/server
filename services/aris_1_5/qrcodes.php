@@ -238,43 +238,45 @@ class QRCodes extends Module
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
-		$query = "SELECT * FROM {$prefix}_qrcodes WHERE code = '{$strCode}' LIMIT 1";
+		$query = "SELECT * FROM {$prefix}_qrcodes WHERE code = '{$strCode}'";
+		$rData;
+		while($rsResult = @mysql_query($query)){
+            if (mysql_error()) return new returnData(3, NULL, "SQL Error: ". mysql_error());
 		
-		$rsResult = @mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, "SQL Error: ". mysql_error());
+            $qrcode = @mysql_fetch_object($rsResult);
 		
-		$qrcode = @mysql_fetch_object($rsResult);
-		
-		//Check for a valid QR Code
-		if (!$qrcode) { 
-			Module::appendLog($intPlayerID, $intGameID, Module::kLOG_ENTER_QRCODE, $strCode, 'INVALID');
-			return new returnData(0, NULL, "invalid QRCode code");
-		}
+            //Check for a valid QR Code
+            if (!$qrcode) { 
+                Module::appendLog($intPlayerID, $intGameID, Module::kLOG_ENTER_QRCODE, $strCode, 'INVALID');
+                $rData = new returnData(0, NULL, "invalid QRCode code");
+            }
 			
-		//Check the requirements of the QR Code's link object
-		if (!$this->objectMeetsRequirements ($prefix, $intPlayerID, $qrcode->link_type, $qrcode->link_id)) {
-			Module::appendLog($intPlayerID, $intGameID, Module::kLOG_ENTER_QRCODE, $strCode, 'REQS_OR_QTY_NOT_MET');
-			return new returnData(0, NULL, "QRCode requirements not met");
-		}
+            //Check the requirements of the QR Code's link object
+            else if (!$this->objectMeetsRequirements ($prefix, $intPlayerID, $qrcode->link_type, $qrcode->link_id)) {
+                Module::appendLog($intPlayerID, $intGameID, Module::kLOG_ENTER_QRCODE, $strCode, 'REQS_OR_QTY_NOT_MET');
+                $rData = new returnData(0, NULL, "QRCode requirements not met");
+            }
 		
-		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_ENTER_QRCODE, $strCode, 'SUCCESSFUL');
+            else{
+                Module::appendLog($intPlayerID, $intGameID, Module::kLOG_ENTER_QRCODE, $strCode, 'SUCCESSFUL');
 
-		$returnResult = new returnData(0, $qrcode);
+                $rData = new returnData(0, $qrcode);
 
-		//Get the data
-		NetDebug::trace("QRCode link_type=" . $qrcode->link_type . " link_id=" . $qrcode->link_id);
+                //Get the data
+                NetDebug::trace("QRCode link_type=" . $qrcode->link_type . " link_id=" . $qrcode->link_id);
 
-		switch ($qrcode->link_type) {
-			case 'Location':
-				NetDebug::trace("It is Location " . $qrcode->link_id);
-				$returnResult->data->object = Locations::getLocation($intGameID, $qrcode->link_id)->data;
-				if (!$returnResult->data->object) return new returnData(5, NULL, "bad link in qr code, no matching location found");
-				break;
-			default:
-				return new returnData(5, NULL, "Invalid QR Code Record. link_type not recognized");
-		}
+                switch ($qrcode->link_type) {
+                    case 'Location':
+                        NetDebug::trace("It is Location " . $qrcode->link_id);
+                        $returnResult->data->object = Locations::getLocation($intGameID, $qrcode->link_id)->data;
+                        if (!$rData->data->object) return new returnData(5, NULL, "bad link in qr code, no matching location found");
+                        break;
+                    default:
+                        return new returnData(5, NULL, "Invalid QR Code Record. link_type not recognized");
+            }
 		
-		return $returnResult;
+            return $rData;
+        }
 		
 	}	
 	
