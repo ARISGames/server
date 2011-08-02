@@ -814,9 +814,9 @@ class Games extends Module
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
-        
-        
-        
+        $query = "ALTER TABLE  `{$prefix}_items` ADD  `type` ENUM(  'NORMAL',  'ATTRIB',  'URL' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  'NORMAL'";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());        
 
 	}
 	
