@@ -239,12 +239,11 @@ class QRCodes extends Module
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
 		$query = "SELECT * FROM {$prefix}_qrcodes WHERE code = '{$strCode}'";
-		$rData;
-		while($rsResult = @mysql_query($query)){
-            if (mysql_error()) return new returnData(3, NULL, "SQL Error: ". mysql_error());
 		
-            $qrcode = @mysql_fetch_object($rsResult);
+		$rsResult = @mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error: ". mysql_error());
 		
+		while($qrcode = @mysql_fetch_object($rsResult)){
             //Check for a valid QR Code
             if (!$qrcode) { 
                 Module::appendLog($intPlayerID, $intGameID, Module::kLOG_ENTER_QRCODE, $strCode, 'INVALID');
@@ -268,15 +267,17 @@ class QRCodes extends Module
                 switch ($qrcode->link_type) {
                     case 'Location':
                         NetDebug::trace("It is Location " . $qrcode->link_id);
-                        $returnResult->data->object = Locations::getLocation($intGameID, $qrcode->link_id)->data;
+                        $rData->data->object = Locations::getLocation($intGameID, $qrcode->link_id)->data;
                         if (!$rData->data->object) return new returnData(5, NULL, "bad link in qr code, no matching location found");
+                        return $rData;
                         break;
                     default:
                         return new returnData(5, NULL, "Invalid QR Code Record. link_type not recognized");
+                }
+                
             }
-		
-            return $rData;
-        }
+		}
+		return $rData;
 		
 	}	
 	
