@@ -296,6 +296,7 @@ class Games extends Module
   			origin_timestamp timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
             weight INT UNSIGNED NOT NULL DEFAULT  '0',
             url TINYTEXT NOT NULL,
+            type ENUM(  'NORMAL',  'ATTRIB',  'URL' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  'NORMAL',
 			PRIMARY KEY  (item_id)
 			)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
 		NetDebug::trace($query);
@@ -394,6 +395,7 @@ class Games extends Module
 			npc_id int(10) unsigned NOT NULL default '0',
 			node_id int(10) unsigned NOT NULL default '0',
 			text tinytext NOT NULL,
+            sort_index int(10) unsigned NOT NULL default '0',
 			PRIMARY KEY  (conversation_id)
 			)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
 		@mysql_query($query);
@@ -816,8 +818,13 @@ class Games extends Module
         
         $query = "ALTER TABLE  `{$prefix}_items` ADD  `type` ENUM(  'NORMAL',  'ATTRIB',  'URL' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  'NORMAL'";
 		mysql_query($query);
-		NetDebug::trace("$query" . ":" . mysql_error());        
+		NetDebug::trace("$query" . ":" . mysql_error()); 
+        
+        $query = "ALTER TABLE  `{$prefix}_npc_conversations` ADD  `sort_index` INT UNSIGNED NOT NULL DEFAULT  '0'";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error()); 
 
+        
 	}
 	
 	/**

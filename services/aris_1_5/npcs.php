@@ -235,7 +235,7 @@ class Npcs extends Module
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");		
 		
-		$query = "SELECT * FROM {$prefix}_npc_conversations WHERE npc_id = '{$intNpcID}'";
+		$query = "SELECT * FROM {$prefix}_npc_conversations WHERE npc_id = '{$intNpcID}' ORDER BY sort_index";
 		
 		NetDebug::trace("getConversations: Running a query = $query");	
 

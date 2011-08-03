@@ -25,13 +25,32 @@ class Conversations extends Module
 					{$prefix}_npc_conversations.text AS conversation_text,{$prefix}_nodes.*
 					FROM {$prefix}_npc_conversations JOIN {$prefix}_nodes
 					ON {$prefix}_npc_conversations.node_id = {$prefix}_nodes.node_id
-					WHERE {$prefix}_npc_conversations.npc_id = {$npcId}";					
+					WHERE {$prefix}_npc_conversations.npc_id = {$npcId} ORDER BY sort_index";					
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
 		return new returnData(0, $rsResult);	
 		
 	}
 
+    public function swapSortIndex($gameId, $npcId, $a, $b){
+        $prefix = Module::getPrefix($gameId);
+		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        
+        $query = "SELECT * FROM {$prefix}_npc_conversations WHERE npc_id = '{$npcId}' AND (conversation_id = '{$a}' OR conversation_id = '{$b}')";
+        $result = mysql_query($query);
+        $convos = array();
+        while($convo = mysql_fetch_object($result)){
+            $convos[$convo->conversation_id] = $convo;
+        }
+        
+        $query = "UPDATE {$prefix}_npc_conversations SET sort_index = '{$convos[$a]->sort_index}' WHERE conversation_id = '{$b}'";
+        mysql_query($query);
+        $query = "UPDATE {$prefix}_npc_conversations SET sort_index = '{$convos[$b]->sort_index}' WHERE conversation_id = '{$a}'";
+        mysql_query($query);
+        
+        return new returnData(0);
+    }
+    
 	/**
      * Create a conversation and related node for an npc
      *
@@ -44,7 +63,7 @@ class Conversations extends Module
      * @returns a returnData object containing the newly created conversation_id and node_id
      * @see returnData
      */
-	public function createConversationWithNode($gameId, $npcId, $conversationText, $nodeText)
+	public function createConversationWithNode($gameId, $npcId, $conversationText, $nodeText, $index)
 	{
 		
 		$conversationText = addslashes($conversationText);	
@@ -62,8 +81,8 @@ class Conversations extends Module
 		$newNodeId = mysql_insert_id();
 		
 			
-		$query = "INSERT INTO {$prefix}_npc_conversations (npc_id, node_id, text)
-					VALUES ('{$npcId}','{$newNodeId}','{$conversationText}')";
+		$query = "INSERT INTO {$prefix}_npc_conversations (npc_id, node_id, text, sort_index)
+					VALUES ('{$npcId}','{$newNodeId}','{$conversationText}','{$index}')";
 		NetDebug::trace("createConversation: Running a query = $query");	
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);	
@@ -90,7 +109,7 @@ class Conversations extends Module
      * @returns a returnData object
      * @see returnData
      */
-	public function updateConversationWithNode($gameId, $conversationId, $conversationText, $nodeText)
+	public function updateConversationWithNode($gameId, $conversationId, $conversationText, $nodeText, $index)
 	{
 		
 		$conversationText = addslashes($conversationText);	
@@ -112,7 +131,7 @@ class Conversations extends Module
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);	
 		
 				
-		$query = "UPDATE {$prefix}_npc_conversations SET text = '{$conversationText}' WHERE conversation_id = {$conversationId}";
+		$query = "UPDATE {$prefix}_npc_conversations SET text = '{$conversationText}', sort_index = '{$index}' WHERE conversation_id = {$conversationId}";
 		NetDebug::trace("Running a query = $query");	
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);	
