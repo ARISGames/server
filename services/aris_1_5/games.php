@@ -50,8 +50,8 @@ class Games extends Module
 
 	public function getGamesForPlayerAtLocation($playerId, $latitude, $longitude, $maxDistance=99999999, $locational, $includeGamesinDevelopment)
 	{
-		if ($includeGamesinDevelopment) $query = "SELECT game_id FROM games WHERE is_locational = $locational";
-        else $query = "SELECT game_id FROM games WHERE is_locational = $locational AND ready_for_public = TRUE ";
+		if ($includeGamesinDevelopment) $query = "SELECT game_id FROM games WHERE is_locational = '{$locational}'";
+        else $query = "SELECT game_id FROM games WHERE is_locational = '{$locational}' AND ready_for_public = TRUE ";
         
 		$gamesRs = @mysql_query($query);
 		NetDebug::trace(mysql_error());
@@ -123,11 +123,18 @@ class Games extends Module
 		
 		//Get Locational Stuff
 		if($boolGetLocationalInfo){
-			$nearestLocation = Games::getNearestLocationOfGameToUser($latitude, $longitude, $intGameId);
-			$gameObj->latitude = $nearestLocation->latitude;
-			$gameObj->longitude = $nearestLocation->longitude;
-			$gameObj->distance = $nearestLocation->distance;
-			if($gameObj->distance == NULL || $gameObj->distance > $intSkipAtDistance) return NULL;
+            if($gameObj->locational == true){
+                $nearestLocation = Games::getNearestLocationOfGameToUser($latitude, $longitude, $intGameId);
+                $gameObj->latitude = $nearestLocation->latitude;
+                $gameObj->longitude = $nearestLocation->longitude;
+                $gameObj->distance = $nearestLocation->distance;
+                if($gameObj->distance == NULL || $gameObj->distance > $intSkipAtDistance) return NULL;
+            }
+            else{
+                $gameObj->latitude = 0;
+                $gameObj->longitude = 0;
+                $gameObj->distance = 0;
+            }
 		}
 		
 		//Get Quest Stuff
