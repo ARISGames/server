@@ -39,6 +39,7 @@ abstract class Module
 	const kREQ_PLAYER_HAS_NOT_VIEWED_AUGBUBBLE = 'PLAYER_HAS_NOT_VIEWED_AUGBUBBLE';
 	const kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM = 'PLAYER_HAS_UPLOADED_MEDIA_ITEM';
 	const kREQ_PLAYER_HAS_COMPLETED_QUEST = 'PLAYER_HAS_COMPLETED_QUEST';
+	const kREQ_PLAYER_HAS_NOT_COMPLETED_QUEST = 'PLAYER_HAS_NOT_COMPLETED_QUEST';
     const kREQ_PLAYER_HAS_RECEIVED_INCOMING_WEBHOOK = 'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK';
 	
 	const kRESULT_DISPLAY_NODE = 'Node';
@@ -486,6 +487,10 @@ abstract class Module
 					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_COMPLETE_QUEST, 
                                                            $requirement['requirement_detail_1']);
 					break;	
+                case Module::kREQ_PLAYER_HAS_NOT_COMPLETED_QUEST:
+					$requirementMet = !Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_COMPLETE_QUEST, 
+                                                           $requirement['requirement_detail_1']);
+					break;
 			}//switch
 			if ($requirement['boolean_operator'] == "AND" && $requirementMet == FALSE) {
 				//NetDebug::trace("An AND requirement was not met. Requirements Failed.");
@@ -814,6 +819,11 @@ abstract class Module
 					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_COMPLETE_QUEST, 
                                                            $requirement['requirement_detail_1']);
                     $requirement['event'] = Module::kLOG_COMPLETE_QUEST;
+					break;	
+                case Module::kREQ_PLAYER_HAS_NOT_COMPLETED_QUEST:
+					$requirementMet = !Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_COMPLETE_QUEST, 
+                                                           $requirement['requirement_detail_1']);
+                    $requirement['event'] = "DONT_COMPLETE_THE_QUEST";//Module::kLOG_COMPLETE_QUEST;
 					break;	
 			}//switch
             
