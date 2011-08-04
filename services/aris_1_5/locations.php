@@ -377,7 +377,7 @@ class Locations extends Module
 		if (!$boolAllowQuickTravel) $boolAllowQuickTravel = 0;
 		
 		$strLocationName = addslashes($strLocationName);
-		if ($dblError < 5) $dblError = 25;
+		//if ($dblError < 5) $dblError = 25; // <-- NO!
 		
 		//Check the object Type is good or null
 		if ( !Locations::isValidObjectType($intGameID, $strObjectType) or !strlen($strObjectType) > 0 )
@@ -441,7 +441,7 @@ class Locations extends Module
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$strLocationName = addslashes($strLocationName);
-		if ($dblError < 5) $dblError = 25;
+		//if ($dblError < 5) $dblError = 25; // <-- NO!
 
 		//Check the object Type is good or null
 		if ( !$this->isValidObjectType($intGameID, $strObjectType) or !strlen($strObjectType) > 0 )
@@ -509,7 +509,7 @@ class Locations extends Module
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$strLocationName = addslashes($strLocationName);
-		if ($dblError < 5) $dblError = 25;
+		//if ($dblError < 5) $dblError = 25; // <-- NO!
 
 		//Check the object Type is good or null
 		if ( !$this->isValidObjectType($intGameID, $strObjectType) or !strlen($strObjectType) > 0 )
