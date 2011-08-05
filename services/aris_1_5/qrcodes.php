@@ -243,6 +243,8 @@ class QRCodes extends Module
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error: ". mysql_error());
 		
+        $rData = new returnData(0, NULL, "invalid QRCode code");
+
 		while($qrcode = @mysql_fetch_object($rsResult)){
             //Check for a valid QR Code
             if (!$qrcode) { 
