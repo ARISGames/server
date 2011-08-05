@@ -123,7 +123,7 @@ class Games extends Module
 		
 		//Get Locational Stuff
 		if($boolGetLocationalInfo){
-            if($gameObj->locational == true){
+            if($gameObj->is_locational == true){
                 $nearestLocation = Games::getNearestLocationOfGameToUser($latitude, $longitude, $intGameId);
                 $gameObj->latitude = $nearestLocation->latitude;
                 $gameObj->longitude = $nearestLocation->longitude;
