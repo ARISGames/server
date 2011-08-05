@@ -227,7 +227,17 @@ class Items extends Module
 		$newItemID = mysql_insert_id();
 		
 		Module::appendLog($playerId, $gameId, Module::kLOG_UPLOAD_MEDIA_ITEM, $newItemID);
-
+        $type = Media::getMediaType($fileName);
+        if($type == "Image"){
+            Module::appendLog($playerId, $gameId, Module::kLOG_UPLOAD_MEDIA_ITEM_IMAGE, $newItemID);
+        }
+        else if($type == "Audio"){
+            Module::appendLog($playerId, $gameId, Module::kLOG_UPLOAD_MEDIA_ITEM_AUDIO, $newItemID);
+        }
+        else if($type == "Video"){
+            Module::appendLog($playerId, $gameId, Module::kLOG_UPLOAD_MEDIA_ITEM_VIDEO, $newItemID);
+        }
+        
 		$qty = 1;
 		Module::giveItemToPlayer($prefix, $newItemID, $playerId, $qty); 
 		
@@ -303,7 +313,18 @@ class Items extends Module
 		$newItemID = mysql_insert_id();
 		
 		Module::appendLog($playerId, $gameId, Module::kLOG_UPLOAD_MEDIA_ITEM, $newItemID);
-
+        $type = Media::getMediaType($fileName);
+        if($type == "Image"){
+            Module::appendLog($playerId, $gameId, Module::kLOG_UPLOAD_MEDIA_ITEM_IMAGE, $newItemID);
+        }
+        else if($type == "Audio"){
+            Module::appendLog($playerId, $gameId, Module::kLOG_UPLOAD_MEDIA_ITEM_AUDIO, $newItemID);
+        }
+        else if($type == "Video"){
+            Module::appendLog($playerId, $gameId, Module::kLOG_UPLOAD_MEDIA_ITEM_VIDEO, $newItemID);
+        }
+        
+        
 		Locations::createLocation($gameId, $name, 0, 
 								$latitude, $longitude, 25,
 								"Item", $newItemID,

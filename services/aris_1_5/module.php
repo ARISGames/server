@@ -21,6 +21,10 @@ abstract class Module
 	const kLOG_VIEW_INVENTORY = 'VIEW_INVENTORY';
 	const kLOG_ENTER_QRCODE = 'ENTER_QRCODE';
 	const kLOG_UPLOAD_MEDIA_ITEM = 'UPLOAD_MEDIA_ITEM';
+    const kLOG_UPLOAD_MEDIA_ITEM_IMAGE = 'UPLOAD_MEDIA_ITEM_IMAGE';
+	const kLOG_UPLOAD_MEDIA_ITEM_AUDIO = 'UPLOAD_MEDIA_ITEM_AUDIO';
+	const kLOG_UPLOAD_MEDIA_ITEM_VIDEO = 'UPLOAD_MEDIA_ITEM_VIDEO';
+
     const kLOG_RECEIVE_WEBHOOK = 'RECEIVE_WEBHOOK';
     const kLOG_COMPLETE_QUEST = 'COMPLETE_QUEST';
 	
@@ -38,7 +42,10 @@ abstract class Module
     const kREQ_PLAYER_VIEWED_AUGBUBBLE = 'PLAYER_VIEWED_AUGBUBBLE';
 	const kREQ_PLAYER_HAS_NOT_VIEWED_AUGBUBBLE = 'PLAYER_HAS_NOT_VIEWED_AUGBUBBLE';
 	const kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM = 'PLAYER_HAS_UPLOADED_MEDIA_ITEM';
-	const kREQ_PLAYER_HAS_COMPLETED_QUEST = 'PLAYER_HAS_COMPLETED_QUEST';
+    const kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE = 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE';
+	const kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO = 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO';
+    const kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO = 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO';
+    const kREQ_PLAYER_HAS_COMPLETED_QUEST = 'PLAYER_HAS_COMPLETED_QUEST';
 	const kREQ_PLAYER_HAS_NOT_COMPLETED_QUEST = 'PLAYER_HAS_NOT_COMPLETED_QUEST';
     const kREQ_PLAYER_HAS_RECEIVED_INCOMING_WEBHOOK = 'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK';
 	
@@ -369,11 +376,13 @@ abstract class Module
 	 * playerHasUploadedMedia
 	 *
      * Checks if the specified user has uploaded media near the specified location.
+     * NOTE- $mediaType should be Module::kLOG_UPLOAD_MEDIA_ITEM_IMAGE, Module::kLOG_UPLOAD_MEDIA_ITEM_AUDIO, Module::kLOG_UPLOAD_MEDIA_ITEM_VIDEO, or just
+     * Module::kLOG_UPLOAD_MEDIA_ITEM for any
      * @return boolean
      */
     
     //Spelled 'distAnce' wrong in function name and variable name... afraid to change it...
-    protected function playerHasUploadedMediaItemWithinDistence($intGameID, $intPlayerID, $dblLatitude, $dblLongitude, $dblDistenceInMeters) {
+    protected function playerHasUploadedMediaItemWithinDistence($intGameID, $intPlayerID, $dblLatitude, $dblLongitude, $dblDistenceInMeters, $mediaType) {
     	$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return FALSE;
 
@@ -382,7 +391,7 @@ abstract class Module
 					WHERE 
 						player_log.player_id = '{$intPlayerID}' AND
 						player_log.game_id = '{$intGameID}' AND
-						player_log.event_type = '". Module::kLOG_UPLOAD_MEDIA_ITEM ."' AND
+						player_log.event_type = '". $mediaType ."' AND
 						player_log.event_detail_1 = {$prefix}_items.item_id AND
 						player_log.deleted = 0 AND
 						
@@ -481,7 +490,24 @@ abstract class Module
 				case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM:
 					$requirementMet = Module::playerHasUploadedMediaItemWithinDistence($strPrefix, $intPlayerID, 
 						$requirement['requirement_detail_1'], $requirement['requirement_detail_2'], 
-						$requirement['requirement_detail_3']);
+                                                                                       $requirement['requirement_detail_3'], Module::kLOG_UPLOAD_MEDIA_ITEM);
+					break;
+                case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO:
+                    NetDebug::trace("isAudio");
+					$requirementMet = Module::playerHasUploadedMediaItemWithinDistence($strPrefix, $intPlayerID, 
+                                                                                       $requirement['requirement_detail_1'], $requirement['requirement_detail_2'], 
+                                                                                       $requirement['requirement_detail_3'], Module::kLOG_UPLOAD_MEDIA_ITEM_AUDIO);
+                    NetDebug::trace($requirementMet);
+					break;
+                case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO:
+					$requirementMet = Module::playerHasUploadedMediaItemWithinDistence($strPrefix, $intPlayerID, 
+                                                                                       $requirement['requirement_detail_1'], $requirement['requirement_detail_2'], 
+                                                                                       $requirement['requirement_detail_3'], Module::kLOG_UPLOAD_MEDIA_ITEM_VIDEO);
+					break;
+                case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE:
+					$requirementMet = Module::playerHasUploadedMediaItemWithinDistence($strPrefix, $intPlayerID, 
+                                                                                       $requirement['requirement_detail_1'], $requirement['requirement_detail_2'], 
+                                                                                       $requirement['requirement_detail_3'], Module::kLOG_UPLOAD_MEDIA_ITEM_IMAGE);
 					break;
 				case Module::kREQ_PLAYER_HAS_COMPLETED_QUEST:
 					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_COMPLETE_QUEST, 
@@ -812,8 +838,26 @@ abstract class Module
 				case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM:
 					$requirementMet = Module::playerHasUploadedMediaItemWithinDistence($strPrefix, $intPlayerID, 
                                                                                        $requirement['requirement_detail_1'], $requirement['requirement_detail_2'], 
-                                                                                       $requirement['requirement_detail_3']);
+                                                                                       $requirement['requirement_detail_3'], Module::kLOG_UPLOAD_MEDIA_ITEM);
                     $requirement['event'] = Module::kLOG_UPLOAD_MEDIA_ITEM;
+					break;
+                case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE:
+					$requirementMet = Module::playerHasUploadedMediaItemWithinDistence($strPrefix, $intPlayerID, 
+                                                                                       $requirement['requirement_detail_1'], $requirement['requirement_detail_2'], 
+                                                                                       $requirement['requirement_detail_3'], Module::kLOG_UPLOAD_MEDIA_ITEM_IMAGE);
+                    $requirement['event'] = Module::kLOG_UPLOAD_MEDIA_ITEM_IMAGE;
+					break;
+                case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO:
+					$requirementMet = Module::playerHasUploadedMediaItemWithinDistence($strPrefix, $intPlayerID, 
+                                                                                       $requirement['requirement_detail_1'], $requirement['requirement_detail_2'], 
+                                                                                       $requirement['requirement_detail_3'], Module::kLOG_UPLOAD_MEDIA_ITEM_AUDIO);
+                    $requirement['event'] = Module::kLOG_UPLOAD_MEDIA_ITEM_AUDIO;
+					break;
+                case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO:
+					$requirementMet = Module::playerHasUploadedMediaItemWithinDistence($strPrefix, $intPlayerID, 
+                                                                                       $requirement['requirement_detail_1'], $requirement['requirement_detail_2'], 
+                                                                                       $requirement['requirement_detail_3'], Module::kLOG_UPLOAD_MEDIA_ITEM_VIDEO);
+                    $requirement['event'] = Module::kLOG_UPLOAD_MEDIA_ITEM_VIDEO;
 					break;
 				case Module::kREQ_PLAYER_HAS_COMPLETED_QUEST:
 					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_COMPLETE_QUEST, 
