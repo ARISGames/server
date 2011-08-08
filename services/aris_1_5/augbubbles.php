@@ -196,9 +196,12 @@
             }
              */
             
-            $query = "INSERT INTO aug_bubble_media (aug_bubble_id, media_id, index, game_id) VALUES ('{$intAugId}', '{$intMediaId}', '{$intIndex}', '{$intGameId}')";
+            $query = "INSERT INTO aug_bubble_media (aug_bubble_id, media_id, game_id) VALUES ('{$intAugId}', '{$intMediaId}', '{$intGameId}')";
+            NetDebug::trace($query);
             mysql_query($query);
             
+            if (mysql_error()) return new returnData(1, NULL, mysql_error());
+
             return new returnData(0);
 
         }
