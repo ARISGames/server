@@ -62,6 +62,9 @@ abstract class Module
 	//constants for player created items (pictures, etc...)
 	const kPLAYER_CREATED_ITEM_CONTENT_TYPE = 'Item';
 	const kPLAYER_CREATED_ITEM_DEFAULT_ICON_NUM = '2';
+	const kPLAYER_CREATED_ITEM_PHOTO_ICON_NUM = 36;
+	const kPLAYER_CREATED_ITEM_AUDIO_ICON_NUM = 34;
+	const kPLAYER_CREATED_ITEM_VIDEO_ICON_NUM = 35;
 	const kPLAYER_CREATED_ITEM_DEFAULT_PARENT_FOLDER_ID = '-1';
 	
 	

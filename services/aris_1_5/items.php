@@ -204,8 +204,19 @@ class Items extends Module
 			$game = Games::getGame($gameId);
 			$droppable = $game->data->allow_player_created_locations;
 		}
-		
+		 $type = Media::getMediaType($fileName);
+        if($type == "Image"){
+			$iconNum = Module::kPLAYER_CREATED_ITEM_PHOTO_ICON_NUM;
+        }
+        else if($type == "Audio"){
+			$iconNum = Module::kPLAYER_CREATED_ITEM_AUDIO_ICON_NUM;
+        }
+        else if($type == "Video"){
+           $iconNum = Module::kPLAYER_CREATED_ITEM_VIDEO_ICON_NUM;
+        }
+        else{
 		$iconNum = Module::kPLAYER_CREATED_ITEM_DEFAULT_ICON_NUM;
+		}
 		//Create the Item
 		$query = "INSERT INTO {$prefix}_items 
 					(name, description, media_id, is_attribute, dropable, destroyable,
