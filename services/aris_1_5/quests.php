@@ -16,7 +16,7 @@ class Quests extends Module
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		
-		$query = "SELECT * FROM {$prefix}_quests";
+		$query = "SELECT * FROM {$prefix}_quests ORDER BY sort_index";
 		//NetDebug::trace($query);
 
 		$rsResult = @mysql_query($query);
@@ -35,7 +35,7 @@ class Quests extends Module
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		$query = "SELECT * FROM {$prefix}_quests";
+		$query = "SELECT * FROM {$prefix}_quests ORDER BY sort_index";
 		//NetDebug::trace($query);
 
 		$rsResult = @mysql_query($query);
@@ -99,7 +99,7 @@ class Quests extends Module
      * Create an Event
      * @returns the new eventID on success
      */
-	public function createQuest($intGameID, $strName, $strIncompleteDescription, $strCompleteDescription, $intIconMediaID)
+	public function createQuest($intGameID, $strName, $strIncompleteDescription, $strCompleteDescription, $intIconMediaID, $index)
 	{
 		
 		$strName = addslashes($strName);	
@@ -110,8 +110,8 @@ class Quests extends Module
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$query = "INSERT INTO {$prefix}_quests 
-					(name, description, text_when_complete, icon_media_id)
-					VALUES ('{$strName}','{$strIncompleteDescription}','{$strCompleteDescription}','{$intIconMediaID}')";
+					(name, description, text_when_complete, icon_media_id, sort_index)
+					VALUES ('{$strName}','{$strIncompleteDescription}','{$strCompleteDescription}','{$intIconMediaID}','{$index}')";
 		
 		NetDebug::trace("Running a query = $query");	
 		
@@ -127,7 +127,7 @@ class Quests extends Module
      * Update a specific Event
      * @returns true if edit was done, false if no changes were made
      */
-	public function updateQuest($intGameID, $intQuestID, $strName, $strIncompleteDescription, $strCompleteDescription, $intIconMediaID)
+	public function updateQuest($intGameID, $intQuestID, $strName, $strIncompleteDescription, $strCompleteDescription, $intIconMediaID, $index)
 	{
 		
 		$strName = addslashes($strName);	
@@ -142,7 +142,8 @@ class Quests extends Module
 					name = '{$strName}',
 					description = '{$strIncompleteDescription}',
 					text_when_complete = '{$strCompleteDescription}',
-					icon_media_id = '{$intIconMediaID}'
+					icon_media_id = '{$intIconMediaID}',
+                    sort_index = '{$index}'
 					WHERE quest_id = '{$intQuestID}'";
 		
 		NetDebug::trace("Running a query = $query");	
@@ -182,5 +183,23 @@ class Quests extends Module
 		
 	}	
 	
+    public function swapSortIndex($gameId, $a, $b){
+        $prefix = Module::getPrefix($gameId);
+		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        
+        $query = "SELECT * FROM {$prefix}_quests WHERE quest_id = '{$a}' OR quest_id = '{$b}'";
+        $result = mysql_query($query);
+        $quests = array();
+        while($quest = mysql_fetch_object($result)){
+            $quests[$quest->quest_id] = $quest;
+        }
+        
+        $query = "UPDATE {$prefix}_quests SET sort_index = '{$quests[$a]->sort_index}' WHERE quest_id = '{$b}'";
+        mysql_query($query);
+        $query = "UPDATE {$prefix}_quests SET sort_index = '{$quests[$b]->sort_index}' WHERE quest_id = '{$a}'";
+        mysql_query($query);
+        
+        return new returnData(0);
+    }
 	
 }

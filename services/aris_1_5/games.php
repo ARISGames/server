@@ -372,6 +372,7 @@ class Games extends Module
 			 description text NOT NULL,
 			 text_when_complete tinytext NOT NULL COMMENT 'This is the txt that displays on the completed quests screen',
 			 icon_media_id int(10) unsigned NOT NULL default '0',
+             sort_index int(10) unsigned NOT NULL default '0',
 			 PRIMARY KEY  (quest_id)
 			)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
 		@mysql_query($query);
@@ -829,8 +830,11 @@ class Games extends Module
         
         $query = "ALTER TABLE  `{$prefix}_npc_conversations` ADD  `sort_index` INT UNSIGNED NOT NULL DEFAULT  '0'";
 		mysql_query($query);
-		NetDebug::trace("$query" . ":" . mysql_error()); 
-
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "ALTER TABLE  `{$prefix}_quests` ADD  `sort_index` INT UNSIGNED NOT NULL DEFAULT  '0'";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
         
 	}
 	
@@ -869,7 +873,7 @@ class Games extends Module
 	
 	
 	/**
-     * Create a new game
+     * Delete a new game
      * @returns returnCode = 0 on success
      */	
 	public function deleteGame($intGameID)
@@ -926,6 +930,11 @@ class Games extends Module
         
         //Delete Aug Bubbles
         $query = "DELETE FROM aug_bubbles WHERE game_id = '{$intGameID}'";
+        NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
+        //And AugBubble Media
+        $query = "DELETE FROM aug_bubble_media WHERE game_id = '{$intGameID}'";
         NetDebug::trace($query);
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	

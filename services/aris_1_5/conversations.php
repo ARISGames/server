@@ -29,7 +29,6 @@ class Conversations extends Module
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
 		return new returnData(0, $rsResult);	
-		
 	}
 
     public function swapSortIndex($gameId, $npcId, $a, $b){
