@@ -16,9 +16,9 @@ class Nodes extends Module
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		
-		$query = "SELECT * FROM {$prefix}_nodes";
-		$rsResult = @mysql_query($query);
+		$query = "SELECT {$prefix}_nodes.*, {$prefix}_npc_conversations.npc_id, {$prefix}_npcs.name FROM {$prefix}_nodes LEFT JOIN {$prefix}_npc_conversations ON {$prefix}_nodes.node_id = {$prefix}_npc_conversations.node_id LEFT JOIN {$prefix}_npcs ON {$prefix}_npc_conversations.npc_id = {$prefix}_npcs.npc_id ORDER BY npc_id DESC";
+		//^ Where mysql boys become mysql men 
+        $rsResult = @mysql_query($query);
 		
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 		return new returnData(0, $rsResult);	
