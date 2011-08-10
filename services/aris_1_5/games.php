@@ -303,7 +303,7 @@ class Games extends Module
   			origin_timestamp timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
             weight INT UNSIGNED NOT NULL DEFAULT  '0',
             url TINYTEXT NOT NULL,
-            type ENUM(  'NORMAL',  'ATTRIB',  'URL' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  'NORMAL',
+            type ENUM(  'NORMAL',  'ATTRIB',  'URL', 'NOTE') CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  'NORMAL',
 			PRIMARY KEY  (item_id)
 			)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
 		NetDebug::trace($query);
@@ -836,6 +836,10 @@ class Games extends Module
 		NetDebug::trace("$query" . ":" . mysql_error());
         
         $query = "ALTER TABLE  `{$prefix}_quests` ADD  `sort_index` INT UNSIGNED NOT NULL DEFAULT  '0'";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "ALTER TABLE  `{$prefix}_items` CHANGE  `type`  `type` ENUM(  'NORMAL',  'ATTRIB',  'URL',  'NOTE' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  'NORMAL'";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
