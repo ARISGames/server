@@ -110,7 +110,7 @@
          * @returns a returnData object containing the new augBubble identifier
          * @see returnData
          */
-        public static function createAugBubble($gameId, $name, $desc, $iconMediaId, $mediaId, $alignMediaId)
+        public static function createAugBubble($gameId, $name, $desc, $iconMediaId)
         {
             $name = addslashes($name);	
             
@@ -118,10 +118,8 @@
             if (!$prefix) return new returnData(1, NULL, "invalid game id");
             
             $query = "INSERT INTO aug_bubbles 
-            (game_id, name, description, icon_media_id, media_id, alignment_media_id)
-            VALUES ('{$gameId}', '{$name}', 
-            '{$desc}',
-            '{$iconMediaId}', '{$mediaId}', '{$alignMediaId}')";
+            (game_id, name, description, icon_media_id)
+            VALUES ('{$gameId}', '{$name}', '{$desc}', '{$iconMediaId}')";
             
             NetDebug::trace("createAugBubble: Running a query = $query");	
             
@@ -141,13 +139,11 @@
          * @param string $name The new name
          * @param string $desc The augBubble to reach
          * @param integer $iconMediaId The new icon media identifier
-         * @param integer $mediaId The augBubble's media identifier
-         * @param integer $alignMediaId The augBubble's align media identifier
          * @return returnData
          * @returns a returnData object containing a TRUE if an change was made, FALSE otherwise
          * @see returnData
          */
-        public static function updateAugBubble($gameId, $augBubbleId, $name, $desc, $iconMediaId, $mediaId, $alignMediaId)
+        public static function updateAugBubble($gameId, $augBubbleId, $name, $desc, $iconMediaId)
         {
             $prefix = Module::getPrefix($gameId);
             
@@ -158,9 +154,7 @@
             $query = "UPDATE aug_bubbles 
             SET name = '{$name}', 
             description = '{$desc}', 
-            icon_media_id = '{$iconMediaId}', 
-            media_id = '{$mediaId}', 
-            alignment_media_id = '{$alignMediaId}' 
+            icon_media_id = '{$iconMediaId}'
             WHERE aug_bubble_id = '{$augBubbleId}'";
             
             NetDebug::trace("updateAugBubble: Running a query = $query");	

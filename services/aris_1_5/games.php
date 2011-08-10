@@ -701,11 +701,14 @@ class Games extends Module
         mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
-        /*Dont do this until we get the aug_bubble editor stuff completed on the editor
-        $query = "alter table aug_bubbles drop column media_id";
+        $query = "ALTER TABLE `aug_bubbles` DROP `media_id`";
         mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());     
-        */
+        
+        $query = "ALTER TABLE `aug_bubbles` DROP `alignment_media_id`";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error()); 
+        
         
 		return new returnData(0, FALSE);
 	}
