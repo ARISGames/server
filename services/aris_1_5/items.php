@@ -230,10 +230,10 @@ class Items extends Module
         //Create the Item
         $query = "INSERT INTO {$prefix}_items 
 					(name, description, media_id, is_attribute, dropable, destroyable,
-					creator_player_id, origin_latitude, origin_longitude, icon_media_id, fileType)
-					VALUES ('{$name}', 
-							'{$description}',
-							'{$newMediaID}', 
+					creator_player_id, origin_latitude, origin_longitude, icon_media_id, type)
+					VALUES ('$name', 
+							'$description',
+							'$newMediaID', 
                             '',
 							'$droppable',
 							'$destroyable',
