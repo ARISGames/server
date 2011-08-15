@@ -295,7 +295,7 @@ class Items extends Module
      * @see uploadHandler.php
      */
 	public static function createItemAndPlaceOnMap($gameId, $playerId, $name, $description, 
-								$fileName, $droppable, $destroyable, $latitude, $longitude)
+								$fileName, $droppable, $destroyable, $latitude, $longitude, $fileType="NORMAL")
 	{
 		$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
@@ -303,28 +303,50 @@ class Items extends Module
 		$name = addslashes($name);
 		$description = ($description);
 		
-		//Create the Media
-		$newMediaResultData = Media::createMedia($gameId, $name, $fileName, 0);
-		$newMediaID = $newMediaResultData->data->media_id;
-		
-		//Does game allow players to drop items?
+        //Does game allow players to drop items?
 		if ($droppable) { 
 			$game = Games::getGame($gameId);
 			$droppable = $game->data->allow_player_created_locations;
 		}
+        
+        if($fileType != "NOTE")
+        {
+            //Create the Media
+            $newMediaResultData = Media::createMedia($gameId, $name, $fileName, 0);
+            $newMediaID = $newMediaResultData->data->media_id;
+            
+            $type = Media::getMediaType($fileName);
+            if($type == "Image"){
+                $iconNum = Module::kPLAYER_CREATED_ITEM_PHOTO_ICON_NUM;
+            }
+            else if($type == "Audio"){
+                $iconNum = Module::kPLAYER_CREATED_ITEM_AUDIO_ICON_NUM;
+            }
+            else if($type == "Video"){
+                $iconNum = Module::kPLAYER_CREATED_ITEM_VIDEO_ICON_NUM;
+            }
+            else{
+                $iconNum = Module::kPLAYER_CREATED_ITEM_DEFAULT_ICON_NUM;
+            }
+        }
+        else
+        {
+            $newMediaId = 0;
+            $iconNum = Module::kPLAYER_CREATED_ITEM_DEFAULT_ICON_NUM;
+        }
 		
-		$iconNum = Module::kPLAYER_CREATED_ITEM_DEFAULT_ICON_NUM;
+		
 		//Create the Item
 		$query = "INSERT INTO {$prefix}_items 
 					(name, description, media_id, dropable, destroyable,
-					creator_player_id, origin_latitude, origin_longitude, icon_media_id)
+					creator_player_id, origin_latitude, origin_longitude, icon_media_id, type)
 					VALUES ('{$name}', 
 							'{$description}',
 							'{$newMediaID}', 
 							'$droppable',
 							'$destroyable',
 							'$playerId', '$latitude', '$longitude',
-							'$iconNum')";
+							'$iconNum', '$fileType')";
 		
 		NetDebug::trace("createItem: Running a query = $query");	
 		
