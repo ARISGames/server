@@ -177,7 +177,7 @@
             return new returnData(0);
         }
         
-        public static function updateAugBubbleMediaIndex($intAugId, $intMediaId, $intGameId, $intIndex)
+        public static function updateAugBubbleMediaIndex($intAugId, $intMediaId, $stringName, $intGameId, $intIndex)
         {
             $prefix = Module::getPrefix($gameId);
             
@@ -190,14 +190,13 @@
             }
              */
             
-            $query = "INSERT INTO aug_bubble_media (aug_bubble_id, media_id, game_id) VALUES ('{$intAugId}', '{$intMediaId}', '{$intGameId}')";
+            $query = "INSERT INTO aug_bubble_media (aug_bubble_id, media_id, text, game_id) VALUES ('{$intAugId}', '{$intMediaId}', '{$stringName}', '{$intGameId}')";
             NetDebug::trace($query);
             mysql_query($query);
             
             if (mysql_error()) return new returnData(1, NULL, mysql_error());
 
             return new returnData(0);
-
         }
         
         /**
