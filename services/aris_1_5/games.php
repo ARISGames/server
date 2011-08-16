@@ -99,6 +99,46 @@ class Games extends Module
 		
     }	
     
+    public function getTabBarItemsForGame($intGameId)
+    {
+        $query = "SELECT * FROM game_tab_data WHERE game_id = '{$intGameId}' ORDER BY tab_index ASC";
+        $result = mysql_query($query);
+        
+        if(mysql_num_rows($result) == 0){
+            $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$intGameId}', 'QUESTS', '1')";
+            @mysql_query($query);
+            $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$intGameId}', 'GPS', '2')";
+            @mysql_query($query);
+            $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$intGameId}', 'INVENTORY', '3')";
+            @mysql_query($query);
+            $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$intGameId}', 'QR', '4')";
+            @mysql_query($query);
+            $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$intGameId}', 'PLAYER', '5')";
+            @mysql_query($query);
+            $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$intGameId}', 'CAMERA',  '6')";
+            @mysql_query($query);
+            $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$intGameId}', 'MICROPHONE',  '7')";
+            @mysql_query($query);
+            $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$intGameId}', 'NOTE',  '8')";
+            @mysql_query($query);
+            $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$intGameId}', 'PICKGAME',  '9')";
+            @mysql_query($query);
+            $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$intGameId}', 'LOGOUT',  '10')";
+            @mysql_query($query);
+            $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$intGameId}', 'STARTOVER',  '11')";
+            @mysql_query($query);
+            $query = "SELECT * FROM game_tab_data WHERE game_id = '{$intGameId}' ORDER BY tab_index ASC";
+            $result = mysql_query($query);
+        }
+        return new returnData(0, $result, NULL);
+    }
+    
+    public function saveTab($intGameId, $stringTabType, $intIndex)
+    {
+        $query = "UPDATE game_tab_data SET tab_index = '{$intIndex}' WHERE game_id = '{$intGameId}' AND tab = '{$stringTabType}'";
+        mysql_query($query);
+        return new returnData(0);
+    }
     
 	
 	/**
@@ -485,27 +525,27 @@ class Games extends Module
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(6, NULL, 'cannot create folder contents table: ' . mysql_error());	
         
-        $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`index`) VALUES ('{$strShortName}', 'QUESTS', '1')";
+        $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'QUESTS', '1')";
 		@mysql_query($query);
-        $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`index`) VALUES ('{$strShortName}', 'GPS', '2')";
+        $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'GPS', '2')";
 		@mysql_query($query);
-        $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`index`) VALUES ('{$strShortName}', 'INVENTORY', '3')";
+        $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'INVENTORY', '3')";
 		@mysql_query($query);
-        $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`index`) VALUES ('{$strShortName}', 'QR', '4')";
+        $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'QR', '4')";
 		@mysql_query($query);
-        $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`index`) VALUES ('{$strShortName}', 'PLAYER', '5')";
+        $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'PLAYER', '5')";
 		@mysql_query($query);
-        $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`index`) VALUES ('{$strShortName}', 'CAMERA',  '6')";
+        $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'CAMERA',  '6')";
 		@mysql_query($query);
-        $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`index`) VALUES ('{$strShortName}', 'MICROPHONE',  '7')";
+        $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'MICROPHONE',  '7')";
 		@mysql_query($query);
-        $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`index`) VALUES ('{$strShortName}', 'NOTE',  '8')";
+        $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'NOTE',  '8')";
 		@mysql_query($query);
-        $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`index`) VALUES ('{$strShortName}', 'PICKGAME',  '9')";
+        $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'PICKGAME',  '9')";
 		@mysql_query($query);
-        $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`index`) VALUES ('{$strShortName}', 'LOGOUT',  '10')";
+        $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'LOGOUT',  '10')";
 		@mysql_query($query);
-        $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`index`) VALUES ('{$strShortName}', 'STARTOVER',  '11')";
+        $query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'STARTOVER',  '11')";
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(6, NULL, 'cannot create game_tab_data table- ' . mysql_error());	
 
@@ -736,7 +776,7 @@ class Games extends Module
         $query = "CREATE TABLE `game_tab_data` (
                                               `game_id` INT UNSIGNED NOT NULL ,
                                               `tab` ENUM(  'STARTOVER',  'LOGOUT',  'PICKGAME',  'GPS',  'NEARBY',  'QUESTS',  'INVENTORY',  'PLAYER',  'QR',  'CAMERA',  'MICROPHONE',  'NOTE' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL ,
-                                              `index` INT UNSIGNED NOT NULL COMMENT  '0 for disabled'
+                                              `tab_index` INT UNSIGNED NOT NULL COMMENT  '0 for disabled'
                                               ) ENGINE = INNODB CHARACTER SET utf8 COLLATE utf8_unicode_ci";
         mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error()); 
@@ -980,6 +1020,12 @@ class Games extends Module
         
         //Delete WebHooks
         $query = "DELETE FROM web_hooks WHERE game_id = '{$intGameID}'";
+        NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
+        
+        //Delete Tab Bar information
+        $query = "DELETE FROM game_tab_data WHERE game_id = '{$intGameID}'";
         NetDebug::trace($query);
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
@@ -1397,7 +1443,7 @@ class Games extends Module
         $query = "SELECT * FROM game_tab_data WHERE game_id = {$prefix}";
         $result = mysql_query($query);
         while($row = mysql_fetch_object($result)){
-            $query = "INSERT INTO game_tab_data (game_id, tab, index) VALUES ('{$newPrefix}', '{$row->tab}', '{$row->index}')";
+            $query = "INSERT INTO game_tab_data (game_id, tab, tab_index) VALUES ('{$newPrefix}', '{$row->tab}', '{$row->index}')";
             mysql_query($query);
         }
         
