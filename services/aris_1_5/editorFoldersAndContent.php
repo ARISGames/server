@@ -77,8 +77,21 @@ class EditorFoldersAndContent extends Module
 		return new returnData(0, $content);
 		
 	}	
-	
-	
+    
+    public function duplicateObject($intGameID, $objContentId)
+    {
+        $prefix = Module::getPrefix($intGameID);
+		if (!$prefix) return new returnData(3, NULL, "invalid game id");
+		
+		$query = "SELECT * FROM {$prefix}_folder_contents WHERE object_content_id = '{$objContentId}'";
+        $result = mysql_query($query);
+        $row = mysql_fetch_object($result);
+        
+        $query = "INSERT INTO {$prefix}_folder_contents (folder_id, content_type, content_id, previous_id) VALUES ('{$row->folder_id}', '{$row->content_type}', '{$row->content_id}', '{$row->previous_id}')";
+        mysql_query($query);
+        
+        return new returnData(0, $result);
+    }
 	
 	/**
      * Helper Function to lookup the details of the node/npc/item including media details

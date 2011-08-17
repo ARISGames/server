@@ -341,12 +341,99 @@ class Npcs extends Module
 		$query = "DELETE FROM {$prefix}_npc_conversations WHERE conversation_id = {$intConverationID}";
 		
 		$rsResult = @mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+		if (mysql_error()) return new returnData(1, NULL, "SQL Error");
 		
 		if (mysql_affected_rows()) return new returnData(0);
 		else return new returnData(2, 'invalid conversation id');
 		
 	}	
+    
+    
+    public function getNpcsInfoForGameIdFormattedForArisConvoOutput($intGameId)
+    {
+        $prefix = Module::getPrefix($intGameId);
+		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        $characters = array();
+        
+        $query = "SELECT * FROM {$prefix}_npcs";
+        $npcs = @mysql_query($query);
+		if (mysql_error()) return new returnData(1, NULL, mysql_error);
+        
+        while($npc = mysql_fetch_object($npcs))
+        {
+            $character = new stdClass();
+            $character->name = $npc->name;
+            $scripts = array();
+            
+            //Greeting
+            $script = new stdClass();
+            $script->option = "Greeting";
+            $script->content = $npc->text;
+            $script->req = "(start conversation)";
+            $script->exchange = "n/a";
+            $scripts[] = $script;
+            
+            //Convos
+            $query = "SELECT * FROM {$prefix}_npc_conversations WHERE npc_id = '{$npc->npc_id}'";
+            $convos = @mysql_query($query);
+            if (mysql_error()) return new returnData(1, NULL, mysql_error);
+            while($convo = mysql_fetch_object($convos))
+            {
+                $script = new stdClass();
+                $script->option = $convo->text;
+                $query = "SELECT * FROM {$prefix}_nodes WHERE node_id = '{$convo->node_id}'";
+                $nodeRow = @mysql_query($query);
+                if (mysql_error()) return new returnData(1, NULL, mysql_error);
+                $node = mysql_fetch_object($nodeRow);
+                $script->content = $node->text;
+                
+                $requirements = array();
+                $query = "SELECT * FROM {$prefix}_requirements WHERE content_type = 'Node' AND content_id = '{$node->node_id}'";
+                $reqs = @mysql_query($query);
+                if (mysql_error()) return new returnData(1, NULL, mysql_error);
+                while($reqObj = mysql_fetch_object($reqs))
+                {
+                    $req = new stdClass();
+                    $req->requirement = $reqObj->requirement;
+                    $req->boole = $reqObj->boolean_operator;
+                    $req->rDetail1 = $reqObj->requirement_detail_1;
+                    $req->rDetail2 = $reqObj->requirement_detail_2;
+                    $req->rDetail3 = $reqObj->requirement_detail_3;
+                    $requirements[] = $req;
+                }
+                $script->req = $requirements;
+                
+                $exchanges = array();
+                $query = "SELECT * FROM {$prefix}_player_state_changes WHERE event_type = 'VIEW_NODE' AND event_detail = '{$node->node_id}'";
+                $exchngs = @mysql_query($query);
+                if (mysql_error()) return new returnData(1, NULL, mysql_error);
+                while($exchangeObj = mysql_fetch_object($exchngs))
+                {
+                    $exchange = new stdClass();
+                    $exchange->action = $exchangeObj->action;
+                    $exchange->obj = $exchangeObj->action_detail;
+                    $exchange->amount = $exchangeObj->action_amount;
+                    $exchanges[] = $exchange;
+                }
+                $script->exchange = $exchanges;
+                $scripts[] = $script;
+            }
+            
+            //Closing
+            $script = new stdClass();
+            $script->option = "Closing";
+            $script->content = $npc->closing;
+            $script->req = "(end conversation)";
+            $script->exchange = "n/a";
+            $scripts[] = $script;
+            
+            $character->scripts = $scripts;
+            $characters[] = $character;
+        }
+        
+        return $characters;
+    }
+    
 
 	
 	
