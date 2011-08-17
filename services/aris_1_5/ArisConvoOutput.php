@@ -1,11 +1,17 @@
 <html>
 <head>
 <?php
-	require_once('../../config.class.php');
+    require_once('../../config.class.php');
 	require_once('npcs.php');
+    
+    $conn = @mysql_connect(Config::dbHost, Config::dbUser, Config::dbPass);
+    mysql_select_db (Config::dbSchema);
+    mysql_query("set names utf8");
+    mysql_query("set charset set utf8");
+    
 	$gameId = $_GET['gameId'];
 	echo "Game Id: {$gameId}<br />";
-	$characters = Npcs::getNpcsInfoForGameIdFormattedForArisConvoOutput($gameId);
+	$characters = Npcs::getNpcsInfoForGameIdFormattedForArisConvoOutput(intval($gameId));
 ?>
 </head>
 <body>
@@ -13,8 +19,8 @@
 <?php
 foreach($characters as $character)
 {
-	echo "<tr><td>$character->name</td></td>";
-	echo "<tr><td>Option</td><td>Script</td><td>Requirements</td><td>Exchanges</td></tr>";
+	echo "<tr><td colspan='4'><b>$character->name</b></td></td>";
+	echo "<tr><td><b>Option</b></td><td><b>Script</b></td><td><b>Requirements</b></td><td><b>Exchanges</b></td></tr>";
 	foreach($character->scripts as $script)
 	{
 		echo "<tr><td>$script->option</td><td>$script->content</td><td><ul>";
@@ -31,6 +37,7 @@ foreach($characters as $character)
 		}
 		echo "</ul></td></tr>";
 	}
+    echo "<tr><td colspan='4'>-</td></tr>";
 }
 ?>
 </table>
