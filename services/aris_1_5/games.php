@@ -1390,12 +1390,10 @@ class Games extends Module
         $rs = mysql_query($query);
         $editors = mysql_fetch_object($rs);
         
-        NetDebug::trace("Oogaboo");
         $newGameId = Games::createGame($editors->editor_id, $game->name . "_copy", $game->description, $game->pc_media_id, $game->icon_media_id, $game->media_id,
                           $game->is_locational, $game->ready_for_public, 
                           $game->allow_player_created_locations, $game->delete_player_locations_on_reset,
                           $game->on_launch_node_id, $game->game_complete_node_id, $game->inventory_weight_cap);
-        NetDebug::trace("Oogasdaboo");
 
         
         while($editors = mysql_fetch_object($rs)){

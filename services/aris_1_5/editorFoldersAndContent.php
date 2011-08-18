@@ -84,13 +84,62 @@ class EditorFoldersAndContent extends Module
 		if (!$prefix) return new returnData(3, NULL, "invalid game id");
 		
 		$query = "SELECT * FROM {$prefix}_folder_contents WHERE object_content_id = '{$objContentId}'";
-        $result = mysql_query($query);
+        $result = @mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error:". mysql_error());
         $row = mysql_fetch_object($result);
-        
-        $query = "INSERT INTO {$prefix}_folder_contents (folder_id, content_type, content_id, previous_id) VALUES ('{$row->folder_id}', '{$row->content_type}', '{$row->content_id}', '{$row->previous_id}')";
+
+        if($row->content_type == "Npc") {
+            $query = "INSERT INTO {$prefix}_npcs (name, description, text, closing, media_id, icon_media_id) SELECT name, description, text, closing, media_id, icon_media_id FROM {$prefix}_npcs WHERE npc_id = '{$row->content_id}'";
+            @mysql_query($query);
+            if (mysql_error()) return new returnData(3, NULL, "SQL Error:". mysql_error());
+            $newContentId = mysql_insert_id();
+            $query = "SELECT * FROM {$prefix}_npc_conversations WHERE npc_id = '{$row->content_id}'";
+            $result = @mysql_query($query);
+            if (mysql_error()) return new returnData(3, NULL, "SQL Error:". mysql_error());
+            while($npcConvo = mysql_fetch_object($result))
+            {
+                $query = "INSERT INTO {$prefix}_nodes (title, text, opt1_text, opt1_node_id, opt2_text, opt2_node_id, opt3_text, opt3_node_id, require_answer_incorrect_node_id, require_answer_string, require_answer_correct_node_id, media_id, icon_media_id) SELECT title, text, opt1_text, opt1_node_id, opt2_text, opt2_node_id, opt3_text, opt3_node_id, require_answer_incorrect_node_id, require_answer_string, require_answer_correct_node_id, media_id, icon_media_id FROM {$prefix}_nodes WHERE node_id = '{$npcConvo->node_id}'";
+                @mysql_query($query);
+                if (mysql_error()) return new returnData(3, NULL, "SQL Error:". mysql_error());
+                $newNodeId = mysql_insert_id();
+                
+                $query = "INSERT INTO {$prefix}_npc_conversations (npc_id, node_id, text, sort_index) VALUES ('{$newContentId}', '{$newNodeId}', '{$npcConvo->text}', '{$npcConvo->sort_index}')";
+                @mysql_query($query);
+                if (mysql_error()) return new returnData(3, NULL, "SQL Error:". mysql_error());
+            }
+        }
+        else if($row->content_type == "Item") {
+            $query = "INSERT INTO {$prefix}_items (name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight) SELECT name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight FROM {$prefix}_items WHERE item_id = '{$row->content_id}'";
+            mysql_query($query);
+            $newContentId = mysql_insert_id();
+        }
+        else if($row->content_type == "Node") {
+            $query = "INSERT INTO {$prefix}_nodes (title, text, opt1_text, opt1_node_id, opt2_text, opt2_node_id, opt3_text, opt3_node_id, require_answer_incorrect_node_id, require_answer_string, require_answer_correct_node_id, media_id, icon_media_id) SELECT title, text, opt1_text, opt1_node_id, opt2_text, opt2_node_id, opt3_text, opt3_node_id, require_answer_incorrect_node_id, require_answer_string, require_answer_correct_node_id, media_id, icon_media_id FROM {$prefix}_nodes WHERE node_id = '{$row->content_id}'";
+            mysql_query($query);
+            $newContentId = mysql_insert_id();
+        }
+        else if($row->content_type == "WebPage") {
+            $query = "INSERT INTO web_pages (game_id, name, url, icon_media_id) SELECT game_id, name, url, icon_media_id FROM web_pages WHERE web_page_id = '{$row->content_id}'";
+            mysql_query($query);
+            $newContentId = mysql_insert_id();
+        }
+        else if($row->content_type == "AugBubble") {
+            $query = "INSERT INTO aug_bubbles (game_id, name, description, icon_media_id) SELECT game_id, name, description, icon_media_id FROM aug_bubbles WHERE aug_bubble_id = '{$row->content_id}'";
+            mysql_query($query);
+            $newContentId = mysql_insert_id();
+            $query = "SELECT * FROM aug_bubble_media WHERE aug_bubble_id = '{$row->content_id}'";
+            $result = mysql_query($query);
+            while($augMedia = mysql_fetch_object($result))
+            {
+                $query = "INSERT INTO aug_bubble_media (aug_bubble_id, media_id, text, game_id) VALUES ('{$newContentId}', '{$augMedia->media_id}', '{$augMedia->text}', '{$prefix}')";
+                mysql_query($query);
+            }
+        }
+
+        $query = "INSERT INTO {$prefix}_folder_contents (folder_id, content_type, content_id, previous_id) VALUES ('{$row->folder_id}', '{$row->content_type}', '{$newContentId}', '{$row->previous_id}')";
         mysql_query($query);
         
-        return new returnData(0, $result);
+        return new returnData(0);
     }
 	
 	/**
