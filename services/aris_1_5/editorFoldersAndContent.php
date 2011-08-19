@@ -109,7 +109,7 @@ class EditorFoldersAndContent extends Module
             }
         }
         else if($row->content_type == "Item") {
-            $query = "INSERT INTO {$prefix}_items (name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight) SELECT name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight FROM {$prefix}_items WHERE item_id = '{$row->content_id}'";
+            $query = "INSERT INTO {$prefix}_items (name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight, url, type) SELECT name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight, url, type FROM {$prefix}_items WHERE item_id = '{$row->content_id}'";
             mysql_query($query);
             $newContentId = mysql_insert_id();
         }

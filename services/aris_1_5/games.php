@@ -1408,7 +1408,7 @@ class Games extends Module
         $query = "INSERT INTO {$newPrefix}_folder_contents (object_content_id, folder_id, content_type, content_id, previous_id) SELECT object_content_id, folder_id, content_type, content_id, previous_id FROM {$prefix}_folder_contents";
         mysql_query($query);
         
-        $query = "INSERT INTO {$newPrefix}_items (item_id, name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight) SELECT item_id, name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight FROM {$prefix}_items";
+        $query = "INSERT INTO {$newPrefix}_items (item_id, name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight, url, type) SELECT item_id, name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight, url, type FROM {$prefix}_items";
         mysql_query($query);
         
         $query = "INSERT INTO {$newPrefix}_locations (location_id, name, description, latitude, longitude, error, type, type_id, icon_media_id, item_qty, hidden, force_view, allow_quick_travel) SELECT location_id, name, description, latitude, longitude, error, type, type_id, icon_media_id, item_qty, hidden, force_view, allow_quick_travel FROM {$prefix}_locations";
