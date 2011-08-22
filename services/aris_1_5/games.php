@@ -781,11 +781,38 @@ class Games extends Module
         mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error()); 
         
+        $query = "CREATE TABLE `notes` (
+        `game_id` INT UNSIGNED NOT NULL ,
+        `note_id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY ,
+        `owner_id` INT UNSIGNED NOT NULL ,
+        `title` TINYTEXT NOT NULL ,
+        `text` MEDIUMTEXT NOT NULL ,
+        `ave_rating` FLOAT NOT NULL DEFAULT  '0.0',
+        `num_ratings` INT UNSIGNED NOT NULL DEFAULT  '0',
+        `shared` TINYINT NOT NULL DEFAULT  '0'
+        ) ENGINE = INNODB CHARACTER SET utf8 COLLATE utf8_unicode_ci";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error()); 
         
-		return new returnData(0, FALSE);
+        $query = "CREATE TABLE  `ARIS`.`note_content` (
+        `note_id` INT NOT NULL ,
+        `title` TINYTEXT NOT NULL ,
+        `media_id` INT NOT NULL
+        ) ENGINE = INNODB CHARACTER SET utf8 COLLATE utf8_unicode_ci";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error()); 
+        
+        $query = "CREATE TABLE  `ARIS`.`note_comments` (
+        `note_id` INT NOT NULL ,
+        `player_id` INT NOT NULL ,
+        `rating` INT NOT NULL ,
+        `text` MEDIUMTEXT NOT NULL
+        ) ENGINE = INNODB CHARACTER SET utf8 COLLATE utf8_unicode_ci";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error()); 
+        
+        return new returnData(0, FALSE);
 	}
-	
-	
 	
 	
 	
