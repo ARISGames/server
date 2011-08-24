@@ -9,13 +9,60 @@ require_once("editorFoldersAndContent.php");
 class Notes extends Module
 {
     //Returns note_id
-	function createNote($gameId, $playerId, $title, $text, $shared)
+	function createNewNote($gameId, $playerId)
     {
-        $query = "INSERT INTO notes (game_id, owner_id, title, text, shared) VALUES ('{$gameId}', '{$playerId}', '{$title}', '{$text}', '{$shared}')";
+        $query = "INSERT INTO notes (game_id, owner_id) VALUES ('{$gameId}', '{$playerId}')";
         @mysql_query($query);
 		if (mysql_error()) return new returnData(1, NULL, mysql_error());
         
         return new returnData(0, mysql_insert_id());
+    }
+    
+    function updateNote($noteId, $title, $shared)
+    {
+        $query = "UPDATE notes SET title = '{$title}', shared = '{$shared}' WHERE note_id = '{$noteId}'";
+        @mysql_query($query);
+		if (mysql_error()) return new returnData(1, NULL, mysql_error());
+        
+        return new returnData(0);
+    }
+    
+    function addContentToNote($noteId, $mediaId, $type, $text)
+    {
+        $query = "INSERT INTO note_content (note_id, media_id, type, text) VALUES ('{$noteId}', '{$mediaId}', '{$type}', '{$text}')";
+        $result = @mysql_query($query);
+        if (mysql_error()) return new returnData(1, NULL, mysql_error());
+        
+        return new returnData(0);
+    }
+    
+    function addContentToNoteFromFileName($gameId, $noteId, $filename, $name="playerUplaodedContent")
+    {
+        $newMediaResultData = Media::createMedia($gameId, $name, $fileName, 0);
+        $newMediaId = $newMediaResultData->data->media_id;
+        
+        return Notes::addContentToNote($noteId, $newMediaId, 'MEDIA', "");
+    }
+    
+    function addCommentToNote($gameId, $playerId, $noteId, $rating)
+    {
+        $query = "INSERT INTO notes (parent_note_id, player_id, parent_rating, text) VALUES ('{$noteId}', '{$playerId}', '{$rating}', '{$text}')";
+        $result = @mysql_query($query);
+        if (mysql_error()) return new returnData(1, NULL, mysql_error());
+        $commentId = mysql_insert_id();
+        
+        $query = "SELECT ave_rating, num_ratings FROM notes WHERE note_id = '{$noteId}'";
+        $result = @mysql_query($query);
+        if (mysql_error()) return new returnData(1, NULL, mysql_error());
+        
+        if($aveComment = mysql_fetch_object($result))
+        {
+            $newAve = (($aveComment->num_ratings)/($aveComment->num_ratings + 1) * $aveComment->ave_rating) + (1/($aveComment->num_ratings + 1) * $rating);
+            $query = "UPDATE notes SET ave_rating = '{$newAve}', num_ratings = '" . ($aveComment->num_ratings + 1) . "' WHERE note_id = '{$noteId}'";
+            $result = @mysql_query($query);
+            if (mysql_error()) return new returnData(1, NULL, mysql_error());
+        }
+        return new returnData(0, $commentId);
     }
     
     function getNotesForGame($gameId)
@@ -48,6 +95,12 @@ class Notes extends Module
         return new returnData(0, $notes);
     }
     
+    function getNoteById($noteId)
+    {
+        $note = Notes::getFullNoteObject($noteId);
+        return new returnData(0, $note);
+    }
+    
     function getFullNoteObject($noteId)
     {
         $query = "SELECT * FROM notes WHERE note_id = '{$noteId}'";
@@ -57,6 +110,7 @@ class Notes extends Module
         {
             $note->contents = Notes::getNoteContents($noteId);
             $note->comments = Notes::getNoteComments($noteId);
+            $note->icon_media_id = 5;
             return $note;
         }
         return;
@@ -79,13 +133,14 @@ class Notes extends Module
     
     function getNoteComments($noteId)
     {
-        $query = "SELECT * FROM note_comments WHERE note_id = '{$noteId}'";
+        $query = "SELECT note_id FROM notes WHERE parent_note_id = '{$noteId}'";
         $resultA = @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         
         $comments = array();
-        while($comment = mysql_fetch_object($resultA))
+        while($commentNoteId = mysql_fetch_object($resultA))
         {
+            $comment = Notes::getFullNoteObject($commentNoteId);
             $query = "SELECT user_name FROM players WHERE player_id = '{$comment->player_id}'";
             $resultB = @mysql_query($query);
             if (mysql_error()) return new returnData(1, NULL, mysql_error());
@@ -96,35 +151,5 @@ class Notes extends Module
             }
         }
         return $comments;
-    }
-    
-    function addContentToNote($noteId, $title, $mediaId)
-    {
-        $query = "INSERT INTO note_content (note_id, title, media_id) VALUES ('{$noteId}', '{$title}', '{$mediaId}')";
-        $result = @mysql_query($query);
-        if (mysql_error()) return new returnData(1, NULL, mysql_error());
-        
-        return new returnData(0);
-    }
-    
-    function addCommentToNote($noteId, $playerId, $rating, $text)
-    {
-        $query = "INSERT INTO note_comments (note_id, player_id, rating, text) VALUES ('{$noteId}', '{$playerId}', '{$rating}', '{$text}')";
-        $result = @mysql_query($query);
-        if (mysql_error()) return new returnData(1, NULL, mysql_error());
-        
-        $query = "SELECT ave_rating, num_ratings FROM notes WHERE note_id = '{$noteId}'";
-        $result = @mysql_query($query);
-        if (mysql_error()) return new returnData(1, NULL, mysql_error());
-        
-        if($aveComment = mysql_fetch_object($result))
-        {
-            $newAve = (($aveComment->num_ratings)/($aveComment->num_ratings + 1) * $aveComment->ave_rating) + (1/($aveComment->num_ratings + 1) * $rating);
-            $query = "UPDATE notes SET ave_rating = '{$newAve}', num_ratings = '" . ($aveComment->num_ratings + 1) . "' WHERE note_id = '{$noteId}'";
-            $result = @mysql_query($query);
-            if (mysql_error()) return new returnData(1, NULL, mysql_error());
-        }
-        
-        return new returnData(0);
     }
 }

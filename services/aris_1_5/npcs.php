@@ -433,8 +433,4 @@ class Npcs extends Module
         
         return $characters;
     }
-    
-
-	
-	
 }

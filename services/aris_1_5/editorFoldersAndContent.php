@@ -6,6 +6,7 @@ require_once("npcs.php");
 require_once("media.php");
 require_once("webpages.php");
 require_once("augbubbles.php");
+require_once("notes.php");
 
 
 class EditorFoldersAndContent extends Module
@@ -75,8 +76,7 @@ class EditorFoldersAndContent extends Module
 		
 		$content = self::hydrateContent($content, $intGameID);
 		return new returnData(0, $content);
-		
-	}	
+	}
     
     public function duplicateObject($intGameID, $objContentId)
     {
@@ -173,6 +173,10 @@ class EditorFoldersAndContent extends Module
 				$contentDetails = AugBubbles::getAugBubble($intGameID,$content->content_id)->data;
 				$content->name = $contentDetails->name;
 			}
+            else if ($content->content_type == 'PlayerNote') {
+                $contentDetails = Notes::getNoteById($content->content_id)->data;
+                $content->name = $contentDetails->title;
+            }
 			
 			//Get the Icon Media
 			$mediaHelper = new Media;
@@ -181,7 +185,7 @@ class EditorFoldersAndContent extends Module
 			$content->icon_media = $media;
 			$content->icon_media_id = $contentDetails->icon_media_id;
 
-        if ($content->content_type != 'WebPage'){
+        if ($content->content_type != 'WebPage' && $content->content_type != 'PlayerNote' && $content->content_type != 'AugBubble'){
 			//Get the Media
 			$mediaHelper = new Media;
 			$mediaReturnObject = $mediaHelper->getMediaObject($intGameID, $contentDetails->media_id);
@@ -189,6 +193,7 @@ class EditorFoldersAndContent extends Module
 			$content->media = $media;
 			$content->media_id = $contentDetails->media_id;
         }
+        /* Depricated
         if ($content->content_type == 'AugBubble'){
 			//Get the Alignment Media
 			$mediaHelper = new Media;
@@ -197,6 +202,7 @@ class EditorFoldersAndContent extends Module
 			$content->alignment_media = $alignmentMedia;
 			$content->alignment_media_id = $alignmentMedia->media_id;
         }
+         */
 	
 			return $content;
 	}

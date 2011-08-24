@@ -794,22 +794,33 @@ class Games extends Module
         mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error()); 
         
-        $query = "CREATE TABLE  `ARIS`.`note_content` (
-        `note_id` INT NOT NULL ,
-        `title` TINYTEXT NOT NULL ,
-        `media_id` INT NOT NULL
-        ) ENGINE = INNODB CHARACTER SET utf8 COLLATE utf8_unicode_ci";
+        $query = "CREATE TABLE `note_content` (
+        `note_id` int(11) NOT NULL,
+        `media_id` int(11) NOT NULL,
+        PRIMARY KEY (`note_id`,`media_id`),
+        KEY `note_id` (`note_id`),
+        KEY `media_id` (`media_id`)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
         mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error()); 
         
-        $query = "CREATE TABLE  `ARIS`.`note_comments` (
-        `note_id` INT NOT NULL ,
-        `player_id` INT NOT NULL ,
-        `rating` INT NOT NULL ,
-        `text` MEDIUMTEXT NOT NULL
-        ) ENGINE = INNODB CHARACTER SET utf8 COLLATE utf8_unicode_ci";
+        $query = "DROP TABLE  `note_comments`";
         mysql_query($query);
-		NetDebug::trace("$query" . ":" . mysql_error()); 
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "ALTER TABLE  `notes` ADD  `parent_note_id` INT UNSIGNED NOT NULL DEFAULT  '0',
+        ADD  `parent_rating` INT UNSIGNED NOT NULL DEFAULT  '0'";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "ALTER TABLE  `notes` DROP  `text`";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "ALTER TABLE  `note_content` ADD  `type` ENUM(  'TEXT',  'MEDIA',  'PHOTO',  'VIDEO',  'AUDIO' ) NOT NULL DEFAULT  'MEDIA',
+        ADD  `text` MEDIUMTEXT NOT NULL";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
         
         return new returnData(0, FALSE);
 	}
@@ -941,6 +952,12 @@ class Games extends Module
         $query = "ALTER TABLE  `{$prefix}_items` CHANGE  `type`  `type` ENUM(  'NORMAL',  'ATTRIB',  'URL',  'NOTE' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  'NORMAL'";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "ALTER TABLE  `{$prefix}_folder_contents` CHANGE  `content_type`  `content_type` ENUM(  'Node',  'Item',  'Npc',  'WebPage',  'AugBubble',  'PlayerNote' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  'Node'";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        
         
 	}
 	
