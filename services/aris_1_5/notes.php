@@ -27,7 +27,7 @@ class Notes extends Module
         return new returnData(0);
     }
     
-    function addContentToNote($noteId, $mediaId, $type, $text)
+    function addContentToNote($noteId, $gameId, $mediaId, $type, $text)
     {
         $query = "INSERT INTO note_content (note_id, media_id, type, text) VALUES ('{$noteId}', '{$mediaId}', '{$type}', '{$text}')";
         $result = @mysql_query($query);
@@ -41,7 +41,7 @@ class Notes extends Module
         $newMediaResultData = Media::createMedia($gameId, $name, $fileName, 0);
         $newMediaId = $newMediaResultData->data->media_id;
         
-        return Notes::addContentToNote($noteId, $newMediaId, 'MEDIA', "");
+        return Notes::addContentToNote($noteId, $gameId, $newMediaId, 'MEDIA', "");
     }
     
     function addCommentToNote($gameId, $playerId, $noteId, $rating)
@@ -165,6 +165,15 @@ class Notes extends Module
         }
         
         $query = "DELETE FROM notes, note_contents WHERE note_id = '{$noteId}'";
+        @mysql_query($query);
+        if (mysql_error()) return new returnData(1, NULL, mysql_error());
+        
+        return new returnData(0);
+    }
+    
+    function deleteNoteContent($contentId)
+    {
+        $query = "DELETE FROM note_contents WHERE content_id = '{$contentId}'";
         @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         

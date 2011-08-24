@@ -834,6 +834,13 @@ class Games extends Module
         mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
+        $query = "ALTER TABLE  `note_content` DROP PRIMARY KEY";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "ALTER TABLE  `note_content` ADD  `content_id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
         
         return new returnData(0, FALSE);
 	}
