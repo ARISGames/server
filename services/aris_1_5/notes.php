@@ -11,7 +11,7 @@ class Notes extends Module
     //Returns note_id
 	function createNewNote($gameId, $playerId)
     {
-        $query = "INSERT INTO notes (game_id, owner_id) VALUES ('{$gameId}', '{$playerId}')";
+        $query = "INSERT INTO notes (game_id, owner_id, title) VALUES ('{$gameId}', '{$playerId}', 'New Note')";
         @mysql_query($query);
 		if (mysql_error()) return new returnData(1, NULL, mysql_error());
         
@@ -46,7 +46,7 @@ class Notes extends Module
     
     function addCommentToNote($gameId, $playerId, $noteId, $rating)
     {
-        $query = "INSERT INTO notes (parent_note_id, player_id, parent_rating, text) VALUES ('{$noteId}', '{$playerId}', '{$rating}', '{$text}')";
+        $query = "INSERT INTO notes (game_id, owner_id, parent_note_id, parent_rating, title) VALUES ('{game_id}', '{$playerId}', '{$noteId}', '{$rating}', 'New Comment')";
         $result = @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         $commentId = mysql_insert_id();
@@ -152,4 +152,38 @@ class Notes extends Module
         }
         return $comments;
     }
+    
+    function deleteNote($noteId)
+    {
+        $query = "SELECT note_id FROM notes WHERE parent_note_id = '{$noteId}'";
+        $result = @mysql_query($query);
+        if (mysql_error()) return new returnData(1, NULL, mysql_error());
+        
+        while($commentNote = mysql_fetch_object($result))
+        {
+            deleteNote($commentNote->note_id);
+        }
+        
+        $query = "DELETE FROM notes, note_contents WHERE note_id = '{$noteId}'";
+        @mysql_query($query);
+        if (mysql_error()) return new returnData(1, NULL, mysql_error());
+        
+        return new returnData(0);
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

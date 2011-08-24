@@ -393,7 +393,7 @@ class Games extends Module
 			latitude double NOT NULL default '43.0746561',
 			longitude double NOT NULL default '-89.384422',
 			error double NOT NULL default '5',
-			type enum('Node','Event','Item','Npc','WebPage','AugBubble') NOT NULL DEFAULT 'Node',
+			type enum('Node','Event','Item','Npc','WebPage','AugBubble', 'PlayerNote') NOT NULL DEFAULT 'Node',
 			type_id int(11) NOT NULL,
 			icon_media_id int(10) unsigned NOT NULL default '0',
 			item_qty int(11) NOT NULL default '0' COMMENT  '-1 for infinite. Only effective for items',
@@ -517,7 +517,7 @@ class Games extends Module
 		$query = "CREATE TABLE {$strShortName}_folder_contents (
   			object_content_id int(10) unsigned NOT NULL auto_increment,
   			folder_id int(10) NOT NULL default '0',
-  			content_type enum('Node','Item','Npc','WebPage','AugBubble') collate utf8_unicode_ci NOT NULL default 'Node',
+  			content_type enum('Node','Item','Npc','WebPage','AugBubble', 'PlayerNote') collate utf8_unicode_ci NOT NULL default 'Node',
   			content_id int(10) unsigned NOT NULL default '0',
   			previous_id int(10) unsigned NOT NULL default '0',
   			PRIMARY KEY  (object_content_id)
@@ -822,6 +822,19 @@ class Games extends Module
         mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
+        $query = "ALTER TABLE  `note_content` ADD  `sort_index` INT UNSIGNED NOT NULL DEFAULT  '0'";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "ALTER TABLE  `note_content` ADD  `game_id` INT UNSIGNED NOT NULL DEFAULT  '0'";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "ALTER TABLE  `game_tab_data` ADD `game_id` (  `game_id` )";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        
         return new returnData(0, FALSE);
 	}
 	
@@ -957,6 +970,12 @@ class Games extends Module
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
+        $query = "ALTER TABLE  `{$prefix}_locations` CHANGE  `type`  `type` ENUM(  'Node',  'Event',  'Item',  'Npc',  'WebPage',  'AugBubble',  'PlayerNote' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  'Node'";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        
+        
         
         
 	}
@@ -1070,6 +1089,17 @@ class Games extends Module
         
         //Delete Tab Bar information
         $query = "DELETE FROM game_tab_data WHERE game_id = '{$intGameID}'";
+        NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
+        
+        //Delete Note stuff
+        $query = "DELETE FROM notes WHERE game_id = '{$intGameID}'";
+        NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
+        //Delete Note Media
+        $query = "DELETE FROM note_content WHERE game_id = '{$intGameID}'";
         NetDebug::trace($query);
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');

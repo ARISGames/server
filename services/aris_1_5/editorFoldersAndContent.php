@@ -172,10 +172,15 @@ class EditorFoldersAndContent extends Module
             else if ($content->content_type == 'AugBubble') {
 				$contentDetails = AugBubbles::getAugBubble($intGameID,$content->content_id)->data;
 				$content->name = $contentDetails->name;
+                $content->media = NULL;
+                $content->media_id = NULL;
 			}
             else if ($content->content_type == 'PlayerNote') {
                 $contentDetails = Notes::getNoteById($content->content_id)->data;
                 $content->name = $contentDetails->title;
+                $content->icon_media_id = 5;
+                $content->media = NULL;
+                $content->media_id = NULL;
             }
 			
 			//Get the Icon Media
