@@ -29,7 +29,7 @@ class Notes extends Module
     
     function addContentToNote($noteId, $gameId, $mediaId, $type, $text)
     {
-        $query = "INSERT INTO note_content (note_id, media_id, type, text) VALUES ('{$noteId}', '{$mediaId}', '{$type}', '{$text}')";
+        $query = "INSERT INTO note_content (note_id, game_id, media_id, type, text) VALUES ('{$noteId}', '{$gameId}', '{$mediaId}', '{$type}', '{$text}')";
         $result = @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         
@@ -164,7 +164,7 @@ class Notes extends Module
             deleteNote($commentNote->note_id);
         }
         
-        $query = "DELETE FROM notes, note_contents WHERE note_id = '{$noteId}'";
+        $query = "DELETE FROM notes, note_content WHERE note_id = '{$noteId}'";
         @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         
@@ -173,7 +173,7 @@ class Notes extends Module
     
     function deleteNoteContent($contentId)
     {
-        $query = "DELETE FROM note_contents WHERE content_id = '{$contentId}'";
+        $query = "DELETE FROM note_content WHERE content_id = '{$contentId}'";
         @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         
