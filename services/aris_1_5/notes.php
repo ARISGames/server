@@ -36,12 +36,12 @@ class Notes extends Module
         return new returnData(0);
     }
     
-    function addContentToNoteFromFileName($gameId, $noteId, $filename, $name="playerUplaodedContent")
+    function addContentToNoteFromFileName($gameId, $noteId, $filename, $type, $name="playerUploadedContent")
     {
         $newMediaResultData = Media::createMedia($gameId, $name, $fileName, 0);
         $newMediaId = $newMediaResultData->data->media_id;
         
-        return Notes::addContentToNote($noteId, $gameId, $newMediaId, 'MEDIA', "");
+        return Notes::addContentToNote($noteId, $gameId, $newMediaId, $type, "");
     }
     
     function addCommentToNote($gameId, $playerId, $noteId, $rating)
