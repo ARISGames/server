@@ -80,9 +80,9 @@ class Notes extends Module
         return new returnData(0, $notes);
     }
     
-    function getNotesForPlayer($playerId)
+    function getNotesForPlayer($playerId, $gameId)
     {
-        $query = "SELECT note_id FROM notes WHERE owner_id = '{$playerId}'";
+        $query = "SELECT note_id FROM notes WHERE owner_id = '{$playerId}' AND game_id = '{$gameId}'";
         $result = @mysql_query($query);
 		if (mysql_error()) return new returnData(1, NULL, mysql_error());
         
