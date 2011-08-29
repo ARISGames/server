@@ -384,7 +384,7 @@ abstract class Module
      * @return boolean
      */
     
-    //Spelled 'distAnce' wrong in function name and variable name... afraid to change it...
+    //Spelled 'distAnce' wrong in function name and variable name... afraid to change it... the repurcussions could be ASTRONOMICAL.
     protected function playerHasUploadedMediaItemWithinDistence($intGameID, $intPlayerID, $dblLatitude, $dblLongitude, $dblDistenceInMeters, $mediaType) {
     	$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return FALSE;

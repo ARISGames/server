@@ -27,21 +27,33 @@ class Notes extends Module
         return new returnData(0);
     }
     
-    function addContentToNote($noteId, $gameId, $mediaId, $type, $text)
+    function addContentToNote($noteId, $gameId, $playerId, $mediaId, $type, $text)
     {
         $query = "INSERT INTO note_content (note_id, game_id, media_id, type, text) VALUES ('{$noteId}', '{$gameId}', '{$mediaId}', '{$type}', '{$text}')";
         $result = @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
+        $contentId = mysql_insert_id();
         
-        return new returnData(0);
+        Module::appendLog($playerId, $gameId, Module::kLOG_UPLOAD_MEDIA_ITEM, $contentId);
+        if($type == "PHOTO"){
+            Module::appendLog($playerId, $gameId, Module::kLOG_UPLOAD_MEDIA_ITEM_IMAGE, $contentId);
+        }
+        else if($type == "AUDIO"){
+            Module::appendLog($playerId, $gameId, Module::kLOG_UPLOAD_MEDIA_ITEM_AUDIO, $contentId);
+        }
+        else if($type == "VIDEO"){
+            Module::appendLog($playerId, $gameId, Module::kLOG_UPLOAD_MEDIA_ITEM_VIDEO, $contentId);
+        }
+
+        return new returnData(0, $contentId);
     }
     
-    function addContentToNoteFromFileName($gameId, $noteId, $filename, $type, $name="playerUploadedContent")
+    function addContentToNoteFromFileName($gameId, $noteId, $playerId, $filename, $type, $name="playerUploadedContent")
     {
         $newMediaResultData = Media::createMedia($gameId, $name, $filename, 0);
         $newMediaId = $newMediaResultData->data->media_id;
         
-        return Notes::addContentToNote($noteId, $gameId, $newMediaId, $type, "");
+        return Notes::addContentToNote($noteId, $gameId, $playerId, $newMediaId, $type, "");
     }
     
     function addCommentToNote($gameId, $playerId, $noteId, $rating)
@@ -164,7 +176,10 @@ class Notes extends Module
             deleteNote($commentNote->note_id);
         }
         
-        $query = "DELETE FROM notes, note_content WHERE note_id = '{$noteId}'";
+        $query = "DELETE FROM notes WHERE note_id = '{$noteId}'";
+        @mysql_query($query);
+        if (mysql_error()) return new returnData(1, NULL, mysql_error()); 
+        $query = "DELETE FROM note_content WHERE note_id = '{$noteId}'";
         @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         
