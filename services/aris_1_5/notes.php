@@ -56,6 +56,14 @@ class Notes extends Module
         return Notes::addContentToNote($noteId, $gameId, $playerId, $newMediaId, $type, "");
     }
     
+    function updateContent($contentId, $text)
+    {
+        $query = "UPDATE note_content SET text='{$text}' WHERE content_id='{$contentId}'";
+        @mysql_query($query);
+        if (mysql_error()) return new returnData(1, NULL, mysql_error());
+        return new returnData(0);
+    }
+    
     function addCommentToNote($gameId, $playerId, $noteId, $rating)
     {
         $query = "INSERT INTO notes (game_id, owner_id, parent_note_id, parent_rating, title) VALUES ('{game_id}', '{$playerId}', '{$noteId}', '{$rating}', 'New Comment')";
