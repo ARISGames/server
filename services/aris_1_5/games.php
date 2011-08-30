@@ -842,6 +842,10 @@ class Games extends Module
         mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
+        $query = "ALTER TABLE  `notes` ADD  `sort_index` INT NOT NULL DEFAULT  '0'";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
         return new returnData(0, FALSE);
 	}
 	

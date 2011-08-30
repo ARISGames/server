@@ -18,9 +18,9 @@ class Notes extends Module
         return new returnData(0, mysql_insert_id());
     }
     
-    function updateNote($noteId, $title, $shared)
+    function updateNote($noteId, $title, $shared, $sortIndex='0')
     {
-        $query = "UPDATE notes SET title = '{$title}', shared = '{$shared}' WHERE note_id = '{$noteId}'";
+        $query = "UPDATE notes SET title = '{$title}', shared = '{$shared}', sort_index='{$sortIndex}' WHERE note_id = '{$noteId}'";
         @mysql_query($query);
 		if (mysql_error()) return new returnData(1, NULL, mysql_error());
         
@@ -87,7 +87,7 @@ class Notes extends Module
     
     function getNotesForGame($gameId)
     {
-        $query = "SELECT note_id FROM notes WHERE game_id = '{$gameId}'";
+        $query = "SELECT note_id FROM notes WHERE game_id = '{$gameId}' ORDER BY sort_index ASC";
         $result = @mysql_query($query);
 		if (mysql_error()) return new returnData(1, NULL, mysql_error());
         
@@ -102,7 +102,7 @@ class Notes extends Module
     
     function getNotesForPlayer($playerId, $gameId)
     {
-        $query = "SELECT note_id FROM notes WHERE owner_id = '{$playerId}' AND game_id = '{$gameId}'";
+        $query = "SELECT note_id FROM notes WHERE owner_id = '{$playerId}' AND game_id = '{$gameId}' ORDER BY sort_index ASC";
         $result = @mysql_query($query);
 		if (mysql_error()) return new returnData(1, NULL, mysql_error());
         
