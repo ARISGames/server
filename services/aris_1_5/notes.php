@@ -66,7 +66,7 @@ class Notes extends Module
     
     function addCommentToNote($gameId, $playerId, $noteId, $rating)
     {
-        $query = "INSERT INTO notes (game_id, owner_id, parent_note_id, parent_rating, title) VALUES ('{game_id}', '{$playerId}', '{$noteId}', '{$rating}', 'New Comment')";
+        $query = "INSERT INTO notes (game_id, owner_id, parent_note_id, parent_rating, title) VALUES ('{$gameId}', '{$playerId}', '{$noteId}', '{$rating}', 'New Comment')";
         $result = @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         $commentId = mysql_insert_id();
