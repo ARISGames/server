@@ -372,6 +372,21 @@ class Players extends Module
 	}		
 	
 	/**
+     *Places Note On Map
+     * @returns returnData with data=true if changes were made
+     */
+	public function dropNote($intGameID, $intPlayerID, $noteID, $floatLat, $floatLong)
+	{
+		$prefix = Module::getPrefix($intGameID);
+		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+		
+		Module::giveNoteToWorld($prefix, $noteID, $floatLat, $floatLong);
+		
+		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_DROP_NOTE, $noteID, '1');
+
+		return new returnData(0, FALSE);
+	}	
+	/**
      * Removes an Item from the players Inventory
      * @returns returnData with data=true if changes were made
      */

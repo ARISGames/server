@@ -292,7 +292,7 @@ class QRCodes extends Module
      * If no code is provided, a random 4 digit number will be generated
      * @returns the new QR Code ID on success.
      */
-	public function createQRCode($intGameID, $strLinkType, $intLinkID, $strCode = '', $imageMatchId)
+	public function createQRCode($intGameID, $strLinkType, $intLinkID, $strCode = '', $imageMatchId='0')
 	{
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");

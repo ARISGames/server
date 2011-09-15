@@ -10,6 +10,7 @@ abstract class Module
 	const kLOG_MOVE = 'MOVE';
 	const kLOG_PICKUP_ITEM = 'PICKUP_ITEM';
 	const kLOG_DROP_ITEM = 'DROP_ITEM';
+	const kLOG_DROP_NOTE = 'DROP_NOTE';
 	const kLOG_DESTROY_ITEM = 'DESTROY_ITEM';
 	const kLOG_VIEW_ITEM = 'VIEW_ITEM';
 	const kLOG_VIEW_NODE = 'VIEW_NODE';
@@ -249,6 +250,47 @@ abstract class Module
 			
 			$query = "INSERT INTO {$strGamePrefix}_locations (name, type, type_id, icon_media_id, latitude, longitude, error, item_qty)
 											  VALUES ('{$itemName}','Item','{$intItemID}', '{$icon_media_id}', '{$floatLat}','{$floatLong}', '{$error}','{$intQty}')";
+    		NetDebug::trace($query . ' ' . mysql_error());  
+    		@mysql_query($query);
+    		
+    		$newId = mysql_insert_id();
+    		//Create a coresponding QR Code
+			QRCodes::createQRCode($strGamePrefix, "Location", $newId, '');
+    	}
+    }
+	
+	
+	/**
+     * Adds a note to Locations at the specified latitude, longitude
+     */ 
+    protected function giveNoteToWorld($strGamePrefix, $noteId, $floatLat, $floatLong) {
+		
+		$query = "SELECT * FROM {$strGamePrefix}_locations 
+				WHERE type = 'PlayerNote' AND type_id = '{$noteId}'";	
+    	$result = @mysql_query($query);
+    	NetDebug::trace($query . ' ' . mysql_error());  
+    	
+    	if ($existingNote = @mysql_fetch_object($result)) {
+    		//We have a match
+    		NetDebug::trace("This note has already been placed");   	
+
+    		$query = "UPDATE {$strGamePrefix}_locations
+    				SET latitude = '{$floatLat}', longitude = '{$floatLong}'
+    				WHERE location_id = {$existingNote->location_id}";
+    		NetDebug::trace($query . ' ' . mysql_error());  
+    		@mysql_query($query);
+    	}
+		else {
+			NetDebug::trace("Note has not yet been placed");   	
+
+			$error = 100; //Use 100 meters
+			$query = "SELECT title FROM notes WHERE note_id = '{$noteId}'";
+			$result = @mysql_query($query);
+        	$obj = @mysql_fetch_object($result);
+			$title = $obj->title;
+			
+			$query = "INSERT INTO {$strGamePrefix}_locations (name, type, type_id, icon_media_id, latitude, longitude, error, item_qty)
+											  VALUES ('{$title}','PlayerNote','{$noteId}', '71', '{$floatLat}','{$floatLong}', '{$error}','1')";
     		NetDebug::trace($query . ' ' . mysql_error());  
     		@mysql_query($query);
     		
