@@ -639,15 +639,14 @@ abstract class Module
 		return $changeMade;
 	}
 		
-	/**
+    /**
      * Add a row to the player log
      * @returns true on success
      */
 	protected function appendLog($intPlayerID, $intGameID, $strEventType, $strEventDetail1=null, $strEventDetail2=null)
 	{
-			
         if($intGameID != ""){
-            Module::appendCompletedQuestsIfReady($intPlayerID, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2);
+            $qObs = Module::appendCompletedQuestsIfReady($intPlayerID, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2);
             Module::fireOffWebHooksIfReady($intPlayerID, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2);
         }
         else{
@@ -656,20 +655,31 @@ abstract class Module
         
         
 		$query = "INSERT INTO player_log 
-					(player_id, game_id, event_type, event_detail_1,event_detail_2) 
-				  VALUES 
-				  	({$intPlayerID},{$intGameID},'{$strEventType}','{$strEventDetail1}','{$strEventDetail2}')";
+        (player_id, game_id, event_type, event_detail_1,event_detail_2) 
+        VALUES 
+        ({$intPlayerID},{$intGameID},'{$strEventType}','{$strEventDetail1}','{$strEventDetail2}')";
 		
 		@mysql_query($query);
 		
 		NetDebug::trace($query);
-
+        
 		
 		if (mysql_error()) {
 			NetDebug::trace(mysql_error());
 			return false;
 		}
 		
+        if($qObs != "NO")
+        {
+            foreach($qObs as $key => $qOb){
+                Module::appendLog($qOb->pid, $qOb->gid, "COMPLETE_QUEST", $qOb->id, 'N/A');
+            }
+        }
+        if($wOb)
+        {
+            Module::appendLog($wOb->pid, $wOb->gid, "COMPLETE_QUEST", $wOb->id, 'N/A');
+        }
+        
 		else return true;
 	}	
 	
@@ -680,10 +690,14 @@ abstract class Module
         
         $query = "SELECT * FROM {$intGameID}_quests";
         $result = @mysql_query($query);
-
+        
+        $qObs = array();
         while($quest = mysql_fetch_object($result)){
-            Module::appendCompletedQuestIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2, $quest->quest_id);
+            $qOb = Module::appendCompletedQuestIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2, $quest->quest_id);
+            if($qOb != "NO") $qObs[] = $qOb;
         }
+        if(count($qObs)==0) return "NO";
+        else return $qObs;
     }
     
     protected function appendCompletedQuestIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2, $intQid){
@@ -692,8 +706,13 @@ abstract class Module
             if($strEventDetail1 == $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_1']){
                 if($strEventType == $unfinishedBusiness->unfinishedORRequirements[$x]['event']){
                     if($strEventDetail2 == $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
-                        Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
-                        return;
+                        //Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+                        $qOb = new stdClass();
+                        $qOb->append = true;
+                        $qOb->id = $intQid;
+                        $qOb->pid = $intPlayerId;
+                        $qOb->gid = $intGameID;
+                        return $qOb;
                     }
                 }
             }
@@ -702,12 +721,18 @@ abstract class Module
             if($strEventDetail1 == $unfinishedBusiness->unfinishedANDRequirements[0]['requirement_detail_1']){
                 if($strEventType == $unfinishedBusiness->unfinishedANDRequirements[0]['event']){
                     if($strEventDetail2 == $unfinishedBusiness->unfinishedANDRequirements[0]['requirement_detail_2']){
-                        Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
-                        return;
+                        //Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+                        $qOb = new stdClass();
+                        $qOb->append = true;
+                        $qOb->id = $intQid;
+                        $qOb->pid = $intPlayerId;
+                        $qOb->gid = $intGameID;
+                        return $qOb;
                     }
                 }
             }
         }
+        return "NO";
     }
     
     protected function appendCompletedQuest($intQid, $intPlayerId, $intGameId){
@@ -728,7 +753,7 @@ abstract class Module
 		}
 		
 		else return true;
-
+        
     }
     
     
@@ -739,7 +764,7 @@ abstract class Module
     protected function fireOffWebHooksIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1="N/A", $strEventDetail2="N/A"){
         if($strEventDetail1 == null) $strEventDetail1 = "N/A";
         if($strEventDetail2 == null) $strEventDetail2 = "N/A";
-
+        
         $query = "SELECT * FROM web_hooks WHERE incoming = '0' AND game_id = '{$intGameID}'";
         $result = mysql_query($query);
         while($webHook = mysql_fetch_object($result)){
@@ -747,7 +772,7 @@ abstract class Module
         }
     }
     
-   
+    
     protected function fireOffWebHookIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1="N/A", $strEventDetail2="N/A", $intWid){
         $unfinishedBusiness = Module::getOutstandingRequirements($intGameID, $intPlayerId, 'OutgoingWebHook', $intWid);
         if($unfinishedBusiness == 0) return;
@@ -757,6 +782,11 @@ abstract class Module
                     if($strEventDetail2 == $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
                         Module::fireOffWebHook($intWid, $intPlayerId, $intGameID);
                         return;
+                        $wOb = new stdClass();
+                        $wOb->id = $intWid;
+                        $wOb->pid = $intPlayerId;
+                        $wOb->gid = $intGameID;
+                        return $wOb;
                     }
                 }
             }
@@ -767,6 +797,11 @@ abstract class Module
                     if($strEventDetail2 == $unfinishedBusiness->unfinishedANDRequirements[0]['requirement_detail_2']){
                         Module::fireOffWebHook($intWid, $intPlayerId, $intGameID);
                         return;
+                        $wOb = new stdClass();
+                        $wOb->id = $intWid;
+                        $wOb->pid = $intPlayerId;
+                        $wOb->gid = $intGameID;
+                        return $wOb;
                     }
                 }
             }
