@@ -266,6 +266,15 @@ class Players extends Module
 		return new returnData(0, TRUE);
 	}
 	
+	
+	public function giveItemToPlayer($intGameId, $intItemID, $intPlayerID, $qtyToGive=1) {
+		Module::giveItemToPlayer($intGameId, $intItemID, $intPlayerID, $qtyToGive=1);
+	}
+	
+	public function takeItemFromPlayer($intGameId, $intItemID, $intPlayerID, $qtyToGive=1) {
+		Module::takeItemFromPlayer($intGameId, $intItemID, $intPlayerID, $qtyToGive=1);
+	}
+
 
 	/**
      * Player Viewed an Item, exectute it's actions
