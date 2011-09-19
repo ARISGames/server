@@ -67,13 +67,14 @@ class Notes extends Module
     function addCommentToNote($gameId, $playerId, $noteId, $rating)
     {
         $query = "SELECT * FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = '{$noteId}' AND owner_id = '{$playerId}'";
-        $result = @mysql_query($query);
+        $result1 = @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
-        while($existingRating = mysql_fetch_object($result))
+		
+        while($existingRating = mysql_fetch_object($result1))
         {
             $normalize = true;
-            $oldRating = $existingRating->rating;
-            $query = "UPDATE notes SET rating = '{$rating}' WHERE note_id = '{$existingRating->note_id}'";
+            $oldRating = $existingRating->parent_rating;
+            $query = "UPDATE notes SET parent_rating = '{$rating}' WHERE note_id = '{$existingRating->note_id}'";
             $result = @mysql_query($query);
             if (mysql_error()) return new returnData(1, NULL, mysql_error());
         }
