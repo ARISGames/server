@@ -838,7 +838,7 @@ abstract class Module
         $unfinishedANDRequirements = array();
         $unfinishedORRequirements = array();
 		
-		$andsMet = FALSE;
+		$complete = TRUE;
 		$requirementsExist = FALSE;
 		while ($requirement = mysql_fetch_array($rsRequirments)) {
 			$requirementsExist = TRUE;
@@ -954,12 +954,8 @@ abstract class Module
 			if ($requirement['boolean_operator'] == "AND" && $requirementMet == FALSE) {
 				//NetDebug::trace("An AND requirement was not met. Requirements Failed.");
 				$unfinishedANDRequirements[] = $requirement;
+                $complete = FALSE;
 			}
-			if ($requirement['boolean_operator'] == "AND" && $requirementMet == TRUE) {
-				//NetDebug::trace("An AND requirement was met. Remembering");
-				$andsMet = TRUE;
-			}
-			
 			if ($requirement['boolean_operator'] == "OR" && $requirementMet == TRUE){
 				//NetDebug::trace("An OR requirement was met. Requirements Passed.");
 				return 0;
@@ -967,19 +963,17 @@ abstract class Module
 			
 			if ($requirement['boolean_operator'] == "OR" && $requirementMet == FALSE){
                 $unfinishedORRequirements[] = $requirement;
+                $complete = FALSE;
             }
+
             
 		}
         
         //while
 		//NetDebug::trace("At the end of all the requirements for this object and any AND were passed, no ORs were passed.");
 		//So no ORs were met, and possibly all ands were met
-		if (!$requirementsExist) {
+		if (!$requirementsExist || $complete) {
 			//NetDebug::trace("No requirements exist. Requirements Passed.");
-			return 0;
-		}
-		if ($andsMet) {
-			//NetDebug::trace("All AND requirements exist. Requirements Passed.");
 			return 0;
 		}
 		else {
