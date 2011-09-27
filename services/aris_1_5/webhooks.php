@@ -152,15 +152,17 @@ class WebHooks extends Module
     public function setWebHookReq($gameId, $webHookId, $lastLocationId, $playerId)
     {
         if($playerId != NULL){
-            $query = "INSERT INTO player_log (player_id, game_id, event_type, event_detail_1) VALUES ('{$playerId}', '{$gameId}', 'RECEIVE_WEBHOOK', '{$webHookId}')";
-            mysql_query($query);
+            //$query = "INSERT INTO player_log (player_id, game_id, event_type, event_detail_1) VALUES ('{$playerId}', '{$gameId}', 'RECEIVE_WEBHOOK', '{$webHookId}')";
+            //mysql_query($query);
+            Module::appendLog($playerId, $gameId, "RECEIVE_WEBHOOK", $webHookId, null);
         }
         else{
             $query = "SELECT player_id FROM player_log WHERE game_id='{$gameId}', event_detail_1='{$lastLocationId}', deleted='0'";
             $result = mysql_query($query);
             while($pid = mysql_fetch_object($result)){
-                $query = "INSERT INTO player_log (player_id, game_id, event_type, event_detail_1) VALUES ('{$pid}', '{$gameId}', 'RECEIVE_WEBHOOK', '{$webHookId}')";
-                mysql_query($query);
+                //$query = "INSERT INTO player_log (player_id, game_id, event_type, event_detail_1) VALUES ('{$pid}', '{$gameId}', 'RECEIVE_WEBHOOK', '{$webHookId}')";
+                //mysql_query($query);
+                Module::appendLog($pid, $gameId, "RECEIVE_WEBHOOK", $webHookId, null);
             }
         }
         return(0);
