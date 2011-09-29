@@ -26,7 +26,7 @@ class Media extends Module
 		if ($intGameID == 0) $query = "SELECT * FROM media WHERE game_id = 0";
 		else $query = "SELECT * FROM media WHERE game_id = {$prefix} or game_id = 0";
 
-		NetDebug::trace($query);
+		//NetDebug::trace($query);
 
 		
 		$rsResult = @mysql_query($query);
@@ -53,7 +53,7 @@ class Media extends Module
 			array_push($returnData->data, $mediaItem);
 		}
 		
-		NetDebug::trace($rsResult);
+		//NetDebug::trace($rsResult);
 
 		return $returnData;
 	}
@@ -68,15 +68,15 @@ class Media extends Module
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$query = "SELECT * FROM media WHERE (game_id = {$prefix} OR game_id = 0) AND media_id = {$intMediaID} LIMIT 1";
-		NetDebug::trace($query);
+		//NetDebug::trace($query);
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 		
 		$mediaRow = mysql_fetch_object($rsResult);
 		if (!$mediaRow) {
-			NetDebug::trace("No matching media id within the game, checking for a default");
+			//NetDebug::trace("No matching media id within the game, checking for a default");
 			$query = "SELECT * FROM media WHERE game_id = 0 AND media_id = {$intMediaID} LIMIT 1";
-			NetDebug::trace($query);
+			//NetDebug::trace($query);
 			$rsResult = @mysql_query($query);
 			if (mysql_error()) return new returnData(3, NULL, "SQL Error");	
 			$mediaRow = mysql_fetch_array($rsResult);

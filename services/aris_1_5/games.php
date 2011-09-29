@@ -62,10 +62,10 @@ class Games extends Module
 			$gameObj = new stdClass;
 			$gameObj = Games::getFullGameObject($game->game_id, $playerId, 1, $maxDistance, $latitude, $longitude);
 			if($gameObj != NULL){//->distance <= $maxDistance) {
-				NetDebug::trace("Select");
+				//NetDebug::trace("Select");
 				$games[] = $gameObj;
 			}
-			else NetDebug::trace("Skip");
+			//else NetDebug::trace("Skip");
 		}
 		return new returnData(0, $games, NULL);
 		
@@ -201,7 +201,7 @@ class Games extends Module
 		$gameObj->numPlayers = @mysql_num_rows($playersRs);
 		
 		//Get the media URLs
-		NetDebug::trace("Fetch Media for game_id='{$intGameId}' media_id='{$gameObj->icon_media_id}'");	
+		//NetDebug::trace("Fetch Media for game_id='{$intGameId}' media_id='{$gameObj->icon_media_id}'");	
 		//Icon
 		$icon_media_data = Media::getMediaObject($intGameId, $gameObj->icon_media_id);
 		$icon_media = $icon_media_data->data; 

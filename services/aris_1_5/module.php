@@ -363,7 +363,7 @@ abstract class Module
 						deleted = 0
 					LIMIT 1";
 				
-		NetDebug::trace($query);
+		//NetDebug::trace($query);
 		$rsResult = @mysql_query($query);
 		if (mysql_num_rows($rsResult) > 0) return true;
 		else return false;	
