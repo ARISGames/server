@@ -227,7 +227,7 @@ class Notes extends Module
     
     function deleteNote($noteId)
     {
-        $query = "SELECT note_id FROM notes WHERE parent_note_id = '{$noteId}'";
+        $query = "SELECT note_id, game_id FROM notes WHERE parent_note_id = '{$noteId}'";
         $result = @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         
@@ -236,13 +236,40 @@ class Notes extends Module
             deleteNote($commentNote->note_id);
         }
         
-        $query = "DELETE FROM notes WHERE note_id = '{$noteId}'";
-        @mysql_query($query);
-        if (mysql_error()) return new returnData(1, NULL, mysql_error()); 
+        //Update Parent Note's rating
+        $query = "SELECT parent_note_id, parent_rating FROM notes WHERE note_id = '{$noteId}'";
+        $result = @mysql_query($query);
+        if (mysql_error()) return new returnData(1, NULL, mysql_error());
+        if($comment = mysql_fetch_object($result))
+        {
+            $query = "SELECT ave_rating, num_ratings FROM notes WHERE note_id = '{$comment->parent_note_id}'";
+            $result = @mysql_query($query);
+            if (mysql_error()) return new returnData(1, NULL, mysql_error());
+            
+            if($parent = mysql_fetch_object($result))
+            {
+                if($parent->num_ratings > 1) $newAve = (($parent->ave_rating*$parent->num_ratings)-$comment->parent_rating)/($parent->num_ratings-1);
+                else if($parent->num_ratings == 0) $newAve = 0;
+                $query = "UPDATE notes SET ave_rating = '{$newAve}', num_ratings = '({$parent->num_ratings}-1)'WHERE note_id = '{$comment->parent_note_id}'";
+                $result = @mysql_query($query);
+                if (mysql_error()) return new returnData(1, NULL, mysql_error());
+            }
+        }
+         
+        
+        //Delete Note locations
+        Locations::deleteLocationsForObject($commentNote->game_id, "PlayerNote", $noteId);
+
+        //Delete the Note's Content
         $query = "DELETE FROM note_content WHERE note_id = '{$noteId}'";
         @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         
+        //Delete the Note itself
+        $query = "DELETE FROM notes WHERE note_id = '{$noteId}'";
+        @mysql_query($query);
+        if (mysql_error()) return new returnData(1, NULL, mysql_error()); 
+
         return new returnData(0);
     }
     
