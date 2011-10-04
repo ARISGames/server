@@ -157,6 +157,10 @@ abstract class Module
     */ 
     protected function adjustQtyForPlayerItem($strGamePrefix, $intItemID, $intPlayerID, $amountOfAdjustment) {
 		
+        //Check if this completes quest
+        $qObs = Module::appendCompletedQuestsIfReady($intPlayerID, $strGamePrefix, Module::kLOG_PICKUP_ITEM, $intItemID, $amountOfAdjustment);
+        $wObs = Module::fireOffWebHooksIfReady($intPlayerID, $strGamePrefix, Module::kLOG_PICKUP_ITEM, $intItemID, $amountOfAdjustment);
+        
 		//Get any existing record
 		$query = "SELECT * FROM {$strGamePrefix}_player_items 
 					WHERE player_id = $intPlayerID AND item_id = $intItemID LIMIT 1";
@@ -647,7 +651,7 @@ abstract class Module
 	{
         if($intGameID != ""){
             $qObs = Module::appendCompletedQuestsIfReady($intPlayerID, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2);
-            Module::fireOffWebHooksIfReady($intPlayerID, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2);
+            $wObs = Module::fireOffWebHooksIfReady($intPlayerID, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2);
         }
         else{
             NetDebug::trace("GameID = -" .$intGameID . "-");
@@ -675,9 +679,11 @@ abstract class Module
                 Module::appendLog($qOb->pid, $qOb->gid, "COMPLETE_QUEST", $qOb->id, 'N/A');
             }
         }
-        if($wOb)
+        if($wObs != "NO")
         {
-            Module::appendLog($wOb->pid, $wOb->gid, "COMPLETE_QUEST", $wOb->id, 'N/A');
+            foreach($wObs as $key => $wOb){
+                //Module::appendLog($wOb->pid, $wOb->gid, "OUTGOING_WEB_HOOK_FIRED", $wOb->id, 'N/A');
+            }
         }
         
 		else return true;
@@ -702,32 +708,85 @@ abstract class Module
     
     protected function appendCompletedQuestIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2, $intQid){
         $unfinishedBusiness = Module::getOutstandingRequirements($intGameID, $intPlayerId, 'QuestComplete', $intQid);
+        
         for($x = 0; $x < count($unfinishedBusiness->unfinishedORRequirements); $x++){
             if($strEventDetail1 == $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_1']){
-                if($strEventType == $unfinishedBusiness->unfinishedORRequirements[$x]['event']){
-                    if($strEventDetail2 == $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
-                        //Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
-                        $qOb = new stdClass();
-                        $qOb->append = true;
-                        $qOb->id = $intQid;
-                        $qOb->pid = $intPlayerId;
-                        $qOb->gid = $intGameID;
-                        return $qOb;
+
+                //Weird special calculations in case that event type is dealing with inventory
+                if(($strEventType == Module::kLOG_PICKUP_ITEM && $unfinishedBusiness->unfinishedORRequirements[$x]['event'] == Module::kLOG_PICKUP_ITEM && $strEventDetail2 >= 0) || 
+                   ($strEventType == Module::kLOG_DROP_ITEM && $unfinishedBusiness->unfinishedORRequirements[$x]['event'] == Module::kLOG_DROP_ITEM && $strEventDetail2 < 0)){
+                    $query = "SELECT qty FROM {$intGameID}_player_items WHERE player_id = '{$intPlayerId}' AND item_id = '{$strEventDetail1}'";
+                    $result = mysql_query($query);
+                    if($newQty = mysql_fetch_object($result)){
+                        $newQty = $newQty->qty + $strEventDetail2;
+                    }
+                    if($strEventDetail2 >= 0){
+                        if($newQty >= $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
+                            Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+                        }
+                    }
+                    else {
+                        if($newQty < $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
+                            Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+                        }
+                    }
+                }
+                // END weird special inventory calculations
+            
+                else{
+                    if($strEventType == $unfinishedBusiness->unfinishedORRequirements[$x]['event']){
+                        if($strEventDetail2 == $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
+                            //Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+                            $qOb = new stdClass();
+                            $qOb->append = true;
+                            $qOb->id = $intQid;
+                            $qOb->pid = $intPlayerId;
+                            $qOb->gid = $intGameID;
+                            return $qOb;
+                        }
                     }
                 }
             }
         }
         if(count($unfinishedBusiness->unfinishedANDRequirements) == 1){
             if($strEventDetail1 == $unfinishedBusiness->unfinishedANDRequirements[0]['requirement_detail_1']){
-                if($strEventType == $unfinishedBusiness->unfinishedANDRequirements[0]['event']){
-                    if($strEventDetail2 == $unfinishedBusiness->unfinishedANDRequirements[0]['requirement_detail_2']){
-                        //Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
-                        $qOb = new stdClass();
-                        $qOb->append = true;
-                        $qOb->id = $intQid;
-                        $qOb->pid = $intPlayerId;
-                        $qOb->gid = $intGameID;
-                        return $qOb;
+                
+                //Weird special calculations in case that event type is dealing with inventory
+                if(($strEventType == Module::kLOG_PICKUP_ITEM && $unfinishedBusiness->unfinishedANDRequirements[0]['event'] == Module::kLOG_PICKUP_ITEM && $strEventDetail2 >= 0) || 
+                   ($strEventType == Module::kLOG_DROP_ITEM && $unfinishedBusiness->unfinishedANDRequirements[0]['event'] == Module::kLOG_DROP_ITEM && $strEventDetail2 < 0)){
+                    $query = "SELECT qty FROM {$intGameID}_player_items WHERE player_id = '{$intPlayerId}' AND item_id = '{$strEventDetail1}'";
+                    $result = mysql_query($query);
+                    $newQty = mysql_fetch_object($result);
+                    if($newQty){
+                        $newQty = $newQty->qty + $strEventDetail2;
+                    }
+                    else {
+                        $newQty = strEventDetail2;
+                    }
+                    if($strEventDetail2 >= 0){
+                        if($newQty >= $unfinishedBusiness->unfinishedANDRequirements[0]['requirement_detail_2']){
+                            Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+                        }
+                    }
+                    else {
+                        if($newQty < $unfinishedBusiness->unfinishedANDRequirements[0]['requirement_detail_2']){
+                            Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+                        }
+                    }
+                }
+                // END weird special inventory calculations
+            
+                else{
+                    if($strEventType == $unfinishedBusiness->unfinishedANDRequirements[0]['event']){
+                        if($strEventDetail2 == $unfinishedBusiness->unfinishedANDRequirements[0]['requirement_detail_2']){
+                            //Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+                            $qOb = new stdClass();
+                            $qOb->append = true;
+                            $qOb->id = $intQid;
+                            $qOb->pid = $intPlayerId;
+                            $qOb->gid = $intGameID;
+                            return $qOb;
+                        }
                     }
                 }
             }
@@ -767,9 +826,14 @@ abstract class Module
         
         $query = "SELECT * FROM web_hooks WHERE incoming = '0' AND game_id = '{$intGameID}'";
         $result = mysql_query($query);
+        
+        $wObs = array();
         while($webHook = mysql_fetch_object($result)){
-            Module::fireOffWebHookIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2, $webHook->web_hook_id);
+            $wOb = Module::fireOffWebHookIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2, $webHook->web_hook_id);
+            if($wOb != "NO") $wObs[] = $wOb;
         }
+        if(count($wObs)==0) return "NO";
+        else return $wObs;
     }
     
     
@@ -778,34 +842,81 @@ abstract class Module
         if($unfinishedBusiness == 0) return;
         for($x = 0; $x < count($unfinishedBusiness->unfinishedORRequirements); $x++){
             if($strEventDetail1 == $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_1']){
-                if($strEventType == $unfinishedBusiness->unfinishedORRequirements[$x]['event']){
-                    if($strEventDetail2 == $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
-                        Module::fireOffWebHook($intWid, $intPlayerId, $intGameID);
-                        return;
-                        $wOb = new stdClass();
-                        $wOb->id = $intWid;
-                        $wOb->pid = $intPlayerId;
-                        $wOb->gid = $intGameID;
-                        return $wOb;
+                
+                //Weird special calculations in case that event type is dealing with inventory
+                if(($strEventType == Module::kLOG_PICKUP_ITEM && $unfinishedBusiness->unfinishedORRequirements[$x]['event'] == Module::kLOG_PICKUP_ITEM && $strEventDetail2 >= 0) || 
+                   ($strEventType == Module::kLOG_DROP_ITEM && $unfinishedBusiness->unfinishedORRequirements[$x]['event'] == Module::kLOG_DROP_ITEM && $strEventDetail2 < 0)){
+                    $query = "SELECT qty FROM {$intGameID}_player_items WHERE player_id = '{$intPlayerId}' AND item_id = '{$strEventDetail1}'";
+                    $result = mysql_query($query);
+                    if($newQty = mysql_fetch_object($result)){
+                        $newQty = $newQty->qty + $strEventDetail2;
+                    }
+                    if($strEventDetail2 >= 0){
+                        if($newQty >= $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
+                            Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+                        }
+                    }
+                    else {
+                        if($newQty < $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
+                            Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+                        }
+                    }
+                }
+                // END weird special inventory calculations
+                
+                else{
+                    if($strEventType == $unfinishedBusiness->unfinishedORRequirements[$x]['event']){
+                        if($strEventDetail2 == $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
+                            Module::fireOffWebHook($intWid, $intPlayerId, $intGameID);
+                            $wOb = new stdClass();
+                            $wOb->id = $intWid;
+                            $wOb->pid = $intPlayerId;
+                            $wOb->gid = $intGameID;
+                            return $wOb;
+                        }
                     }
                 }
             }
         }
         if(count($unfinishedBusiness->unfinishedANDRequirements) == 1){
             if($strEventDetail1 == $unfinishedBusiness->unfinishedANDRequirements[0]['requirement_detail_1']){
-                if($strEventType == $unfinishedBusiness->unfinishedANDRequirements[0]['event']){
-                    if($strEventDetail2 == $unfinishedBusiness->unfinishedANDRequirements[0]['requirement_detail_2']){
-                        Module::fireOffWebHook($intWid, $intPlayerId, $intGameID);
-                        return;
-                        $wOb = new stdClass();
-                        $wOb->id = $intWid;
-                        $wOb->pid = $intPlayerId;
-                        $wOb->gid = $intGameID;
-                        return $wOb;
+                
+                //Weird special calculations in case that event type is dealing with inventory
+                if(($strEventType == Module::kLOG_PICKUP_ITEM && $unfinishedBusiness->unfinishedANDRequirements[0]['event'] == Module::kLOG_PICKUP_ITEM && $strEventDetail2 >= 0) || 
+                   ($strEventType == Module::kLOG_DROP_ITEM && $unfinishedBusiness->unfinishedANDRequirements[0]['event'] == Module::kLOG_DROP_ITEM && $strEventDetail2 < 0)){
+                    $query = "SELECT qty FROM {$intGameID}_player_items WHERE player_id = '{$intPlayerId}' AND item_id = '{$strEventDetail1}'";
+                    $result = mysql_query($query);
+                    if($newQty = mysql_fetch_object($result)){
+                        $newQty = $newQty->qty + $strEventDetail2;
+                    }
+                    if($strEventDetail2 >= 0){
+                        if($newQty >= $unfinishedBusiness->unfinishedANDRequirements[0]['requirement_detail_2']){
+                            Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+                        }
+                    }
+                    else {
+                        if($newQty < $unfinishedBusiness->unfinishedANDRequirements[0]['requirement_detail_2']){
+                            Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+                        }
+                    }
+                }
+                // END weird special inventory calculations
+                
+                else{
+                    if($strEventType == $unfinishedBusiness->unfinishedANDRequirements[0]['event']){
+                        if($strEventDetail2 == $unfinishedBusiness->unfinishedANDRequirements[0]['requirement_detail_2']){
+                            Module::fireOffWebHook($intWid, $intPlayerId, $intGameID);
+                            $wOb = new stdClass();
+                            $wOb->id = $intWid;
+                            $wOb->pid = $intPlayerId;
+                            $wOb->gid = $intGameID;
+                            return $wOb;
+                        }
                     }
                 }
             }
         }
+        return "NO";
     }
    
     
