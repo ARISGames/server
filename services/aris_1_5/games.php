@@ -617,9 +617,9 @@ class Games extends Module
 	/**
      * Updates all game databases using upgradeGameDatabase
      */	
-	public function upgradeGameDatabases() 
+	public function upgradeGameDatabases($startingGameIndex) 
 	{		
-		$query = "SELECT * FROM games";
+		$query = "SELECT * FROM games WHERE game_id > $startingGameIndex ORDER BY game_id";
 		$rs = @mysql_query($query);
 		if (mysql_error())  return new returnData(3, NULL, 'SQL error');
 		
@@ -856,6 +856,10 @@ class Games extends Module
      */	
 	public function upgradeGameDatabase($intGameID)
 	{	
+		set_time_limit(30);
+		
+		Module::serverErrorLog("Upgrade Game $intGameID");
+		
 		$prefix = Module::getPrefix($intGameID);
 
 
