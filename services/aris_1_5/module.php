@@ -157,7 +157,13 @@ abstract class Module
     */ 
     protected function adjustQtyForPlayerItem($strGamePrefix, $intItemID, $intPlayerID, $amountOfAdjustment) {
 		
-        //Check if this completes quest
+        //PHIL_REQ_CODE:
+        // This is the only time these functions are called OTHER than via appendLog. This is necessary, as this is the only function that
+        // has potential for completing a quest and DOESN'T append anything to the log. 
+        // See 'appendLog' for a detailed description of these functions.
+        //
+        // Note- these functions have built in special functionality in dealing with kLOG_PICKUP_ITEM that DOES directly append the quest completed
+        // log. So nothing need be done with either $qObs nor $wObs.
         $qObs = Module::appendCompletedQuestsIfReady($intPlayerID, $strGamePrefix, Module::kLOG_PICKUP_ITEM, $intItemID, $amountOfAdjustment);
         $wObs = Module::fireOffWebHooksIfReady($intPlayerID, $strGamePrefix, Module::kLOG_PICKUP_ITEM, $intItemID, $amountOfAdjustment);
         
@@ -668,11 +674,11 @@ abstract class Module
             //PHIL_REQ_CODE:
             // $qObs is a list of 'quest objects' that need to be appended to the log. The reason they are bubbled up 
             // to this level of the call stack rather than simply appended upon their discovery is for chained quests.
-            // Since appendLog only checks if the current quest being appended is the last necessary appendation to complete
+            // Since appendLog only checks if the current quest being appended is THE (singular) last necessary appendation to complete
             // a quest, if it were recursively called, the thing that was necessary to complete the first quest has yet to be 
             // appended, so it would return false. 
             // Simply, it finds all the quests that are being completed, stores them here, appends the thing that completed them, 
-            // and then further down in this function they are finally called to be appended in case they are the last thing to 
+            // and then further down in this function they are finally (recursively) called to be appended in case they are the last thing to 
             // complete another quest.
             $qObs = Module::appendCompletedQuestsIfReady($intPlayerID, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2);
             //PHIL_REQ_CODE:
