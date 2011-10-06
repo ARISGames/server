@@ -649,8 +649,36 @@ abstract class Module
      */
 	protected function appendLog($intPlayerID, $intGameID, $strEventType, $strEventDetail1=null, $strEventDetail2=null)
 	{
+        /*
+         READ THIS TO UNDERSTAND HOW THIS RIDICULOUS CODE WORKS
+         ------------------------------------------------------
+         The following code's purpose is to know when to append 'quest complete' or when to fire off a web hook. The reason these both require special code 
+         is because they are one time EVENTS that rely on a current STATE (where the requirements for a location for example, define a STATE (location showing) 
+         as a result of a current STATE (requirements complete)).
+         
+         Simply put- for any event incoming to the log, this code checks if that event is the last one required to complete a quest or fire a web hook. If so,
+         it does it. 
+         
+         However, it gets much more complicated with edge cases, which I will comment details about inline with the code, prefixed with the string 
+         '//PHIL_REQ_CODE:' so the relevant comments can be quickly searched for.
+         
+         Few have read this code and lived to understand it. Good luck, and God speed.
+         */
         if($intGameID != ""){
+            //PHIL_REQ_CODE:
+            // $qObs is a list of 'quest objects' that need to be appended to the log. The reason they are bubbled up 
+            // to this level of the call stack rather than simply appended upon their discovery is for chained quests.
+            // Since appendLog only checks if the current quest being appended is the last necessary appendation to complete
+            // a quest, if it were recursively called, the thing that was necessary to complete the first quest has yet to be 
+            // appended, so it would return false. 
+            // Simply, it finds all the quests that are being completed, stores them here, appends the thing that completed them, 
+            // and then further down in this function they are finally called to be appended in case they are the last thing to 
+            // complete another quest.
             $qObs = Module::appendCompletedQuestsIfReady($intPlayerID, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2);
+            //PHIL_REQ_CODE:
+            // $wObs is a list of 'web hook objects' to be fired. They (unlike $qObs) CAN be fired further down the call stack, 
+            // and so they are. They are bubbled up similarily to $qObs as well because they largely use the same code, and it 
+            // doesn't hurt. But currently, nothing need be done with $wObs.
             $wObs = Module::fireOffWebHooksIfReady($intPlayerID, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2);
         }
         else{
@@ -675,21 +703,27 @@ abstract class Module
 		
         if($qObs != "NO")
         {
+            //PHIL_REQ_CODE:
+            // This appends the quests that were completed as a result of whatever was just appended to the log.
+            // It does this recursively for the case that the completion of these also completes a quest. 
             foreach($qObs as $key => $qOb){
                 Module::appendLog($qOb->pid, $qOb->gid, "COMPLETE_QUEST", $qOb->id, 'N/A');
-            }
-        }
-        if($wObs != "NO")
-        {
-            foreach($wObs as $key => $wOb){
-                //Module::appendLog($wOb->pid, $wOb->gid, "OUTGOING_WEB_HOOK_FIRED", $wOb->id, 'N/A');
             }
         }
         
 		else return true;
 	}	
 	
+    //PHIL_REQ_CODE:
+    // Takes as input an event, and checks to see if that event is sufficient to complete ANY quests for a certain user. Returns
+    // an array of 'Quest Objects', or "NO" if no quests are to be completed.
+    // NOTE: this function is called 'appendCompletedQuestsIfReady'.
+    // It CALLS a function called    'appendCompletedQuestIfReady' for every one of the questS. (<- capitol 'S' intentional for emphasis)
+    //
+    //
+    // *** This function is called from 'appendLog' 99% of the time. The only other place is from inventory changes. (more explanation there)
     protected function appendCompletedQuestsIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2){
+        
         if($strEventDetail1 == null) $strEventDetail1 = "N/A";
         if($strEventDetail2 == null) $strEventDetail2 = "N/A";
         
@@ -700,19 +734,27 @@ abstract class Module
         $qObs = array();
         while($quest = mysql_fetch_object($result)){
             $qOb = Module::appendCompletedQuestIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2, $quest->quest_id);
-            if($qOb != "NO") $qObs[] = $qOb;
+            if($qOb != "NO") $qObs[] = $qOb; //PHIL_REQ_CODE: Only adds quest if the event being passed into it will complete it. Otherwise, the function returns "NO".
         }
         if(count($qObs)==0) return "NO";
         else return $qObs;
     }
     
+    //PHIL_REQ_CODE:
+    // Takes as input an event AND a quest ID. Checks if the current event completes THAT quest. If yes, returns a bunch of data
+    // about the quest called a 'Quest Object', and if not, returns "NO".
     protected function appendCompletedQuestIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2, $intQid){
+        
+        //PHIL_REQ_CODE:
+        // $unfinishedBusiness contains two parts-
+        //  unfinishedORRequirements contains all unfinished OR requirements. If ANY of these equal the event happening, this completes the quest.
+        //  unfinishedANDRequirements ''    ''  ''  ''  ''  AND requirements. If there is only ONE of these, AND it equals the event happening, this completes the quest.
         $unfinishedBusiness = Module::getOutstandingRequirements($intGameID, $intPlayerId, 'QuestComplete', $intQid);
         
         for($x = 0; $x < count($unfinishedBusiness->unfinishedORRequirements); $x++){
             if($strEventDetail1 == $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_1']){
 
-                //Weird special calculations in case that event type is dealing with inventory
+                //PHIL_REQ_CODE: Weird special calculations in case that event type is dealing with inventory
                 if(($strEventType == Module::kLOG_PICKUP_ITEM && $unfinishedBusiness->unfinishedORRequirements[$x]['event'] == Module::kLOG_PICKUP_ITEM && $strEventDetail2 >= 0) || 
                    ($strEventType == Module::kLOG_DROP_ITEM && $unfinishedBusiness->unfinishedORRequirements[$x]['event'] == Module::kLOG_DROP_ITEM && $strEventDetail2 < 0)){
                     $query = "SELECT qty FROM {$intGameID}_player_items WHERE player_id = '{$intPlayerId}' AND item_id = '{$strEventDetail1}'";
@@ -736,7 +778,15 @@ abstract class Module
                 else{
                     if($strEventType == $unfinishedBusiness->unfinishedORRequirements[$x]['event']){
                         if($strEventDetail2 == $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
-                            //Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+                            //PHIL_REQ_CODE: 
+                            // The below line is commented out so it can be bubbled down the call stack to get appended later.
+                            // However, at this point we KNOW that this quest needs to get appended (which we do later)
+                            
+                            //Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID); 
+                            
+                            
+                            //PHIL_REQ_CODE:
+                            // This creates the quest object with all of the quests necessary info
                             $qOb = new stdClass();
                             $qOb->append = true;
                             $qOb->id = $intQid;
@@ -748,7 +798,9 @@ abstract class Module
                 }
             }
         }
-        if(count($unfinishedBusiness->unfinishedANDRequirements) == 1){
+    
+        //PHIL_REQ_CODE: Above 'loop' comments also apply to this 'if'. Only difference is that any one of those will denote the quest completed, while this NEEDS to be the only one.
+        if(count($unfinishedBusiness->unfinishedANDRequirements) == 1){            
             if($strEventDetail1 == $unfinishedBusiness->unfinishedANDRequirements[0]['requirement_detail_1']){
                 
                 //Weird special calculations in case that event type is dealing with inventory
@@ -791,11 +843,13 @@ abstract class Module
                 }
             }
         }
+        
+        //PHIL_REQ_CODE: Function returns "NO" if no OR reqs were completed as a result of the event, and the last AND requirement was also not completed as a result of the event
         return "NO";
     }
     
     protected function appendCompletedQuest($intQid, $intPlayerId, $intGameId){
-        NetDebug::trace("APPEND ZE QVEST!");
+        //PHIL_REQ_CODE: This shouldn't get called anymore, as ANY appendation of the log should go through 'appendLog()'
         $query = "INSERT INTO player_log 
         (player_id, game_id, event_type, event_detail_1,event_detail_2) 
         VALUES 
@@ -816,6 +870,9 @@ abstract class Module
     }
     
     
+    //PHIL_REQ_CODE:
+    // All 'webHook' functions below are DIRECTLY analogous to the above 'questComplete' functions above. See those comments for details.
+    // I will only note where they differ in this code
     /**
      * Fire off outgoing web hooks if requirement is final one needed
      * @returns true on success
@@ -867,6 +924,9 @@ abstract class Module
                 else{
                     if($strEventType == $unfinishedBusiness->unfinishedORRequirements[$x]['event']){
                         if($strEventDetail2 == $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
+                            //PHIL_REQ_CODE:
+                            // This differs from the quest complete check because this ACTUALLY fires off the webhook, rather than waiting for it to be done
+                            // down the call stack.
                             Module::fireOffWebHook($intWid, $intPlayerId, $intGameID);
                             $wOb = new stdClass();
                             $wOb->id = $intWid;
@@ -931,6 +991,12 @@ abstract class Module
         return 0;
     }
     
+    
+    
+    //PHIL_REQ_CODE:
+    // This very closely emulates the above function of 'objectMeetsRequirements'. However, rather than this returning true or false, 
+    // it simply returns a list of remaining requirements in two groups:
+    // unfinishedANDRequirements, and unfinishedORRequirements.
     
     /**
      * Gets requirements that have not yet been met for an event
