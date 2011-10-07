@@ -370,12 +370,10 @@ class Games extends Module
 			requirement_id int(11) NOT NULL auto_increment,
 			content_type enum('Node','QuestDisplay','QuestComplete','Location','OutgoingWebHook') NOT NULL,
 			content_id int(10) unsigned NOT NULL,
-			requirement enum( 'PLAYER_HAS_ITEM', 'PLAYER_DOES_NOT_HAVE_ITEM', 'PLAYER_VIEWED_ITEM',
-							'PLAYER_HAS_NOT_VIEWED_ITEM', 'PLAYER_VIEWED_NODE', 'PLAYER_HAS_NOT_VIEWED_NODE',
-							'PLAYER_VIEWED_NPC', 'PLAYER_HAS_NOT_VIEWED_NPC', 'PLAYER_VIEWED_WEBPAGE', 'PLAYER_HAS_NOT_VIEWED_WEBPAGE', 
-							'PLAYER_VIEWED_AUGBUBBLE', 'PLAYER_HAS_NOT_VIEWED_AUGBUBBLE', 'PLAYER_HAS_UPLOADED_MEDIA_ITEM', 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE', 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO', 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO', 
-                            'PLAYER_HAS_COMPLETED_QUEST', 'PLAYER_HAS_NOT_COMPLETED_QUEST', 'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK') NOT NULL,
-			boolean_operator enum('AND','OR') NOT NULL DEFAULT 'AND',				
+			requirement ENUM(  'PLAYER_HAS_ITEM',  'PLAYER_VIEWED_ITEM',  'PLAYER_VIEWED_NODE',  'PLAYER_VIEWED_NPC', 'PLAYER_VIEWED_WEBPAGE',  'PLAYER_VIEWED_AUGBUBBLE',  'PLAYER_HAS_UPLOADED_MEDIA_ITEM',  'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE',  'PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO', 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO',  'PLAYER_HAS_COMPLETED_QUEST',  'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK' ) NOT NULL,
+			boolean_operator enum('AND','OR') NOT NULL DEFAULT 'AND',	
+            not_operator ENUM(  'DO',  'NOT' ) NOT NULL DEFAULT 'DO',
+            group_operator ENUM(  'SELF',  'GROUP' ) NOT NULL DEFAULT 'SELF',
 			requirement_detail_1 VARCHAR(30) NULL,
 			requirement_detail_2 VARCHAR(30) NULL,
 			requirement_detail_3 VARCHAR(30) NULL,
@@ -384,8 +382,7 @@ class Games extends Module
 			)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(6, NULL, 'cannot create requirments table' . mysql_error());
-		
-	
+        
 		$query = "CREATE TABLE {$strShortName}_locations (
 	  		location_id int(11) NOT NULL auto_increment,
 			name varchar(255) NOT NULL,
@@ -846,6 +843,30 @@ class Games extends Module
         mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
+        $query = "CREATE TABLE `player_group` (
+        `player_id` INT NOT NULL ,
+        `group_id` INT NOT NULL ,
+        `game_id` INT NOT NULL
+        ) ENGINE = INNODB";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+    
+        $query = "CREATE TABLE `groups` (
+        `group_id` INT NOT NULL AUTO_INCREMENT PRIMARY KEY ,
+        `game_id` INT NOT NULL ,
+        `name` TINYTEXT NOT NULL
+        ) ENGINE = INNODB";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "ALTER TABLE `player_group` ADD PRIMARY KEY (  `player_id` ,  `game_id` )";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "ALTER TABLE  `player_group` ADD UNIQUE  `group_id` (  `group_id` )";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
         return new returnData(0, FALSE);
 	}
 	
@@ -861,7 +882,6 @@ class Games extends Module
 		Module::serverErrorLog("Upgrade Game $intGameID");
 		
 		$prefix = Module::getPrefix($intGameID);
-
 
 		$query = "ALTER TABLE  {$prefix}_locations ADD allow_quick_travel enum('0','1') NOT NULL default '0'";
 		mysql_query($query);
@@ -989,8 +1009,35 @@ class Games extends Module
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
+        $query = "ALTER TABLE  `{$prefix}_requirements` ADD  `not_operator` ENUM(  'DO',  'NOT' ) NOT NULL AFTER  `boolean_operator` ,
+        ADD  `group_operator` ENUM(  'SELF',  'GROUP' ) NOT NULL AFTER  `not_operator`";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        //Mass conversion of requirement tables- this need only be done once, and is purty expensive, so should be commented out after done the first time
+        $query = "UPDATE '{$prefix}_requirements SET not_operator = 'NOT' AND requirement = 'PLAYER_HAS_ITEM' WHERE requirement = 'PLAYER_DOES_NOT_HAVE_ITEM'";
+        mysql_query($query);
+        $query = "UPDATE '{$prefix}_requirements SET not_operator = 'NOT' AND requirement = 'PLAYER_VIEWED_ITEM' WHERE requirement = 'PLAYER_HAS_NOT_VIEWED_ITEM'";
+        mysql_query($query);
+        $query = "UPDATE '{$prefix}_requirements SET not_operator = 'NOT' AND requirement = 'PLAYER_VIEWED_NODE' WHERE requirement = 'PLAYER_HAS_NOT_VIEWED_NODE'";
+        mysql_query($query);
+        $query = "UPDATE '{$prefix}_requirements SET not_operator = 'NOT' AND requirement = 'PLAYER_VIEWED_NPC' WHERE requirement = 'PLAYER_HAS_NOT_VIEWED_NPC'";
+        mysql_query($query);
+        $query = "UPDATE '{$prefix}_requirements SET not_operator = 'NOT' AND requirement = 'PLAYER_VIEWED_WEBPAGE' WHERE requirement = 'PLAYER_HAS_NOT_VIEWED_WEBPAGE'";
+        mysql_query($query);
+        $query = "UPDATE '{$prefix}_requirements SET not_operator = 'NOT' AND requirement = 'PLAYER_VIEWED_AUGBUBBLE' WHERE requirement = 'PLAYER_HAS_NOT_VIEWED_AUGBUBBLE'";
+        mysql_query($query);
+        $query = "UPDATE '{$prefix}_requirements SET not_operator = 'NOT' AND requirement = 'PLAYER_HAS_COMPLETED_QUEST' WHERE requirement = 'PLAYER_HAS_NOT_COMPLETED_QUEST'";
+        mysql_query($query);        
         
         
+        $query = "ALTER TABLE  `{$prefix}_requirements` CHANGE  `requirement`  `requirement` ENUM(  'PLAYER_HAS_ITEM',  'PLAYER_VIEWED_ITEM',  'PLAYER_VIEWED_NODE',  'PLAYER_VIEWED_NPC', 'PLAYER_VIEWED_WEBPAGE',  'PLAYER_VIEWED_AUGBUBBLE',  'PLAYER_HAS_UPLOADED_MEDIA_ITEM',  'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE',  'PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO', 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO',  'PLAYER_HAS_COMPLETED_QUEST',  'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        
+        
+        //NOTE TO SELF*: Any additions/editions to this function will have to be reciprocated on the 'create game' function as well
         
         
 	}

@@ -64,7 +64,7 @@ class Requirements extends Module
      * @see returnData
      */
 	public function createRequirement($gameId, $objectType, $objectId, 
-		$requirementType, $requirementDetail1, $requirementDetail2, $requirementDetail3, $booleanOperator)
+		$requirementType, $requirementDetail1, $requirementDetail2, $requirementDetail3, $booleanOperator, $notOperator)
 	{
 		$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
@@ -76,14 +76,14 @@ class Requirements extends Module
 		if (!$this->isValidRequirementType($gameId, $requirementType)) return new returnData(5, NULL, "Invalid requirement type");
 		
 		//if the requirement type refers to an item, make sure the QTY is set to 1 or more
-		if (($requirementType == "PLAYER_HAS_ITEM" || $requirementType == "PLAYER_DOES_NOT_HAVE_ITEM") && $requirementDetail2 < 1) 
+		if (($requirementType == "PLAYER_HAS_ITEM") && $requirementDetail2 < 1) 
 			$requirementDetail2 = 1;
 		
 		$query = "INSERT INTO {$prefix}_requirements 
 					(content_type, content_id, requirement, 
-					requirement_detail_1,requirement_detail_2,requirement_detail_3,boolean_operator)
+					requirement_detail_1,requirement_detail_2,requirement_detail_3,boolean_operator,not_operator)
 				VALUES ('{$objectType}','{$objectId}','{$requirementType}',
-					'{$requirementDetail1}', '{$requirementDetail2}', '{$requirementDetail3}', '{$booleanOperator}')";
+					'{$requirementDetail1}', '{$requirementDetail2}', '{$requirementDetail3}', '{$booleanOperator}','{$notOperator}')";
 		
 		NetDebug::trace("Running a query = $query");	
 		
@@ -115,7 +115,7 @@ class Requirements extends Module
      */
 	public function updateRequirement($gameId, $requirementId, $objectType, $objectId, 
 		$requirementType, $requirementDetail1, $requirementDetail2,$requirementDetail3,
-		$booleanOperator)
+		$booleanOperator,$notOperator)
 	{
 		$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
@@ -136,7 +136,8 @@ class Requirements extends Module
 					requirement_detail_1 = '{$requirementDetail1}',
 					requirement_detail_2 = '{$requirementDetail2}',
 					requirement_detail_3 = '{$requirementDetail3}',
-					boolean_operator = '{$booleanOperator}'
+					boolean_operator = '{$booleanOperator}',
+                    not_operator = '{$notOperator}'
 					WHERE requirement_id = '{$requirementId}'";
 		
 		NetDebug::trace("Running a query = $query");	
@@ -182,31 +183,27 @@ class Requirements extends Module
 		
 		switch ($objectType) {
 			case 'Node':
-				$requirementString = "requirement = 'PLAYER_VIEWED_NODE' OR 
-										requirement = 'PLAYER_HAS_NOT_VIEWED_NODE'";
+				$requirementString = "requirement = 'PLAYER_VIEWED_NODE'";
 				break;			
 			case 'Item':
 				$requirementString = "requirement = 'PLAYER_HAS_ITEM' OR
-									requirement = 'PLAYER_DOES_NOT_HAVE_ITEM' OR
-									requirement = 'PLAYER_VIEWED_ITEM' OR
-									requirement = 'PLAYER_HAS_NOT_VIEWED_ITEM'";
+									requirement = 'PLAYER_VIEWED_ITEM'";
 				break;
 			case 'Npc':
-				$requirementString = "requirement = 'PLAYER_VIEWED_NPC' OR
-									requirement = 'PLAYER_HAS_NOT_VIEWED_NPC'";
+				$requirementString = "requirement = 'PLAYER_VIEWED_NPC'";
 				break;
             case 'AugBubble':
-				$requirementString = "requirement = 'PLAYER_VIEWED_AUGBUBBLE' OR
-                                    requirement = 'PLAYER_HAS_NOT_VIEWED_AUGBUBBLE'";
+				$requirementString = "requirement = 'PLAYER_VIEWED_AUGBUBBLE'";
 				break;
             case 'WebPage':
-				$requirementString = "requirement = 'PLAYER_VIEWED_WEBPAGE' OR
-                                    requirement = 'PLAYER_HAS_NOT_VIEWED_WEBPAGE'";
+				$requirementString = "requirement = 'PLAYER_VIEWED_WEBPAGE'";
 				break;
             case 'WebHook':
-				$requirementString = "requirement = 'PLAYER_HAS_RECEIVED_INCOMING_WEBHOOK' OR
-                                    requirement = 'PLAYER_HAS_NOT_RECEIVED_INCOMING_WEBHOOK'";
+				$requirementString = "requirement = 'PLAYER_HAS_RECEIVED_INCOMING_WEBHOOK'";
 				break;
+            case 'Quest':
+                $requirementString = "requirement = 'PLAYER_HAS_COMPLETED_QUEST'";
+                break;
 			default:
 				return new returnData(4, NULL, "invalid object type");
 		}
