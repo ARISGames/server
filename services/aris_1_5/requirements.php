@@ -64,7 +64,7 @@ class Requirements extends Module
      * @see returnData
      */
 	public function createRequirement($gameId, $objectType, $objectId, 
-		$requirementType, $requirementDetail1, $requirementDetail2, $requirementDetail3, $booleanOperator, $notOperator)
+		$requirementType, $requirementDetail1, $requirementDetail2, $requirementDetail3, $requirementDetail4, $booleanOperator, $notOperator)
 	{
 		$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
@@ -81,16 +81,16 @@ class Requirements extends Module
 		
 		$query = "INSERT INTO {$prefix}_requirements 
 					(content_type, content_id, requirement, 
-					requirement_detail_1,requirement_detail_2,requirement_detail_3,boolean_operator,not_operator)
+					requirement_detail_1,requirement_detail_2,requirement_detail_3,requirement_detail_4,boolean_operator,not_operator)
 				VALUES ('{$objectType}','{$objectId}','{$requirementType}',
-					'{$requirementDetail1}', '{$requirementDetail2}', '{$requirementDetail3}', '{$booleanOperator}','{$notOperator}')";
+					'{$requirementDetail1}', '{$requirementDetail2}', '{$requirementDetail3}', '{$requirementDetail4}', '{$booleanOperator}','{$notOperator}')";
 		
 		NetDebug::trace("Running a query = $query");	
 		
 		@mysql_query($query);
-				NetDebug::trace(mysql_error());	
+				//NetDebug::trace(mysql_error());	
 
-		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error:".mysql_error());
 		
 		return new returnData(0, mysql_insert_id());
 	}
@@ -114,7 +114,7 @@ class Requirements extends Module
      * @see returnData
      */
 	public function updateRequirement($gameId, $requirementId, $objectType, $objectId, 
-		$requirementType, $requirementDetail1, $requirementDetail2,$requirementDetail3,
+		$requirementType, $requirementDetail1, $requirementDetail2,$requirementDetail3,$requirementDetail4,
 		$booleanOperator,$notOperator)
 	{
 		$prefix = Module::getPrefix($gameId);
@@ -136,6 +136,7 @@ class Requirements extends Module
 					requirement_detail_1 = '{$requirementDetail1}',
 					requirement_detail_2 = '{$requirementDetail2}',
 					requirement_detail_3 = '{$requirementDetail3}',
+                    requirement_detail_4 = '{$requirementDetail4}',
 					boolean_operator = '{$booleanOperator}',
                     not_operator = '{$notOperator}'
 					WHERE requirement_id = '{$requirementId}'";

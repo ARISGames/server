@@ -307,7 +307,7 @@ class Games extends Module
 							'{$boolAllowPlayerCreatedLocations}','{$boolResetDeletesPlayerCreatedLocations}',
 							'{$intIntroNodeId}','{$intCompleteNodeId}','{$intInventoryCap}')";
 		@mysql_query($query);
-		if (mysql_error())  return new returnData(6, NULL, 'cannot create game record');
+		if (mysql_error())  return new returnData(6, NULL, "cannot create game record using SQL: $query");
 		$newGameID = mysql_insert_id();
 	    $strShortName = mysql_insert_id();
 	
@@ -377,6 +377,7 @@ class Games extends Module
 			requirement_detail_1 VARCHAR(30) NULL,
 			requirement_detail_2 VARCHAR(30) NULL,
 			requirement_detail_3 VARCHAR(30) NULL,
+            requirement_detail_4 VARCHAR(30) NULL,
 			PRIMARY KEY  (requirement_id),
 			KEY `contentIndex` (  `content_type` ,  `content_id` )
 			)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
@@ -1036,8 +1037,23 @@ class Games extends Module
 		NetDebug::trace("$query" . ":" . mysql_error());
         
         
+        $query = "ALTER TABLE  `{$prefix}_requirements` ADD  `requirement_detail_4` VARCHAR( 30 ) NULL DEFAULT NULL";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
         
-        //NOTE TO SELF*: Any additions/editions to this function will have to be reciprocated on the 'create game' function as well
+        //DO THIS ONLY ONE TIME EVER PER DATABASE
+        //Moves requirement_detail_1 & _2 to _3 & _4. Makes requirement_detail_1 = radius and _2 = qty.
+        /*
+        $query = "SELECT * FROM '{$prefix}_requirements WHERE requirement = 'PLAYER_HAS_UPLOADED_MEDIA_ITEM' OR requirement = 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE' OR requirement = 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO' OR requirement = 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO'";
+        $result = mysql_query($query);
+        while($row = mysql_fetch_object($result))
+        {
+            $query = "UPDATE '{$prefix}_requirements' SET requirement_detail_1 = '{$row->requirement_detail_3}', requirement_detail_2 = '1', requirement_detail_3 = '{$row->requirement_detail_1}', requirement_detail_4 = '{$row->requirement_detail_2}' WHERE requirement_id = '{$row->requirement_id}'";
+            mysql_query($query);
+        }
+        */
+        
+        //*NOTE: Any additions/editions to the contents of this function will have to be reciprocated on the 'create game' function as well
         
         
 	}
@@ -1571,7 +1587,7 @@ class Games extends Module
         $query = "INSERT INTO {$newPrefix}_quests (quest_id, name, description, text_when_complete, icon_media_id) SELECT quest_id, name, description, text_when_complete, icon_media_id FROM {$prefix}_quests";
         mysql_query($query);
         
-        $query = "INSERT INTO {$newPrefix}_requirements (requirement_id, content_type, content_id, requirement, boolean_operator, requirement_detail_1, requirement_detail_2, requirement_detail_3) SELECT requirement_id, content_type, content_id, requirement, boolean_operator, requirement_detail_1, requirement_detail_2, requirement_detail_3 FROM {$prefix}_requirements";
+        $query = "INSERT INTO {$newPrefix}_requirements (requirement_id, content_type, content_id, requirement, boolean_operator, requirement_detail_1, requirement_detail_2, requirement_detail_3, requirement_detail_4) SELECT requirement_id, content_type, content_id, requirement, boolean_operator, requirement_detail_1, requirement_detail_2, requirement_detail_3, requirement_detail_4 FROM {$prefix}_requirements";
         mysql_query($query);
         
         $query = "SELECT * FROM game_tab_data WHERE game_id = {$prefix}";
