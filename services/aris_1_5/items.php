@@ -493,9 +493,11 @@ class Items extends Module
 
 		$backPack->owner=$name;
 
-		$query = "SELECT DISTINCT i.item_id, i.name, i.description, i.is_attribute, i.max_qty_in_inventory, i.weight, i.type, i.url, pi.qty, m.name as media_name, m.file_name as media_file_name, im.name as icon_name, im.file_name as icon_file_name FROM {$prefix}_player_items as pi, {$prefix}_items as i LEFT JOIN media as m ON i.media_id = m.media_id OR i.media_id = 0 LEFT JOIN media as im ON i.icon_media_id = im.media_id OR i.icon_media_id = 0 WHERE pi.player_id = {$playerId} AND pi.item_id = i.item_id";
+		$query = "SELECT DISTINCT i.item_id, i.name, i.description, i.is_attribute, i.max_qty_in_inventory, i.weight, i.type, i.url, pi.qty, m.name as media_name, m.file_name as media_file_name, m.game_id as media_game_id, im.name as icon_name, im.file_name as icon_file_name, im.game_id as icon_game_id FROM {$prefix}_player_items as pi, {$prefix}_items as i LEFT JOIN media as m ON i.media_id = m.media_id OR i.media_id = 0 LEFT JOIN media as im ON i.icon_media_id = im.media_id OR i.icon_media_id = 0 WHERE pi.player_id = {$playerId} AND pi.item_id = i.item_id";
 		$result = mysql_query($query);
-		$contents = mysql_fetch_object($result);
+		$contents = array();
+		while($content = mysql_fetch_object($result))
+			$contents[] = $content;
 
 		$backPack->contents = $contents;
 		return $backPack;

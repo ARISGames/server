@@ -18,46 +18,46 @@
 ?>
 </head>
 <body>
+<br />
 <table>
 <?php
 foreach($backPack->contents as $content)
 {
-	echo "<tr><td><table>";
+	echo "<tr><td><table border='1'>";
 	$numAttribs = 2;
-	$colTitles = "<tr><td><b>Icon</b></td><td><b>Quantity</b></td>";
-	$colData = "<tr><td><img src = \"{$content->icon_file_name}\" alt=\"{$content->icon_name}\" title=\"{$content->icon_name}\"/></td><td>{$content->qty}</td>";
+	$colTitles = "<tr><td align=\"center\" valign=\"top\"></td><td align=\"center\" valign=\"top\"><b>Quantity</b></td>";
+	$colData = "<tr><td align=\"center\" valign=\"top\"><img src = \"../../gamedata/{$content->icon_game_id}/{$content->icon_file_name}\" alt=\"{$content->icon_name}\" title=\"{$content->icon_name}\"/><br /><b>{$content->name}</b></td><td align=\"center\" valign=\"top\">{$content->qty}</td>";
 
 	if($content->type == "NORMAL")
 	{
 		if($content->weight != 0)
 		{
 			$numAttribs++;
-			$colTitles = $colTitles."<td><b>Weight</b></td>";
-			$colData = $colData."<td>{$content->weight}</td>";
+			$colTitles = $colTitles."<td align=\"center\" valign=\"top\"><b>Weight</b></td>";
+			$colData = $colData."<td align=\"center\" valign=\"top\">{$content->weight}</td>";
 		}
 
 		if($content->media_name)
 		{
 			$numAttribs++;
-			$colTitles = $colTitles."</td><td><b>Media</b></td>";
-			$colData = $colData."<td><img src=\"{$content->media_file_name}\" alt=\"{$content->media_name}\" title=\"{$content->media_name}\" /></td>";
+			$colTitles = $colTitles."</td><td align=\"center\" valign=\"top\"><b>Media</b></td>";
+			$colData = $colData."<td align=\"center\" valign=\"top\"><img src=\"../../gamedata/{$content->media_game_id}/{$content->media_file_name}\" alt=\"{$content->media_name}\" title=\"{$content->media_name}\" /></td>";
 		}
 	}
 	else if($content->type == "URL")
 	{
 		$numAttribs++;
-		$colTitles = $colTitles."<td><b>URL</b></td>";
-		$colData = $colData."<td><a href=\"{$content->url}\">Web</a></td>";
+		$colTitles = $colTitles."<td align=\"center\" valign=\"top\"><b>URL</b></td>";
+		$colData = $colData."<td align=\"center\" valign=\"top\"><a href=\"{$content->url}\">Web</a></td>";
 	}
 
 	$colTitles = $colTitles."</tr>";
 	$colData = $colData."</tr>";
 
-	echo "<tr><td colspan='{$numAttribs}'><b>$content->name</b></td></td>";
 	echo $colTitles;
 	echo $colData;
 
-	echo "</table></td></tr><br />";
+	echo "</table></td></tr><tr><td><br /><br /></td></tr>";
 }
 ?>
 </table>
