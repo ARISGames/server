@@ -497,7 +497,7 @@ class Items extends Module
 		$result = mysql_query($query);
 		$contents = mysql_fetch_object($result);
 
-		$backpack->contents = $contents;
+		$backPack->contents = $contents;
 		return $backPack;
 	}
 }

@@ -13,8 +13,8 @@
 	$playerId = $_GET['playerId'];
 	echo "Game Id: {$gameId}<br />";
 	echo "Player Id: {$playerId}<br />";
-	$backPack = Items::getInfoForWebBackpack(intval($gameId),intval($playerId));
-	echo "Player: {$backPack->owner}<br />";
+	$backPack = Items::getInfoForWebBackpack($gameId,$playerId);
+	echo "Player: {$backPack->owner->user_name}<br />";
 ?>
 </head>
 <body>
@@ -40,7 +40,7 @@ foreach($backPack->contents as $content)
 		{
 			$numAttribs++;
 			$colTitles = $colTitles."</td><td><b>Media</b></td>";
-			$colData = $colData."<td><a href=\"{$content->media_file_name}\">{$content->media_name}</a></td>";
+			$colData = $colData."<td><img src=\"{$content->media_file_name}\" alt=\"{$content->media_name}\" title=\"{$content->media_name}\" /></td>";
 		}
 	}
 	else if($content->type == "URL")
