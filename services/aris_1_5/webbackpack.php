@@ -2,8 +2,8 @@
 <head>
 <?php
     require_once('../../config.class.php');
-	require_once('npcs.php');
-    
+    require_once('items.php');
+
     $conn = @mysql_connect(Config::dbHost, Config::dbUser, Config::dbPass);
     mysql_select_db (Config::dbSchema);
     mysql_query("set names utf8");
