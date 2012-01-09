@@ -617,6 +617,9 @@ class Games extends Module
      */	
 	public function upgradeGameDatabases($startingGameIndex) 
 	{		
+        
+        NetDebug::trace("Upgrading Game Databases:\n");
+        
 		$query = "SELECT * FROM games WHERE game_id > $startingGameIndex ORDER BY game_id";
 		$rs = @mysql_query($query);
 		if (mysql_error())  return new returnData(3, NULL, 'SQL error');
@@ -867,6 +870,55 @@ class Games extends Module
         $query = "ALTER TABLE  `player_group` ADD UNIQUE  `group_id` (  `group_id` )";
         mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
+       
+        $query = "ALTER TABLE  `games` ADD `created` TIMESTAMP DEFAULT 0";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "ALTER TABLE  `games` CHANGE `created` `created` TIMESTAMP DEFAULT 0";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "ALTER TABLE  `games` ADD `updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "ALTER TABLE  `games` CHANGE `updated` `updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "ALTER TABLE  `players` ADD `created` TIMESTAMP DEFAULT 0";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "ALTER TABLE  `players` CHANGE `created` `created` TIMESTAMP DEFAULT 0";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "ALTER TABLE  `players` ADD `updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "ALTER TABLE  `players` CHANGE `updated` `updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "ALTER TABLE  `editors` ADD `created` TIMESTAMP DEFAULT 0";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "ALTER TABLE  `editors` CHANGE `created` `created` TIMESTAMP DEFAULT 0";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "ALTER TABLE  `editors` ADD `updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "ALTER TABLE  `editors` CHANGE `updated` `updated` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
         
         return new returnData(0, FALSE);
 	}
