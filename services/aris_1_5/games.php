@@ -301,11 +301,11 @@ class Games extends Module
 		$query = "INSERT INTO games (name, description, pc_media_id, icon_media_id, media_id,
 									is_locational, ready_for_public,
 									allow_player_created_locations, delete_player_locations_on_reset,
-									on_launch_node_id, game_complete_node_id, inventory_weight_cap)
+									on_launch_node_id, game_complete_node_id, inventory_weight_cap, created)
 					VALUES ('{$strFullName}','{$strDescription}','{$intPCMediaID}','{$intIconMediaID}', '{$intMediaID}',
 							'{$boolIsLocational}', '{$boolReadyForPublic}', 
 							'{$boolAllowPlayerCreatedLocations}','{$boolResetDeletesPlayerCreatedLocations}',
-							'{$intIntroNodeId}','{$intCompleteNodeId}','{$intInventoryCap}')";
+							'{$intIntroNodeId}','{$intCompleteNodeId}','{$intInventoryCap}', NOW())";
 		@mysql_query($query);
 		if (mysql_error())  return new returnData(6, NULL, "cannot create game record using SQL: $query");
 		$newGameID = mysql_insert_id();

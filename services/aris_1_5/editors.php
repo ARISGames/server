@@ -47,8 +47,8 @@ class Editors extends Module
 		
 		$strComments = addslashes($strComments);
 		
-		$query = "INSERT INTO editors (name, password, email, comments) 
-				  VALUES ('{$strUser}',MD5('$strPassword'),'{$strEmail}','{$strComments}' )";
+		$query = "INSERT INTO editors (name, password, email, comments, created) 
+				  VALUES ('{$strUser}',MD5('$strPassword'),'{$strEmail}','{$strComments}', NOW())";
 			
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');

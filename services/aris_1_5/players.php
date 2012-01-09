@@ -25,9 +25,9 @@ class Players extends Module
 		}
 		
 		$query = "INSERT INTO players (user_name, password, 
-									first_name, last_name, email) 
+									first_name, last_name, email, created) 
 				  VALUES ('{$strNewUserName}', MD5('$strPassword'),
-				  		'{$strFirstName}','{$strLastName}','{$strEmail}')";
+				  		'{$strFirstName}','{$strLastName}','{$strEmail}', NOW())";
 			
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
