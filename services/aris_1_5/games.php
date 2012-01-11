@@ -919,7 +919,42 @@ class Games extends Module
         mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
+        $query = "ALTER TABLE `notes` DROP column `shared`";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
         
+        $query = "ALTER TABLE `notes` ADD `public_to_notebook` tinyint(1) UNSIGNED NOT NULL DEFAULT 0";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+
+        $query = "ALTER TABLE `notes` ADD `public_to_map` tinyint(1) UNSIGNED NOT NULL DEFAULT 0";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+
+        $query = "ALTER TABLE `note_content` ADD `title` varchar(32) DEFAULT ''";
+        mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+
+	$query = "CREATE TABLE game_tags( game_id INT UNSIGNED NOT NULL, tag VARCHAR(32))";
+	mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+
+	$query = "ALTER TABLE game_tags ADD PRIMARY KEY(game_id,tag)";
+	mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+
+	$query = "CREATE TABLE note_tags ( note_id INT UNSIGNED NOT NULL, tag VARCHAR(32))";
+        mysql_query($query);
+                NetDebug::trace("$query" . ":" . mysql_error());
+
+        $query = "ALTER TABLE note_tags ADD PRIMARY KEY(note_id,tag)";
+        mysql_query($query);
+                NetDebug::trace("$query" . ":" . mysql_error());
+
+	$query = "ALTER TABLE games ADD allow_player_tags TINYINT(1) DEFAULT 0";
+        mysql_query($query);
+                NetDebug::trace("$query" . ":" . mysql_error());
+
         return new returnData(0, FALSE);
 	}
 	
@@ -1745,5 +1780,14 @@ class Games extends Module
         
         return new returnData(0, $newPrefix, NULL);
     }
+
+
+	function addNoteTagToGame($gameId, $tag)
+	{
+		$query = "INSERT INTO game_tags (game_id, tag) VALUES ('{$gameId}', '{$tag}')";
+		$rs = @mysql_query($query);
+		if (mysql_error())  return new returnData(3, NULL, 'SQL error');
+		return new returnData(0);
+	}
 }
 ?>

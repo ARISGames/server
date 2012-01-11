@@ -465,10 +465,10 @@ abstract class Module
 
 		//Fetch the requirements
 		$query = "SELECT requirement,
-						requirement_detail_1,requirement_detail_2,requirement_detail_3,
-						boolean_operator, not_operator
-					FROM {$strPrefix}_requirements 
-					WHERE content_type = '{$strObjectType}' AND content_id = '{$intObjectID}'";
+			requirement_detail_1,requirement_detail_2,requirement_detail_3,
+			boolean_operator, not_operator
+			FROM {$strPrefix}_requirements 
+			WHERE content_type = '{$strObjectType}' AND content_id = '{$intObjectID}'";
 		$rsRequirments = @mysql_query($query);
 		
 		$andsMet = FALSE;
@@ -493,15 +493,15 @@ abstract class Module
 					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NPC, 
                                                            $requirement['requirement_detail_1']);
 					break;
-                case Module::kREQ_PLAYER_VIEWED_WEBPAGE:
+                		case Module::kREQ_PLAYER_VIEWED_WEBPAGE:
 					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_WEBPAGE, 
                                                            $requirement['requirement_detail_1']);
 					break;
-                case Module::kREQ_PLAYER_VIEWED_AUGBUBBLE:
+                		case Module::kREQ_PLAYER_VIEWED_AUGBUBBLE:
 					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_AUGBUBBLE, 
                                                            $requirement['requirement_detail_1']);
 					break;
-                case Module::kREQ_PLAYER_HAS_RECEIVED_INCOMING_WEBHOOK:
+                		case Module::kREQ_PLAYER_HAS_RECEIVED_INCOMING_WEBHOOK:
 					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_RECEIVE_WEBHOOK, 
                                                             $requirement['requirement_detail_1']);
 					break;
@@ -516,19 +516,19 @@ abstract class Module
 						$requirement['requirement_detail_3'], $requirement['requirement_detail_4'], 
                                                                                        $requirement['requirement_detail_1'], $requirement['requirement_detail_2'], Module::kLOG_UPLOAD_MEDIA_ITEM);
 					break;
-                case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO:
-                    NetDebug::trace("isAudio");
+                		case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO:
+                    			NetDebug::trace("isAudio");
 					$requirementMet = Module::playerHasUploadedMediaItemWithinDistence($strPrefix, $intPlayerID, 
                                                                                        $requirement['requirement_detail_3'], $requirement['requirement_detail_4'], 
                                                                                        $requirement['requirement_detail_1'], $requirement['requirement_detail_2'], Module::kLOG_UPLOAD_MEDIA_ITEM_AUDIO);
-                    NetDebug::trace($requirementMet);
+                    			NetDebug::trace($requirementMet);
 					break;
-                case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO:
+                		case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO:
 					$requirementMet = Module::playerHasUploadedMediaItemWithinDistence($strPrefix, $intPlayerID, 
                                                                                        $requirement['requirement_detail_3'], $requirement['requirement_detail_4'], 
                                                                                        $requirement['requirement_detail_1'], $requirement['requirement_detail_2'], Module::kLOG_UPLOAD_MEDIA_ITEM_VIDEO);
 					break;
-                case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE:
+                		case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE:
 					$requirementMet = Module::playerHasUploadedMediaItemWithinDistence($strPrefix, $intPlayerID, 
                                                                                        $requirement['requirement_detail_3'], $requirement['requirement_detail_4'], 
                                                                                        $requirement['requirement_detail_1'], $requirement['requirement_detail_2'], Module::kLOG_UPLOAD_MEDIA_ITEM_IMAGE);
@@ -539,8 +539,8 @@ abstract class Module
 					break;	
 			}//switch
             
-            //Account for the 'NOT's
-            if($requirement['not_operator'] == "NOT") $requirementMet = !$requirementMet;
+            		//Account for the 'NOT's
+			if($requirement['not_operator'] == "NOT") $requirementMet = !$requirementMet;
 
 			if ($requirement['boolean_operator'] == "AND" && $requirementMet == FALSE) {
 				//NetDebug::trace("An AND requirement was not met. Requirements Failed.");
@@ -558,8 +558,8 @@ abstract class Module
 			}
 			
 			if ($requirement['boolean_operator'] == "OR" && $requirementMet == FALSE){
-                $requirementsMet = FALSE;
-            }
+                		$requirementsMet = FALSE;
+            		}
 
 		}
         

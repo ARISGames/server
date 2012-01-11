@@ -18,18 +18,19 @@ class Notes extends Module
         return new returnData(0, mysql_insert_id());
     }
     
-    function updateNote($noteId, $title, $shared, $sortIndex='0')
+    function updateNote($noteId, $title, $publicToMap, $publicToNotebook, $sortIndex='0')
     {
-        $query = "UPDATE notes SET title = '{$title}', shared = '{$shared}', sort_index='{$sortIndex}' WHERE note_id = '{$noteId}'";
+        $query = "UPDATE notes SET title = '{$title}', public_to_map = '{$publicToMap}', public_to_notebook = '{$publicToNotebook}', sort_index='{$sortIndex}' WHERE note_id = '{$noteId}'";
         @mysql_query($query);
 		if (mysql_error()) return new returnData(1, NULL, mysql_error());
         
         return new returnData(0);
     }
     
-    function addContentToNote($noteId, $gameId, $playerId, $mediaId, $type, $text)
+    function addContentToNote($noteId, $gameId, $playerId, $mediaId, $type, $text, $title='')
     {
-        $query = "INSERT INTO note_content (note_id, game_id, media_id, type, text) VALUES ('{$noteId}', '{$gameId}', '{$mediaId}', '{$type}', '{$text}')";
+	if($title == '') $title = Date('F jS Y h:i:s A');
+        $query = "INSERT INTO note_content (note_id, game_id, media_id, type, text, title) VALUES ('{$noteId}', '{$gameId}', '{$mediaId}', '{$type}', '{$text}', '{$title}')";
         $result = @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         $contentId = mysql_insert_id();
@@ -53,12 +54,20 @@ class Notes extends Module
         $newMediaResultData = Media::createMedia($gameId, $name, $filename, 0);
         $newMediaId = $newMediaResultData->data->media_id;
         
-        return Notes::addContentToNote($noteId, $gameId, $playerId, $newMediaId, $type, "");
+        return Notes::addContentToNote($noteId, $gameId, $playerId, $newMediaId, $type, "", "");
     }
     
     function updateContent($contentId, $text)
     {
         $query = "UPDATE note_content SET text='{$text}' WHERE content_id='{$contentId}'";
+        @mysql_query($query);
+        if (mysql_error()) return new returnData(1, NULL, mysql_error());
+        return new returnData(0);
+    }
+
+    function updateContentTitle($contentId, $title)
+    {
+	$query = "UPDATE note_content SET title='{$title}' WHERE content_id='{$contentId}'";
         @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         return new returnData(0);
@@ -131,9 +140,11 @@ class Notes extends Module
         return new returnData(0, $newAve);	
 	}
 	
-    function getNotesForGame($gameId)
+  
+    //Gets all notes accesible by a player in the game (includes all of player's own notes, and all others' notes marked public)
+    function getNotesForGame($gameId, $playerId) //<- ADDED NECESSITY OF PLAYERID. MAKE SURE RECIPROCATED ON CLIENT 1/11/2012
     {
-        $query = "SELECT note_id FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = '0'";
+        $query = "SELECT note_id FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = '0' AND (public_to_notebook = '1' OR owner_id = '{$playerId}')";
         $result = @mysql_query($query);
 		if (mysql_error()) return new returnData(1, NULL, mysql_error());
         
@@ -146,6 +157,8 @@ class Notes extends Module
         return new returnData(0, $notes);
     }
     
+
+    //Gets an individual's notes. 
     function getNotesForPlayer($playerId, $gameId)
     {
         $query = "SELECT note_id FROM notes WHERE owner_id = '{$playerId}' AND game_id = '{$gameId}' AND parent_note_id = 0 ORDER BY sort_index ASC";
@@ -282,6 +295,49 @@ class Notes extends Module
         return new returnData(0);
     }
     
+
+
+	function addTagToNote($noteId, $gameId, $tag)
+	{
+		//Check if tag exists for game
+		$query = "SELECT tags FROM game_tags WHERE game_id = '{$gameId}'";
+		$result = mysql_query($query);
+		
+		$tagfound = false;
+		while(!$tagfound && $availtag = mysql_fetch_object($result))
+		{
+			if($availtag == $tag) $tagfound = true;	
+		}
+
+		//If not
+		if(!$tagfound)
+		{
+			//Make sure it is ok for player to create tag for game
+			$query = "SELECT allow_player_tags FROM games WHERE game_id='{$gameId}'";	
+			$result = mysql_query($query);
+			$allow = mysql_fetch_object($result);
+			if($allow->allow_player_tags != 1)
+				//Player not allowed to create own tag
+				return new returnData(1, NULL, "Player Generated Tags Not Allowed In This Game");	
+
+			//Create tag for game
+			$query = "INSERT INTO game_tags (game_id, tag) VALUES ('{$gameId}', '{$tag}')";
+			mysql_query($query);
+		}
+
+
+		//Apply tag to note
+		$query = "INSERT INTO note_tags (note_id, tag) VALUES ('{$noteId}', '{$tag}')";
+		mysql_query($query);
+		
+		return new returnData(0);
+	}
+
+
+
+
+
+
     //TEMPORARY FUNCTION LOCATION
     function createFossilNoteDatabaseForGame($gameId)
     {
@@ -3377,7 +3433,7 @@ class Notes extends Module
         {
             $noteId = Notes::createNewNote($gameId, 0);
             $noteId = $noteId->data;
-            Notes::updateNote($noteId, "Fossil", true, 0);
+            Notes::updateNote($noteId, "Fossil", true, true, 0);
             Notes::addContentToNote($noteId, $gameId, 0, 0, "NOTE", $fossil->collection_name." \nEntered By:".$fossil->enterer);
             Module::giveNoteToWorld($gameId, $noteId, $fossil->lat, $fossil->lng);
         }

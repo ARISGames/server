@@ -220,11 +220,14 @@ class Locations extends Module
 				case 'Npc':
 					$query = "SELECT icon_media_id FROM {$prefix}_npcs WHERE npc_id = {$location->type_id} LIMIT 1";
 					break;
-                case 'WebPage':
+                		case 'WebPage':
 					$query = "SELECT icon_media_id FROM web_pages WHERE web_page_id = {$location->type_id} LIMIT 1";
 					break;
-                case 'AugBubble':
+                		case 'AugBubble':
 					$query = "SELECT icon_media_id FROM aug_bubbles WHERE aug_bubble_id = {$location->type_id} LIMIT 1";
+					break;
+                		case 'PlayerNote':
+					//No icon_media_id for notes...
 					break;
 			}
 			
@@ -238,12 +241,25 @@ class Locations extends Module
 
 			//Does it meet it's requirements?
 			if (!$this->objectMeetsRequirements ($prefix, $intPlayerID, 'Location', $location->location_id)) {
-               // NetDebug::trace($prefix . " " . $intPlayerID . " 'Location' " . $location->location_id);
+               		// NetDebug::trace($prefix . " " . $intPlayerID . " 'Location' " . $location->location_id);
 				NetDebug::trace("Skipping Location:{$location->location_id} becasue it doesn't meet it's requirements");
 				continue;
 			}
-				
-			
+
+			//Special Case for Notes
+			if($location->type == 'PlayerNote')
+			{
+				$query = "SELECT public_for_map, owner_id FROM notes WHERE note_id={$location->type_id}";
+				$result = mysql_query($query);
+				$note = mysql_fetch_object($result);
+				//If note doesn't exist, or if it is neither public nor owned by the owner, skip it.
+				if(!$note || !($note->public_for_map || $note->owner_id == $intPlayerID))
+				{
+					NetDebug::trace("Skipping Location:{$location->location_id} because Note doesn't exist, or current user does not have permission to view it");
+					continue;
+				}
+			}
+
 			NetDebug::trace('Location:{$location->location_id} is ok');	
 
 			//If location's icon is not defined, use the object's icon
@@ -254,7 +270,6 @@ class Locations extends Module
 			
 			//Add it
 			$arrayLocations[] = $location;
-
 		}
 		
 		//Add the others players from this game, making them look like reqular locations
@@ -264,17 +279,17 @@ class Locations extends Module
 		foreach ($playersArray as $player) {
 			NetDebug::trace("adding player: " . $player->user_name );	
 			
-			$tmpPlayerObject = new stdClass();
+		$tmpPlayerObject = new stdClass();
 
       		$tmpPlayerObject->name = $player->user_name;
-			$tmpPlayerObject->latitude = $player->latitude;
+		$tmpPlayerObject->latitude = $player->latitude;
       		$tmpPlayerObject->longitude = $player->longitude;
       		$tmpPlayerObject->type_id = $player->player_id;
       		
       		$tmpPlayerObject->error = "5";
       		$tmpPlayerObject->type = "Player";
       		
-			$tmpPlayerObject->description = '';
+		$tmpPlayerObject->description = '';
       		$tmpPlayerObject->force_view = "0";
       		$tmpPlayerObject->hidden = "0";
       		$tmpPlayerObject->icon_media_id = "0";
