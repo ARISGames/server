@@ -8,6 +8,7 @@ require_once("editorFoldersAndContent.php");
 
 class Notes extends Module
 {
+
     //Returns note_id
 	function createNewNote($gameId, $playerId)
     {
@@ -17,7 +18,7 @@ class Notes extends Module
         
         return new returnData(0, mysql_insert_id());
     }
-    
+
     function updateNote($noteId, $title, $publicToMap, $publicToNotebook, $sortIndex='0')
     {
         $query = "UPDATE notes SET title = '{$title}', public_to_map = '{$publicToMap}', public_to_notebook = '{$publicToNotebook}', sort_index='{$sortIndex}' WHERE note_id = '{$noteId}'";
@@ -26,7 +27,7 @@ class Notes extends Module
         
         return new returnData(0);
     }
-    
+
     function addContentToNote($noteId, $gameId, $playerId, $mediaId, $type, $text, $title='')
     {
 	if($title == '') $title = Date('F jS Y h:i:s A');
@@ -45,10 +46,9 @@ class Notes extends Module
         else if($type == "VIDEO"){
             Module::appendLog($playerId, $gameId, Module::kLOG_UPLOAD_MEDIA_ITEM_VIDEO, $contentId);
         }
-
         return new returnData(0, $contentId);
     }
-    
+
     function addContentToNoteFromFileName($gameId, $noteId, $playerId, $filename, $type, $name="playerUploadedContent")
     {
         $newMediaResultData = Media::createMedia($gameId, $name, $filename, 0);
@@ -56,12 +56,21 @@ class Notes extends Module
         
         return Notes::addContentToNote($noteId, $gameId, $playerId, $newMediaId, $type, "", "");
     }
-    
+
     function updateContent($contentId, $text)
     {
         $query = "UPDATE note_content SET text='{$text}' WHERE content_id='{$contentId}'";
         @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
+        return new returnData(0);
+    }
+
+    function deleteNoteContent($contentId)
+    {
+        $query = "DELETE FROM note_content WHERE content_id = '{$contentId}'";
+        @mysql_query($query);
+        if (mysql_error()) return new returnData(1, NULL, mysql_error());
+        
         return new returnData(0);
     }
 
@@ -72,91 +81,44 @@ class Notes extends Module
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         return new returnData(0);
     }
-    
-    function addCommentToNote($gameId, $playerId, $noteId, $rating)
+
+    function addCommentToNote($gameId, $playerId, $noteId, $title="New Comment")
     {
         $query = "SELECT * FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = '{$noteId}' AND owner_id = '{$playerId}'";
         $result1 = @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
 		
-        while($existingRating = mysql_fetch_object($result1))
-        {
-            $normalize = true;
-            $oldRating = $existingRating->parent_rating;
-            $query = "UPDATE notes SET parent_rating = '{$rating}' WHERE note_id = '{$existingRating->note_id}'";
-            $result = @mysql_query($query);
-            if (mysql_error()) return new returnData(1, NULL, mysql_error());
-        }
-        
-        $query = "INSERT INTO notes (game_id, owner_id, parent_note_id, parent_rating, title) VALUES ('{$gameId}', '{$playerId}', '{$noteId}', '{$rating}', 'New Comment')";
+        $query = "INSERT INTO notes (game_id, owner_id, parent_note_id, title) VALUES ('{$gameId}', '{$playerId}', '{$noteId}', '{$title}')";
         $result = @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         $commentId = mysql_insert_id();
         
-        $query = "SELECT ave_rating, num_ratings FROM notes WHERE note_id = '{$noteId}'";
-        $result = @mysql_query($query);
-        if (mysql_error()) return new returnData(1, NULL, mysql_error());
-        
-        if($aveComment = mysql_fetch_object($result))
-        {
-            if($normalize)
-            {
-                $newAve = ($aveComment->ave_rating) + ($rating/($aveComment->num_ratings)) - ($oldRating->parent_rating/($aveComment->num_ratings));
-                $query = "UPDATE notes SET ave_rating = '{$newAve}' WHERE note_id = '{$noteId}'";
-            }
-            else
-            {
-                $newAve = (($aveComment->num_ratings)/($aveComment->num_ratings + 1) * $aveComment->ave_rating) + (1/($aveComment->num_ratings + 1) * $rating); 
-                $query = "UPDATE notes SET ave_rating = '{$newAve}', num_ratings = '" . ($aveComment->num_ratings + 1) . "' WHERE note_id = '{$noteId}'";
-            }
-            $result = @mysql_query($query);
-            if (mysql_error()) return new returnData(1, NULL, mysql_error());
-        }
         return new returnData(0, $commentId);
     }
-    
-	function updateComment($noteId, $parentNoteId, $rating)
-	{
-	 $query = "SELECT parent_rating FROM notes WHERE note_id = '{$noteId}'";
-        $result = @mysql_query($query);
-        if (mysql_error()) return new returnData(1, NULL, mysql_error());
-        
-        if($prevRating = mysql_fetch_object($result))
-        
-        $query = "SELECT ave_rating, num_ratings FROM notes WHERE note_id = '{$parentNoteId}'";
-        $result = @mysql_query($query);
-        if (mysql_error()) return new returnData(1, NULL, mysql_error());
-        
-        if($aveComment = mysql_fetch_object($result))
-        {
-            $newAve = ($aveComment->ave_rating) + ($rating/($aveComment->num_ratings)) - ($prevRating->parent_rating/($aveComment->num_ratings));
-            $query = "UPDATE notes SET ave_rating = '{$newAve}' WHERE note_id = '{$parentNoteId}'";
-            $result = @mysql_query($query);
-            if (mysql_error()) return new returnData(1, NULL, mysql_error());
-        }
-		$query = "UPDATE notes SET parent_rating = '{$rating}' WHERE note_id = '{$noteId}'";
+
+    function updateComment($noteId, $title)
+    {
+	$query = "UPDATE notes SET title= '{$title}' WHERE note_id = '{$noteId}'";
         $result = @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         return new returnData(0, $newAve);	
-	}
-	
-  
-    //Gets all notes accesible by a player in the game (includes all of player's own notes, and all others' notes marked public)
-    function getNotesForGame($gameId, $playerId) //<- ADDED NECESSITY OF PLAYERID. MAKE SURE RECIPROCATED ON CLIENT 1/11/2012
+    }
+
+    //Gets all notes accessible through the notebook by an arbitrary player
+    function getNotesForGame($gameId, $playerId) 
     {
-        $query = "SELECT note_id FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = '0' AND (public_to_notebook = '1' OR owner_id = '{$playerId}')";
+        $query = "SELECT note_id FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = '0' AND public_to_notebook = '1'";
         $result = @mysql_query($query);
 		if (mysql_error()) return new returnData(1, NULL, mysql_error());
         
         $notes = array();
         while($note = mysql_fetch_object($result))
         {
-            $notes[] = Notes::getFullNoteObject($note->note_id);
+            $notes[] = Notes::getFullNoteObject($note->note_id, $playerId);
         }
         
         return new returnData(0, $notes);
     }
-    
 
     //Gets an individual's notes. 
     function getNotesForPlayer($playerId, $gameId)
@@ -168,39 +130,40 @@ class Notes extends Module
         $notes = array();
         while($note = mysql_fetch_object($result))
         {
-            $notes[] = Notes::getFullNoteObject($note->note_id);
+            $notes[] = Notes::getFullNoteObject($note->note_id, $playerId);
         }
         
         return new returnData(0, $notes);
     }
-    
-    function getNoteById($noteId)
+
+    function getNoteById($noteId, $playerId=0)
     {
-        $note = Notes::getFullNoteObject($noteId);
+        $note = Notes::getFullNoteObject($noteId, $playerId);
         return new returnData(0, $note);
     }
-    
-    function getFullNoteObject($noteId)
+
+    function getFullNoteObject($noteId, $playerId=0)
     {
-		
         $query = "SELECT * FROM notes WHERE note_id = '{$noteId}'";
         $result = @mysql_query($query);
 		if (mysql_error()) return new returnData(1, NULL, mysql_error());
         if($note = mysql_fetch_object($result))
         {
-			
-			$query = "SELECT user_name FROM players WHERE player_id = '{$note->owner_id}'";
-			$player = mysql_query($query);
-			$playerOb = mysql_fetch_assoc($player);
-			$note->username = $playerOb['user_name'];
-            $note->contents = Notes::getNoteContents($noteId);
-            $note->comments = Notes::getNoteComments($noteId);
-            $note->icon_media_id = 5;
-            return $note;
+		$query = "SELECT user_name FROM players WHERE player_id = '{$note->owner_id}'";
+		$player = mysql_query($query);
+		$playerObj = mysql_fetch_object($player);
+		$note->username = $playerObj->user_name;
+		$note->contents = Notes::getNoteContents($noteId);
+		$note->comments = Notes::getNoteComments($noteId, $playerId);
+		$note->tags = Notes::getNoteTags($noteId, $note->game_id);
+		$note->likes = Notes::getNoteLikes($noteId);
+		$note->player_liked = ($playerId == 0 ? 0 : Notes::playerLiked($playerId, $noteId));
+        	$note->icon_media_id = 5;
+            	return $note;
         }
         return;
     }
-    
+
     function getNoteContents($noteId)
     {
         $query = "SELECT * FROM note_content WHERE note_id = '{$noteId}'";
@@ -209,35 +172,52 @@ class Notes extends Module
         
         $contents = array();
         while($content = mysql_fetch_object($result))
-        {
             $contents[] = $content;
-        }
         
         return $contents;
     }
-    
-    function getNoteComments($noteId)
+
+    function getNoteComments($noteId, $playerId)
     {
         $query = "SELECT note_id FROM notes WHERE parent_note_id = '{$noteId}'";
-        $resultA = @mysql_query($query);
+        $result = @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         
         $comments = array();
-        while($commentNoteId = mysql_fetch_object($resultA))
+        while($commentNoteId = mysql_fetch_object($result))
         {
-            $comment = Notes::getFullNoteObject($commentNoteId->note_id);
-            $query = "SELECT user_name FROM players WHERE player_id = '{$comment->owner_id}'";
-            $resultB = @mysql_query($query);
-            if (mysql_error()) return new returnData(1, NULL, mysql_error());
-            if($player = mysql_fetch_object($resultB))
-            {
-                $comment->player_name = $player->user_name;
-                $comments[] = $comment;
-            }
+            $comment = Notes::getFullNoteObject($commentNoteId->note_id, $playerId);
+            $comments[] = $comment;
         }
         return $comments;
     }
-    
+
+    function getNoteTags($noteId, $gameId)
+    {
+	$query = "SELECT note_tags.tag, player_created FROM note_tags LEFT JOIN ((SELECT tag, player_created FROM game_tags WHERE game_id = '{$gameId}') as gt) ON note_tags.tag = gt.tag WHERE note_id = '{$noteId}'";
+	$result = mysql_query($query);
+	$tags = array();
+	while($tag = mysql_fetch_object($result))	
+		$tags[] = $tag;
+	return $tags;
+    }
+
+    function getNoteLikes($noteId)
+    {
+	$query = "SELECT COUNT(*) as numLikes FROM note_likes WHERE note_id = '{$noteId}'";
+	$result  = mysql_query($query);
+	$likes = mysql_fetch_object($result);
+	return $likes->numLikes;
+    }
+
+    function playerLiked($playerId, $noteId)
+    {
+	$query = "SELECT COUNT(*) as liked FROM note_likes WHERE player_id = '{$playerId}' AND note_id = '{$noteId}' LIMIT 1";
+	$result = mysql_query($query);
+	$liked = mysql_fetch_object($result);
+	return $liked->liked;
+    }
+
     function deleteNote($noteId)
     {
         $query = "SELECT note_id, game_id FROM notes WHERE parent_note_id = '{$noteId}'";
@@ -248,27 +228,6 @@ class Notes extends Module
         {
             deleteNote($commentNote->note_id);
         }
-        
-        //Update Parent Note's rating
-        $query = "SELECT parent_note_id, parent_rating FROM notes WHERE note_id = '{$noteId}'";
-        $result = @mysql_query($query);
-        if (mysql_error()) return new returnData(1, NULL, mysql_error());
-        if($comment = mysql_fetch_object($result))
-        {
-            $query = "SELECT ave_rating, num_ratings FROM notes WHERE note_id = '{$comment->parent_note_id}'";
-            $result = @mysql_query($query);
-            if (mysql_error()) return new returnData(1, NULL, mysql_error());
-            
-            if($parent = mysql_fetch_object($result))
-            {
-                if($parent->num_ratings > 1) $newAve = (($parent->ave_rating*$parent->num_ratings)-$comment->parent_rating)/($parent->num_ratings-1);
-                else if($parent->num_ratings == 0) $newAve = 0;
-                $query = "UPDATE notes SET ave_rating = '{$newAve}', num_ratings = '({$parent->num_ratings}-1)'WHERE note_id = '{$comment->parent_note_id}'";
-                $result = @mysql_query($query);
-                if (mysql_error()) return new returnData(1, NULL, mysql_error());
-            }
-        }
-         
         
         //Delete Note locations
         Locations::deleteLocationsForObject($commentNote->game_id, "PlayerNote", $noteId);
@@ -285,32 +244,33 @@ class Notes extends Module
 
         return new returnData(0);
     }
-    
-    function deleteNoteContent($contentId)
-    {
-        $query = "DELETE FROM note_content WHERE content_id = '{$contentId}'";
-        @mysql_query($query);
-        if (mysql_error()) return new returnData(1, NULL, mysql_error());
-        
-        return new returnData(0);
-    }
-    
 
+    function getGameTags($gameId)
+    {
+	$query = "SELECT tag, player_created from game_tags WHERE game_id = '{$game_id}'";
+	$result = mysql_query($query);
+	$tags = array();
+	while($tag = mysql_fetch_object($result))	
+		$tags[] = $tag;
+
+	return $tags;
+    }
+
+	function getAllTagsInGame($gameId)
+	{
+		$tags = getGameTags($gameId);
+        	return new returnData(0, $tags);
+	}
 
 	function addTagToNote($noteId, $gameId, $tag)
 	{
 		//Check if tag exists for game
-		$query = "SELECT tags FROM game_tags WHERE game_id = '{$gameId}'";
+		$query = "SELECT COUNT(*) AS existz FROM game_tags WHERE game_id = '{$gameId}' AND tag = '{$tag}' LIMIT 1";
 		$result = mysql_query($query);
-		
-		$tagfound = false;
-		while(!$tagfound && $availtag = mysql_fetch_object($result))
-		{
-			if($availtag == $tag) $tagfound = true;	
-		}
+		$exists = mysql_fetch_object($result);	
 
 		//If not
-		if(!$tagfound)
+		if(!$exists->existz)
 		{
 			//Make sure it is ok for player to create tag for game
 			$query = "SELECT allow_player_tags FROM games WHERE game_id='{$gameId}'";	
@@ -321,7 +281,7 @@ class Notes extends Module
 				return new returnData(1, NULL, "Player Generated Tags Not Allowed In This Game");	
 
 			//Create tag for game
-			$query = "INSERT INTO game_tags (game_id, tag) VALUES ('{$gameId}', '{$tag}')";
+			$query = "INSERT INTO game_tags (game_id, player_created, tag) VALUES ('{$gameId}', 1, '{$tag}')";
 			mysql_query($query);
 		}
 
@@ -333,7 +293,40 @@ class Notes extends Module
 		return new returnData(0);
 	}
 
+	function deleteTagFromNote($noteId, $tag)
+	{
+		$query = "DELETE FROM note_tags WHERE note_id = '{$noteId}' AND tag = '{$tag}'";
+		mysql_query($query);
+		return new returnData(0);
+	}
 
+	function addTagToGame($gameId, $tag)
+	{
+		$query = "INSERT INTO game_tags (game_id, player_created, tag) VALUES ('{$game_id}', 0, '{$tag}')";
+		mysql_query($query);
+		return new returnData(0);
+	}
+
+	function deleteTagFromGame($gameId, $tag)
+	{
+		$query = "DELETE FROM game_tags WHERE game_id = '{$gameId}' AND tag = '{$tag}'";
+		mysql_query($query);
+		return new returnData(0);
+	}
+    
+	function likeNote($playerId, $noteId)
+	{
+		$query = "INSERT INTO note_likes (player_id, note_id) VALUES ('{$playerId}', '{$noteId}')";
+		mysql_query($query);
+		return new returnData(0);
+	}
+
+	function unlikeNote($playerId, $noteId)
+	{
+		$query = "DELETE FROM note_likes WHERE player_id = '{$playerId}' AND note_id = '{$noteId}'";
+		mysql_query($query);
+		return new returnData(0);
+	}
 
 
 

@@ -255,7 +255,7 @@ class QRCodes extends Module
             //Check the requirements of the QR Code's link object
             else if (!$this->objectMeetsRequirements ($prefix, $intPlayerID, $qrcode->link_type, $qrcode->link_id)) {
                 Module::appendLog($intPlayerID, $intGameID, Module::kLOG_ENTER_QRCODE, $strCode, 'REQS_OR_QTY_NOT_MET');
-                $rData = new returnData(0, NULL, "QRCode requirements not met");
+                $rData = new returnData(0, $qrcode->fail_text, "QRCode requirements not met");
             }
 		
             else{
@@ -292,8 +292,9 @@ class QRCodes extends Module
      * If no code is provided, a random 4 digit number will be generated
      * @returns the new QR Code ID on success.
      */
-	public function createQRCode($intGameID, $strLinkType, $intLinkID, $strCode = '', $imageMatchId='0')
+	public function createQRCode($intGameID, $strLinkType, $intLinkID, $strCode = '', $imageMatchId='0', $errorText="This code doesn't mean anything right now. You should come back later.")
 	{
+		$errorText = addslashes($errorText);
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
@@ -308,8 +309,8 @@ class QRCodes extends Module
 		}
 		
 		$query = "INSERT INTO {$prefix}_qrcodes 
-					(link_type, link_id, code, match_media_id)
-					VALUES ('{$strLinkType}','{$intLinkID}','{$strCode}','{$imageMatchId}')";
+					(link_type, link_id, code, match_media_id, fail_text)
+					VALUES ('{$strLinkType}','{$intLinkID}','{$strCode}','{$imageMatchId}', '{$errorText}')";
 		
 		NetDebug::trace("Running a query = $query");	
 		
@@ -325,20 +326,20 @@ class QRCodes extends Module
      * Update a QR Code
      * @returns true if edit was done, false if no changes were made
      */
-	public function updateQRCode($intGameID, $intQRCodeID, $strLinkType, $intLinkID, $strCode, $imageMatchId)
+	public function updateQRCode($intGameID, $intQRCodeID, $strLinkType, $intLinkID, $strCode, $imageMatchId, $errorText="")
 	{
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		if (!$this->isValidObjectType($intGameID, $strLinkType)) return new returnData(4, NULL, "Invalid link type");
 
-
 		$query = "UPDATE {$prefix}_qrcodes
 					SET 
 					link_type = '{$strLinkType}',
 					link_id = '{$intLinkID}',
 					code = '{$strCode}',
-                    match_media_id = '{$imageMatchId}'
+                    			match_media_id = '{$imageMatchId}',
+					fail_text = '{$errorText}'
 					WHERE qrcode_id = '{$intQRCodeID}'";
 		
 		NetDebug::trace("Running a query = $query");	

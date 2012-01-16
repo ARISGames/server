@@ -169,7 +169,7 @@ class Locations extends Module
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
 		
-		$query = "SELECT {$prefix}_locations.*,{$prefix}_qrcodes.qrcode_id,{$prefix}_qrcodes.code,{$prefix}_qrcodes.match_media_id
+		$query = "SELECT {$prefix}_locations.*,{$prefix}_qrcodes.qrcode_id,{$prefix}_qrcodes.code,{$prefix}_qrcodes.match_media_id, {$prefix}_qrcodes.fail_text
 					FROM {$prefix}_locations JOIN {$prefix}_qrcodes
 					ON {$prefix}_qrcodes.link_id = {$prefix}_locations.location_id
 					WHERE {$prefix}_qrcodes.link_type = 'Location'";
@@ -249,7 +249,7 @@ class Locations extends Module
 			//Special Case for Notes
 			if($location->type == 'PlayerNote')
 			{
-				$query = "SELECT public_for_map, owner_id FROM notes WHERE note_id={$location->type_id}";
+				$query = "SELECT public_for_map, public_for_notebook, owner_id FROM notes WHERE note_id='{$location->type_id}' LIMIT 1";
 				$result = mysql_query($query);
 				$note = mysql_fetch_object($result);
 				//If note doesn't exist, or if it is neither public nor owned by the owner, skip it.
@@ -258,6 +258,8 @@ class Locations extends Module
 					NetDebug::trace("Skipping Location:{$location->location_id} because Note doesn't exist, or current user does not have permission to view it");
 					continue;
 				}
+				if($note->public_for_notebook || $note->owner_id == $intPlayerId)
+					$location->allow_quick_travel = 1;
 			}
 
 			NetDebug::trace('Location:{$location->location_id} is ok');	
@@ -384,7 +386,7 @@ class Locations extends Module
 	public function createLocationWithQrCode($intGameID, $strLocationName, $intIconMediaID, 
 								$dblLatitude, $dblLongitude, $dblError,
 								$strObjectType, $intObjectID,
-								$intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $qrCode = '', $imageMatchId) {
+								$intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $qrCode = '', $imageMatchId, $errorText) {
 														
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
@@ -417,7 +419,7 @@ class Locations extends Module
 		
 		$newId = mysql_insert_id();
 		//Create a coresponding QR Code
-		QRCodes::createQRCode($intGameID, "Location", $newId, $qrCode, $imageMatchId);
+		QRCodes::createQRCode($intGameID, "Location", $newId, $qrCode, $imageMatchId, $errorText);
 
 		return new returnData(0, $newId);
 
@@ -518,7 +520,7 @@ class Locations extends Module
 	public function updateLocationWithQrCode($intGameID, $intLocationID, $strLocationName, $intIconMediaID, 
 								$dblLatitude, $dblLongitude, $dblError,
 								$strObjectType, $intObjectID,
-								$intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $qrCode, $imageMatchId)
+								$intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $qrCode, $imageMatchId, $errorText)
 	{
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
@@ -554,7 +556,7 @@ class Locations extends Module
 		
 		$query = "UPDATE {$prefix}_qrcodes
 				SET 
-				code = '{$qrCode}'
+				code = '{$qrCode}', fail_text = '{$errorText}'
 				WHERE link_type = 'Location' and link_id = '{$intLocationID}'";
 		NetDebug::trace("updateLocation: Query: $query");		
 		@mysql_query($query);
