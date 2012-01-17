@@ -1,6 +1,7 @@
 <?php
 require_once("module.php");
 require_once("items.php");
+require_once("notes.php");
 
 class Players extends Module
 {	
@@ -478,7 +479,7 @@ class Players extends Module
 		return new returnData(0,$contents);
 	}
 
-	public function getDetailedPlayerItemList($playerId, $gameId)
+	public function getDetailedPlayerItems($playerId, $gameId)
 	{
 		/* OTHER ITEMS */
 		$query = "SELECT i.item_id, i.name, i.description, i.max_qty_in_inventory, i.weight, i.type, i.url, pi.qty, m.name as media_name, m.file_name as media_file_name, m.game_id as media_game_id, im.name as icon_name, im.file_name as icon_file_name, im.game_id as icon_game_id FROM {$gameId}_player_items as pi, {$gameId}_items as i LEFT JOIN media as m ON i.media_id = m.media_id LEFT JOIN media as im ON i.icon_media_id = im.media_id WHERE pi.player_id = {$playerId} AND pi.item_id = i.item_id AND i.type != 'ATTRIB'";
@@ -507,7 +508,7 @@ class Players extends Module
 		return new returnData(0,$contents);
 	}
 
-	public function getDetailedPlayerNotesList($playerId, $gameId)
+	public function getDetailedPlayerNotes($playerId, $gameId, $individual=true)
 	{
 		/* NOTES */
 		if($individual)
@@ -521,7 +522,7 @@ class Players extends Module
         	while($note = mysql_fetch_object($result))
             		$notes[] = Notes::getFullNoteObject($note->note_id, $playerId);
         	
-		return new returnData(0,$contents);
+		return new returnData(0,$notes);
 	}
 
 	public function getDetailedPlayerContentList($playerId, $gameId)
@@ -544,23 +545,26 @@ class Players extends Module
 
 		$result = mysql_query($query);
 		$game = mysql_fetch_object($result);
-		if(!$game) return "Invalid Game ID"; 
+		if(!$game) return new returnData(1, "Invalid Game ID"); 
 		$backpack->game=$game;
 
 		//Get owner information
 		$query = "SELECT user_name FROM players WHERE player_id = '{$playerId}'";
 		$result = mysql_query($query);
 		$name = mysql_fetch_object($result);
-		if(!$name) return "Invalid Player ID";
+		if(!$name) return new returnData(1,"Invalid Player ID");
 		$backpack->owner=$name;
 		$backpack->owner->player_id = $playerId;
 		
 		//Get attributes
-		$backpack->attributes = Players::getDetailedPlayerAttributes($playerId, $gameId)->data;
+		$attributes = Players::getDetailedPlayerAttributes($playerId, $gameId);
+		$backpack->attributes = $attributes->data;
 		//Get items
-		$backpack->items = Players::getDetailedPlayerItems($playerId, $gameId)->data;
+		$items = Players::getDetailedPlayerItems($playerId, $gameId);
+		$backpack->items = $items->data;
 		//Get notes
-		$backpack->items = Players::getDetailedPlayerItems($playerId, $gameId)->data;
+		$notes = Players::getDetailedPlayerNotes($playerId, $gameId);
+		$backpack->notes = $notes->data;
 
 
 		return new returnData(0, $backpack);
