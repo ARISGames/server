@@ -202,7 +202,7 @@ require_once('webbackpack.php');
 		foreach($backPack as $bp)
 		{
 			if(!$firstPlayer)
-				echo "<div class='playerspacer'> </div>\n";
+				echo "<div class='spacer playerspacer'> </div>\n";
 			else
 				$firstPlayer = false;
 
@@ -217,7 +217,7 @@ require_once('webbackpack.php');
 			if(count($bp->attributes) > 0)
 			{
 				if(!$firstSection)
-					echo "<div class='sectionspacer'> </div>\n";
+					echo "<div class='spacer sectionspacer'> </div>\n";
 				else
 					$firstSection=false;
 
@@ -226,7 +226,7 @@ require_once('webbackpack.php');
 				foreach($bp->attributes as $attribute)
 				{
 					if(!$firstContent)
-						echo "<div class='contentspacer'></div>\n";					
+						echo "<div class='spacer contentspacer'></div>\n";					
 					else
 						$firstContent = false;
 
@@ -287,7 +287,7 @@ require_once('webbackpack.php');
 			if(count($bp->items) > 0)
 			{
 				if(!$firstSection)
-					echo "<div class='sectionspacer'> </div>\n";
+					echo "<div class='spacer sectionspacer'> </div>\n";
 				else
 					$firstSection=false;
 
@@ -297,7 +297,7 @@ require_once('webbackpack.php');
 				{
 
 					if(!$firstContent)
-						echo "<div class='contentspacer'></div>\n";					
+						echo "<div class='spacer contentspacer'></div>\n";					
 					else
 						$firstContent = false;
 
@@ -365,7 +365,7 @@ require_once('webbackpack.php');
 			if(count($bp->notes) > 0)
 			{
 				if(!$firstSection)
-					echo "<div class='sectionspacer'> </div>\n";
+					echo "<div class='spacer sectionspacer'> </div>\n";
 				else
 					$firstSection=false;
 
@@ -375,7 +375,7 @@ require_once('webbackpack.php');
 				{
 
 					if(!$firstContent)
-						echo "<div class='contentspacer'></div>\n";					
+						echo "<div class='spacer contentspacer'></div>\n";					
 					else
 						$firstContent = false;
 
@@ -411,13 +411,13 @@ require_once('webbackpack.php');
 						echo "</div>\n";
 						echo "</div>\n";
 
-					if(count($note->content) > 0)
+					if(count($note->contents) > 0)
 					{
 						$firstnotecontent = true;
-						foreach($note->content as $notecontent)
+						foreach($note->contents as $notecontent)
 						{
 							if(!$firstnotecontent)
-								echo "<div class='notecontentspacer'></div>\n";
+								echo "<div class='spacer notecontentspacer'></div>\n";
 							else
 								$firstnotecontent = false;
 							
@@ -426,6 +426,12 @@ require_once('webbackpack.php');
 								{
 									echo "<div class='attrib notecontent_attrib notecontent_title'>\n";
 										echo $notecontent->title;
+									echo "</div>\n";//<- class 'notecontent_title'
+								}	
+								if($notecontent->type = "PHOTO")
+								{
+									echo "<div class='attrib notecontent_attrib notecontent_title'>\n";
+										echo "<img src='../../../gamedata/".$notecontent->game_id."/".$notecontent->file_name."' />\n";
 									echo "</div>\n";//<- class 'notecontent_title'
 								}	
 							echo "</div>\n";
@@ -437,9 +443,8 @@ require_once('webbackpack.php');
 						$firstComment = true;
 						foreach($note->comments as $comment)
 						{
-							
 							if(!$firstComment)
-								echo "<div class='commentspacer'></div>\n";
+								echo "<div class='spacer commentspacer'></div>\n";
 							else
 								$firstComment = false;
 							
@@ -450,7 +455,36 @@ require_once('webbackpack.php');
 										echo $comment->title;
 									echo "</div>\n";//<- class 'comment_title'
 								}	
+
+								if(count($comment->contents) > 0)
+								{
+									$firstcommentcontent = true;
+									foreach($comment->contents as $commentcontent)
+									{
+										if(!$firstcommentcontent)
+											echo "<div class='spacer commentcontentspacer'></div>\n";
+										else
+											$firstcommentcontent = false;
+								
+										echo "<div class='commentcontent'>\n";
+											if($commentcontent->title)
+											{
+												echo "<div class='attrib commentcontent_attrib commentcontent_title'>\n";
+													echo $commentcontent->title;
+												echo "</div>\n";//<- class 'commentcontent_title'
+											}	
+											if($commentcontent->type = "PHOTO")
+											{
+												echo "<div class='attrib commentcontent_attrib commentcontent_title'>\n";
+													echo "<img src='../../../gamedata/".$commentcontent->game_id."/".$commentcontent->file_name."' />\n";
+												echo "</div>\n";//<- class 'commentcontent_title'
+											}	
+										echo "</div>\n";
+									}
+								}
+
 							echo "</div>\n";
+
 						}
 					}
 

@@ -1060,77 +1060,77 @@ class Games extends Module
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
-        $query = "ALTER TABLE  `{$prefix}_folder_contents` CHANGE  `content_type`  `content_type` ENUM(  'Node',  'Item',  'Npc',  'WebPage', 'AugBubble' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  'Node'";
+        	$query = "ALTER TABLE  `{$prefix}_folder_contents` CHANGE  `content_type`  `content_type` ENUM(  'Node',  'Item',  'Npc',  'WebPage', 'AugBubble' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  'Node'";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
-        $query = "ALTER TABLE  `{$prefix}_locations` CHANGE  `type`  `type` ENUM(  'Node',  'Event',  'Item',  'Npc',  'WebPage', 'AugBubble' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  'Node'";
+        	$query = "ALTER TABLE  `{$prefix}_locations` CHANGE  `type`  `type` ENUM(  'Node',  'Event',  'Item',  'Npc',  'WebPage', 'AugBubble' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  'Node'";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
-        $query = "ALTER TABLE  `{$prefix}_qrcodes` ADD  `match_media_id` INT NOT NULL DEFAULT  '0' AFTER  `code` ,
-        ADD INDEX (  `match_media_id` )";
+        	$query = "ALTER TABLE  `{$prefix}_qrcodes` ADD  `match_media_id` INT NOT NULL DEFAULT  '0' AFTER  `code` ,
+        	ADD INDEX (  `match_media_id` )";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
         
-        $query = "ALTER TABLE  `{$prefix}_qrcodes` ADD  `match_media_id` INT( 10 ) UNSIGNED NOT NULL DEFAULT  '0'";
+        	$query = "ALTER TABLE  `{$prefix}_qrcodes` ADD  `match_media_id` INT( 10 ) UNSIGNED NOT NULL DEFAULT  '0'";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
 
-        $query = "ALTER TABLE  `{$prefix}_requirements` CHANGE  `content_type`  `content_type` ENUM(  'Node',  'QuestDisplay',  'QuestComplete',  'Location',  'OutgoingWebHook' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL";
+        	$query = "ALTER TABLE  `{$prefix}_requirements` CHANGE  `content_type`  `content_type` ENUM(  'Node',  'QuestDisplay',  'QuestComplete',  'Location',  'OutgoingWebHook' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
         
-        $query = "ALTER TABLE  `{$prefix}_qrcodes` DROP INDEX  `code`";
+        	$query = "ALTER TABLE  `{$prefix}_qrcodes` DROP INDEX  `code`";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
         
-        $query = "ALTER TABLE  `{$prefix}_items` ADD  `is_attribute` ENUM(  '0',  '1' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  '0' AFTER  `description`";
+        	$query = "ALTER TABLE  `{$prefix}_items` ADD  `is_attribute` ENUM(  '0',  '1' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  '0' AFTER  `description`";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
-        $query = "ALTER TABLE  `{$prefix}_items` ADD  `weight` INT UNSIGNED NOT NULL DEFAULT  '0'";
+        	$query = "ALTER TABLE  `{$prefix}_items` ADD  `weight` INT UNSIGNED NOT NULL DEFAULT  '0'";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
-        $query = "ALTER TABLE  `{$prefix}_items` ADD  `url` TINYTEXT NOT NULL";
+        	$query = "ALTER TABLE  `{$prefix}_items` ADD  `url` TINYTEXT NOT NULL";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
-        $query = "ALTER TABLE  `{$prefix}_items` CHANGE  `url`  `url` TINYTEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL";
+        	$query = "ALTER TABLE  `{$prefix}_items` CHANGE  `url`  `url` TINYTEXT CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
-        $query = "ALTER TABLE  `{$prefix}_items` ADD  `type` ENUM(  'NORMAL',  'ATTRIB',  'URL' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  'NORMAL'";
+        	$query = "ALTER TABLE  `{$prefix}_items` ADD  `type` ENUM(  'NORMAL',  'ATTRIB',  'URL' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  'NORMAL'";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error()); 
         
-        $query = "ALTER TABLE  `{$prefix}_npc_conversations` ADD  `sort_index` INT UNSIGNED NOT NULL DEFAULT  '0'";
+        	$query = "ALTER TABLE  `{$prefix}_npc_conversations` ADD  `sort_index` INT UNSIGNED NOT NULL DEFAULT  '0'";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
-        $query = "ALTER TABLE  `{$prefix}_quests` ADD  `sort_index` INT UNSIGNED NOT NULL DEFAULT  '0'";
+        	$query = "ALTER TABLE  `{$prefix}_quests` ADD  `sort_index` INT UNSIGNED NOT NULL DEFAULT  '0'";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
-        $query = "ALTER TABLE  `{$prefix}_items` CHANGE  `type`  `type` ENUM(  'NORMAL',  'ATTRIB',  'URL',  'NOTE' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  'NORMAL'";
+        	$query = "ALTER TABLE  `{$prefix}_items` CHANGE  `type`  `type` ENUM(  'NORMAL',  'ATTRIB',  'URL',  'NOTE' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  'NORMAL'";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
-        $query = "ALTER TABLE  `{$prefix}_folder_contents` CHANGE  `content_type`  `content_type` ENUM(  'Node',  'Item',  'Npc',  'WebPage',  'AugBubble',  'PlayerNote' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  'Node'";
+        	$query = "ALTER TABLE  `{$prefix}_folder_contents` CHANGE  `content_type`  `content_type` ENUM(  'Node',  'Item',  'Npc',  'WebPage',  'AugBubble',  'PlayerNote' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  'Node'";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
-        $query = "ALTER TABLE  `{$prefix}_locations` CHANGE  `type`  `type` ENUM(  'Node',  'Event',  'Item',  'Npc',  'WebPage',  'AugBubble',  'PlayerNote' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  'Node'";
+        	$query = "ALTER TABLE  `{$prefix}_locations` CHANGE  `type`  `type` ENUM(  'Node',  'Event',  'Item',  'Npc',  'WebPage',  'AugBubble',  'PlayerNote' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  'Node'";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
-        $query = "ALTER TABLE  `{$prefix}_requirements` ADD  `not_operator` ENUM(  'DO',  'NOT' ) NOT NULL AFTER  `boolean_operator` ,
-        ADD  `group_operator` ENUM(  'SELF',  'GROUP' ) NOT NULL AFTER  `not_operator`";
+        	$query = "ALTER TABLE  `{$prefix}_requirements` ADD  `not_operator` ENUM(  'DO',  'NOT' ) NOT NULL AFTER  `boolean_operator` ,
+        	ADD  `group_operator` ENUM(  'SELF',  'GROUP' ) NOT NULL AFTER  `not_operator`";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
@@ -1152,13 +1152,13 @@ class Games extends Module
         mysql_query($query);        
 */
         
-	$query = "ALTER TABLE '{$prefix}'_requirements CHANGE requirement requirement ENUM('PLAYER_HAS_ITEM','PLAYER_VIEWED_ITEM','PLAYER_VIEWED_NODE','PLAYER_VIEWED_NPC','PLAYER_VIEWED_WEBPAGE','PLAYER_VIEWED_AUGBUBBLE','PLAYER_HAS_UPLOADED_MEDIA_ITEM', 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE','PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO','PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO','PLAYER_HAS_COMPLETED_QUEST','PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK', 'PLAYER_HAS_NOTE_WITH_LIKES', 'PLAYER_HAS_NOTE_WITH_COMMENTS') NOT NULL";
+		$query = "ALTER TABLE {$prefix}_requirements CHANGE requirement requirement ENUM('PLAYER_HAS_ITEM','PLAYER_VIEWED_ITEM','PLAYER_VIEWED_NODE','PLAYER_VIEWED_NPC','PLAYER_VIEWED_WEBPAGE','PLAYER_VIEWED_AUGBUBBLE','PLAYER_HAS_UPLOADED_MEDIA_ITEM', 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE','PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO','PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO','PLAYER_HAS_COMPLETED_QUEST','PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK', 'PLAYER_HAS_NOTE_WITH_LIKES', 'PLAYER_HAS_NOTE_WITH_COMMENTS') NOT NULL";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
         
         
-        $query = "ALTER TABLE  `{$prefix}_requirements` ADD  `requirement_detail_4` VARCHAR( 30 ) NULL DEFAULT NULL";
+        	$query = "ALTER TABLE  `{$prefix}_requirements` ADD  `requirement_detail_4` VARCHAR( 30 ) NULL DEFAULT NULL";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
@@ -1175,7 +1175,7 @@ class Games extends Module
         */
 
         
-	$query = "ALTER TABLE 180_qrcodes ADD fail_text varchar(256) NOT NULL DEFAULT \"This code doesn't mean anything right now. You should come back later.\";";
+	$query = "ALTER TABLE {$prefix}_qrcodes ADD fail_text varchar(256) NOT NULL DEFAULT \"This code doesn't mean anything right now. You should come back later.\";";
 	mysql_query($query);
 	NetDebug::trace("$query" . ":" . mysql_error());
 
