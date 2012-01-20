@@ -158,6 +158,7 @@ class Notes extends Module
 		$note->likes = Notes::getNoteLikes($noteId);
 		$note->player_liked = ($playerId == 0 ? 0 : Notes::playerLiked($playerId, $noteId));
         	$note->icon_media_id = 5;
+		$note->dropped = Notes::noteDropped($noteId, $note->game_id);
             	return $note;
         }
         return;
@@ -217,6 +218,17 @@ class Notes extends Module
 	return $liked->liked;
     }
 
+    function noteDropped($noteId, $gameId)
+    {
+	$query = "SELECT * FROM ".$gameId."_locations WHERE type='PlayerNote' AND type_id='{$noteId}' LIMIT 1";
+	$result = mysql_query($query);
+
+	if(mysql_num_rows($result) > 0)
+		return true;
+	else
+		return false;
+    }
+
     function deleteNote($noteId)
     {
         $query = "SELECT note_id, game_id FROM notes WHERE parent_note_id = '{$noteId}'";
@@ -225,7 +237,7 @@ class Notes extends Module
         
         while($commentNote = mysql_fetch_object($result))
         {
-            deleteNote($commentNote->note_id);
+            Notes::deleteNote($commentNote->note_id);
         }
         
         //Delete Note locations

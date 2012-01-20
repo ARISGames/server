@@ -19,25 +19,6 @@ class webbackpack
 	public function getData($gameId, $playerId, $individual=false)
 	{
 		$backpack = new stdClass();
-		//Get game information (needn't be called for every player- should be moved to own function)
-
-		$query = "SELECT games.game_id, games.name, m.name as media_name, m.file_name as media_url, im.name as icon_media_name, im.file_name as icon_media_url FROM games LEFT JOIN media as m ON games.media_id = m.media_id LEFT JOIN media as im ON games.icon_media_id = im.media_id WHERE games.game_id = '{$gameId}'";
-
-		/* Query- formatted for readability -
-		$query = "SELECT 
-			games.game_id, games.name, m.name as media_name, m.file_name as media_url, im.name as icon_media_name, im.file_name as icon_media_url 
-			FROM 
-			games LEFT JOIN 
-			media as m ON games.media_id = m.media_id LEFT JOIN 
-			media as im ON games.icon_media_id = im.media_id 
-			WHERE 
-		 	games.game_id = '{$gameId}'";
-		*/
-
-		$result = mysql_query($query);
-		$game = mysql_fetch_object($result);
-		if(!$game) return "Invalid Game ID"; 
-		$backpack->game=$game;
 
 		//Get owner information
 		$query = "SELECT user_name FROM players WHERE player_id = '{$playerId}'";
@@ -46,7 +27,6 @@ class webbackpack
 		if(!$name) return "Invalid Player ID";
 		$backpack->owner=$name;
 		$backpack->owner->player_id = $playerId;
-
 
 		/* ATTRIBUTES */
 		$query = "SELECT i.item_id, i.name, i.description, i.max_qty_in_inventory, i.weight, i.type, i.url, pi.qty, m.name as media_name, m.file_name as media_file_name, m.game_id as media_game_id, im.name as icon_name, im.file_name as icon_file_name, im.game_id as icon_game_id FROM {$gameId}_player_items as pi, {$gameId}_items as i LEFT JOIN media as m ON i.media_id = m.media_id LEFT JOIN media as im ON i.icon_media_id = im.media_id WHERE pi.player_id = {$playerId} AND pi.item_id = i.item_id AND i.type = 'ATTRIB'";
@@ -73,7 +53,6 @@ class webbackpack
 			$contents[] = $content;
 
 		$backpack->attributes = $contents;
-
 
 		/* OTHER ITEMS */
 		$query = "SELECT i.item_id, i.name, i.description, i.max_qty_in_inventory, i.weight, i.type, i.url, pi.qty, m.name as media_name, m.file_name as media_file_name, m.game_id as media_game_id, im.name as icon_name, im.file_name as icon_file_name, im.game_id as icon_game_id FROM {$gameId}_player_items as pi, {$gameId}_items as i LEFT JOIN media as m ON i.media_id = m.media_id LEFT JOIN media as im ON i.icon_media_id = im.media_id WHERE pi.player_id = {$playerId} AND pi.item_id = i.item_id AND i.type != 'ATTRIB'";
@@ -153,6 +132,38 @@ class webbackpack
 			return $note;
 		}
 		return;
+	}
+
+	function getGameInfo($gameId)
+	{
+		$query = "SELECT games.game_id, games.name, pcm.name as pc_media_name, pcm.file_name as pc_media_url, m.name as media_name, m.file_name as media_url, im.name as icon_media_name, im.file_name as icon_media_url FROM games LEFT JOIN media as m ON games.media_id = m.media_id LEFT JOIN media as im ON games.icon_media_id = im.media_id LEFT JOIN media as pcm on games.pc_media_id = pcm.media_id WHERE games.game_id = '{$gameId}'";
+
+		/* Query- formatted for readability -
+		$query = "SELECT 
+			games.game_id, games.name, m.name as media_name, m.file_name as media_url, im.name as icon_media_name, im.file_name as icon_media_url 
+			FROM 
+			games LEFT JOIN 
+			media as m ON games.media_id = m.media_id LEFT JOIN 
+			media as im ON games.icon_media_id = im.media_id 
+			media as pcm ON games.pc_media_id = m.media_id
+			WHERE 
+		 	games.game_id = '{$gameId}'";
+		*/
+
+		$result = mysql_query($query);
+		$game = mysql_fetch_object($result);
+		if(!$game) return "Invalid Game ID"; 
+
+		$query = "SELECT editors.name FROM game_editors JOIN editors ON editors.editor_id = game_editors.editor_id WHERE game_editors.game_id = '{$gameId}'";
+		$result = mysql_query($query);
+		$auth = array();
+
+		while($a = mysql_fetch_object($result))
+			$auth[] = $a;
+
+		$game->authors = $auth;
+
+		return $game;
 	}
 
 	function getNoteContents($noteId)

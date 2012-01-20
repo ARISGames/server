@@ -26,9 +26,9 @@ class Players extends Module
 		}
 		
 		$query = "INSERT INTO players (user_name, password, 
-									first_name, last_name, email, created) 
-				  VALUES ('{$strNewUserName}', MD5('$strPassword'),
-				  		'{$strFirstName}','{$strLastName}','{$strEmail}', NOW())";
+			first_name, last_name, email, created) 
+			VALUES ('{$strNewUserName}', MD5('$strPassword'),
+		 	'{$strFirstName}','{$strLastName}','{$strEmail}', NOW())";
 			
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
@@ -159,7 +159,7 @@ class Players extends Module
 					players.latitude, players.longitude, player_log.timestamp
 					FROM players
 					LEFT JOIN player_log ON players.player_id = player_log.player_id
-					WHERE players.last_game_id =  '{$intGameID}' AND 
+					WHERE players.show_on_map = '1' AND players.last_game_id =  '{$intGameID}' AND 
 					players.player_id != '{$intPlayerID}' AND
 					player_log.timestamp > DATE_SUB( NOW( ) , INTERVAL 20 MINUTE ) 
 					GROUP BY player_id";
@@ -568,6 +568,70 @@ class Players extends Module
 
 
 		return new returnData(0, $backpack);
+	}
+
+	function createPlayerAccountsFromArrays($usernameArray, $passwordArray, $firstnameArray, $lastnameArray, $emailArray)
+	{
+		if(count($usernameArray) == 0 || count($usernameArray) != count($passwordArray))
+			return new returnData(1, "Error- Different Sized Arrays");
+
+		$query = "SELECT user_name FROM players WHERE ";
+		for($i = 0; $i < count($playerArray); $i++)
+			$query = $query."user_name = '{$usernameArray[$i]}' OR ";
+		$query = substr($query, 0, strlen($query)-4).";";
+		$result = mysql_query($query);
+		$reterr = "username ";
+		while($un = mysql_fetch_object($result))
+			$reterr = $reterr.$un->user_name.", ";	
+		if($reterr != "username ")
+		{
+			$reterr = substr($reterr, 0, strlen($query)-2)." already in database.";
+			return new returnData(1, $reterr);
+		}
+		
+
+		$query = "INSERT INTO players (user_name, password, first_name, last_name, email, created) VALUES ";
+		for($i = 0; $i < count($usernameArray); $i++)
+			$query = $query."('{$usernameArray[$i]}', MD5('$passwordArray[$i]'), '{$firstnameArray[$i]}','{$lastnameArray[$i]}','{$emailArray[$i]}', NOW()), ";
+
+		$query = substr($query, 0, strlen($query)-2).";";
+		$result = mysql_query($query);
+		return new returnData(0);
+	}
+
+	function createPlayerAccountsFromObjectArray($playerArray)
+	{
+		if(count($playerArray) == 0)
+			return new returnData(1, "Error- Empty Array");
+		
+		$query = "SELECT user_name FROM players WHERE ";
+		for($i = 0; $i < count($playerArray); $i++)
+			$query = $query."user_name = '{$playerArray[$i]["username"]}' OR ";
+		$query = substr($query, 0, strlen($query)-4).";";
+		$result = mysql_query($query);
+		$reterr = "username ";
+		while($un = mysql_fetch_object($result))
+			$reterr = $reterr.$un->user_name.", ";	
+		if($reterr != "username ")
+		{
+			$reterr = substr($reterr, 0, strlen($query)-2)." already in database.";
+			return new returnData(1, $reterr);
+		}
+
+		$query = "INSERT INTO players (user_name, password, first_name, last_name, email, created) VALUES ";
+		for($i = 0; $i < count($playerArray); $i++)
+			$query = $query."('{$playerArray[$i]["username"]}', MD5('{$playerArray[$i]["password"]}'), '{$playerArray[$i]["firstname"]}','{$playerArray[$i]["lastname"]}','{$playerArray[$i]["email"]}', NOW()), ";
+
+		$query = substr($query, 0, strlen($query)-2).";";
+		$result = mysql_query($query);
+		return new returnData(0);
+	}
+
+	function setShowPlayerOnMap($playerId, $spom)
+	{
+		$query = "UPDATE players SET show_on_map = '{$spom}' WHERE player_id = '{$playerId}'";
+		mysql_query($query);
+		return new returnData(0);
 	}
 }
 ?>

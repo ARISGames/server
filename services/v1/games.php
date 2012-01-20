@@ -952,11 +952,11 @@ class Games extends Module
         mysql_query($query);
                 NetDebug::trace("$query" . ":" . mysql_error());
 
-	$query = "ALTER TABLE games ADD allow_player_tags TINYINT(1) DEFAULT 0";
+	$query = "ALTER TABLE games ADD allow_player_tags TINYINT(1) DEFAULT 1";
         mysql_query($query);
                 NetDebug::trace("$query" . ":" . mysql_error());
 
-	$query = "ALTER TABLE game_tags ADD player_generated TINYINT(1) DEFAULT 0";
+	$query = "ALTER TABLE game_tags ADD player_created TINYINT(1) DEFAULT 0";
         mysql_query($query);
                 NetDebug::trace("$query" . ":" . mysql_error());
 
@@ -993,6 +993,10 @@ class Games extends Module
                 NetDebug::trace("$query" . ":" . mysql_error());
 
 	$query = "CREATE INDEX note_id ON note_tags(note_id)";
+        mysql_query($query);
+                NetDebug::trace("$query" . ":" . mysql_error());
+
+	$query = "ALTER TABLE players ADD show_on_map TINYINT NOT NULL DEFAULT 1";
         mysql_query($query);
                 NetDebug::trace("$query" . ":" . mysql_error());
 

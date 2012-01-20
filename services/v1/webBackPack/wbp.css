@@ -1,73 +1,186 @@
-/* Encompasses all spacers between players, sections, content, comments, etc... */
+/* Encompasses everything inside the body */
+.page
+{
+  width:800px;
+  margin:0 auto;
+  font-family:HelveticaNeue-CondensedBold, Helvetica;
+}
+
+/* The header of the page, including game title, game icon, and game authors */
+.pageheader
+{
+  width:100%;
+}
+
+/* Game icon in header */
+.gameicon
+{
+  float:left;
+  height:100px;
+  width:100px;
+}
+
+/* The game icon image itself */
+.gameiconimage
+{
+  height:100px;
+  width:100px;
+}
+
+/* Encompasses game title and game authors */
+.gametext
+{
+  float:left;
+}
+
+/* Game title in header */
+.gametitle
+{
+  float:left;
+  font-size:72px;
+  width:700px;
+  overflow:visible;
+  white-space:nowrap;
+}
+
+/* Encompasses list of game authors in header */
+.gameauthors
+{
+  clear:both;
+  float:left;
+  font-size:24px;
+  color:#444444;
+}
+
+/* Each individual game author in header */
+.gameauthor
+{
+
+}
+
+/* Encompasses all spacers between players, content, media, etc... */
 .spacer
 {
   width:100%;
   float:left;
 }
 
+.headerspacer
+{
+  height:50px;
+}
+
 /* Encompasses everything about an individual player */
 .player
 {
   clear:both;
-  width:600px;
+  width:100%;
   margin:5px;
-  border-color:#00000F; /* Turn 'border-style:dotted;' on for div tags to use this debugging info */
+  padding:20px;
 }
 
-/* Space between each section */
+/* Header of player. Contains player name and player icon. */
+.playerheader
+{
+  float:left;
+  width:100%;
+  margin:0px auto;
+  margin-bottom: 20px;
+  padding: 10px;
+  border-style:solid;
+  border-radius:10px;
+  -moz-border-radius:10px;
+  -moz-border-radius:15px;
+}
+
+/* Space between each player */
 .playerspacer
 {
-  height:100px;
-  border-color:#0000F0; /* Turn 'border-style:dotted;' on for div tags to use this debugging info */
+  height:40px;
+}
+
+/* Player's icon */
+.playericon
+{
+  float:left;
+  max-width:10%;
+}
+
+/* The player icon itself */
+.playericonimage
+{
+  width:100%;
+}
+
+/* Encompasses everything in player header but playericon */
+.playertext
+{
+  float:left;
+  text-align:left;
+  width:85%;
 }
 
 /* Just name of Player */
-.player_name
+.playername
 {
-  font-size:20px;
+  float:left;
+  text-align:left;
+  font-size:26px;
   font-weight:bold;
   margin:10px;
-  float:left;
-  border-color:#0000FF; /* Turn 'border-style:dotted;' on for div tags to use this debugging info */
+  width:100%;
+}
+
+/* Displayed when player has no attributes, items, or notes */
+.emptyplayer
+{
+  clear:both;
+  width:100%;
+  color:#444444;
+  font-size:20px;
+  font-weight:bold;
 }
 
 /* Encompasses each individual section (attributes, items, notes) */
 .section
 {
   clear:both;
-  border-color:#000F00; /* Turn 'border-style:dotted;' on for div tags to use this debugging info */
+  margin:0 auto;
+  padding:10px;
 }
 
 /* Space between each section */
 .sectionspacer
 {
   height:40px;
-  border-color:#000F0F; /* Turn 'border-style:dotted;' on for div tags to use this debugging info */
 }
 
 /* The word 'Attribute' and 'Item' and 'Note' at the beginning of a section */
 .sectionheader
 {
   font-weight:bold;
-  border-color:#000FF0; /* Turn 'border-style:dotted;' on for div tags to use this debugging info */
+  text-decoration:underline;
+  font-size:22px;
 }
 
 /* Encompasses an individuals total list of attributes */
 .attributes
 {
-  border-color:#000FFF; /* Turn 'border-style:dotted;' on for div tags to use this debugging info */
 }
 
 /* Encompasses an individuals total list of items */
 .items
 {
-  border-color:#00F000; /* Turn 'border-style:dotted;' on for div tags to use this debugging info */
 }
 
 /* Encompasses an individuals total list of notes */
 .notes
 {
-  border-color:#00F00F; /* Turn 'border-style:dotted;' on for div tags to use this debugging info */
+}
+
+.playernoteiconimage
+{
+  width:50px;
 }
 
 /* Encompasses each individual piece of content (an attribute, an item, a note, etc...) */
@@ -75,60 +188,101 @@
 {
   clear:both;
   width:100%;
+  min-height:50px;
   margin:5px;
-  border-color:#00F0F0; /* Turn 'border-style:dotted;' on for div tags to use this debugging info */
+}
+
+/* The left side of each piece of content */
+.left
+{
+  float:left;
+  text-align:left;
+  width:10%;
+}
+
+/* The right side of each piece of content */
+.right
+{
+  float:left;
+  padding:10px;
+  width:85%;
 }
 
 /* Space between each peice of content */
 .contentspacer
 {
   height:20px;
-  border-color:#00F0FF; /* Turn 'border-style:dotted;' on for div tags to use this debugging info */
 }
 
 /* Encompasses each individual attribute */
 .attribute
 {
-  border-color:#00FF00; /* Turn 'border-style:dotted;' on for div tags to use this debugging info */
 }
 
 /* Encompasses each individual item */
 .item
 {
-  border-color:#00FF0F; /* Turn 'border-style:dotted;' on for div tags to use this debugging info */
 }
 
 /* Encompasses each individual note */
 .note
 {
-  border-color:#00FFF0; /* Turn 'border-style:dotted;' on for div tags to use this debugging info */
+}
+
+/* Encompasses all content headers */
+.contentheader
+{
+  width:100%;
+  float:left;
 }
 
 /* Encompasses each individual attribute of any type of content (attribute_attrib, item_attrib, note_attrib, etc...) */
 .attrib
 {
-  float:left;
-  width:100px;
   margin:5px;
-  border-color:#00FFFF; /* Turn 'border-style:dotted;' on for div tags to use this debugging info */
 }
 
 /* Encompasses each individual attribute of an attribute (icon, qty, etc...) */
 .attribute_attrib
 {
-  border-color:#0F0000; /* Turn 'border-style:dotted;' on for div tags to use this debugging info */
 }
 
 /* Encompasses each individual attribute of an item (icon, qty, weight, etc...) */
 .item_attrib
 {
-  border-color:#0F000F; /* Turn 'border-style:dotted;' on for div tags to use this debugging info */
 }
 
 /* Encompasses each individual attribute of a note (icon, qty, weight, etc...) */
 .note_attrib
 {
-  border-color:#0F00F0; /* Turn 'border-style:dotted;' on for div tags to use this debugging info */
+}
+
+/* All 'title' attributes. (title of a note, title of a comment, etc...) */
+.attrib_title
+{
+  float:left;
+  text-align:left;
+  font-size:18px;
+}
+
+/* Same as .attrib_title, but for name of items and attributes */
+.attrib_name
+{
+  float:left;
+  text-align:left;
+  font-size:18px;
+}
+
+.attrib_qty
+{
+  float:right;
+  text-align:right;
+}
+
+.attrib_public
+{
+  float:right;
+  text-align:right;
 }
 
 /* Encompasses each individual notecontent */
@@ -139,20 +293,25 @@
   position:relative;
   left:40px;
   width:100%;
-  border-color:#0F00FF; /* Turn 'border-style:dotted;' on for div tags to use this debugging info */
+  min-height:80px;
+}
+
+/* the img tags of thumbnail images */
+.thumbnail
+{
+  max-width:50px;
+  max-height:50px;
 }
 
 /* Encompasses each individual attribute of a notecontent (media, etc...) */
 .notecontent_attrib
 {
-  border-color:#0F0F00; /* Turn 'border-style:dotted;' on for div tags to use this debugging info */
 }
 
 /* Space between each notecontent */
 .notecontentspacer
 {
   height:10px;
-  border-color:#0F0F0F; /* Turn 'border-style:dotted;' on for div tags to use this debugging info */
 }
 
 /* Encompasses each individual comment */
@@ -163,20 +322,22 @@
   position:relative;
   left:80px;
   width:100%;
-  border-color:#0F0FF0; /* Turn 'border-style:dotted;' on for div tags to use this debugging info */
+}
+
+.playercommenticonimage
+{
+  width:40px;
 }
 
 /* Encompasses each individual attribute of a comment (title, media, etc...) */
 .comment_attrib
 {
-  border-color:#0F0FFF; /* Turn 'border-style:dotted;' on for div tags to use this debugging info */
 }
 
 /* Space between each comment */
 .commentspacer
 {
   height:10px;
-  border-color:#0FF000; /* Turn 'border-style:dotted;' on for div tags to use this debugging info */
 }
 
 /* Encompasses each individual commentcontent */
@@ -187,31 +348,23 @@
   position:relative;
   left:40px;
   width:100%;
-  border-color:#0FF00F; /* Turn 'border-style:dotted;' on for div tags to use this debugging info */
 }
 
 /* Encompasses each individual attribute of a commentcontent (media, etc...) */
 .commentcontent_attrib
 {
-  border-color:#0FF0F0; /* Turn 'border-style:dotted;' on for div tags to use this debugging info */
 }
 
 /* Space between each commentcontent */
 .commentcontentspacer
 {
   height:10px;
-  border-color:#0FF0FF; /* Turn 'border-style:dotted;' on for div tags to use this debugging info */
 }
 
 div
 {
+  overflow:visible;
   text-align:center;
-  /* border-style:dotted; */
+  /*border-style:dotted;*/
   border-width:1px;
-}
-
-img
-{
-  max-width:50px;
-  max-height:50px;
 }

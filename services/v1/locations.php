@@ -249,16 +249,16 @@ class Locations extends Module
 			//Special Case for Notes
 			if($location->type == 'PlayerNote')
 			{
-				$query = "SELECT public_for_map, public_for_notebook, owner_id FROM notes WHERE note_id='{$location->type_id}' LIMIT 1";
+				$query = "SELECT public_to_map, public_to_notebook, owner_id FROM notes WHERE note_id='{$location->type_id}' LIMIT 1";
 				$result = mysql_query($query);
 				$note = mysql_fetch_object($result);
 				//If note doesn't exist, or if it is neither public nor owned by the owner, skip it.
-				if(!$note || !($note->public_for_map || $note->owner_id == $intPlayerID))
+				if(!$note || !($note->public_to_map || $note->owner_id == $intPlayerID))
 				{
 					NetDebug::trace("Skipping Location:{$location->location_id} because Note doesn't exist, or current user does not have permission to view it");
 					continue;
 				}
-				if($note->public_for_notebook || $note->owner_id == $intPlayerId)
+				if($note->public_to_notebook || $note->owner_id == $intPlayerId)
 					$location->allow_quick_travel = 1;
 			}
 
