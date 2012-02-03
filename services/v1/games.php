@@ -1173,15 +1173,15 @@ class Games extends Module
         
         //DO THIS ONLY ONE TIME EVER PER DATABASE
         //Moves requirement_detail_1 & _2 to _3 & _4. Makes requirement_detail_1 = radius and _2 = qty.
-        /*
-        $query = "SELECT * FROM '{$prefix}_requirements WHERE requirement = 'PLAYER_HAS_UPLOADED_MEDIA_ITEM' OR requirement = 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE' OR requirement = 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO' OR requirement = 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO'";
+/*        
+        $query = "SELECT * FROM {$prefix}_requirements WHERE requirement = 'PLAYER_HAS_UPLOADED_MEDIA_ITEM' OR requirement = 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE' OR requirement = 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO' OR requirement = 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO'";
         $result = mysql_query($query);
         while($row = mysql_fetch_object($result))
         {
-            $query = "UPDATE '{$prefix}_requirements' SET requirement_detail_1 = '{$row->requirement_detail_3}', requirement_detail_2 = '1', requirement_detail_3 = '{$row->requirement_detail_1}', requirement_detail_4 = '{$row->requirement_detail_2}' WHERE requirement_id = '{$row->requirement_id}'";
+            $query = "UPDATE {$prefix}_requirements SET requirement_detail_1 = '{$row->requirement_detail_3}', requirement_detail_2 = '1', requirement_detail_3 = '{$row->requirement_detail_1}', requirement_detail_4 = '{$row->requirement_detail_2}' WHERE requirement_id = '{$row->requirement_id}'";
             mysql_query($query);
         }
-        */
+*/        
         
 		$query = "ALTER TABLE {$prefix}_qrcodes ADD fail_text varchar(256) NOT NULL DEFAULT \"This code doesn't mean anything right now. You should come back later.\";";
 		mysql_query($query);
