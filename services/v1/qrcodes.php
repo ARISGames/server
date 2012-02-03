@@ -331,6 +331,9 @@ class QRCodes extends Module
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
+		$strCode = addslashes($strCode);
+		$errorText = addslashes($errorText);
+
 		if (!$this->isValidObjectType($intGameID, $strLinkType)) return new returnData(4, NULL, "Invalid link type");
 
 		$query = "UPDATE {$prefix}_qrcodes
