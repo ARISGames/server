@@ -936,69 +936,69 @@ class Games extends Module
         mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
 
-	$query = "CREATE TABLE game_tags( game_id INT UNSIGNED NOT NULL, tag VARCHAR(32))";
-	mysql_query($query);
-		NetDebug::trace("$query" . ":" . mysql_error());
-
-	$query = "ALTER TABLE game_tags ADD PRIMARY KEY(game_id,tag)";
-	mysql_query($query);
-		NetDebug::trace("$query" . ":" . mysql_error());
-
-	$query = "CREATE TABLE note_tags ( note_id INT UNSIGNED NOT NULL, tag VARCHAR(32))";
-        mysql_query($query);
-                NetDebug::trace("$query" . ":" . mysql_error());
-
-        $query = "ALTER TABLE note_tags ADD PRIMARY KEY(note_id,tag)";
-        mysql_query($query);
-                NetDebug::trace("$query" . ":" . mysql_error());
-
-	$query = "ALTER TABLE games ADD allow_player_tags TINYINT(1) DEFAULT 1";
-        mysql_query($query);
-                NetDebug::trace("$query" . ":" . mysql_error());
-
-	$query = "ALTER TABLE game_tags ADD player_created TINYINT(1) DEFAULT 0";
-        mysql_query($query);
-                NetDebug::trace("$query" . ":" . mysql_error());
-
-	$query = "ALTER TABLE notes DROP COLUMN  parent_rating";
-        mysql_query($query);
-                NetDebug::trace("$query" . ":" . mysql_error());
-
-	$query = "ALTER TABLE notes DROP COLUMN  ave_rating";
-        mysql_query($query);
-                NetDebug::trace("$query" . ":" . mysql_error());
-
-	$query = "ALTER TABLE notes DROP COLUMN  num_ratings";
-        mysql_query($query);
-                NetDebug::trace("$query" . ":" . mysql_error());
-
-	$query = "CREATE TABLE note_likes (player_id INT UNSIGNED, note_id INT UNSIGNED)";
-        mysql_query($query);
-                NetDebug::trace("$query" . ":" . mysql_error());
-
-	$query = "ALTER TABLE note_likes ADD PRIMARY KEY (player_id, note_id)";
-        mysql_query($query);
-                NetDebug::trace("$query" . ":" . mysql_error());
-
-	$query = "CREATE INDEX tag ON game_tags(tag)";
-        mysql_query($query);
-                NetDebug::trace("$query" . ":" . mysql_error());
-
-	$query = "CREATE INDEX tag ON note_tags(tag)";
-        mysql_query($query);
-                NetDebug::trace("$query" . ":" . mysql_error());
-
-	$query = "CREATE INDEX game_id ON game_tags(game_id)";
-        mysql_query($query);
-                NetDebug::trace("$query" . ":" . mysql_error());
-
-	$query = "CREATE INDEX note_id ON note_tags(note_id)";
-        mysql_query($query);
-                NetDebug::trace("$query" . ":" . mysql_error());
-
-	$query = "ALTER TABLE players ADD show_on_map TINYINT NOT NULL DEFAULT 1";
-        mysql_query($query);
-                NetDebug::trace("$query" . ":" . mysql_error());
+		$query = "CREATE TABLE game_tags( game_id INT UNSIGNED NOT NULL, tag VARCHAR(32))";
+		mysql_query($query);
+			NetDebug::trace("$query" . ":" . mysql_error());
+	
+		$query = "ALTER TABLE game_tags ADD PRIMARY KEY(game_id,tag)";
+		mysql_query($query);
+			NetDebug::trace("$query" . ":" . mysql_error());
+	
+		$query = "CREATE TABLE note_tags ( note_id INT UNSIGNED NOT NULL, tag VARCHAR(32))";
+			mysql_query($query);
+					NetDebug::trace("$query" . ":" . mysql_error());
+	
+			$query = "ALTER TABLE note_tags ADD PRIMARY KEY(note_id,tag)";
+			mysql_query($query);
+					NetDebug::trace("$query" . ":" . mysql_error());
+	
+		$query = "ALTER TABLE games ADD allow_player_tags TINYINT(1) DEFAULT 1";
+			mysql_query($query);
+					NetDebug::trace("$query" . ":" . mysql_error());
+	
+		$query = "ALTER TABLE game_tags ADD player_created TINYINT(1) DEFAULT 0";
+			mysql_query($query);
+					NetDebug::trace("$query" . ":" . mysql_error());
+	
+		$query = "ALTER TABLE notes DROP COLUMN  parent_rating";
+			mysql_query($query);
+					NetDebug::trace("$query" . ":" . mysql_error());
+	
+		$query = "ALTER TABLE notes DROP COLUMN  ave_rating";
+			mysql_query($query);
+					NetDebug::trace("$query" . ":" . mysql_error());
+	
+		$query = "ALTER TABLE notes DROP COLUMN  num_ratings";
+			mysql_query($query);
+					NetDebug::trace("$query" . ":" . mysql_error());
+	
+		$query = "CREATE TABLE note_likes (player_id INT UNSIGNED, note_id INT UNSIGNED)";
+			mysql_query($query);
+					NetDebug::trace("$query" . ":" . mysql_error());
+	
+		$query = "ALTER TABLE note_likes ADD PRIMARY KEY (player_id, note_id)";
+			mysql_query($query);
+					NetDebug::trace("$query" . ":" . mysql_error());
+	
+		$query = "CREATE INDEX tag ON game_tags(tag)";
+			mysql_query($query);
+					NetDebug::trace("$query" . ":" . mysql_error());
+	
+		$query = "CREATE INDEX tag ON note_tags(tag)";
+			mysql_query($query);
+					NetDebug::trace("$query" . ":" . mysql_error());
+	
+		$query = "CREATE INDEX game_id ON game_tags(game_id)";
+			mysql_query($query);
+					NetDebug::trace("$query" . ":" . mysql_error());
+	
+		$query = "CREATE INDEX note_id ON note_tags(note_id)";
+			mysql_query($query);
+					NetDebug::trace("$query" . ":" . mysql_error());
+	
+		$query = "ALTER TABLE players ADD show_on_map TINYINT NOT NULL DEFAULT 1";
+			mysql_query($query);
+					NetDebug::trace("$query" . ":" . mysql_error());
 
         return new returnData(0, FALSE);
 	}
@@ -1140,29 +1140,34 @@ class Games extends Module
         
 /*
         //Mass conversion of requirement tables- this need only be done once, and is purty expensive, so should be commented out after done the first time
-        $query = "UPDATE '{$prefix}_requirements SET not_operator = 'NOT' AND requirement = 'PLAYER_HAS_ITEM' WHERE requirement = 'PLAYER_DOES_NOT_HAVE_ITEM'";
+        $query = "UPDATE {$prefix}_requirements SET not_operator = 'NOT', requirement = 'PLAYER_HAS_ITEM' WHERE requirement = 'PLAYER_DOES_NOT_HAVE_ITEM'";
         mysql_query($query);
-        $query = "UPDATE '{$prefix}_requirements SET not_operator = 'NOT' AND requirement = 'PLAYER_VIEWED_ITEM' WHERE requirement = 'PLAYER_HAS_NOT_VIEWED_ITEM'";
+        NetDebug::trace("$query" . ":" . mysql_error());
+        $query = "UPDATE {$prefix}_requirements SET not_operator = 'NOT', requirement = 'PLAYER_VIEWED_ITEM' WHERE requirement = 'PLAYER_HAS_NOT_VIEWED_ITEM'";
         mysql_query($query);
-        $query = "UPDATE '{$prefix}_requirements SET not_operator = 'NOT' AND requirement = 'PLAYER_VIEWED_NODE' WHERE requirement = 'PLAYER_HAS_NOT_VIEWED_NODE'";
+        NetDebug::trace("$query" . ":" . mysql_error());
+        $query = "UPDATE {$prefix}_requirements SET not_operator = 'NOT', requirement = 'PLAYER_VIEWED_NODE' WHERE requirement = 'PLAYER_HAS_NOT_VIEWED_NODE'";
         mysql_query($query);
-        $query = "UPDATE '{$prefix}_requirements SET not_operator = 'NOT' AND requirement = 'PLAYER_VIEWED_NPC' WHERE requirement = 'PLAYER_HAS_NOT_VIEWED_NPC'";
+        NetDebug::trace("$query" . ":" . mysql_error());
+        $query = "UPDATE {$prefix}_requirements SET not_operator = 'NOT', requirement = 'PLAYER_VIEWED_NPC' WHERE requirement = 'PLAYER_HAS_NOT_VIEWED_NPC'";
         mysql_query($query);
-        $query = "UPDATE '{$prefix}_requirements SET not_operator = 'NOT' AND requirement = 'PLAYER_VIEWED_WEBPAGE' WHERE requirement = 'PLAYER_HAS_NOT_VIEWED_WEBPAGE'";
+        NetDebug::trace("$query" . ":" . mysql_error());
+        $query = "UPDATE {$prefix}_requirements SET not_operator = 'NOT', requirement = 'PLAYER_VIEWED_WEBPAGE' WHERE requirement = 'PLAYER_HAS_NOT_VIEWED_WEBPAGE'";
         mysql_query($query);
-        $query = "UPDATE '{$prefix}_requirements SET not_operator = 'NOT' AND requirement = 'PLAYER_VIEWED_AUGBUBBLE' WHERE requirement = 'PLAYER_HAS_NOT_VIEWED_AUGBUBBLE'";
+        NetDebug::trace("$query" . ":" . mysql_error());
+        $query = "UPDATE {$prefix}_requirements SET not_operator = 'NOT', requirement = 'PLAYER_VIEWED_AUGBUBBLE' WHERE requirement = 'PLAYER_HAS_NOT_VIEWED_AUGBUBBLE'";
         mysql_query($query);
-        $query = "UPDATE '{$prefix}_requirements SET not_operator = 'NOT' AND requirement = 'PLAYER_HAS_COMPLETED_QUEST' WHERE requirement = 'PLAYER_HAS_NOT_COMPLETED_QUEST'";
-        mysql_query($query);        
-*/
+        NetDebug::trace("$query" . ":" . mysql_error());
+        $query = "UPDATE {$prefix}_requirements SET not_operator = 'NOT', requirement = 'PLAYER_HAS_COMPLETED_QUEST' WHERE requirement = 'PLAYER_HAS_NOT_COMPLETED_QUEST'";
+        mysql_query($query);  
+        NetDebug::trace("$query" . ":" . mysql_error());
         
-		$query = "ALTER TABLE {$prefix}_requirements CHANGE requirement requirement ENUM('PLAYER_HAS_ITEM','PLAYER_VIEWED_ITEM','PLAYER_VIEWED_NODE','PLAYER_VIEWED_NPC','PLAYER_VIEWED_WEBPAGE','PLAYER_VIEWED_AUGBUBBLE','PLAYER_HAS_UPLOADED_MEDIA_ITEM', 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE','PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO','PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO','PLAYER_HAS_COMPLETED_QUEST','PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK', 'PLAYER_HAS_NOTE_WITH_LIKES', 'PLAYER_HAS_NOTE_WITH_COMMENTS') NOT NULL";
+        $query = "ALTER TABLE {$prefix}_requirements CHANGE requirement requirement ENUM('PLAYER_HAS_ITEM','PLAYER_VIEWED_ITEM','PLAYER_VIEWED_NODE','PLAYER_VIEWED_NPC','PLAYER_VIEWED_WEBPAGE','PLAYER_VIEWED_AUGBUBBLE','PLAYER_HAS_UPLOADED_MEDIA_ITEM', 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE','PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO','PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO','PLAYER_HAS_COMPLETED_QUEST','PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK', 'PLAYER_HAS_NOTE_WITH_LIKES', 'PLAYER_HAS_NOTE_WITH_COMMENTS') NOT NULL";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
+*/
         
-        
-        
-        	$query = "ALTER TABLE  `{$prefix}_requirements` ADD  `requirement_detail_4` VARCHAR( 30 ) NULL DEFAULT NULL";
+        $query = "ALTER TABLE  `{$prefix}_requirements` ADD  `requirement_detail_4` VARCHAR( 30 ) NULL DEFAULT NULL";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
@@ -1177,11 +1182,10 @@ class Games extends Module
             mysql_query($query);
         }
         */
-
         
-	$query = "ALTER TABLE {$prefix}_qrcodes ADD fail_text varchar(256) NOT NULL DEFAULT \"This code doesn't mean anything right now. You should come back later.\";";
-	mysql_query($query);
-	NetDebug::trace("$query" . ":" . mysql_error());
+		$query = "ALTER TABLE {$prefix}_qrcodes ADD fail_text varchar(256) NOT NULL DEFAULT \"This code doesn't mean anything right now. You should come back later.\";";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
 
 
         //*NOTE: Any additions/editions to the contents of this function will have to be reciprocated on the 'create game' function as well
