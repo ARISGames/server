@@ -525,6 +525,7 @@ class Locations extends Module
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
+		$errorText = addslashes($errorText);
 		$strLocationName = addslashes($strLocationName);
 		//if ($dblError < 5) $dblError = 25; // <-- NO!
 
