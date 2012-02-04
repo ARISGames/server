@@ -615,7 +615,7 @@ class Players extends Module
 
 		
 		//Generate the result
-		$query = "SELECT user_id,user_name FROM players WHERE ";
+		$query = "SELECT player_id,user_name FROM players WHERE ";
 		for($i = 0; $i < count($usernameArray); $i++)
 			$query = $query."user_name = '{$usernameArray[$i]}' OR ";
 		$query = substr($query, 0, strlen($query)-4).";";
