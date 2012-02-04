@@ -615,9 +615,9 @@ class Players extends Module
 
 		
 		//Generate the result
-		$query = "SELECT player_id,user_name FROM players WHERE ";
-		for($i = 0; $i < count($playerArray); $i++)
-			$query = $query."user_name = '{$playerArray[$i]["userName"]}' OR ";
+		$query = "SELECT user_id,user_name FROM players WHERE ";
+		for($i = 0; $i < count($usernameArray); $i++)
+			$query = $query."user_name = '{$usernameArray[$i]}' OR ";
 		$query = substr($query, 0, strlen($query)-4).";";
 		$result = mysql_query($query);
 		if (mysql_error()) 	return new returnData(1, "","Error Verifying Records");
