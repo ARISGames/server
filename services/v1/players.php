@@ -570,16 +570,32 @@ class Players extends Module
 		return new returnData(0, $backpack);
 	}
 
-	function createPlayerAccountsFromArrays($usernameArray, $passwordArray, $firstnameArray, $lastnameArray, $emailArray)
-	{
-		if(count($usernameArray) == 0 || count($usernameArray) != count($passwordArray))
-			return new returnData(1, "Error- Different Sized Arrays");
 
+	/**
+     * Create new accounts from an array of player objects
+     * @param array $playerArrays JSON Object containing userNames and passwords as arrays {"userNames":["joey","mary"],"passwords":["fds2cd3","d3g5gg"]}
+     * @return returnData
+     * @returns a returnData object containing player objects with their assigned player ids
+     * @see returnData
+     */
+	function createPlayerAccountsFromArrays($playerArrays)
+	{		
+		$usernameArray = $playerArrays['userNames'];
+		$passwordArray = $playerArrays['passwords'];
+		$firstnameArray = $playerArrays['firstNames'];
+		$lastnameArray = $playerArrays['lastNames'];
+		$emailArray = $playerArrays['emails'];
+		
+		if(count($usernameArray) == 0 || count($usernameArray) != count($passwordArray))
+			return new returnData(1, "", "Bad JSON or userNames and passwords arrays have different sizes");
+
+		//Search for matching user names
 		$query = "SELECT user_name FROM players WHERE ";
-		for($i = 0; $i < count($playerArray); $i++)
+		for($i = 0; $i < count($usernameArray); $i++)
 			$query = $query."user_name = '{$usernameArray[$i]}' OR ";
 		$query = substr($query, 0, strlen($query)-4).";";
 		$result = mysql_query($query);
+		
 		$reterr = "username ";
 		while($un = mysql_fetch_object($result))
 			$reterr = $reterr.$un->user_name.", ";	
@@ -589,42 +605,73 @@ class Players extends Module
 			return new returnData(1, $reterr);
 		}
 		
-
+		//Run the insert
 		$query = "INSERT INTO players (user_name, password, first_name, last_name, email, created) VALUES ";
 		for($i = 0; $i < count($usernameArray); $i++)
 			$query = $query."('{$usernameArray[$i]}', MD5('$passwordArray[$i]'), '{$firstnameArray[$i]}','{$lastnameArray[$i]}','{$emailArray[$i]}', NOW()), ";
-
 		$query = substr($query, 0, strlen($query)-2).";";
 		$result = mysql_query($query);
-		return new returnData(0);
-	}
+		if (mysql_error()) 	return new returnData(1, "","Error Inserting Records");
 
-	function createPlayerAccountsFromObjectArray($playerArray)
-	{
-		if(count($playerArray) == 0)
-			return new returnData(1, "Error- Empty Array");
 		
-		$query = "SELECT user_name FROM players WHERE ";
+		//Generate the result
+		$query = "SELECT player_id,user_name FROM players WHERE ";
 		for($i = 0; $i < count($playerArray); $i++)
-			$query = $query."user_name = '{$playerArray[$i]["username"]}' OR ";
+			$query = $query."user_name = '{$playerArray[$i]["userName"]}' OR ";
 		$query = substr($query, 0, strlen($query)-4).";";
 		$result = mysql_query($query);
-		$reterr = "username ";
+		if (mysql_error()) 	return new returnData(1, "","Error Verifying Records");
+
+
+		return new returnData(0,$result);
+	}
+
+	/**
+     * Create new accounts from an array of player objects
+     * @param array $playerArray Array of JSON formated player objects [{"userName":"joey","password":"h5f3ad3","firstName":"joey","lastName":"smith","email":"joey@gmail.com"}]
+     * @return returnData
+     * @returns a returnData object containing player objects with their assigned player ids
+     * @see returnData
+     */
+	function createPlayerAccountsFromObjectArray($playerArrayJSON)
+	{
+		if(count($playerArray) == 0)
+			return new returnData(1, "Bad JSON or Empty Array");
+		
+		//Search for matching user names
+		$query = "SELECT user_name FROM players WHERE ";
+		for($i = 0; $i < count($playerArray); $i++)
+			$query = $query."user_name = '{$playerArray[$i]["userName"]}' OR ";
+		$query = substr($query, 0, strlen($query)-4).";";
+		$result = mysql_query($query);
+		
+		//Check if any duplicates exist
+		$reterr = "Duplicate userName(s): ";
 		while($un = mysql_fetch_object($result))
 			$reterr = $reterr.$un->user_name.", ";	
-		if($reterr != "username ")
+		if($reterr != "Duplicate userName(s): ")
 		{
 			$reterr = substr($reterr, 0, strlen($query)-2)." already in database.";
-			return new returnData(1, $reterr);
+			return new returnData(4, "",$reterr);
 		}
 
+		//Run the insert
 		$query = "INSERT INTO players (user_name, password, first_name, last_name, email, created) VALUES ";
 		for($i = 0; $i < count($playerArray); $i++)
-			$query = $query."('{$playerArray[$i]["username"]}', MD5('{$playerArray[$i]["password"]}'), '{$playerArray[$i]["firstname"]}','{$playerArray[$i]["lastname"]}','{$playerArray[$i]["email"]}', NOW()), ";
-
+			$query = $query."('{$playerArray[$i]["userName"]}', MD5('{$playerArray[$i]["password"]}'), '{$playerArray[$i]["firstName"]}','{$playerArray[$i]["lastName"]}','{$playerArray[$i]["email"]}', NOW()), ";
 		$query = substr($query, 0, strlen($query)-2).";";
 		$result = mysql_query($query);
-		return new returnData(0);
+		if (mysql_error()) 	return new returnData(1, "","Error Inserting Records");
+		
+		//Generate the result
+		$query = "SELECT player_id,user_name FROM players WHERE ";
+		for($i = 0; $i < count($playerArray); $i++)
+			$query = $query."user_name = '{$playerArray[$i]["userName"]}' OR ";
+		$query = substr($query, 0, strlen($query)-4).";";
+		$result = mysql_query($query);
+		if (mysql_error()) 	return new returnData(1, "","Error Verifying Records");
+
+		return new returnData(0,$result);
 	}
 
 	function setShowPlayerOnMap($playerId, $spom)
