@@ -24,6 +24,7 @@ class Gateway extends BasicGateway
 		$args = substr($elements[1], 1);
 		$rawArgs = explode('/', $args);
 		
+		$GLOBALS['HTTP_RAW_POST_DATA'] = file_get_contents("php://input");
 		if(isset($GLOBALS['HTTP_RAW_POST_DATA']))
 		{
 			$rawArgs[] = $GLOBALS['HTTP_RAW_POST_DATA'];
