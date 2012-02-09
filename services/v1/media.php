@@ -233,14 +233,14 @@ class Media extends Module
 	* @returns path to the media directory on the file system
 	*/
 	public function getMediaDirectory($gameID){
-		return new returnData(0, Config::gamedataFSPath . "/{$gameID}/" . Config::gameMediaSubdir);
+		return new returnData(0, Config::gamedataFSPath . "/{$gameID}" . Config::gameMediaSubdir);
 	}
 	
 	/**
 	* @returns path to the media directory URL
 	*/
 	public function getMediaDirectoryURL($gameID){
-		return new returnData(0, Config::gamedataFSPath . "/{$gameID}/". Config::gameMediaSubdir);
+		return new returnData(0, Config::gamedataWWWPath . "/{$gameID}". Config::gameMediaSubdir);
 	}	
 
 	/**
