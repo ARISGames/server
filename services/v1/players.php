@@ -2,6 +2,7 @@
 require_once("module.php");
 require_once("items.php");
 require_once("notes.php");
+require_once("media.php");
 
 class Players extends Module
 {	
@@ -453,28 +454,20 @@ class Players extends Module
 	public function getDetailedPlayerAttributes($playerId, $gameId)
 	{
 		/* ATTRIBUTES */
-		$query = "SELECT i.item_id, i.name, i.description, i.max_qty_in_inventory, i.weight, i.type, i.url, pi.qty, m.name as media_name, m.file_name as media_file_name, m.game_id as media_game_id, im.name as icon_name, im.file_name as icon_file_name, im.game_id as icon_game_id FROM {$gameId}_player_items as pi, {$gameId}_items as i LEFT JOIN media as m ON i.media_id = m.media_id LEFT JOIN media as im ON i.icon_media_id = im.media_id WHERE pi.player_id = {$playerId} AND pi.item_id = i.item_id AND i.type = 'ATTRIB'";
-
-		/* Query- formatted for readability -
-		$query = "SELECT
-			i.item_id, i.name, i.description, i.is_attribute, i.max_qty_in_inventory, i.weight, i.type, i.url, 
-			pi.qty, 
-			m.name as media_name, m.file_name as media_file_name, m.game_id as media_game_id, 
-			im.name as icon_name, im.file_name as icon_file_name, im.game_id as icon_game_id 
-			FROM 
-			{$gameId}_player_items as pi, 
-			{$gameId}_items as i LEFT JOIN 
-			media as m ON i.media_id = m.media_id LEFT JOIN 
-			media as im ON i.icon_media_id = im.media_id
-			WHERE 
-			pi.player_id = {$playerId} AND pi.item_id = i.item_id
-			AND i.type = 'ATTRIB'";
-		*/
+		$query = "SELECT i.item_id, i.name, i.description, i.max_qty_in_inventory, i.weight, i.type, i.url, 
+            pi.qty, m.file_name as media_url, m.game_id as media_game_id, im.file_name as icon_url, im.game_id as icon_game_id 
+            FROM {$gameId}_player_items as pi, {$gameId}_items as i 
+            LEFT JOIN media as m ON i.media_id = m.media_id 
+            LEFT JOIN media as im ON i.icon_media_id = im.media_id 
+            WHERE pi.player_id = {$playerId} AND pi.item_id = i.item_id AND i.type = 'ATTRIB'";
 
 		$result = mysql_query($query);
 		$contents = array();
-		while($content = mysql_fetch_object($result))
-			$contents[] = $content;
+		while($content = mysql_fetch_object($result)) {
+            $content->media_url = Media::getMediaDirectoryURL($content->media_game_id)->data . '/' . $content->media_url;
+            $content->icon_url = Media::getMediaDirectoryURL($content->icon_game_id)->data . '/' . $content->icon_url;
+            $contents[] = $content;
+        }
 
 		return new returnData(0,$contents);
 	}
@@ -482,28 +475,21 @@ class Players extends Module
 	public function getDetailedPlayerItems($playerId, $gameId)
 	{
 		/* OTHER ITEMS */
-		$query = "SELECT i.item_id, i.name, i.description, i.max_qty_in_inventory, i.weight, i.type, i.url, pi.qty, m.name as media_name, m.file_name as media_file_name, m.game_id as media_game_id, im.name as icon_name, im.file_name as icon_file_name, im.game_id as icon_game_id FROM {$gameId}_player_items as pi, {$gameId}_items as i LEFT JOIN media as m ON i.media_id = m.media_id LEFT JOIN media as im ON i.icon_media_id = im.media_id WHERE pi.player_id = {$playerId} AND pi.item_id = i.item_id AND i.type != 'ATTRIB'";
+		$query = "SELECT i.item_id, i.name, i.description, i.max_qty_in_inventory, i.weight, i.type, i.url, 
+                pi.qty, m.file_name as media_url, m.game_id as media_game_id, im.file_name as icon_url, im.game_id as icon_game_id 
+            FROM {$gameId}_player_items as pi, {$gameId}_items as i 
+            LEFT JOIN media as m ON i.media_id = m.media_id 
+            LEFT JOIN media as im ON i.icon_media_id = im.media_id 
+            WHERE pi.player_id = {$playerId} AND pi.item_id = i.item_id AND i.type != 'ATTRIB'";
 
-		/* Query- formatted for readability -
-		$query = "SELECT
-			i.item_id, i.name, i.description, i.is_attribute, i.max_qty_in_inventory, i.weight, i.type, i.url, 
-			pi.qty, 
-			m.name as media_name, m.file_name as media_file_name, m.game_id as media_game_id, 
-			im.name as icon_name, im.file_name as icon_file_name, im.game_id as icon_game_id 
-			FROM 
-			{$gameId}_player_items as pi, 
-			{$gameId}_items as i LEFT JOIN 
-			media as m ON i.media_id = m.media_id LEFT JOIN 
-			media as im ON i.icon_media_id = im.media_id
-			WHERE 
-			pi.player_id = {$playerId} AND pi.item_id = i.item_id
-			AND i.type != 'ATTRIB'";
-		*/
 
 		$result = mysql_query($query);
 		$contents = array();
-		while($content = mysql_fetch_object($result))
-			$contents[] = $content;
+		while($content = mysql_fetch_object($result)){
+            $content->media_url = Media::getMediaDirectoryURL($content->media_game_id)->data . '/' . $content->media_url;
+            $content->icon_url = Media::getMediaDirectoryURL($content->icon_game_id)->data . '/' . $content->icon_url;
+            $contents[] = $content;
+        }
 
 		return new returnData(0,$contents);
 	}
@@ -516,12 +502,16 @@ class Players extends Module
 		else
         		$query = "SELECT note_id FROM notes WHERE owner_id = '{$playerId}' AND game_id = '{$gameId}' AND parent_note_id = 0 ORDER BY sort_index ASC";
 
-        	$result = mysql_query($query);
+        $result = mysql_query($query);
         	
-        	$notes = array();
-        	while($note = mysql_fetch_object($result))
-            		$notes[] = Notes::getFullNoteObject($note->note_id, $playerId);
-        	
+        $notes = array();
+        while($noteId = mysql_fetch_object($result)) {
+            $note = Notes::getFullNoteObject($note->note_id, $playerId);
+            $note->media_url = Media::getMediaDirectoryURL($note->media_game_id)->data . '/' . $note->media_url;
+            $note->icon_url = Media::getMediaDirectoryURL($note->icon_game_id)->data . '/' . $note->icon_url;
+            $notes[] = $note;
+        }
+        
 		return new returnData(0,$notes);
 	}
 
@@ -530,22 +520,19 @@ class Players extends Module
 		$backpack = new stdClass();
 		//Get game information (needn't be called for every player- should be moved to own function)
 
-		$query = "SELECT games.game_id, games.name, m.name as media_name, m.file_name as media_url, im.name as icon_media_name, im.file_name as icon_media_url FROM games LEFT JOIN media as m ON games.media_id = m.media_id LEFT JOIN media as im ON games.icon_media_id = im.media_id WHERE games.game_id = '{$gameId}'";
+		$query = "SELECT games.game_id, games.name, m.file_name as media_url, m.game_id as media_game_id, im.file_name as icon_media_url, im.game_id as icon_game_id
+        FROM games 
+        LEFT JOIN media as m ON games.media_id = m.media_id 
+        LEFT JOIN media as im ON games.icon_media_id = im.media_id 
+        WHERE games.game_id = '{$gameId}'";
 
-		/* Query- formatted for readability -
-		$query = "SELECT 
-			games.game_id, games.name, m.name as media_name, m.file_name as media_url, im.name as icon_media_name, im.file_name as icon_media_url 
-			FROM 
-			games LEFT JOIN 
-			media as m ON games.media_id = m.media_id LEFT JOIN 
-			media as im ON games.icon_media_id = im.media_id 
-			WHERE 
-		 	games.game_id = '{$gameId}'";
-		*/
 
 		$result = mysql_query($query);
 		$game = mysql_fetch_object($result);
-		if(!$game) return new returnData(1, "Invalid Game ID"); 
+		if(!$game) return new returnData(1, "Invalid Game ID");
+
+        $game->media_url = Media::getMediaDirectoryURL($game->media_game_id)->data . '/' . $game->media_url;
+        $game->icon_url = Media::getMediaDirectoryURL($game->icon_game_id)->data . '/' . $game->icon_url;
 		$backpack->game=$game;
 
 		//Get owner information
