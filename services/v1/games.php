@@ -202,9 +202,9 @@ class Games extends Module
 		}
 		
 		//Get Quest Stuff
-		$questsReturnData = Quests::getQuestsForPlayer($intGameId, $intPlayerId);
-		$gameObj->totalQuests = $questsReturnData->data->totalQuests;
-		$gameObj->completedQuests = count($questsReturnData->data->completed);
+		//$questsReturnData = Quests::getQuestsForPlayer($intGameId, $intPlayerId);
+		//$gameObj->totalQuests = $questsReturnData->data->totalQuests;
+		//$gameObj->completedQuests = count($questsReturnData->data->completed);
 		
 		//Get Editors
 		$query = "SELECT editors.* FROM editors, game_editors
