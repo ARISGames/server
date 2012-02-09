@@ -99,6 +99,30 @@ class Games extends Module
 		
     }	
     
+    
+     /**
+	 * Returns:
+	 * A single game in the same format as though an array of games was being searched
+	 * @param integer The Game to get info for
+	 * @param string ISO8601 YYYY-MM-DD Start Date
+	 * @param string ISO8601 YYYY-MM-DD End Date
+     * @returns a returnData object containing an array of player log records
+     * @see returnData
+	 */
+	public function getplayerLogsForGameAndDateRange($gameId, $startDate, $endDate)
+	{
+		$startDate = urldecode($startDate);
+		$endDate = urldecode($endDate);
+		
+		$query = "SELECT player_log.*, players.user_name FROM player_log 
+                JOIN players ON player_log.player_id = players.player_id WHERE game_id = {$gameId} AND
+        timestamp BETWEEN DATE('{$startDate}') AND DATE('{$endDate}')";
+        NetDebug::trace($query);
+        $result = mysql_query($query);
+        if (mysql_error()) return new returnData(3, NULL, mysql_error());
+        return new returnData(0, $result, NULL);
+    }
+    
     public function getTabBarItemsForGame($intGameId)
     {
         $query = "SELECT * FROM game_tab_data WHERE game_id = '{$intGameId}' ORDER BY tab_index ASC";
