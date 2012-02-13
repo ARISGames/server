@@ -309,31 +309,31 @@ class Items extends Module
 			$droppable = $game->data->allow_player_created_locations;
 		}
         
-        if($fileType != "NOTE")
-        {
-            //Create the Media
-            $newMediaResultData = Media::createMedia($gameId, $name, $fileName, 0);
-            $newMediaID = $newMediaResultData->data->media_id;
-            
-            $type = Media::getMediaType($fileName);
-            if($type == "Image"){
-                $iconNum = Module::kPLAYER_CREATED_ITEM_PHOTO_ICON_NUM;
-            }
-            else if($type == "Audio"){
-                $iconNum = Module::kPLAYER_CREATED_ITEM_AUDIO_ICON_NUM;
-            }
-            else if($type == "Video"){
-                $iconNum = Module::kPLAYER_CREATED_ITEM_VIDEO_ICON_NUM;
-            }
-            else{
-                $iconNum = Module::kPLAYER_CREATED_ITEM_DEFAULT_ICON_NUM;
-            }
-        }
-        else
-        {
-            $newMediaId = 0;
-            $iconNum = Module::kPLAYER_CREATED_ITEM_DEFAULT_ICON_NUM;
-        }
+        	if($fileType != "NOTE")
+        	{
+            		//Create the Media
+            		$newMediaResultData = Media::createMedia($gameId, $name, $fileName, 0);
+            		$newMediaID = $newMediaResultData->data->media_id;
+            		
+            		$type = Media::getMediaType($fileName);
+            		if($type == "Image"){
+                		$iconNum = Module::kPLAYER_CREATED_ITEM_PHOTO_ICON_NUM;
+            		}
+            		else if($type == "Audio"){
+                		$iconNum = Module::kPLAYER_CREATED_ITEM_AUDIO_ICON_NUM;
+            		}
+            		else if($type == "Video"){
+                		$iconNum = Module::kPLAYER_CREATED_ITEM_VIDEO_ICON_NUM;
+            		}
+            		else{
+                		$iconNum = Module::kPLAYER_CREATED_ITEM_DEFAULT_ICON_NUM;
+            		}
+        	}
+        	else
+        	{
+            		$newMediaId = 0;
+            		$iconNum = Module::kPLAYER_CREATED_ITEM_DEFAULT_ICON_NUM;
+        	}
 		
 		
 		//Create the Item
@@ -475,31 +475,226 @@ class Items extends Module
 		
 	}	
 
+
+
+
+
+
+
+
+
+
+
+
+	// \/ \/ \/ BACKPACK FUNCTIONS \/ \/ \/
+
+	/**
+	Gets array of JSON encoded 'web backpacks', containing player information relating to items, attributes, and notes gained throughout a game. For an example of its use, see 'getBackPacksFromArray.html'.
+	@param: $gameId- An integer representing the game_id of the game information desired.
+	@param: $playerArray- Either a JSON encoded array of integer player_ids of all the players whose information is desired, a single integer if only one player's information is desired, or nothing if all player information for an entire game is desired.
+	@returns: On success, returns JSON encoded game object with a parameter containing an array of player objects with various parameters describing a player's information.
+		  If gameId is empty, returns 'Error- Empty Game' and aborts the function.
+		  If game with gameId does not exist, returns 'Error- Invalid Game Id' and aborts the function.
+		  If playerArray is anything other than the specified options, returns 'Error- Invalid Player Array' and aborts the function.
+	**/
+	public static function getPlayerBackpacksFromArray($gameId, $playerArray)
+	{
+		if(is_numeric($gameId))
+			$gameId = intval($gameId);
+		else
+			return new returnData(1, "Error- Empty Game");
+
+		$prefix = Module::getPrefix($gameId);
+		if (!$prefix) return new returnData(1, "Error- Invalid Game Id");
+
+		$game = Games::getGameInfoForWebBackPack($gameId);
+		if(is_null($playerArray))
+		{
+			$game->backpacks =  Items::getGameDataBP($gameId);
+			return new returnData(0,$game);
+		}
+		else if(is_array($playerArray))
+		{
+			$game->backpacks =  Items::getArrayDataBP($gameId, $playerArray);
+			return new returnData(0,$game);
+		}
+		else if(is_numeric($playerArray))
+		{
+			$game->backpacks = Items::getDataBP($gameId, intval($playerArray));
+			return new returnData(0,$game,true);
+		}
+		else
+		{
+			return new returnData(1, "Error- Invalid Player Array");
+		}
+	}
+
+	private static function getGameDataBP($gameId)
+	{
+		$backPacks = array();
+		$query = "SELECT DISTINCT player_id FROM player_log WHERE game_id='{$gameId}'";
+		$result = mysql_query($query);
+		while($player = mysql_fetch_object($result))
+		{
+			$backPacks[] = Items::getDataBP($gameId, $player->player_id);
+		}
+		return $backPacks;
+	}
+
+	private static function getArrayDataBP($gameId, $playerArray)
+	{
+		$backPacks = array();
+		foreach($playerArray as $player)
+		{
+			$backPacks[] = Items::getDataBP($gameId, $player);
+		}
+		return $backPacks;
+	}
+
 	/*
 	* Gets information for web backpack for any player/game pair
 	*/
-
-	public static function getInfoForWebBackPack($gameId, $playerId)
+	private static function getDataBP($gameId, $playerId, $individual=false)
 	{
-		$backPack = new stdClass();
+		$backpack = new stdClass();
 
-		$prefix = Module::getPrefix($gameId);
-		if(!$prefix) return new returnData(1, NULL, "invalid game id");
-
+		//Get owner information
 		$query = "SELECT user_name FROM players WHERE player_id = '{$playerId}'";
 		$result = mysql_query($query);
 		$name = mysql_fetch_object($result);
-		if(!$name) return new returnData(1,NULL,"invalid player id");
+		if(!$name) return "Invalid Player ID";
+		$backpack->owner=$name;
+		$backpack->owner->player_id = $playerId;
 
-		$backPack->owner=$name;
+		/* ATTRIBUTES */
+		$query = "SELECT i.item_id, i.name, i.description, i.max_qty_in_inventory, i.weight, i.type, i.url, pi.qty, m.name as media_name, m.file_name as media_file_name, m.game_id as media_game_id, im.name as icon_name, im.file_name as icon_file_name, im.game_id as icon_game_id FROM {$gameId}_player_items as pi, {$gameId}_items as i LEFT JOIN media as m ON i.media_id = m.media_id LEFT JOIN media as im ON i.icon_media_id = im.media_id WHERE pi.player_id = {$playerId} AND pi.item_id = i.item_id AND i.type = 'ATTRIB'";
 
-		$query = "SELECT DISTINCT i.item_id, i.name, i.description, i.is_attribute, i.max_qty_in_inventory, i.weight, i.type, i.url, pi.qty, m.name as media_name, m.file_name as media_file_name, m.game_id as media_game_id, im.name as icon_name, im.file_name as icon_file_name, im.game_id as icon_game_id FROM {$prefix}_player_items as pi, {$prefix}_items as i LEFT JOIN media as m ON i.media_id = m.media_id OR i.media_id = 0 LEFT JOIN media as im ON i.icon_media_id = im.media_id OR i.icon_media_id = 0 WHERE pi.player_id = {$playerId} AND pi.item_id = i.item_id";
 		$result = mysql_query($query);
 		$contents = array();
 		while($content = mysql_fetch_object($result))
 			$contents[] = $content;
 
-		$backPack->contents = $contents;
-		return $backPack;
+		$backpack->attributes = $contents;
+
+		/* OTHER ITEMS */
+		$query = "SELECT i.item_id, i.name, i.description, i.max_qty_in_inventory, i.weight, i.type, i.url, pi.qty, m.name as media_name, m.file_name as media_file_name, m.game_id as media_game_id, im.name as icon_name, im.file_name as icon_file_name, im.game_id as icon_game_id FROM {$gameId}_player_items as pi, {$gameId}_items as i LEFT JOIN media as m ON i.media_id = m.media_id LEFT JOIN media as im ON i.icon_media_id = im.media_id WHERE pi.player_id = {$playerId} AND pi.item_id = i.item_id AND i.type != 'ATTRIB'";
+
+		$result = mysql_query($query);
+		$contents = array();
+		while($content = mysql_fetch_object($result))
+			$contents[] = $content;
+
+		$backpack->items = $contents;
+
+
+		/* NOTES */
+		if($individual)
+        		$query = "SELECT note_id FROM notes WHERE (owner_id = '{$playerId}' OR public_to_notebook = '1') AND game_id = '{$gameId}' AND parent_note_id = 0 ORDER BY sort_index ASC";
+		else
+        		$query = "SELECT note_id FROM notes WHERE owner_id = '{$playerId}' AND game_id = '{$gameId}' AND parent_note_id = 0 ORDER BY sort_index ASC";
+
+        	$result = mysql_query($query);
+        	
+        	$notes = array();
+        	while($note = mysql_fetch_object($result))
+            		$notes[] = Items::getFullNoteObjectBP($note->note_id, $playerId);
+        	
+		$backpack->notes = $notes;
+	
+		return $backpack;
+	}
+
+	private static function getFullNoteObjectBP($noteId, $playerId=0)
+	{
+		$query = "SELECT game_id, owner_id, title, public_to_map, public_to_notebook FROM notes WHERE note_id = '{$noteId}'";
+		$result = @mysql_query($query);
+		if (mysql_error()) return new returnData(1, NULL, mysql_error());
+		if($note = mysql_fetch_object($result))
+		{
+			$query = "SELECT user_name FROM players WHERE player_id = '{$note->owner_id}'";
+			$player = mysql_query($query);
+			$playerObj = mysql_fetch_object($player);
+			$note->username = $playerObj->user_name;
+			$note->contents = Items::getNoteContentsBP($noteId);
+			$note->comments = Items::getNoteCommentsBP($noteId, $playerId);
+			$note->tags = Items::getNoteTagsBP($noteId, $note->game_id);
+			$note->likes = Items::getNoteLikesBP($noteId);
+			$note->player_liked = ($playerId == 0 ? 0 : Items::playerLikedBP($playerId, $noteId));
+			$note->icon_media_id = 5;
+			return $note;
+		}
+		return;
+	}
+
+	private static function getGameInfoBP($gameId)
+	{
+		$query = "SELECT games.game_id, games.name, pcm.name as pc_media_name, pcm.file_name as pc_media_url, m.name as media_name, m.file_name as media_url, im.name as icon_media_name, im.file_name as icon_media_url FROM games LEFT JOIN media as m ON games.media_id = m.media_id LEFT JOIN media as im ON games.icon_media_id = im.media_id LEFT JOIN media as pcm on games.pc_media_id = pcm.media_id WHERE games.game_id = '{$gameId}'";
+
+		$result = mysql_query($query);
+		$game = mysql_fetch_object($result);
+		if(!$game) return "Invalid Game ID"; 
+
+		$query = "SELECT editors.name FROM game_editors JOIN editors ON editors.editor_id = game_editors.editor_id WHERE game_editors.game_id = '{$gameId}'";
+		$result = mysql_query($query);
+		$auth = array();
+
+		while($a = mysql_fetch_object($result))
+			$auth[] = $a;
+
+		$game->authors = $auth;
+
+		return $game;
+	}
+
+	private static function getNoteContentsBP($noteId)
+	{
+		$query = "SELECT nc.media_id, nc.type, nc.text, nc.game_id, nc.title, m.file_name, m.game_id FROM note_content as nc LEFT JOIN media as m ON nc.media_id = m.media_id WHERE note_id = '{$noteId}'";
+		$result = mysql_query($query);
+        
+		$contents = array();
+		while($content = mysql_fetch_object($result))
+			$contents[] = $content;
+        	
+		return $contents;
+	}
+
+	private static function getNoteCommentsBP($noteId, $playerId)
+	{
+		$query = "SELECT note_id FROM notes WHERE parent_note_id = '{$noteId}'";
+		$result = mysql_query($query);
+	
+		$comments = array();
+		while($commentNoteId = mysql_fetch_object($result))
+		{
+			$comment = Items::getFullNoteObjectBP($commentNoteId->note_id, $playerId);
+			$comments[] = $comment;
+		}
+		return $comments;
+	}
+	
+	private static function getNoteTagsBP($noteId, $gameId)
+	{
+		$query = "SELECT note_tags.tag, player_created FROM note_tags LEFT JOIN ((SELECT tag, player_created FROM game_tags WHERE game_id = '{$gameId}') as gt) ON note_tags.tag = gt.tag WHERE note_id = '{$noteId}'";
+		$result = mysql_query($query);
+		$tags = array();
+		while($tag = mysql_fetch_object($result))	
+			$tags[] = $tag;
+		return $tags;
+	}
+	
+	private static function getNoteLikesBP($noteId)
+	{
+		$query = "SELECT COUNT(*) as numLikes FROM note_likes WHERE note_id = '{$noteId}'";
+		$result  = mysql_query($query);
+		$likes = mysql_fetch_object($result);
+		return $likes->numLikes;
+	}
+	
+	private static function playerLikedBP($playerId, $noteId)
+	{
+		$query = "SELECT COUNT(*) as liked FROM note_likes WHERE player_id = '{$playerId}' AND note_id = '{$noteId}' LIMIT 1";
+		$result = mysql_query($query);
+		$liked = mysql_fetch_object($result);
+		return $liked->liked;
 	}
 }

@@ -11,6 +11,7 @@ class Notes extends Module
     //Returns note_id
     function createNewNote($gameId, $playerId)
     {
+	$title = addslashes($title);
         $query = "INSERT INTO notes (game_id, owner_id, title) VALUES ('{$gameId}', '{$playerId}', 'New Note')";
         @mysql_query($query);
 		if (mysql_error()) return new returnData(1, NULL, mysql_error());
@@ -20,6 +21,7 @@ class Notes extends Module
 
     function updateNote($noteId, $title, $publicToMap, $publicToNotebook, $sortIndex='0')
     {
+	$title = addslashes($title);
         $query = "UPDATE notes SET title = '{$title}', public_to_map = '{$publicToMap}', public_to_notebook = '{$publicToNotebook}', sort_index='{$sortIndex}' WHERE note_id = '{$noteId}'";
         @mysql_query($query);
 		if (mysql_error()) return new returnData(1, NULL, mysql_error());
@@ -29,7 +31,9 @@ class Notes extends Module
 
     function addContentToNote($noteId, $gameId, $playerId, $mediaId, $type, $text, $title='')
     {
+	$text = addslashes($text);
 	if($title == '') $title = Date('F jS Y h:i:s A');
+	else $title = addslashes($title);
         $query = "INSERT INTO note_content (note_id, game_id, media_id, type, text, title) VALUES ('{$noteId}', '{$gameId}', '{$mediaId}', '{$type}', '{$text}', '{$title}')";
         $result = @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
@@ -58,6 +62,7 @@ class Notes extends Module
 
     function updateContent($contentId, $text)
     {
+	$text = addslashes($text);
         $query = "UPDATE note_content SET text='{$text}' WHERE content_id='{$contentId}'";
         @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
@@ -75,6 +80,7 @@ class Notes extends Module
 
     function updateContentTitle($contentId, $title)
     {
+	$title = addslashes($title);
 	$query = "UPDATE note_content SET title='{$title}' WHERE content_id='{$contentId}'";
         @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
@@ -97,6 +103,7 @@ class Notes extends Module
 
     function updateComment($noteId, $title)
     {
+	$title = addslashes($title);
 	$query = "UPDATE notes SET title= '{$title}' WHERE note_id = '{$noteId}'";
         $result = @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
@@ -109,7 +116,7 @@ class Notes extends Module
         $query = "SELECT note_id FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = '0' AND public_to_notebook = '1'";
         $result = @mysql_query($query);
 		if (mysql_error()) return new returnData(1, NULL, mysql_error());
-        
+
         $notes = array();
         while($note = mysql_fetch_object($result))
         {
@@ -231,6 +238,10 @@ class Notes extends Module
 
     function deleteNote($noteId)
     {
+	//If noteId is 0, it will rather elegantly delete EVERYTHING in the note database.
+	if($noteId == 0)
+        	return new returnData(0);
+
         $query = "SELECT note_id, game_id FROM notes WHERE parent_note_id = '{$noteId}'";
         $result = @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());

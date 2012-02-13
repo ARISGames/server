@@ -1860,5 +1860,37 @@ class Games extends Module
 		if (mysql_error())  return new returnData(3, NULL, 'SQL error');
 		return new returnData(0);
 	}
+
+	public static function getGameInfoForWebBackPack($gameId)
+	{
+		$query = "SELECT games.game_id, games.name, pcm.name as pc_media_name, pcm.file_name as pc_media_url, m.name as media_name, m.file_name as media_url, im.name as icon_media_name, im.file_name as icon_media_url FROM games LEFT JOIN media as m ON games.media_id = m.media_id LEFT JOIN media as im ON games.icon_media_id = im.media_id LEFT JOIN media as pcm on games.pc_media_id = pcm.media_id WHERE games.game_id = '{$gameId}'";
+
+		/* Query- formatted for readability -
+		$query = "SELECT 
+			games.game_id, games.name, m.name as media_name, m.file_name as media_url, im.name as icon_media_name, im.file_name as icon_media_url 
+			FROM 
+			games LEFT JOIN 
+			media as m ON games.media_id = m.media_id LEFT JOIN 
+			media as im ON games.icon_media_id = im.media_id 
+			media as pcm ON games.pc_media_id = m.media_id
+			WHERE 
+		 	games.game_id = '{$gameId}'";
+		*/
+
+		$result = mysql_query($query);
+		$game = mysql_fetch_object($result);
+		if(!$game) return "Invalid Game ID"; 
+
+		$query = "SELECT editors.name FROM game_editors JOIN editors ON editors.editor_id = game_editors.editor_id WHERE game_editors.game_id = '{$gameId}'";
+		$result = mysql_query($query);
+		$auth = array();
+
+		while($a = mysql_fetch_object($result))
+			$auth[] = $a;
+
+		$game->authors = $auth;
+
+		return $game;
+	}
 }
 ?>

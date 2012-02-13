@@ -1,0 +1,31 @@
+<html>
+<head>
+<script type="text/javascript" src="mimic/mimic.js"></script>
+<script type="text/javascript">
+
+
+	function sendEr()
+	{
+		var gameId = 177;
+		var startDate = "2012-01-02 00:00:00"; //<- This time represents the midnight between January 1st and January 2nd
+		var endDate = "2012-01-25 15:00:00"; //<- This time represents January 25 at 3:00 PM
+
+		var method = "players.getPlayerLog";
+		var request = new XmlRpcRequest("http://arisgames.org/devserver/xmlrpc.php", method);
+		request.addParam(gameId);
+		request.addParam(startDate);
+		request.addParam(endDate);
+		var response = request.send();
+		alert(response.parseXML());
+	}
+
+	function pageLoad()
+	{
+		sendEr();
+	}
+</script>
+</head>
+<body onload='pageLoad()'>
+<div id='playerLogs'> Waiting on Server </div>
+</body>
+</html>

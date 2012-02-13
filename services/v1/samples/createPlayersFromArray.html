@@ -1,0 +1,61 @@
+<html>
+<head>
+<script type="text/javascript">
+
+	function sendRequest(fn, params)
+	{
+        	var xmlhttp;
+        	xmlhttp=new XMLHttpRequest();
+        	xmlhttp.open("POST","http://arisgames.org/devserver/json.php/v1."+fn,false);
+        	xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        	xmlhttp.send(params); //Synchronous call
+
+		alert(xmlhttp.responseText);
+        	var response=JSON.parse(xmlhttp.responseText);
+		if(response.returnCode == 1) //Error
+		{
+			document.getElementById('playerIds').innerHTML = response.data;	
+		}
+		else
+		{
+			var outstring = '';
+			for(var i = 0; i < response.data.count; i++)
+				outstring+=response.data[i].username+": "+response.data[i].player_id+"<br />";
+
+			document.getElementById('playerIds').innerHTML = outstring;	
+		}
+	}
+
+	//Taken from http://www.mediacollege.com/internet/javascript/number/random.html. Just a quick way to get random passwords.
+	function randomString(string_length) {
+		var chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
+		var randomstring = '';
+		for (var i=0; i<string_length; i++) {
+			var rnum = Math.floor(Math.random() * chars.length);
+			randomstring += chars.substring(rnum,rnum+1);
+		}
+		return randomstring;
+	}
+
+	function pageLoad()
+	{
+		var players = new Array();
+		for(var i = 0; i < 10; i++)
+		{
+			players[i] = new Object();
+			players[i].username = "Player"+i;
+			players[i].password = randomString(8);
+			/*Optional Parameters-
+			players[i].firstname = "Jim";
+			players[i].lastname = "Beam";
+			players[i].email = "jim@email.com";
+			*/
+		}
+		sendRequest("players.createPlayerAccountsFromObjectArray", "0="+JSON.stringify(players))
+	}
+</script>
+</head>
+<body onload='pageLoad()'>
+<div id='playerIds'> Waiting on Server </div>
+</body>
+</html>
