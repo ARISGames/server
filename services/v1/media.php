@@ -11,7 +11,7 @@ class Media extends Module
 	const MEDIA_AUDIO = 'Audio';
 	protected $validImageAndIconTypes = array('jpg','png');
 	protected $validAudioTypes = array('mp3','m4a','caf');
-	protected $validVideoTypes = array('mp4','m4v','3gp');
+	protected $validVideoTypes = array('mp4','m4v','3gp','mov');
 	
 	
 	/**
@@ -253,7 +253,7 @@ class Media extends Module
  		
  		$validImageAndIconTypes = array('jpg','png');
 		$validAudioTypes = array('mp3','m4a','caf');
-		$validVideoTypes = array('mp4','m4v','3gp');
+		$validVideoTypes = array('mp4','m4v','3gp','mov');
  		
  		if (in_array($mediaExtension, $validImageAndIconTypes )) return Media::MEDIA_IMAGE;
  		else if (in_array($mediaExtension, $validAudioTypes )) return Media::MEDIA_AUDIO;
