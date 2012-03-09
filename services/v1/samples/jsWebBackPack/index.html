@@ -8,7 +8,7 @@
 	{
         	var xmlhttp;
         	xmlhttp=new XMLHttpRequest();
-        	xmlhttp.open("POST","http://arisgames.org/devserver/json.php/v1."+fn,false);
+        	xmlhttp.open("POST","../../../../json.php/v1."+fn,false);
         	xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
         	xmlhttp.send(params); //Synchronous call
 
@@ -26,14 +26,14 @@
 
 	function pageLoad()
 	{
-		/*
+		
 		//get players' backpacks whom have player_ids between 816 and 818
 		var players = new Array();
-		for(var i = 816; i <= 818; i++)
+		for(var i = 3809; i <= 3850; i++)
 		{
 			players.push(i);
 		}
-		*/
+		
 
 		/*
 		//get player backpack with player_id 92
@@ -41,9 +41,9 @@
 		*/
 
 		//get all players' backpacks in game
-		var players = null;
+		//var players = null;
 
-		var gameId = 184;
+		var gameId = 966;
 		sendRequest("items.getPlayerBackpacksFromArray", "0="+gameId+"&1="+JSON.stringify(players))
 	}
 </script>
