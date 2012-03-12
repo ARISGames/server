@@ -23,12 +23,12 @@
 
 	function pageLoad()
 	{
-		var gameId = 177;
-
+		var logReqObj = new Object();
+		logReqObj.gameId = 177;
 		//Date format- YYYY-MM-DD HH:MM:SS
-		var startDate = "2012-01-02 00:00:00"; //<- This time represents the midnight between January 1st and January 2nd
-		var endDate = "2012-01-25 15:00:00"; //<- This time represents January 25 at 3:00 PM
-		sendRequest("players.getPlayerLog", "0="+gameId+"&1="+startDate+"&2="+endDate);
+		logReqObj.startDate = "2012-01-02 00:00:00"; //<- This time represents the midnight between January 1st and January 2nd
+		logReqObj.endDate = "2012-02-25 15:00:00"; //<- This time represents February 25 at 3:00 PM
+		sendRequest("players.getPlayerLog", JSON.stringify(logReqObj));
 	}
 </script>
 </head>

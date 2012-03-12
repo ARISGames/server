@@ -1,14 +1,15 @@
 <html>
 <head>
+<title>Web Back Pack</title>
+<link rel='stylesheet' type='text/css' href='wbp.css' />
+<script type="text/javascript" src="formatdata.js"></script>
 <script type="text/javascript">
-
 	function sendRequest(fn, params)
 	{
         	var xmlhttp;
         	xmlhttp=new XMLHttpRequest();
         	xmlhttp.open("POST","http://arisgames.org/devserver/json.php/v1."+fn,false);
         	xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-		alert(params);
         	xmlhttp.send(params); //Synchronous call
 
         	var response=JSON.parse(xmlhttp.responseText);
@@ -18,7 +19,8 @@
 		}
 		else
 		{
-			document.getElementById('playerBackPacks').innerHTML = "Success!-<br />"+response.data;	
+			//document.getElementById('playerBackPacks').innerHTML = "Success!-<br />"+response.data;	
+			formatPage(response.data);
 		}
 	}
 
@@ -39,14 +41,14 @@
 		*/
 
 		//get all players' backpacks in game
-		var bpReqObj = new Object();
-		bpReqObj.players = null;
-		bpReqObj.gameId = 177;
-		sendRequest("players.getPlayerBackpacksFromArray", JSON.stringify(bpReqObj));
+		var players = null;
+
+		var gameId = 184;
+		sendRequest("items.getPlayerBackpacksFromArray", "0="+gameId+"&1="+JSON.stringify(players))
 	}
 </script>
 </head>
-<body onload='pageLoad()'>
+<body onload='pageLoad()' id='body'>
 <div id='playerBackPacks'> Waiting on Server </div>
 </body>
 </html>

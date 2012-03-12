@@ -8,6 +8,7 @@
         	xmlhttp=new XMLHttpRequest();
         	xmlhttp.open("POST","http://arisgames.org/devserver/json.php/v1."+fn,false);
         	xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+		alert(params);
         	xmlhttp.send(params); //Synchronous call
 
 		alert(xmlhttp.responseText);
@@ -39,6 +40,7 @@
 
 	function pageLoad()
 	{
+		//Constructs 10 arbitrary players
 		var players = new Array();
 		for(var i = 0; i < 10; i++)
 		{
@@ -51,7 +53,8 @@
 			players[i].email = "jim@email.com";
 			*/
 		}
-		sendRequest("players.createPlayerAccountsFromObjectArray", "0="+JSON.stringify(players))
+
+		sendRequest("players.createPlayerAccountsFromObjectArray", JSON.stringify(players))
 	}
 </script>
 </head>
