@@ -152,7 +152,7 @@ class Notes extends Module
     {
         $query = "SELECT * FROM notes WHERE note_id = '{$noteId}'";
         $result = @mysql_query($query);
-		if (mysql_error()) return new returnData(1, NULL, mysql_error());
+	if (mysql_error()) return new returnData(1, NULL, mysql_error());
         if($note = mysql_fetch_object($result))
         {
 		$query = "SELECT user_name FROM players WHERE player_id = '{$note->owner_id}'";
@@ -3455,20 +3455,109 @@ class Notes extends Module
         
         return new returnData(0);
     }
+
+
+
+
+
+
+
+
+// API FUNCTIONS \/ \/ \/
+
+	public static function getDetailedPlayerNotes($playerId, $gameId, $individual=true)
+	{
+		/* NOTES */
+		if($individual)
+			$query = "SELECT note_id FROM notes WHERE (owner_id = '{$playerId}' OR public_to_notebook = '1') AND game_id = '{$gameId}' AND parent_note_id = 0 ORDER BY sort_index ASC";
+		else
+			$query = "SELECT note_id FROM notes WHERE owner_id = '{$playerId}' AND game_id = '{$gameId}' AND parent_note_id = 0 ORDER BY sort_index ASC";
+		
+		$result = mysql_query($query);
+        			
+		$notes = array();
+		while($noteId = mysql_fetch_object($result)) {
+			$note = Notes::getDetailedFullNoteObject($noteId->note_id, $playerId);
+			$note->media_url = Media::getMediaDirectoryURL($note->media_game_id)->data . '/' . $note->media_url;
+			$note->icon_url = Media::getMediaDirectoryURL($note->icon_game_id)->data . '/' . $note->icon_url;
+			$notes[] = $note;
+       		}
+        		
+		return $notes;
+	}
+
+
+ 	private static function getDetailedFullNoteObject($noteId, $playerId=0)
+        {
+                $query = "SELECT game_id, owner_id, title, public_to_map, public_to_notebook FROM notes WHERE note_id = '{$noteId}'";
+                $result = @mysql_query($query);
+                if (mysql_error()) return new returnData(1, NULL, mysql_error());
+                if($note = mysql_fetch_object($result))
+                {
+                        $query = "SELECT user_name FROM players WHERE player_id = '{$note->owner_id}'";
+                        $player = mysql_query($query);
+                        $playerObj = mysql_fetch_object($player);
+                        $note->username = $playerObj->user_name;
+                        $note->contents = Notes::getNoteContentsAPI($noteId);
+                        $note->comments = Notes::getNoteCommentsAPI($noteId, $playerId);
+                        $note->tags = Notes::getNoteTagsAPI($noteId, $note->game_id);
+                        $note->likes = Notes::getNoteLikesAPI($noteId);
+                        $note->player_liked = ($playerId == 0 ? 0 : Notes::playerLikedAPI($playerId, $noteId));
+                        $note->icon_media_id = 5;
+                        return $note;
+                }
+                return;
+        }
+
+        private static function getNoteContentsAPI($noteId)
+        {
+                $query = "SELECT nc.media_id, nc.type, nc.text, nc.game_id, nc.title, m.file_name, m.game_id FROM note_content as nc LEFT JOIN media as m ON nc.media_id = m.media_id WHERE note_id = '{$noteId}'";
+                $result = mysql_query($query);
+
+                $contents = array();
+                while($content = mysql_fetch_object($result))
+                        $contents[] = $content;
+
+                return $contents;
+        }
+
+        private static function getNoteCommentsAPI($noteId, $playerId)
+        {
+                $query = "SELECT note_id FROM notes WHERE parent_note_id = '{$noteId}'";
+                $result = mysql_query($query);
+
+                $comments = array();
+                while($commentNoteId = mysql_fetch_object($result))
+                {
+                        $comment = Notes::getDetailedFullNoteObject($commentNoteId->note_id, $playerId);
+                        $comments[] = $comment;
+                }
+                return $comments;
+        }
+
+        private static function getNoteTagsAPI($noteId, $gameId)
+        {
+                $query = "SELECT note_tags.tag, player_created FROM note_tags LEFT JOIN ((SELECT tag, player_created FROM game_tags WHERE game_id = '{$gameId}') as gt) ON note_tags.tag = gt.tag WHERE note_id = '{$noteId}'";
+                $result = mysql_query($query);
+                $tags = array();
+                while($tag = mysql_fetch_object($result))
+                        $tags[] = $tag;
+                return $tags;
+        }
+
+        private static function getNoteLikesAPI($noteId)
+        {
+                $query = "SELECT COUNT(*) as numLikes FROM note_likes WHERE note_id = '{$noteId}'";
+                $result  = mysql_query($query);
+                $likes = mysql_fetch_object($result);
+                return $likes->numLikes;
+        }
+
+        private static function playerLikedAPI($playerId, $noteId)
+        {
+                $query = "SELECT COUNT(*) as liked FROM note_likes WHERE player_id = '{$playerId}' AND note_id = '{$noteId}' LIMIT 1";
+                $result = mysql_query($query);
+                $liked = mysql_fetch_object($result);
+                return $liked->liked;
+        }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

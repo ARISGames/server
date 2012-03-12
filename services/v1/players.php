@@ -440,9 +440,9 @@ class Players extends Module
 	}
 	
 	/**
-     * Log that player viewed the inventory
-     * @returns Always returns 0
-     */	
+	* Log that player viewed the inventory
+	* @returns Always returns 0
+	*/	
 	public function inventoryViewed($intGameID, $intPlayerID)
 	{
         
@@ -451,111 +451,125 @@ class Players extends Module
 
 	}			
 
-	public function getDetailedPlayerAttributes($playerId, $gameId)
+	/**
+	* Toggles whether player should be shown on Map
+	* @returns Always returns 0
+	*/
+	function setShowPlayerOnMap($playerId, $spom)
 	{
-		/* ATTRIBUTES */
-		$query = "SELECT i.item_id, i.name, i.description, i.max_qty_in_inventory, i.weight, i.type, i.url, 
-            pi.qty, m.file_name as media_url, m.game_id as media_game_id, im.file_name as icon_url, im.game_id as icon_game_id 
-            FROM {$gameId}_player_items as pi, {$gameId}_items as i 
-            LEFT JOIN media as m ON i.media_id = m.media_id 
-            LEFT JOIN media as im ON i.icon_media_id = im.media_id 
-            WHERE pi.player_id = {$playerId} AND pi.item_id = i.item_id AND i.type = 'ATTRIB'";
+		$query = "UPDATE players SET show_on_map = '{$spom}' WHERE player_id = '{$playerId}'";
+		mysql_query($query);
+		return new returnData(0);
+	}
 
-		$result = mysql_query($query);
-		$contents = array();
-		while($content = mysql_fetch_object($result)) {
-            $content->media_url = Media::getMediaDirectoryURL($content->media_game_id)->data . '/' . $content->media_url;
-            $content->icon_url = Media::getMediaDirectoryURL($content->icon_game_id)->data . '/' . $content->icon_url;
-            $contents[] = $content;
+
+
+
+
+
+
+
+
+
+
+
+
+	// \/ \/ \/ BACKPACK FUNCTIONS \/ \/ \/
+
+        /**
+        Gets array of JSON encoded 'web backpacks', containing player information relating to items, attributes, and notes gained throughout a game. For an example of its use, see 'getBackPacksFromArray.html'.
+        @param: bpReqObj- a JSON encoded object with two fields:
+                gameId- An integer representing the game_id of the game information desired.
+                playerArray- Either a JSON encoded array of integer player_ids of all the players whose information is desired, a single integer if only one player's information is desired, or nothing if all player information for an entire game is desired.
+        @returns: On success, returns JSON encoded game object with a parameter containing an array of player objects with various parameters describing a player's information.
+                  If gameId is empty, returns 'Error- Empty Game' and aborts the function.
+                  If game with gameId does not exist, returns 'Error- Invalid Game Id' and aborts the function.
+                  If playerArray is anything other than the specified options, returns 'Error- Invalid Player Array' and aborts the function.
+        **/
+        public static function getPlayerBackpacksFromArray($bpReqObj)
+        {
+                $gameId = $bpReqObj['gameId'];
+                $playerArray = $bpReqObj['playerArray'];
+
+                if(is_numeric($gameId))
+                        $gameId = intval($gameId);
+                else
+                        return new returnData(1, "Error- Empty Game ".$gameId);
+
+                $prefix = Module::getPrefix($gameId);
+                if (!$prefix) return new returnData(1, "Error- Invalid Game Id");
+
+                $game = Games::getDetailedGameInfo($gameId);
+                if(is_null($playerArray))
+                {
+                        $game->backpacks =  Players::getAllPlayerDataBP($gameId);
+                        return new returnData(0,$game);
+                }
+                else if(is_array($playerArray))
+                {
+                        $game->backpacks =  Players::getPlayerArrayDataBP($gameId, $playerArray);
+                        return new returnData(0,$game);
+                }
+                else if(is_numeric($playerArray))
+                {
+                        $game->backpacks = Players::getSinglePlayerDataBP($gameId, intval($playerArray));
+                        return new returnData(0,$game,true);
+                }
+                else
+                {
+                        return new returnData(1, "Error- Invalid Player Array");
+                }
         }
 
-		return new returnData(0,$contents);
-	}
-
-	public function getDetailedPlayerItems($playerId, $gameId)
-	{
-		/* OTHER ITEMS */
-		$query = "SELECT i.item_id, i.name, i.description, i.max_qty_in_inventory, i.weight, i.type, i.url, 
-                pi.qty, m.file_name as media_url, m.game_id as media_game_id, im.file_name as icon_url, im.game_id as icon_game_id 
-            FROM {$gameId}_player_items as pi, {$gameId}_items as i 
-            LEFT JOIN media as m ON i.media_id = m.media_id 
-            LEFT JOIN media as im ON i.icon_media_id = im.media_id 
-            WHERE pi.player_id = {$playerId} AND pi.item_id = i.item_id AND i.type != 'ATTRIB'";
-
-
-		$result = mysql_query($query);
-		$contents = array();
-		while($content = mysql_fetch_object($result)){
-            $content->media_url = Media::getMediaDirectoryURL($content->media_game_id)->data . '/' . $content->media_url;
-            $content->icon_url = Media::getMediaDirectoryURL($content->icon_game_id)->data . '/' . $content->icon_url;
-            $contents[] = $content;
+        private static function getAllPlayerDataBP($gameId)
+        {
+                $backPacks = array();
+                $query = "SELECT DISTINCT player_id FROM player_log WHERE game_id='{$gameId}'";
+                $result = mysql_query($query);
+                while($player = mysql_fetch_object($result))
+                {
+                        $backPacks[] = Players::getSinglePlayerDataBP($gameId, $player->player_id);
+                }
+                return $backPacks;
         }
 
-		return new returnData(0,$contents);
-	}
-
-	public function getDetailedPlayerNotes($playerId, $gameId, $individual=true)
-	{
-		/* NOTES */
-		if($individual)
-        		$query = "SELECT note_id FROM notes WHERE (owner_id = '{$playerId}' OR public_to_notebook = '1') AND game_id = '{$gameId}' AND parent_note_id = 0 ORDER BY sort_index ASC";
-		else
-        		$query = "SELECT note_id FROM notes WHERE owner_id = '{$playerId}' AND game_id = '{$gameId}' AND parent_note_id = 0 ORDER BY sort_index ASC";
-
-        $result = mysql_query($query);
-        	
-        $notes = array();
-        while($noteId = mysql_fetch_object($result)) {
-            $note = Notes::getFullNoteObject($note->note_id, $playerId);
-            $note->media_url = Media::getMediaDirectoryURL($note->media_game_id)->data . '/' . $note->media_url;
-            $note->icon_url = Media::getMediaDirectoryURL($note->icon_game_id)->data . '/' . $note->icon_url;
-            $notes[] = $note;
+        private static function getPlayerArrayDataBP($gameId, $playerArray)
+        {
+                $backPacks = array();
+                foreach($playerArray as $player)
+                {
+                        $backPacks[] = Players::getSinglePlayerDataBP($gameId, $player);
+                }
+                return $backPacks;
         }
-        
-		return new returnData(0,$notes);
-	}
 
-	public function getDetailedPlayerContentList($playerId, $gameId)
-	{
-		$backpack = new stdClass();
-		//Get game information (needn't be called for every player- should be moved to own function)
+	/*
+        * Gets information for web backpack for any player/game pair
+        */
+        private static function getSinglePlayerDataBP($gameId, $playerId, $individual=false)
+        {
+                $backpack = new stdClass();
 
-		$query = "SELECT games.game_id, games.name, m.file_name as media_url, m.game_id as media_game_id, im.file_name as icon_media_url, im.game_id as icon_game_id
-        FROM games 
-        LEFT JOIN media as m ON games.media_id = m.media_id 
-        LEFT JOIN media as im ON games.icon_media_id = im.media_id 
-        WHERE games.game_id = '{$gameId}'";
+                //Get owner information
+                $query = "SELECT user_name FROM players WHERE player_id = '{$playerId}'";
+                $result = mysql_query($query);
+                $name = mysql_fetch_object($result);
+                if(!$name) return "Invalid Player ID";
+                $backpack->owner=$name;
+                $backpack->owner->player_id = $playerId;
 
+                /* ATTRIBUTES */
+                $backpack->attributes = Items::getDetailedPlayerAttributes($playerId, $gameId);
 
-		$result = mysql_query($query);
-		$game = mysql_fetch_object($result);
-		if(!$game) return new returnData(1, "Invalid Game ID");
+                /* OTHER ITEMS */
+                $backpack->items = Items::getDetailedPlayerItems($playerId, $gameId);
 
-        $game->media_url = Media::getMediaDirectoryURL($game->media_game_id)->data . '/' . $game->media_url;
-        $game->icon_url = Media::getMediaDirectoryURL($game->icon_game_id)->data . '/' . $game->icon_url;
-		$backpack->game=$game;
+                /* NOTES */
+		$backpack->notes = Notes::getDetailedPlayerNotes($playerId, $gameId, $individual);
 
-		//Get owner information
-		$query = "SELECT user_name FROM players WHERE player_id = '{$playerId}'";
-		$result = mysql_query($query);
-		$name = mysql_fetch_object($result);
-		if(!$name) return new returnData(1,"Invalid Player ID");
-		$backpack->owner=$name;
-		$backpack->owner->player_id = $playerId;
-		
-		//Get attributes
-		$attributes = Players::getDetailedPlayerAttributes($playerId, $gameId);
-		$backpack->attributes = $attributes->data;
-		//Get items
-		$items = Players::getDetailedPlayerItems($playerId, $gameId);
-		$backpack->items = $items->data;
-		//Get notes
-		$notes = Players::getDetailedPlayerNotes($playerId, $gameId);
-		$backpack->notes = $notes->data;
+                return $backpack;
+        }
 
-
-		return new returnData(0, $backpack);
-	}
 
 
 	/**
@@ -615,12 +629,12 @@ class Players extends Module
 
 	/**
      * Create new accounts from an array of player objects
-     * @param array $playerArray Array of JSON formated player objects [{"userName":"joey","password":"h5f3ad3","firstName":"joey","lastName":"smith","email":"joey@gmail.com"}]
+     * @param array $playerArray Array of JSON formated player objects [{"username":"joey","password":"h5f3ad3","firstName":"joey","lastName":"smith","email":"joey@gmail.com"}]
      * @return returnData
      * @returns a returnData object containing player objects with their assigned player ids
      * @see returnData
      */
-	function createPlayerAccountsFromObjectArray($playerArrayJSON)
+	function createPlayerAccountsFromObjectArray($playerArray)
 	{
 		if(count($playerArray) == 0)
 			return new returnData(1, "Bad JSON or Empty Array");
@@ -628,24 +642,25 @@ class Players extends Module
 		//Search for matching user names
 		$query = "SELECT user_name FROM players WHERE ";
 		for($i = 0; $i < count($playerArray); $i++)
-			$query = $query."user_name = '{$playerArray[$i]["userName"]}' OR ";
+			$query = $query."user_name = '{$playerArray[$i]["username"]}' OR ";
 		$query = substr($query, 0, strlen($query)-4).";";
+		//$query of form "SELECT user_name FROM players WHERE user_name = 'user1' OR user_name = 'user2' OR user_name = 'user3';"
 		$result = mysql_query($query);
 		
 		//Check if any duplicates exist
-		$reterr = "Duplicate userName(s): ";
+		$reterr = "Duplicate username(s): ";
 		while($un = mysql_fetch_object($result))
-			$reterr = $reterr.$un->user_name.", ";	
-		if($reterr != "Duplicate userName(s): ")
+			$reterr = $reterr.$un->user_name.", ";
+		if($reterr != "Duplicate username(s): ")
 		{
-			$reterr = substr($reterr, 0, strlen($query)-2)." already in database.";
+			$reterr = substr($reterr, 0, strlen($reterr)-2)." already in database.";
 			return new returnData(4, "",$reterr);
 		}
 
 		//Run the insert
 		$query = "INSERT INTO players (user_name, password, first_name, last_name, email, created) VALUES ";
 		for($i = 0; $i < count($playerArray); $i++)
-			$query = $query."('{$playerArray[$i]["userName"]}', MD5('{$playerArray[$i]["password"]}'), '{$playerArray[$i]["firstName"]}','{$playerArray[$i]["lastName"]}','{$playerArray[$i]["email"]}', NOW()), ";
+			$query = $query."('{$playerArray[$i]["username"]}', MD5('{$playerArray[$i]["password"]}'), '{$playerArray[$i]["firstName"]}','{$playerArray[$i]["lastName"]}','{$playerArray[$i]["email"]}', NOW()), ";
 		$query = substr($query, 0, strlen($query)-2).";";
 		$result = mysql_query($query);
 		if (mysql_error()) 	return new returnData(1, "","Error Inserting Records");
@@ -653,7 +668,7 @@ class Players extends Module
 		//Generate the result
 		$query = "SELECT player_id,user_name FROM players WHERE ";
 		for($i = 0; $i < count($playerArray); $i++)
-			$query = $query."user_name = '{$playerArray[$i]["userName"]}' OR ";
+			$query = $query."user_name = '{$playerArray[$i]["username"]}' OR ";
 		$query = substr($query, 0, strlen($query)-4).";";
 		$result = mysql_query($query);
 		if (mysql_error()) 	return new returnData(1, "","Error Verifying Records");
@@ -661,11 +676,29 @@ class Players extends Module
 		return new returnData(0,$result);
 	}
 
-	function setShowPlayerOnMap($playerId, $spom)
+	function getPlayerLog($logReqObj)
 	{
-		$query = "UPDATE players SET show_on_map = '{$spom}' WHERE player_id = '{$playerId}'";
-		mysql_query($query);
-		return new returnData(0);
+		$gameId = $logReqObj['gameId'];
+		//Date format- YYYY-MM-DD HH:MM:SS
+		$startDate = $logReqObj['startDate']; //<- This time represents the midnight between January 1st and January 2nd
+		$endDate = $logReqObj['endDate']; //<- This time represents January 25 at 3:00 PM
+
+                if(is_numeric($gameId))
+                        $gameId = intval($gameId);
+                else
+                        return new returnData(1, "Error- Empty Game ".$gameId);
+
+                $prefix = Module::getPrefix($gameId);
+                if (!$prefix) return new returnData(1, "Error- Invalid Game Id");
+		
+		$query = "SELECT * FROM player_log WHERE game_id = '{$gameId}' AND timestamp BETWEEN '{$startDate}' AND '{$endDate}'";
+		$result = mysql_query($query);
+	
+		$log = array();
+		while($entry = mysql_fetch_object($result))
+			$log[] = $entry;
+		
+		return new returnData(0,$log);
 	}
 }
 ?>
