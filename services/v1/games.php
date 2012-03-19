@@ -394,7 +394,7 @@ class Games extends Module
 			requirement_id int(11) NOT NULL auto_increment,
 			content_type enum('Node','QuestDisplay','QuestComplete','Location','OutgoingWebHook') NOT NULL,
 			content_id int(10) unsigned NOT NULL,
-			requirement ENUM('PLAYER_HAS_ITEM','PLAYER_VIEWED_ITEM','PLAYER_VIEWED_NODE','PLAYER_VIEWED_NPC','PLAYER_VIEWED_WEBPAGE','PLAYER_VIEWED_AUGBUBBLE','PLAYER_HAS_UPLOADED_MEDIA_ITEM', 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE','PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO','PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO','PLAYER_HAS_COMPLETED_QUEST','PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK', 'PLAYER_HAS_NOTE_WITH_LIKES', 'PLAYER_HAS_NOTE_WITH_COMMENTS') NOT NULL,
+			requirement ENUM('PLAYER_HAS_ITEM','PLAYER_VIEWED_ITEM','PLAYER_VIEWED_NODE','PLAYER_VIEWED_NPC','PLAYER_VIEWED_WEBPAGE','PLAYER_VIEWED_AUGBUBBLE','PLAYER_HAS_UPLOADED_MEDIA_ITEM', 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE','PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO','PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO','PLAYER_HAS_COMPLETED_QUEST','PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK', 'PLAYER_HAS_NOTE', 'PLAYER_HAS_NOTE_WITH_LIKES', 'PLAYER_HAS_NOTE_WITH_COMMENTS', 'PLAYER_HAS_GIVEN_NOTE_COMMENTS') NOT NULL,
 			boolean_operator enum('AND','OR') NOT NULL DEFAULT 'AND',	
             not_operator ENUM(  'DO',  'NOT' ) NOT NULL DEFAULT 'DO',
             group_operator ENUM(  'SELF',  'GROUP' ) NOT NULL DEFAULT 'SELF',
@@ -408,6 +408,7 @@ class Games extends Module
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(6, NULL, 'cannot create requirments table' . mysql_error());
         
+
 		$query = "CREATE TABLE {$strShortName}_locations (
 	  		location_id int(11) NOT NULL auto_increment,
 			name varchar(255) NOT NULL,
@@ -742,7 +743,7 @@ class Games extends Module
 		NetDebug::trace("$query" . ":" . mysql_error());
         
         
-        $query = "ALTER TABLE  `player_log` CHANGE  `event_type`  `event_type` ENUM(  'LOGIN',  'MOVE',  'PICKUP_ITEM',  'DROP_ITEM', 'DROP_NOTE',  'DESTROY_ITEM',  'VIEW_ITEM',  'VIEW_NODE',  'VIEW_NPC',  'VIEW_WEBPAGE',  'VIEW_AUGBUBBLE',  'VIEW_MAP',  'VIEW_QUESTS', 'VIEW_INVENTORY',  'ENTER_QRCODE',  'UPLOAD_MEDIA_ITEM', 'UPLOAD_MEDIA_ITEM_IMAGE', 'UPLOAD_MEDIA_ITEM_AUDIO', 'UPLOAD_MEDIA_ITEM_VIDEO', 'RECEIVE_WEBHOOK', 'COMPLETE_QUEST' ) CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL";
+	$query = "ALTER TABLE player_log CHANGE event_type event_type ENUM('LOGIN', 'MOVE', 'PICKUP_ITEM', 'DROP_ITEM', 'DROP_NOTE','DESTROY_ITEM','VIEW_ITEM','VIEW_NODE','VIEW_NPC','VIEW_WEBPAGE','VIEW_AUGBUBBLE','VIEW_MAP','VIEW_QUESTS','VIEW_INVENTORY','ENTER_QRCODE','UPLOAD_MEDIA_ITEM','UPLOAD_MEDIA_ITEM_IMAGE','UPLOAD_MEDIA_ITEM_AUDIO','UPLOAD_MEDIA_ITEM_VIDEO','RECEIVE_WEBHOOK','COMPLETE_QUEST','GET_NOTE','GIVE_NOTE_LIKE','GET_NOTE_LIKE','GIVE_NOTE_COMMENT','GET_NOTE_COMMENT') CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL";
         mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
@@ -1211,7 +1212,10 @@ class Games extends Module
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
 
-
+		$query = "ALTER TABLE {$prefix}_requirements CHANGE requirement requirement enum('PLAYER_HAS_ITEM','PLAYER_VIEWED_ITEM','PLAYER_VIEWED_NODE','PLAYER_VIEWED_NPC','PLAYER_VIEWED_WEBPAGE','PLAYER_VIEWED_AUGBUBBLE','PLAYER_HAS_UPLOADED_MEDIA_ITEM','PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE','PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO','PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO','PLAYER_HAS_COMPLETED_QUEST','PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK','PLAYER_HAS_NOTE','PLAYER_HAS_NOTE_WITH_LIKES','PLAYER_HAS_NOTE_WITH_COMMENTS','PLAYER_HAS_GIVEN_NOTE_COMMENTS');";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+ 
         //*NOTE: Any additions/editions to the contents of this function will have to be reciprocated on the 'create game' function as well
 	}
 	
