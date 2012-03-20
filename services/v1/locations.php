@@ -235,15 +235,18 @@ class Locations extends Module
 			$object = @mysql_fetch_object($rsObject);
 			
 			if (!$object) {
-				NetDebug::trace("Skipping Location:{$location->location_id} becasue it points to something bogus");	
+				NetDebug::trace("Skipping Location:'{$location->location_id}' becasue it points to something bogus");	
 				continue;
 			}
 
 			//Does it meet it's requirements?
 			if (!$this->objectMeetsRequirements ($prefix, $intPlayerID, 'Location', $location->location_id)) {
                		// NetDebug::trace($prefix . " " . $intPlayerID . " 'Location' " . $location->location_id);
-				NetDebug::trace("Skipping Location:{$location->location_id} becasue it doesn't meet it's requirements");
+				NetDebug::trace("Skipping Location:'{$location->location_id}' becasue it doesn't meet it's requirements");
 				continue;
+			}
+			else{
+				NetDebug::trace("Requirement met. Awwe yeeeaaaah.");
 			}
 
 			//Special Case for Notes

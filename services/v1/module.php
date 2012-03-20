@@ -47,6 +47,7 @@ abstract class Module
     	const kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO = 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO';
     	const kREQ_PLAYER_HAS_COMPLETED_QUEST = 'PLAYER_HAS_COMPLETED_QUEST';
     	const kREQ_PLAYER_HAS_RECEIVED_INCOMING_WEBHOOK = 'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK';
+    	const kREQ_PLAYER_HAS_NOTE = 'PLAYER_HAS_NOTE';
     	const kREQ_PLAYER_HAS_NOTE_WITH_LIKES = 'PLAYER_HAS_NOTE_WITH_LIKES';
     	const kREQ_PLAYER_HAS_NOTE_WITH_COMMENTS = 'PLAYER_HAS_NOTE_WITH_COMMENTS';
     	const kREQ_PLAYER_HAS_GIVEN_NOTE_COMMENTS = 'PLAYER_HAS_GIVEN_NOTE_COMMENTS';
@@ -458,31 +459,15 @@ abstract class Module
 
 	protected function playerHasNote($intGameID, $intPlayerID, $qty)
 	{
+		NetDebug::trace("AH");
     		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return FALSE;
 
 		$query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerID}' AND parent_note_id = 0";
 		NetDebug::trace($query);
 		$result = @mysql_query($query);
-		if (@mysql_num_rows($result) >= $qty) return true;
-		return false;
-	}
-
-	protected function playerHasNoteWithLikes($intGameID, $intPlayerID, $qty)
-	{
-    		$prefix = Module::getPrefix($intGameID);
-		if (!$prefix) return FALSE;
-
-		$query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerID}'";
-		NetDebug::trace($query);
-		$result = @mysql_query($query);
-		while($note_id = mysql_fetch_object($result))
-		{
-			$query = "SELECT note_id FROM notes WHERE parent_note_id = '{$note_id->note_id}'";
-			NetDebug::trace($query);
-			$res = @mysql_query($query);
-			if (@mysql_num_rows($res) >= $qty) return true;
-		}
+		NetDebug::trace(mysql_num_rows($result));
+		if (mysql_num_rows($result) >= $qty) return true;
 		return false;
 	}
 
@@ -491,7 +476,25 @@ abstract class Module
     		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return FALSE;
 
-		$query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerID}'";
+		$query = "SELECT note_id FROM notes WHERE game_id = '{$intGameID}' AND owner_id = '{$intPlayerID}'";
+		NetDebug::trace($query);
+		$result = @mysql_query($query);
+		while($note_id = mysql_fetch_object($result))
+		{
+			$query = "SELECT note_id FROM notes WHERE game_id = '{$intGameID}' AND parent_note_id = '{$note_id->note_id}'";
+			NetDebug::trace($query);
+			$res = @mysql_query($query);
+			if (@mysql_num_rows($res) >= $qty) return true;
+		}
+		return false;
+	}
+
+	protected function playerHasNoteWithLikes($intGameID, $intPlayerID, $qty)
+	{
+    		$prefix = Module::getPrefix($intGameID);
+		if (!$prefix) return FALSE;
+
+		$query = "SELECT note_id FROM notes WHERE game_id = '{$intGameID}' AND owner_id = '{$intPlayerID}'";
 		NetDebug::trace($query);
 		$result = @mysql_query($query);
 		while($note_id = mysql_fetch_object($result))
@@ -541,6 +544,7 @@ abstract class Module
 			//Check the requirement
 			
 			$requirementMet = FALSE;
+			NetDebug::trace("Checking ".$requirement['requirement']);
 			switch ($requirement['requirement']) {
 				//Log related
 				case Module::kREQ_PLAYER_VIEWED_ITEM:
@@ -576,27 +580,26 @@ abstract class Module
 				case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM:
 					$requirementMet = Module::playerHasUploadedMediaItemWithinDistence($strPrefix, $intPlayerID, 
 						$requirement['requirement_detail_3'], $requirement['requirement_detail_4'], 
-                                                                                       $requirement['requirement_detail_1'], $requirement['requirement_detail_2'], Module::kLOG_UPLOAD_MEDIA_ITEM);
+						$requirement['requirement_detail_1'], $requirement['requirement_detail_2'], Module::kLOG_UPLOAD_MEDIA_ITEM);
 					break;
                 		case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO:
-                    			NetDebug::trace("isAudio");
 					$requirementMet = Module::playerHasUploadedMediaItemWithinDistence($strPrefix, $intPlayerID, 
-                                                                                       $requirement['requirement_detail_3'], $requirement['requirement_detail_4'], 
-                                                                                       $requirement['requirement_detail_1'], $requirement['requirement_detail_2'], Module::kLOG_UPLOAD_MEDIA_ITEM_AUDIO);
+						$requirement['requirement_detail_3'], $requirement['requirement_detail_4'], 
+                                        	$requirement['requirement_detail_1'], $requirement['requirement_detail_2'], Module::kLOG_UPLOAD_MEDIA_ITEM_AUDIO);
 					break;
                 		case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO:
 					$requirementMet = Module::playerHasUploadedMediaItemWithinDistence($strPrefix, $intPlayerID, 
-                                                                                       $requirement['requirement_detail_3'], $requirement['requirement_detail_4'], 
-                                                                                       $requirement['requirement_detail_1'], $requirement['requirement_detail_2'], Module::kLOG_UPLOAD_MEDIA_ITEM_VIDEO);
+                                               	$requirement['requirement_detail_3'], $requirement['requirement_detail_4'], 
+                                                $requirement['requirement_detail_1'], $requirement['requirement_detail_2'], Module::kLOG_UPLOAD_MEDIA_ITEM_VIDEO);
 					break;
                 		case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE:
 					$requirementMet = Module::playerHasUploadedMediaItemWithinDistence($strPrefix, $intPlayerID, 
-                                                                                       $requirement['requirement_detail_3'], $requirement['requirement_detail_4'], 
-                                                                                       $requirement['requirement_detail_1'], $requirement['requirement_detail_2'], Module::kLOG_UPLOAD_MEDIA_ITEM_IMAGE);
+                                                $requirement['requirement_detail_3'], $requirement['requirement_detail_4'], 
+                                                $requirement['requirement_detail_1'], $requirement['requirement_detail_2'], Module::kLOG_UPLOAD_MEDIA_ITEM_IMAGE);
 					break;
 				case Module::kREQ_PLAYER_HAS_COMPLETED_QUEST:
 					$requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_COMPLETE_QUEST, 
-                                                           				$requirement['requirement_detail_1']);
+                                                $requirement['requirement_detail_1']);
 					break;
                 		case Module::kREQ_PLAYER_HAS_NOTE:
 					$requirementMet = Module::playerHasNote($strPrefix, $intPlayerID, $requirement['requirement_detail_2']);
@@ -606,10 +609,12 @@ abstract class Module
 					break;
                 		case Module::kREQ_PLAYER_HAS_NOTE_WITH_COMMENTS:
 					$requirementMet = Module::playerHasNoteWithComments($strPrefix, $intPlayerID, $requirement['requirement_detail_2']);
-                		case Module::kREQ_PLAYER_GIVEN_NOTE_COMMENTS:
+					break;
+                		case Module::kREQ_PLAYER_HAS_GIVEN_NOTE_COMMENTS:
 					$requirementMet = Module::playerHasGivenNoteComments($strPrefix, $intPlayerID, $requirement['requirement_detail_2']);
+					break;
 
-                    		NetDebug::trace($requirementMet);
+                    		NetDebug::trace("Was Requirement Met?: ".$requirementMet);
 			}//switch
             
             		//Account for the 'NOT's
@@ -1243,9 +1248,11 @@ abstract class Module
                 		case Module::kREQ_PLAYER_HAS_NOTE_WITH_COMMENTS:
 					$requirementMet = Module::playerHasNoteWithComments($strPrefix, $intPlayerID, $requirement['requirement_detail_2']);
                     			$requirement['event'] = Module::kLOG_GET_NOTE_COMMENT;
-                		case Module::kREQ_PLAYER_GIVEN_NOTE_COMMENTS:
+					break;
+                		case Module::kREQ_PLAYER_HAS_GIVEN_NOTE_COMMENTS:
 					$requirementMet = Module::playerHasGivenNoteComments($strPrefix, $intPlayerID, $requirement['requirement_detail_2']);
                     			$requirement['event'] = Module::kLOG_GIVE_NOTE_COMMENT;
+					break;
 			}//switch
             
             		//Account for the 'NOT's
