@@ -233,20 +233,8 @@ class Players extends Module
      */
 	public function updatePlayerLocation($intPlayerID, $intGameID, $floatLat, $floatLong)
 	{
-		$query = "UPDATE players
-					SET latitude = {$floatLat} , longitude = {$floatLong}
-					WHERE player_id = {$intPlayerID}";
-		
-		NetDebug::trace($query);
-
-		@mysql_query($query);
-		
-		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
-		
 		NetDebug::trace("Inserting Log");
-		
 		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_MOVE, $floatLat, $floatLong);
-		
 		if (mysql_affected_rows()) return new returnData(0, TRUE);
 		else return new returnData(0, FALSE);
 	}

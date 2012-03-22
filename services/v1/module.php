@@ -715,7 +715,7 @@ abstract class Module
          
          Few have read this code and lived to understand it. Good luck, and God speed.
          */
-        if($intGameID != ""){
+	if($intGameID > 0){
             //PHIL_REQ_CODE:
             // $qObs is a list of 'quest objects' that need to be appended to the log. The reason they are bubbled up 
             // to this level of the call stack rather than simply appended upon their discovery is for chained quests.
@@ -733,7 +733,8 @@ abstract class Module
             $wObs = Module::fireOffWebHooksIfReady($intPlayerID, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2);
         }
         else{
-            NetDebug::trace("GameID = -" .$intGameID . "-");
+        	NetDebug::trace("GameID = -" .$intGameID . "-");
+		return;
         }
         
         
