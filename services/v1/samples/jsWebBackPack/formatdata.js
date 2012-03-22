@@ -14,8 +14,8 @@ function formatPage(game)
 	//Set header of page
 	add("<div class='pageheader'>\n");
 		add("<div class='gameicon'>\n");
-			if(game.icon_media_url)
-				add("<a href='../../../../gamedata/"+game.game_id+"/"+game.media_url+"'><img class='gameiconimage' src='../../../../gamedata/"+game.game_id+"/"+game.icon_media_url+"' alt='"+game.media_name+"' /></a>\n");
+			if(game.icon_url)
+				add("<a href='"+game.media_url+"'><img class='gameiconimage' src='"+game.icon_url+"' alt='"+game.media_name+"' /></a>\n");
 		add("</div>\n");//<- class gameicon
 		add("<div class='gametext'>\n");
 			add("<div class='gametitle'>\n");
@@ -95,48 +95,42 @@ function formatPage(game)
 					//Output attribute header
 					add("<div class='content attribute'>\n");
 	
-						add("<div class='left'>\n");
+					add("<div class='left'>\n");
 	
-							if(attribute+icon_file_name)
-							{
-								add("<div class='attrib attribute_attrib attribute_icon'>\n");
-									add("<img class='thumbnail' src = '../../../../gamedata/"+attribute.icon_game_id+"/"+attribute.icon_file_name+"' alt = '"+attribute.icon_name+"'/>\n");
-								add("</div>\n"); //<- class 'attribute_icon_file_name'
-							}
+					if(attribute.icon_url)
+					{
+						add("<div class='attrib attribute_attrib attribute_icon'>\n");
+						add("<a href='"+attribute.media_url+"'><img class='thumbnail' src = '"+attribute.icon_url+"' alt = '"+attribute.icon_name+"'/></a>\n");
+						add("</div>\n"); //<- class 'attribute_icon_file_name'
+					}
 	
-							if(attribute.media_file_name)
-							{
-								add("<div class='attrib attribute_attrib attribute_media'>\n");					
-									add("<a href='../../../../gamedata/"+attribute.media_game_id+"/"+attribute.media_file_name+"'><img class='thumbnail' src = '../../../../gamedata/"+attribute.media_game_id+"/"+attribute.media_file_name+"' alt = '"+attribute.media_name+"'/></a>\n");
-								add("</div>\n"); //<- class 'attribute_media_file_name'
-							}
+								
+					add("</div>\n");//<- class 'left'
+					add("<div class='right'>\n");
+					add("<div class='contentheader'>\n");
+					if(attribute.name)
+					{
+						add("<div class='attrib attribute_attrib attrib_name attribute_name'>\n");					
+							add(attribute.name);
+						add("</div>\n"); //<- class 'attribute_name'
+						if(attribute.qty && attribute.qty > 1)
+						{
+							add("<div class='attrib attribute_attrib attrib_qty attribute_qty'>\n");					
+								add("Qty: "+attribute.qty);
+							add("</div>\n"); //<- class 'attribute_qty'
+						}
+					}
+					add("</div>\n");//<- class 'contentheader'
+
+					if(attribute.description)
+					{
+						add("<div class='attrib attribute_attrib attribute_description'>\n");					
+							add(attribute.description);
+						add("</div>\n"); //<- class 'attribute_description'
+					}
 	
-						add("</div>\n");//<- class 'left'
-						add("<div class='right'>\n");
-								add("<div class='contentheader'>\n");
-								if(attribute.name)
-								{
-									add("<div class='attrib attribute_attrib attrib_name attribute_name'>\n");					
-										add(attribute.name);
-									add("</div>\n"); //<- class 'attribute_name'
-									if(attribute.qty && attribute.qty > 1)
-									{
-										add("<div class='attrib attribute_attrib attrib_qty attribute_qty'>\n");					
-											add("Qty: "+attribute.qty);
-										add("</div>\n"); //<- class 'attribute_qty'
-									}
-								}
-								add("</div>\n");//<- class 'contentheader'
-		
-							if(attribute.description)
-							{
-								add("<div class='attrib attribute_attrib attribute_description'>\n");					
-									add(attribute.description);
-								add("</div>\n"); //<- class 'attribute_description'
-							}
-		
-	
-						add("</div>\n");//<- class 'right'
+
+					add("</div>\n");//<- class 'right'
 		
 					//Output attribute footer
 					add("</div>\n"); //<- class 'attribute'
@@ -170,18 +164,11 @@ function formatPage(game)
 
 						add("<div class='left'>\n");
 	
-							if(item.icon_file_name)
+							if(item.icon_url)
 							{
 								add("<div class='attrib item_attrib item_icon'>\n");					
-									add("<img class='thumbnail' src = '../../../../gamedata/"+item.icon_game_id+"/"+item.icon_file_name+"' alt = '"+item.icon_name+"'/>\n");
-								add("</div>\n"); //<- class 'item_icon_file_name'
-							}
-	
-							if(item.media_file_name)
-							{
-								add("<div class='attrib item_attrib item_media'>\n");					
-									add("<a href='../../../../gamedata/"+item.media_game_id+"/"+item.media_file_name+"'><img class='thumbnail' src = '../../../../gamedata/"+item.media_game_id+"/"+item.media_file_name+"' alt = '"+item.media_name+"'/></a>\n");
-								add("</div>\n"); //<- class 'item_media_file_name'
+									add("<a href='"+item.media_url+"'><img class='thumbnail' src = '"+item.icon_url+"' alt = '"+item.icon_name+"'/></a>\n");
+								add("</div>\n"); //<- class 'item_icon_url'
 							}
 	
 						add("</div>\n");//<- class 'left'
@@ -294,19 +281,19 @@ function formatPage(game)
 										if(notecontent.type == "PHOTO")
 										{
 											add("<div class='attrib notecontent_attrib notecontent_media'>\n");
-												add("<a href='../../../../gamedata/"+notecontent.game_id+"/"+notecontent.file_name+"'><img class='thumbnail' src='../../../../gamedata/"+notecontent.game_id+"/"+notecontent.file_name+"' /></a>\n");
+												add("<a href='"+notecontent.media_url+"'><img class='thumbnail' src='"+notecontent.media_url+"' /></a>\n");
 											add("</div>\n");//<- class 'notecontent_media'
 										}	
 										if(notecontent.type == "AUDIO")
 										{
 											add("<div class='attrib notecontent_attrib notecontent_media'>\n");
-												add("<a href='../../../../gamedata/"+notecontent.game_id+"/"+notecontent.file_name+"'><img class='thumbnail' src='defaultAudioIcon.png' /></a>\n");
+												add("<a href='"+notecontent.media_url+"'><img class='thumbnail' src='defaultAudioIcon.png' /></a>\n");
 											add("</div>\n");//<- class 'notecontent_media'
 										}	
 										if(notecontent.type == "VIDEO")
 										{
 											add("<div class='attrib notecontent_attrib notecontent_media'>\n");
-												add("<a href='../../../../gamedata/"+notecontent.game_id+"/"+notecontent.file_name+"'><img class='thumbnail' src='defaultVideoIcon.png' /></a>\n");
+												add("<a href='"+notecontent.media_url+"'><img class='thumbnail' src='defaultVideoIcon.png' /></a>\n");
 											add("</div>\n");//<- class 'notecontent_media'
 										}	
 									add("</div>\n");//<- class 'left'
