@@ -246,6 +246,7 @@ class Locations extends Module
 				continue;
 			}
 
+/*
 			//Special Case for Notes
 			if($location->type == 'PlayerNote')
 			{
@@ -261,6 +262,7 @@ class Locations extends Module
 				if($note->public_for_notebook || $note->owner_id == $intPlayerId)
 					$location->allow_quick_travel = 1;
 			}
+ */
 
 			NetDebug::trace('Location:{$location->location_id} is ok');	
 
