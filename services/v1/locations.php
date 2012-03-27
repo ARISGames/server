@@ -231,12 +231,13 @@ class Locations extends Module
 					break;
 			}
 			
-			$rsObject = @mysql_query($query);
-			$object = @mysql_fetch_object($rsObject);
-			
-			if (!$object) {
-				NetDebug::trace("Skipping Location:'{$location->location_id}' becasue it points to something bogus");	
-				continue;
+			if ($location->type != 'PlayerNote') {
+				$rsObject = @mysql_query($query);
+                $object = @mysql_fetch_object($rsObject);
+                if (!$object) {
+                    NetDebug::trace("Skipping Location:'{$location->location_id}' becasue it points to something bogus");	
+                    continue;
+                }
 			}
 
 			//Does it meet it's requirements?
