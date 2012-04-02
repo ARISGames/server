@@ -138,7 +138,7 @@ class Media extends Module
 	{
 		
 		$prefix = Module::getPrefix($intGameID);
-		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+		if (!$prefix || $intGameID == 0) return new returnData(1, NULL, "invalid game id");
 		
 		$strName = addslashes($strName);
 		

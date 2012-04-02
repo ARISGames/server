@@ -35,14 +35,14 @@ class Items extends Module
 	}
 	
 	/**
-     * Gets the items within a player's inventory
-     *
-	 * @param integer $gameID The game identifier
-     * @param integer $playerId The player identifier
-     * @return returnData
-     * @returns a returnData object containing an array of items
-     * @see returnData
-     */
+     	* Gets the items within a player's inventory
+	*
+	* @param integer $gameID The game identifier
+     	* @param integer $playerId The player identifier
+     	* @return returnData
+     	* @returns a returnData object containing an array of items
+     	* @see returnData
+     	*/
 	public static function getItemsForPlayer($gameId, $playerId)
 	{
 		
@@ -135,8 +135,7 @@ class Items extends Module
      * @returns a returnData object containing the new item identifier
      * @see returnData
      */
-	public static function createItem($gameId, $name, $description, 
-								$iconMediaId, $mediaId, $droppable, $destroyable, $attribute, $maxQuantityInPlayerInventory, $weight, $url, $type)
+	public static function createItem($gameId, $name, $description, $iconMediaId, $mediaId, $droppable, $destroyable, $attribute, $maxQuantityInPlayerInventory, $weight, $url, $type)
 	{
 		$name = addslashes($name);	
 		$description = addslashes($description);	
@@ -147,16 +146,16 @@ class Items extends Module
 		$query = "INSERT INTO {$prefix}_items 
 					(name, description, icon_media_id, media_id, dropable, destroyable, is_attribute, max_qty_in_inventory, weight, url, type)
 					VALUES ('{$name}', 
-							'{$description}',
-							'{$iconMediaId}', 
-							'{$mediaId}', 
-							'$droppable',
-							'$destroyable',
-                            '$attribute',
-							'$maxQuantityInPlayerInventory',
-                            '$weight',
-                            '$url',
-                            '$type')";
+						'{$description}',
+						'{$iconMediaId}', 
+						'{$mediaId}', 
+						'{$droppable}',
+						'{$destroyable}',
+                            			'{$attribute}',
+						'{$maxQuantityInPlayerInventory}',
+                            			'{$weight}',
+                            			'{$url}',
+                            			'{$type}')";
 		
 		NetDebug::trace("createItem: Running a query = $query");	
 		

@@ -16,9 +16,9 @@ class EditorFoldersAndContent extends Module
 	const EDITORFOLDER = 2;
 	
 	/**
-     * Fetch all Folders and Content Refrences
-     * @returns the folders and folder contents rs as arrays
-     */
+     	* Fetch all Folders and Content Refrences
+     	* @returns the folders and folder contents rs as arrays
+     	*/
 	public function getFoldersAndContent($intGameID)
 	{
 		$prefix = Module::getPrefix($intGameID);
@@ -42,7 +42,7 @@ class EditorFoldersAndContent extends Module
 		while ($content = mysql_fetch_object($rsContents)) {
 			//Save the modified copy to the array
 			$arrayContents[] = self::hydrateContent($content, $intGameID);
-        }
+        	}
         
 		//fake out amfphp to package this array as a flex array collection
 		$arrayCollectionContents = (object) array('_explicitType' => "flex.messaging.io.ArrayCollection",
@@ -50,15 +50,14 @@ class EditorFoldersAndContent extends Module
 											
 		$foldersAndContents = (object) array('folders' => $folders, 'contents' => $arrayCollectionContents);
 		return new returnData(0, $foldersAndContents);
-
 	}
 	
 	
 	
 	/**
-     * Fetch a single content object
-     * @returns a content object with additional details from the game object it refrences
-     */
+     	* Fetch a single content object
+     	* @returns a content object with additional details from the game object it refrences
+     	*/
 	public function getContent($intGameID, $intObjectContentID)
 	{
 		$prefix = Module::getPrefix($intGameID);
@@ -148,68 +147,68 @@ class EditorFoldersAndContent extends Module
      */	
 
 	private function hydrateContent($folderContentObject, $intGameID) {
-			$content = $folderContentObject;
+		$content = $folderContentObject;
         
-			if ($content->content_type == 'Node') {
-				//Fetch the corresponding node
-				$contentDetails = Nodes::getNode($intGameID,$content->content_id)->data;
-				$content->name = $contentDetails->title;
-			}
-			else if ($content->content_type == 'Item') {
-				$contentDetails = Items::getItem($intGameID,$content->content_id)->data;
-				$content->name = $contentDetails->name;
-			}
-			else if ($content->content_type == 'Npc') {
-				$contentDetails = Npcs::getNpc($intGameID,$content->content_id)->data;
-				$content->name = $contentDetails->name;
-			}
-            else if ($content->content_type == 'WebPage') {
-				$contentDetails = WebPages::getWebPage($intGameID,$content->content_id)->data;
-				$content->name = $contentDetails->name;
-                $content->media = NULL;
-                $content->media_id = NULL;
-			}
-            else if ($content->content_type == 'AugBubble') {
-				$contentDetails = AugBubbles::getAugBubble($intGameID,$content->content_id)->data;
-				$content->name = $contentDetails->name;
-                $content->media = NULL;
-                $content->media_id = NULL;
-			}
-            else if ($content->content_type == 'PlayerNote') {
-                $contentDetails = Notes::getNoteById($content->content_id)->data;
-                $content->name = $contentDetails->title;
-                $content->icon_media_id = 5;
-                $content->media = NULL;
-                $content->media_id = NULL;
-            }
+		if ($content->content_type == 'Node') {
+			//Fetch the corresponding node
+			$contentDetails = Nodes::getNode($intGameID,$content->content_id)->data;
+			$content->name = $contentDetails->title;
+		}
+		else if ($content->content_type == 'Item') {
+			$contentDetails = Items::getItem($intGameID,$content->content_id)->data;
+			$content->name = $contentDetails->name;
+		}
+		else if ($content->content_type == 'Npc') {
+			$contentDetails = Npcs::getNpc($intGameID,$content->content_id)->data;
+			$content->name = $contentDetails->name;
+		}
+            	else if ($content->content_type == 'WebPage') {
+			$contentDetails = WebPages::getWebPage($intGameID,$content->content_id)->data;
+			$content->name = $contentDetails->name;
+                	$content->media = NULL;
+                	$content->media_id = NULL;
+		}
+            	else if ($content->content_type == 'AugBubble') {
+			$contentDetails = AugBubbles::getAugBubble($intGameID,$content->content_id)->data;
+			$content->name = $contentDetails->name;
+                	$content->media = NULL;
+                	$content->media_id = NULL;
+		}
+            	else if ($content->content_type == 'PlayerNote') {
+                	$contentDetails = Notes::getNoteById($content->content_id)->data;
+                	$content->name = $contentDetails->title;
+                	$content->icon_media_id = 5;
+                	$content->media = NULL;
+                	$content->media_id = NULL;
+            	}
 			
-			//Get the Icon Media
-			$mediaHelper = new Media;
-			$mediaReturnObject = $mediaHelper->getMediaObject($intGameID, $contentDetails->icon_media_id);
-			$media = $mediaReturnObject->data;
-			$content->icon_media = $media;
-			$content->icon_media_id = $contentDetails->icon_media_id;
+		//Get the Icon Media
+		$mediaHelper = new Media;
+		$mediaReturnObject = $mediaHelper->getMediaObject($intGameID, $contentDetails->icon_media_id);
+		$media = $mediaReturnObject->data;
+		$content->icon_media = $media;
+		$content->icon_media_id = $contentDetails->icon_media_id;
 
-        if ($content->content_type != 'WebPage' && $content->content_type != 'PlayerNote' && $content->content_type != 'AugBubble'){
+        	if ($content->content_type != 'WebPage' && $content->content_type != 'PlayerNote' && $content->content_type != 'AugBubble'){
 			//Get the Media
 			$mediaHelper = new Media;
 			$mediaReturnObject = $mediaHelper->getMediaObject($intGameID, $contentDetails->media_id);
 			$media = $mediaReturnObject->data;
 			$content->media = $media;
 			$content->media_id = $contentDetails->media_id;
-        }
-        /* Depricated
-        if ($content->content_type == 'AugBubble'){
+        	}
+        	/* Depricated
+        	if ($content->content_type == 'AugBubble'){
 			//Get the Alignment Media
 			$mediaHelper = new Media;
 			$mediaReturnObject = $mediaHelper->getMediaObject($intGameID, $contentDetails->alignment_media_id);
 			$alignmentMedia = $mediaReturnObject->data;
 			$content->alignment_media = $alignmentMedia;
 			$content->alignment_media_id = $alignmentMedia->media_id;
-        }
-         */
+        	}
+         	*/
 	
-			return $content;
+		return $content;
 	}
 	
 	
@@ -223,7 +222,6 @@ class EditorFoldersAndContent extends Module
 
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
 		
 		if ($intFolderID) {
 			//This is an update
@@ -255,34 +253,28 @@ class EditorFoldersAndContent extends Module
 			if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
 			else return new returnData(0, $newFolderID, NULL);
 		}
-		
-		
-
 	}
 
 	/**
      * Create or update content object to be displayed in navigation. Use 0 or null in intObjectContentID to create new.  If update, it will also update the sorting info
      * @returns the new folderContentID on insert
      */
-	public function saveContent($intGameID, $intObjectContentID, $intFolderID, 
-								$strContentType, $intContentID, $intSortOrder )
+	public static function saveContent($intGameID, $intObjectContentID, $intFolderID, $strContentType, $intContentID, $intSortOrder )
 	{
-		
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
 		if ($intObjectContentID) {
 			//This is an update
-			
 			$query = "UPDATE {$prefix}_folder_contents
-						SET 
-						folder_id = '{$intFolderID}',
-						content_type = '{$strContentType}',
-						content_id = '{$intContentID}',
-						previous_id = '{$intSortOrder}'
-						WHERE 
-						object_content_id = {$intObjectContentID}
-						";
+					SET 
+					folder_id = '{$intFolderID}',
+					content_type = '{$strContentType}',
+					content_id = '{$intContentID}',
+					previous_id = '{$intSortOrder}'
+					WHERE 
+					object_content_id = {$intObjectContentID}
+					";
 						
 			NetDebug::trace($query);
 			@mysql_query($query);
@@ -291,7 +283,6 @@ class EditorFoldersAndContent extends Module
 		}	
 		else {		
 			//This is an insert
-
 			$query = "INSERT INTO {$prefix}_folder_contents 
 					(folder_id, content_type, content_id, previous_id)
 					VALUES 
@@ -303,7 +294,6 @@ class EditorFoldersAndContent extends Module
 			if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
 			else return new returnData(0, $newContentID, NULL);
 		}
-
 	}
 	
 	/**
@@ -321,14 +311,13 @@ class EditorFoldersAndContent extends Module
 		
 		if (mysql_affected_rows()) return new returnData(0);
 		else return new returnData(2, 'invalid folder id');
-		
 	}	
 	
 	/**
      * Delete a content record, updating the sort order, not touching the actual item
      * @returns 0 on success
      */
-	public function deleteContent($intGameID, $intContentID)
+	public static function deleteContent($intGameID, $intContentID)
 	{
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");		
@@ -352,16 +341,11 @@ class EditorFoldersAndContent extends Module
 		if ($content->content_type == "Node") Nodes::deleteNode($intGameID, $content->content_id);
 		else if ($content->content_type == "Item") Items::deleteItem($intGameID, $content->content_id);
 		else if ($content->content_type == "Npc") Npcs::deleteNpc($intGameID, $content->content_id);
-        else if ($content->content_type == "WebPage") WebPages::deleteWebPage($intGameID, $content->content_id);
-        else if ($content->content_type == "AugBubble") AugBubbles::deleteAugBubble($intGameID, $content->content_id);
-
-
-
+        	else if ($content->content_type == "WebPage") WebPages::deleteWebPage($intGameID, $content->content_id);
+        	else if ($content->content_type == "AugBubble") AugBubbles::deleteAugBubble($intGameID, $content->content_id);
+        	else if ($content->content_type == "PlayerNote") Notes::deleteNote($content->content_id);
 		
 		if (mysql_affected_rows()) return new returnData(0);
 		else return new returnData(2, 'invalid folder id');
-		
 	}	
-	
-	
 }

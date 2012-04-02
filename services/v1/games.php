@@ -306,10 +306,9 @@ class Games extends Module
      */	
 	public function createGame($intEditorID, $strFullName, $strDescription, $intPCMediaID, $intIconMediaID, $intMediaID,
 								$boolIsLocational, $boolReadyForPublic, 
-								$boolAllowPlayerCreatedLocations, $boolResetDeletesPlayerCreatedLocations,
+								$boolShareToMap, $boolShareToBook, $playerCreateTag, $playerCreateComments,
 								$intIntroNodeId, $intCompleteNodeId, $intInventoryCap)
 	{
-
 		$strFullName = addslashes($strFullName);	
 		$strDescription = addslashes($strDescription);
         
@@ -323,18 +322,17 @@ class Games extends Module
 		
 		//Create the game record in SQL
 		$query = "INSERT INTO games (name, description, pc_media_id, icon_media_id, media_id,
-									is_locational, ready_for_public,
-									allow_player_created_locations, delete_player_locations_on_reset,
-									on_launch_node_id, game_complete_node_id, inventory_weight_cap, created)
-					VALUES ('{$strFullName}','{$strDescription}','{$intPCMediaID}','{$intIconMediaID}', '{$intMediaID}',
+							is_locational, ready_for_public,
+							allow_share_note_to_map, allow_share_note_to_book, allow_player_tags, allow_note_comments,
+							on_launch_node_id, game_complete_node_id, inventory_weight_cap, created)
+							VALUES ('{$strFullName}','{$strDescription}','{$intPCMediaID}','{$intIconMediaID}', '{$intMediaID}',
 							'{$boolIsLocational}', '{$boolReadyForPublic}', 
-							'{$boolAllowPlayerCreatedLocations}','{$boolResetDeletesPlayerCreatedLocations}',
+							'{$boolShareToMap}', '{$boolShareToBook}', '{$playerCreateTag}', '{$playerCreateComments}',
 							'{$intIntroNodeId}','{$intCompleteNodeId}','{$intInventoryCap}', NOW())";
 		@mysql_query($query);
 		if (mysql_error())  return new returnData(6, NULL, "cannot create game record using SQL: $query");
 		$newGameID = mysql_insert_id();
 	    $strShortName = mysql_insert_id();
-	
 	
 	    //HACK: We should change the engine to look at the game_id, but for now we will just set the
 	    //short name to the new game id
@@ -591,12 +589,12 @@ class Games extends Module
      */	
 	public function updateGame($intGameID, $strName, $strDescription, $intPCMediaID, $intIconMediaID, $intMediaID,
 								$boolIsLocational, $boolReadyForPublic,
-								$boolAllowPlayerCreatedLocations, $boolResetDeletesPlayerCreatedLocations,
+								$boolShareToMap, $boolShareToBook, $playerCreateTag, $playerCreateComments,
 								$intIntroNodeId, $intCompleteNodeId, $intInventoryCap)
 	{
 		$strName = addslashes($strName);	
 		$strDescription = addslashes($strDescription);
-	
+
 		$query = "UPDATE games 
 				SET 
 				name = '{$strName}',
@@ -604,13 +602,15 @@ class Games extends Module
 				pc_media_id = '{$intPCMediaID}',
 				icon_media_id = '{$intIconMediaID}',
 				media_id = '{$intMediaID}',
-				allow_player_created_locations = '{$boolAllowPlayerCreatedLocations}',
-				delete_player_locations_on_reset = '{$boolResetDeletesPlayerCreatedLocations}',
+				allow_share_note_to_map = '{$boolShareToMap}',
+				allow_share_note_to_book = '{$boolShareToBook}',
+				allow_player_tags = '{$playerCreateTag}',
+				allow_note_comments = '{$playerCreateComments}',
 				is_locational = '{$boolIsLocational}',
 				ready_for_public = '{$boolReadyForPublic}',
 				on_launch_node_id = '{$intIntroNodeId}',
 				game_complete_node_id = '{$intCompleteNodeId}',
-                inventory_weight_cap = '{$intInventoryCap}'
+                		inventory_weight_cap = '{$intInventoryCap}'
 				WHERE game_id = {$intGameID}";
 		mysql_query($query);
 		if (mysql_error()) return new returnData(3, false, "SQL Error: " . mysql_error());
@@ -656,11 +656,33 @@ class Games extends Module
 		}
         
         //System wide changes below
-		
-		$query = "ALTER TABLE `games` ADD `delete_player_locations_on_reset` BOOLEAN NOT NULL DEFAULT '0'";
+
+
+
+		$query = "ALTER TABLE  `games` ADD  `allow_share_note_to_map` TINYINT( 1 ) NOT NULL DEFAULT  '1'";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
-			
+
+		$query = "ALTER TABLE  `games` ADD  `allow_share_note_to_book` TINYINT( 1 ) NOT NULL DEFAULT  '1'";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+		
+		$query = "ALTER TABLE  `games` ADD  `allow_note_comments` TINYINT( 1 ) NOT NULL DEFAULT  '1'";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+		
+		$query = "ALTER TABLE  `games` ADD  `allow_player_tags` TINYINT( 1 ) NOT NULL DEFAULT  '1'";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+		
+		$query = "ALTER TABLE  `games` ADD  `ready_for_public` TINYINT( 1 ) NOT NULL DEFAULT  '0'";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+		
+		$query = "ALTER TABLE  `games` ADD  `is_locational` TINYINT( 1 ) NOT NULL DEFAULT  '0'";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+
 		$query = "ALTER TABLE `games` ADD `on_launch_node_id` INT UNSIGNED NOT NULL DEFAULT '0'";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
@@ -674,14 +696,6 @@ class Games extends Module
 		NetDebug::trace("$query" . ":" . mysql_error());
 		
 		$query = "ALTER TABLE  `games` ADD INDEX  `prefixKey` (  `prefix` )";
-		mysql_query($query);
-		NetDebug::trace("$query" . ":" . mysql_error());
-
-		$query = "ALTER TABLE  `games` ADD  `ready_for_public` TINYINT( 1 ) NOT NULL DEFAULT  '0'";
-		mysql_query($query);
-		NetDebug::trace("$query" . ":" . mysql_error());
-		
-		$query = "ALTER TABLE  `games` ADD  `is_locational` TINYINT( 1 ) NOT NULL DEFAULT  '0'";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
 
@@ -961,69 +975,61 @@ class Games extends Module
         mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
 
-		$query = "CREATE TABLE game_tags( game_id INT UNSIGNED NOT NULL, tag VARCHAR(32))";
-		mysql_query($query);
-			NetDebug::trace("$query" . ":" . mysql_error());
+	$query = "CREATE TABLE game_tags(tag_id INT(10) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY, game_id INT(10) UNSIGNED NOT NULL, tag VARCHAR(32) NOT NULL DEFAULT 'New Tag', player_created TINYINT(1) NOT NULL DEFAULT 0);";
+	mysql_query($query);
+	NetDebug::trace("$query" . ":" . mysql_error());
 	
-		$query = "ALTER TABLE game_tags ADD PRIMARY KEY(game_id,tag)";
-		mysql_query($query);
-			NetDebug::trace("$query" . ":" . mysql_error());
+	$query = "CREATE TABLE note_tags(note_id INT(10) UNSIGNED NOT NULL, tag_id INT(10) UNSIGNED NOT NULL, PRIMARY KEY(note_id, tag_id))";
+	mysql_query($query);
+	NetDebug::trace("$query" . ":" . mysql_error());
 	
-		$query = "CREATE TABLE note_tags ( note_id INT UNSIGNED NOT NULL, tag VARCHAR(32))";
-			mysql_query($query);
-					NetDebug::trace("$query" . ":" . mysql_error());
+	$query = "CREATE INDEX game_id ON game_tags(game_id)";
+	mysql_query($query);
+	NetDebug::trace("$query" . ":" . mysql_error());
 	
-			$query = "ALTER TABLE note_tags ADD PRIMARY KEY(note_id,tag)";
-			mysql_query($query);
-					NetDebug::trace("$query" . ":" . mysql_error());
+	$query = "CREATE INDEX tag ON game_tags(tag)";
+	mysql_query($query);
+	NetDebug::trace("$query" . ":" . mysql_error());
 	
-		$query = "ALTER TABLE games ADD allow_player_tags TINYINT(1) DEFAULT 1";
-			mysql_query($query);
-					NetDebug::trace("$query" . ":" . mysql_error());
+	$query = "CREATE INDEX game_id_tag ON game_tags(game_id,tag)";
+	mysql_query($query);
+	NetDebug::trace("$query" . ":" . mysql_error());
 	
-		$query = "ALTER TABLE game_tags ADD player_created TINYINT(1) DEFAULT 0";
-			mysql_query($query);
-					NetDebug::trace("$query" . ":" . mysql_error());
+	$query = "CREATE INDEX tag_id ON note_tags(tag_id)";
+	mysql_query($query);
+	NetDebug::trace("$query" . ":" . mysql_error());
 	
-		$query = "ALTER TABLE notes DROP COLUMN  parent_rating";
-			mysql_query($query);
-					NetDebug::trace("$query" . ":" . mysql_error());
+	$query = "CREATE INDEX note_id ON note_tags(note_id)";
+	mysql_query($query);
+	NetDebug::trace("$query" . ":" . mysql_error());
 	
-		$query = "ALTER TABLE notes DROP COLUMN  ave_rating";
-			mysql_query($query);
-					NetDebug::trace("$query" . ":" . mysql_error());
+	$query = "ALTER TABLE games ADD allow_player_tags TINYINT(1) DEFAULT 1";
+	mysql_query($query);
+	NetDebug::trace("$query" . ":" . mysql_error());
 	
-		$query = "ALTER TABLE notes DROP COLUMN  num_ratings";
-			mysql_query($query);
-					NetDebug::trace("$query" . ":" . mysql_error());
+	$query = "ALTER TABLE notes DROP COLUMN  parent_rating";
+	mysql_query($query);
+	NetDebug::trace("$query" . ":" . mysql_error());
 	
-		$query = "CREATE TABLE note_likes (player_id INT UNSIGNED, note_id INT UNSIGNED)";
-			mysql_query($query);
-					NetDebug::trace("$query" . ":" . mysql_error());
+	$query = "ALTER TABLE notes DROP COLUMN  ave_rating";
+	mysql_query($query);
+	NetDebug::trace("$query" . ":" . mysql_error());
+
+	$query = "ALTER TABLE notes DROP COLUMN  num_ratings";
+	mysql_query($query);
+	NetDebug::trace("$query" . ":" . mysql_error());
 	
-		$query = "ALTER TABLE note_likes ADD PRIMARY KEY (player_id, note_id)";
-			mysql_query($query);
-					NetDebug::trace("$query" . ":" . mysql_error());
+	$query = "CREATE TABLE note_likes (player_id INT UNSIGNED, note_id INT UNSIGNED)";
+	mysql_query($query);
+	NetDebug::trace("$query" . ":" . mysql_error());
 	
-		$query = "CREATE INDEX tag ON game_tags(tag)";
-			mysql_query($query);
-					NetDebug::trace("$query" . ":" . mysql_error());
+	$query = "ALTER TABLE note_likes ADD PRIMARY KEY (player_id, note_id)";
+	mysql_query($query);
+	NetDebug::trace("$query" . ":" . mysql_error());
 	
-		$query = "CREATE INDEX tag ON note_tags(tag)";
-			mysql_query($query);
-					NetDebug::trace("$query" . ":" . mysql_error());
-	
-		$query = "CREATE INDEX game_id ON game_tags(game_id)";
-			mysql_query($query);
-					NetDebug::trace("$query" . ":" . mysql_error());
-	
-		$query = "CREATE INDEX note_id ON note_tags(note_id)";
-			mysql_query($query);
-					NetDebug::trace("$query" . ":" . mysql_error());
-	
-		$query = "ALTER TABLE players ADD show_on_map TINYINT NOT NULL DEFAULT 1";
-			mysql_query($query);
-					NetDebug::trace("$query" . ":" . mysql_error());
+	$query = "ALTER TABLE players ADD show_on_map TINYINT NOT NULL DEFAULT 1";
+	mysql_query($query);
+	NetDebug::trace("$query" . ":" . mysql_error());
 
         return new returnData(0, FALSE);
 	}
@@ -1867,7 +1873,7 @@ class Games extends Module
 
 	public static function getDetailedGameInfo($gameId)
 	{
-		$query = "SELECT games.game_id, games.name, pcm.name as pc_media_name, pcm.file_name as pc_media_url, m.name as media_name, m.file_name as media_url, im.name as icon_name, im.file_name as icon_url FROM games LEFT JOIN media as m ON games.media_id = m.media_id LEFT JOIN media as im ON games.icon_media_id = im.media_id LEFT JOIN media as pcm on games.pc_media_id = pcm.media_id WHERE games.game_id = '{$gameId}'";
+		$query = "SELECT games.*, pcm.name as pc_media_name, pcm.file_name as pc_media_url, m.name as media_name, m.file_name as media_url, im.name as icon_name, im.file_name as icon_url FROM games LEFT JOIN media as m ON games.media_id = m.media_id LEFT JOIN media as im ON games.icon_media_id = im.media_id LEFT JOIN media as pcm on games.pc_media_id = pcm.media_id WHERE games.game_id = '{$gameId}'";
 
 		$result = mysql_query($query);
 		$game = mysql_fetch_object($result);

@@ -16,12 +16,12 @@ class Notes extends Module
         $qObs = Module::appendCompletedQuestsIfReady($playerId, $gameId, Module::kLOG_GET_NOTE);
         $wObs = Module::fireOffWebHooksIfReady($playerId, $gameId, Module::kLOG_GET_NOTE);
 
-	$title = addslashes($title);
         $query = "INSERT INTO notes (game_id, owner_id, title) VALUES ('{$gameId}', '{$playerId}', 'New Note')";
         @mysql_query($query);
 		if (mysql_error()) return new returnData(1, NULL, mysql_error());
-        
-        return new returnData(0, mysql_insert_id());
+	$nId = mysql_insert_id();
+	EditorFoldersAndContent::saveContent($gameId, false, 0, 'PlayerNote', $nId, 0);
+        return new returnData(0, $nId);
     }
 
     function updateNote($noteId, $title, $publicToMap, $publicToNotebook, $sortIndex='0')
@@ -59,6 +59,8 @@ class Notes extends Module
 
     function addContentToNoteFromFileName($gameId, $noteId, $playerId, $filename, $type, $name="playerUploadedContent")
     {
+	if(!$name)
+		$name = date("Y-m-d H:i:s");
         $newMediaResultData = Media::createMedia($gameId, $name, $filename, 0);
         $newMediaId = $newMediaResultData->data->media_id;
         
@@ -174,19 +176,25 @@ class Notes extends Module
 		$player = mysql_query($query);
 		$playerObj = mysql_fetch_object($player);
 		$note->username = $playerObj->user_name;
-		$note->contents = Notes::getNoteContents($noteId);
+		$note->contents = Notes::getNoteContents($noteId, $note->game_id);
 		$note->comments = Notes::getNoteComments($noteId, $playerId);
 		$note->tags = Notes::getNoteTags($noteId, $note->game_id);
 		$note->likes = Notes::getNoteLikes($noteId);
 		$note->player_liked = ($playerId == 0 ? 0 : Notes::playerLiked($playerId, $noteId));
         	$note->icon_media_id = 5;
-		$note->dropped = Notes::noteDropped($noteId, $note->game_id);
+		$location = new stdClass();
+		if($note->dropped = Notes::noteDropped($noteId, $note->game_id))
+			$location = Notes::getNoteLocation($noteId, $note->game_id);	
+		else
+			$location->lat = $location->lon = 0;
+		$note->lat = $location->lat;
+		$note->lon = $location->lon;
             	return $note;
         }
         return;
     }
 
-    function getNoteContents($noteId)
+    function getNoteContents($noteId, $gameId)
     {
         $query = "SELECT * FROM note_content WHERE note_id = '{$noteId}'";
         $result = @mysql_query($query);
@@ -194,7 +202,10 @@ class Notes extends Module
         
         $contents = array();
         while($content = mysql_fetch_object($result))
+	{
+		$content->media = Media::getMediaObject($gameId, $content->media_id);
             $contents[] = $content;
+	}
         
         return $contents;
     }
@@ -214,9 +225,14 @@ class Notes extends Module
         return $comments;
     }
 
+	//Gets list of all tags owned by a note
+	//Array of json objects:
+	//	tag = 'my tag'
+	//	tag_id = 4
+	//	player_created = 0 (if 0, created by game author, and potentially used in requirements. if 1, created by some player)
     function getNoteTags($noteId, $gameId)
     {
-	$query = "SELECT note_tags.tag, player_created FROM note_tags LEFT JOIN ((SELECT tag, player_created FROM game_tags WHERE game_id = '{$gameId}') as gt) ON note_tags.tag = gt.tag WHERE note_id = '{$noteId}'";
+	$query = "SELECT gt.tag, gt.tag_id, gt.player_created FROM note_tags LEFT JOIN ((SELECT tag, tag_id, player_created FROM game_tags WHERE game_id = '{$gameId}') as gt) ON note_tags.tag_id = gt.tag_id WHERE note_id = '{$noteId}'";
 	$result = mysql_query($query);
 	$tags = array();
 	while($tag = mysql_fetch_object($result))	
@@ -266,23 +282,42 @@ class Notes extends Module
 		return false;
     }
 
+	function getNoteLocation($noteId, $gameId)
+	{
+		$query = "SELECT * FROM ".$gameId."_locations WHERE type='PlayerNote' AND type_id='{$noteId}' LIMIT 1";
+		$result = mysql_query($query);
+		$locObj = mysql_fetch_object($result);
+		$retLoc = new stdClass();
+		$retLoc->lat = $locObj->latitude;
+		$retLoc->lon = $locObj->longitude;
+		return $retLoc;
+	}
+
     function deleteNote($noteId)
     {
 	//If noteId is 0, it will rather elegantly delete EVERYTHING in the note database.
 	if($noteId == 0)
         	return new returnData(0);
 
-        $query = "SELECT note_id, game_id FROM notes WHERE parent_note_id = '{$noteId}'";
+
+	$query = "SELECT * FROM notes WHERE note_id = '{$noteId}'";
+        $result = @mysql_query($query);
+	$noteObj = mysql_fetch_object($result);
+	
+        $query = "SELECT note_id FROM notes WHERE parent_note_id = '{$noteId}'";
         $result = @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         
         while($commentNote = mysql_fetch_object($result))
         {
-            Notes::deleteNote($commentNote->note_id);
+            Notes::deleteNote($noteObj->note_id);
         }
         
         //Delete Note locations
-        Locations::deleteLocationsForObject($commentNote->game_id, "PlayerNote", $noteId);
+        Locations::deleteLocationsForObject($noteObj->game_id, "PlayerNote", $noteId);
+	//EditorFolderContents::deleteContent($noteObj->game_id, "PlayerNote", $noteId);
+	$query = "DELETE FROM {$noteObj->game_id}_folder_contents WHERE content_type = 'PlayerNote' AND object_content_id = '{$noteId}'";
+	mysql_query($query);
 
         //Delete the Note's Content
         $query = "DELETE FROM note_content WHERE note_id = '{$noteId}'";
@@ -297,14 +332,18 @@ class Notes extends Module
         return new returnData(0);
     }
 
+	//Gets all tags in game (NOT note/tag pairs), regardless of how created
+	//Array of json objects
+	//	tag = 'my tag'
+	//	tag_id = 4
+	//	player_created = 0 (0 means tag created by game author, 1 means created by some player, and is instantiated at least once in a note in game)
     function getGameTags($gameId)
     {
-	$query = "SELECT tag, player_created from game_tags WHERE game_id = '{$gameId}'";
+	$query = "SELECT tag_id, tag, player_created from game_tags WHERE game_id = '{$gameId}'";
 	$result = mysql_query($query);
 	$tags = array();
 	while($tag = mysql_fetch_object($result))	
 		$tags[] = $tag;
-
 	return $tags;
     }
 
@@ -317,12 +356,12 @@ class Notes extends Module
 	function addTagToNote($noteId, $gameId, $tag)
 	{
 		//Check if tag exists for game
-		$query = "SELECT COUNT(*) AS existz FROM game_tags WHERE game_id = '{$gameId}' AND tag = '{$tag}' LIMIT 1";
+		$query = "SELECT tag_id FROM game_tags WHERE game_id = '{$gameId}' AND tag = '{$tag}' LIMIT 1";
 		$result = mysql_query($query);
-		$exists = mysql_fetch_object($result);	
+		$id = mysql_fetch_object($result);	
 
 		//If not
-		if(!$exists->existz)
+		if(!$id->tag_id)
 		{
 			//Make sure it is ok for player to create tag for game
 			$query = "SELECT allow_player_tags FROM games WHERE game_id='{$gameId}'";	
@@ -333,36 +372,75 @@ class Notes extends Module
 				return new returnData(1, NULL, "Player Generated Tags Not Allowed In This Game");	
 
 			//Create tag for game
-			$query = "INSERT INTO game_tags (game_id, player_created, tag) VALUES ('{$gameId}', 1, '{$tag}')";
+			$query = "INSERT INTO game_tags (tag, game_id, player_created) VALUES ('{$tag}, '{$gameId}', 1)";
 			mysql_query($query);
+			$id->tag_id = mysql_insert_id();
 		}
 
 
 		//Apply tag to note
-		$query = "INSERT INTO note_tags (note_id, tag) VALUES ('{$noteId}', '{$tag}')";
+		$query = "INSERT INTO note_tags (note_id, tag_id) VALUES ('{$noteId}', '{$id->tag_id}')";
 		mysql_query($query);
 		
 		return new returnData(0);
 	}
 
-	function deleteTagFromNote($noteId, $tag)
+	function deleteTagFromNote($noteId, $tagId)
 	{
-		$query = "DELETE FROM note_tags WHERE note_id = '{$noteId}' AND tag = '{$tag}'";
+		$query = "DELETE FROM note_tags WHERE note_id = '{$noteId}' AND tag_id = '{$tagId}'";
 		mysql_query($query);
+	
+		$query = "SELECT * FROM note_tags WHERE tag_id = '{$tagId}'";
+		$result = mysql_query($query);
+		if(mysql_num_rows($result) == 0)
+		{
+			//Deleting a tag from a note can only delete the tag from the game if it is the last instantiation of that tag, and the tag was player created
+			$query = "DELETE FROM game_tags WHERE tag_id = '{$tagId}' AND player_created = 1";
+			mysql_query($query);
+		}
 		return new returnData(0);
 	}
 
+	//Returns new id
 	function addTagToGame($gameId, $tag)
 	{
-		$query = "INSERT INTO game_tags (game_id, player_created, tag) VALUES ('{$game_id}', 0, '{$tag}')";
+		$query = "INSERT INTO game_tags (tag, game_id, player_created) VALUES ('{$tag}', '{$gameId}', 0)";
 		mysql_query($query);
-		return new returnData(0);
+		return new returnData(0, mysql_insert_id());
 	}
 
-	function deleteTagFromGame($gameId, $tag)
+	//If author created, demotes to player created. completely wipes if player created. player created tags cannot exist if not instantiated at least once.
+	function deleteTagFromGame($gameId, $tagId)
 	{
-		$query = "DELETE FROM game_tags WHERE game_id = '{$gameId}' AND tag = '{$tag}'";
-		mysql_query($query);
+		$query = "SELECT * FROM game_tags WHERE tag_id = '{$tagId}'"; 
+		$result = mysql_query($query);
+		$tag = mysql_fetch_object($result);
+		if($tag->player_created == 1)
+		{
+			//Completely wipe from game
+			$query = "DELETE FROM game_tags WHERE tag_id = '{$tagId}'";
+			mysql_query($query);
+			$query = "DELETE FROM note_tags WHERE tag_id = '{$tagId}'";
+			mysql_query($query);
+		}
+		else
+		{
+			//Checks to see if instantiated at least once (a necessary property of player_created notes)
+			$query = "SELECT note_id FROM note_tags WHERE tag_id = '{$tagId}'";
+			$result = mysql_query($query);
+			if(mysql_num_rows($result) > 0) //Exists at least once- just demote
+			{
+				$query = "UPDATE game_tags SET player_created = 1 WHERE tag_id = '{$tagId}'";
+				$result = mysql_query($query);
+			}
+			else //isn't instantiated- wipe it
+			{
+				$query = "DELETE FROM game_tags WHERE tag_id = '{$tagId}'";
+				mysql_query($query);
+				$query = "DELETE FROM note_tags WHERE tag_id = '{$tagId}'";
+				mysql_query($query);
+			}
+		}
 		return new returnData(0);
 	}
     
@@ -3566,13 +3644,13 @@ class Notes extends Module
         }
 
         private static function getNoteTagsAPI($noteId, $gameId)
-        {
-                $query = "SELECT note_tags.tag, player_created FROM note_tags LEFT JOIN ((SELECT tag, player_created FROM game_tags WHERE game_id = '{$gameId}') as gt) ON note_tags.tag = gt.tag WHERE note_id = '{$noteId}'";
-                $result = mysql_query($query);
-                $tags = array();
-                while($tag = mysql_fetch_object($result))
-                        $tags[] = $tag;
-                return $tags;
+	{
+		$query = "SELECT gt.tag, gt.tag_id, gt.player_created FROM note_tags LEFT JOIN ((SELECT tag, tag_id, player_created FROM game_tags WHERE game_id = '{$gameId}') as gt) ON note_tags.tag_id = gt.tag_id WHERE note_id = '{$noteId}'";
+		$result = mysql_query($query);
+		$tags = array();
+		while($tag = mysql_fetch_object($result))	
+			$tags[] = $tag;
+		return $tags;
         }
 
         private static function getNoteLikesAPI($noteId)
