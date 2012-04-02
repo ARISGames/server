@@ -117,7 +117,7 @@ class Games extends Module
 		$query = "SELECT player_log.*, players.user_name FROM player_log 
                 JOIN players ON player_log.player_id = players.player_id WHERE game_id = {$gameId} AND
         timestamp BETWEEN DATE('{$startDate}') AND DATE('{$endDate}')";
-        NetDebug::trace($query);
+        //NetDebug::trace($query);
         $result = mysql_query($query);
         if (mysql_error()) return new returnData(3, NULL, mysql_error());
         return new returnData(0, $result, NULL);
