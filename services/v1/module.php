@@ -29,6 +29,7 @@ abstract class Module
     	const kLOG_RECEIVE_WEBHOOK = 'RECEIVE_WEBHOOK';
     	const kLOG_COMPLETE_QUEST = 'COMPLETE_QUEST';
     	const kLOG_GET_NOTE = 'GET_NOTE';
+    	const kLOG_TAG_NOTE = 'TAG_NOTE';
     	const kLOG_GIVE_NOTE_LIKE = 'GIVE_NOTE_LIKE';
     	const kLOG_GET_NOTE_LIKE = 'GET_NOTE_LIKE';
     	const kLOG_GIVE_NOTE_COMMENT = 'GIVE_NOTE_COMMENT';
@@ -48,6 +49,7 @@ abstract class Module
     	const kREQ_PLAYER_HAS_COMPLETED_QUEST = 'PLAYER_HAS_COMPLETED_QUEST';
     	const kREQ_PLAYER_HAS_RECEIVED_INCOMING_WEBHOOK = 'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK';
     	const kREQ_PLAYER_HAS_NOTE = 'PLAYER_HAS_NOTE';
+    	const kREQ_PLAYER_HAS_NOTE_WITH_TAG = 'PLAYER_HAS_NOTE_WITH_TAG';
     	const kREQ_PLAYER_HAS_NOTE_WITH_LIKES = 'PLAYER_HAS_NOTE_WITH_LIKES';
     	const kREQ_PLAYER_HAS_NOTE_WITH_COMMENTS = 'PLAYER_HAS_NOTE_WITH_COMMENTS';
     	const kREQ_PLAYER_HAS_GIVEN_NOTE_COMMENTS = 'PLAYER_HAS_GIVEN_NOTE_COMMENTS';
@@ -69,7 +71,6 @@ abstract class Module
 	const kPLAYER_CREATED_ITEM_AUDIO_ICON_NUM = 34;
 	const kPLAYER_CREATED_ITEM_VIDEO_ICON_NUM = 35;
 	const kPLAYER_CREATED_ITEM_DEFAULT_PARENT_FOLDER_ID = '-1';
-	
 	
 	public function Module()
 	{
@@ -470,7 +471,29 @@ abstract class Module
 		if (mysql_num_rows($result) >= $qty) return true;
 		return false;
 	}
+	
+	protected function playerHasNoteWithTag($intGameID, $intPlayerID, $tag, $qty)
+	{
+		NetDebug::trace("AH");
+    		$prefix = Module::getPrefix($intGameID);
+		if (!$prefix) return FALSE;
 
+		$query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerID}' AND parent_note_id = 0";
+		NetDebug::trace($query);
+		$result = @mysql_query($query);
+		NetDebug::trace(mysql_num_rows($result));
+		$num = 0;
+		while($noteobj = mysql_fetch_object($result))
+		{
+			$query = "SELECT * FROM note_tags WHERE note_id='{$noteobj->note_id}' AND tag_id='{$tag}'";
+			$result2 = mysql_query($query);
+			if(mysql_num_rows($result2)>0) $num++;
+		}
+		if(($qty == "" && $num > 0) || $num > $qty)
+			return true;
+		else
+			return false;
+	}
 	protected function playerHasNoteWithComments($intGameID, $intPlayerID, $qty)
 	{
     		$prefix = Module::getPrefix($intGameID);
@@ -603,6 +626,9 @@ abstract class Module
 					break;
                 		case Module::kREQ_PLAYER_HAS_NOTE:
 					$requirementMet = Module::playerHasNote($strPrefix, $intPlayerID, $requirement['requirement_detail_2']);
+					break;
+                		case Module::kREQ_PLAYER_HAS_NOTE_WITH_TAG:
+					$requirementMet = Module::playerHasNoteWithTag($strPrefix, $intPlayerID, $requirement['requirement_detail_1'], $requirement['requirement_detail_2']);
 					break;
                 		case Module::kREQ_PLAYER_HAS_NOTE_WITH_LIKES:
 					$requirementMet = Module::playerHasNoteWithLikes($strPrefix, $intPlayerID, $requirement['requirement_detail_2']);
@@ -835,6 +861,23 @@ abstract class Module
                         		if($qty >= $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
                             			Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
                         		}
+                		}
+                		// END weird special note count calculations
+
+				//PHIL_REQ_CODE: Weird special calculations in case that event type is dealing with note count with tag
+                		else if($strEventType == Module::kLOG_TAG_NOTE && $unfinishedBusiness->unfinishedORRequirements[$x]['event'] == Module::kLOG_TAG_NOTE){
+					$query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerID}' AND parent_note_id = 0";
+					$result = @mysql_query($query);
+					$num = 0;
+					while($noteobj = mysql_fetch_object($result))
+					{
+						$query = "SELECT * FROM note_tags WHERE note_id='{$noteobj->note_id}' AND tag_id='{$tag}'";
+						$result2 = mysql_query($query);
+						if(mysql_num_rows($result2)>0) $num++;
+					}
+					$qty = $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2'];
+					if(($qty == "" && $num > 0) || $num > $qty)
+                            			Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
                 		}
                 		// END weird special note count calculations
 
@@ -1241,6 +1284,10 @@ abstract class Module
                 		case Module::kREQ_PLAYER_HAS_NOTE:
 					$requirementMet = Module::playerHasNote($strPrefix, $intPlayerID, $requirement['requirement_detail_2']);
                     			$requirement['event'] = Module::kLOG_GET_NOTE;
+					break;
+                		case Module::kREQ_PLAYER_HAS_NOTE_WITH_TAG:
+					$requirementMet = Module::playerHasNoteWithTag($strPrefix, $intPlayerID, $requirement['requirement_detail_1'], $requirement['requirement_detail_2']);
+                    			$requirement['event'] = Module::kLOG_TAG_NOTE;
 					break;
                 		case Module::kREQ_PLAYER_HAS_NOTE_WITH_LIKES:
 					$requirementMet = Module::playerHasNoteWithLikes($strPrefix, $intPlayerID, $requirement['requirement_detail_2']);

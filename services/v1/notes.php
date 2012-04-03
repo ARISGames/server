@@ -240,6 +240,16 @@ class Notes extends Module
 	return $tags;
     }
 
+	function getGameTag($tagId)
+	{
+		$query = "SELECT * FROM game_tags WHERE tag_id = '{$tagId}'";
+		$result = mysql_query($query);
+		if($tag = mysql_fetch_object($result))
+			return new returnData(0,$tag);
+		else
+			return new returnData(1,NULL,"Tag Not Found");
+    	}
+
     function getNoteLikes($noteId)
     {
 	$query = "SELECT COUNT(*) as numLikes FROM note_likes WHERE note_id = '{$noteId}'";
@@ -358,7 +368,7 @@ class Notes extends Module
 		//Check if tag exists for game
 		$query = "SELECT tag_id FROM game_tags WHERE game_id = '{$gameId}' AND tag = '{$tag}' LIMIT 1";
 		$result = mysql_query($query);
-		$id = mysql_fetch_object($result);	
+		$id = mysql_fetch_object($result);
 
 		//If not
 		if(!$id->tag_id)
@@ -372,7 +382,7 @@ class Notes extends Module
 				return new returnData(1, NULL, "Player Generated Tags Not Allowed In This Game");	
 
 			//Create tag for game
-			$query = "INSERT INTO game_tags (tag, game_id, player_created) VALUES ('{$tag}, '{$gameId}', 1)";
+			$query = "INSERT INTO game_tags (tag, game_id, player_created) VALUES ('{$tag}', '{$gameId}', 1)";
 			mysql_query($query);
 			$id->tag_id = mysql_insert_id();
 		}
@@ -382,7 +392,7 @@ class Notes extends Module
 		$query = "INSERT INTO note_tags (note_id, tag_id) VALUES ('{$noteId}', '{$id->tag_id}')";
 		mysql_query($query);
 		
-		return new returnData(0);
+		return new returnData(0, $id->tag_id);
 	}
 
 	function deleteTagFromNote($noteId, $tagId)

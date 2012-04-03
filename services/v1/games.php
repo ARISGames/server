@@ -392,7 +392,7 @@ class Games extends Module
 			requirement_id int(11) NOT NULL auto_increment,
 			content_type enum('Node','QuestDisplay','QuestComplete','Location','OutgoingWebHook') NOT NULL,
 			content_id int(10) unsigned NOT NULL,
-			requirement ENUM('PLAYER_HAS_ITEM','PLAYER_VIEWED_ITEM','PLAYER_VIEWED_NODE','PLAYER_VIEWED_NPC','PLAYER_VIEWED_WEBPAGE','PLAYER_VIEWED_AUGBUBBLE','PLAYER_HAS_UPLOADED_MEDIA_ITEM', 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE','PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO','PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO','PLAYER_HAS_COMPLETED_QUEST','PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK', 'PLAYER_HAS_NOTE', 'PLAYER_HAS_NOTE_WITH_LIKES', 'PLAYER_HAS_NOTE_WITH_COMMENTS', 'PLAYER_HAS_GIVEN_NOTE_COMMENTS') NOT NULL,
+			requirement ENUM('PLAYER_HAS_ITEM','PLAYER_VIEWED_ITEM','PLAYER_VIEWED_NODE','PLAYER_VIEWED_NPC','PLAYER_VIEWED_WEBPAGE','PLAYER_VIEWED_AUGBUBBLE','PLAYER_HAS_UPLOADED_MEDIA_ITEM', 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE','PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO','PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO','PLAYER_HAS_COMPLETED_QUEST','PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK', 'PLAYER_HAS_NOTE', 'PLAYER_HAS_NOTE_WITH_TAG', 'PLAYER_HAS_NOTE_WITH_LIKES', 'PLAYER_HAS_NOTE_WITH_COMMENTS', 'PLAYER_HAS_GIVEN_NOTE_COMMENTS') NOT NULL,
 			boolean_operator enum('AND','OR') NOT NULL DEFAULT 'AND',	
             not_operator ENUM(  'DO',  'NOT' ) NOT NULL DEFAULT 'DO',
             group_operator ENUM(  'SELF',  'GROUP' ) NOT NULL DEFAULT 'SELF',
@@ -703,19 +703,18 @@ class Games extends Module
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
-        
-        $query = "CREATE TABLE `game_comments` (
-                                      `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-                                      `game_id` int(10) unsigned NOT NULL,
-                                      `player_id` int(10) unsigned NOT NULL,
-                                      `time_stamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                                      `rating` int(3) unsigned NOT NULL,
-                                      `comment` tinyint(4) NOT NULL,
-                                      PRIMARY KEY (`id`),
-                                      KEY `game_id` (`game_id`),
-                                      KEY `player_id` (`player_id`),
-                                      KEY `time_stamp` (`time_stamp`)
-                                      ) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
+        	$query = "CREATE TABLE `game_comments` (
+                	`id` int(10) unsigned NOT NULL AUTO_INCREMENT,
+                	`game_id` int(10) unsigned NOT NULL,
+                	`player_id` int(10) unsigned NOT NULL,
+                	`time_stamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                	`rating` int(3) unsigned NOT NULL,
+                	`comment` tinyint(4) NOT NULL,
+                	PRIMARY KEY (`id`),
+                	KEY `game_id` (`game_id`),
+                	KEY `player_id` (`player_id`),
+                	KEY `time_stamp` (`time_stamp`)
+                	) ENGINE=InnoDB DEFAULT CHARSET=utf8 AUTO_INCREMENT=1 ;";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
@@ -1169,7 +1168,7 @@ class Games extends Module
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
-/*
+	/*
         //Mass conversion of requirement tables- this need only be done once, and is purty expensive, so should be commented out after done the first time
         $query = "UPDATE {$prefix}_requirements SET not_operator = 'NOT', requirement = 'PLAYER_HAS_ITEM' WHERE requirement = 'PLAYER_DOES_NOT_HAVE_ITEM'";
         mysql_query($query);
@@ -1218,7 +1217,7 @@ class Games extends Module
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
 
-		$query = "ALTER TABLE {$prefix}_requirements CHANGE requirement requirement enum('PLAYER_HAS_ITEM','PLAYER_VIEWED_ITEM','PLAYER_VIEWED_NODE','PLAYER_VIEWED_NPC','PLAYER_VIEWED_WEBPAGE','PLAYER_VIEWED_AUGBUBBLE','PLAYER_HAS_UPLOADED_MEDIA_ITEM','PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE','PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO','PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO','PLAYER_HAS_COMPLETED_QUEST','PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK','PLAYER_HAS_NOTE','PLAYER_HAS_NOTE_WITH_LIKES','PLAYER_HAS_NOTE_WITH_COMMENTS','PLAYER_HAS_GIVEN_NOTE_COMMENTS');";
+		$query = "ALTER TABLE {$prefix}_requirements CHANGE requirement requirement enum('PLAYER_HAS_ITEM','PLAYER_VIEWED_ITEM','PLAYER_VIEWED_NODE','PLAYER_VIEWED_NPC','PLAYER_VIEWED_WEBPAGE','PLAYER_VIEWED_AUGBUBBLE','PLAYER_HAS_UPLOADED_MEDIA_ITEM','PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE','PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO','PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO','PLAYER_HAS_COMPLETED_QUEST','PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK','PLAYER_HAS_NOTE','PLAYER_HAS_NOTE_WITH_TAG','PLAYER_HAS_NOTE_WITH_LIKES','PLAYER_HAS_NOTE_WITH_COMMENTS','PLAYER_HAS_GIVEN_NOTE_COMMENTS');";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
  
