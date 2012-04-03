@@ -26,7 +26,7 @@
 			document.getElementById('private_messages').innerHTML = document.getElementById('private_messages').innerHTML + "<br />\nMessage Received (private- client): "+data;
 		});
 
-		var arduino_test_channel = pusher.subscribe('arduino_test_channel');
+		var arduino_channel = pusher.subscribe('<?php echo $arduino_channel; ?>');
 		arduino_test_channel.bind('arduino_event_register', function(data) {
 			document.getElementById('arduino_messages').innerHTML = document.getElementById('arduino_messages').innerHTML + "<br />\nMessage Received (arduino_event_register): "+data;
 		});
@@ -106,7 +106,7 @@
 		<td valign="top">
 
 			<input type="text" id="arduino_sendtext"></input>
-			<input type="button" value="Send" onClick="message('arduino_test');"></input>
+			<input type="button" value="Send" onClick="message('arduino');"></input>
 			<div id="arduino_messages">
 			Waiting...
 			</div>

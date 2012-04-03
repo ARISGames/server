@@ -19,7 +19,12 @@ $private_auth = 'private_auth.php';
 $public_channel = 'public-pusher_room_channel';
 $public_event = 'public-pusher_room_event';
 $public_data = '';
+
 $private_channel = 'private-pusher_room_channel';
 $private_event = 'private-pusher_room_event';
 $private_data = '';
+
+$arduino_channel = 'arduino-pusher_room_channel';
+$arduino_event = 'arduino-pusher_room_event';
+$adruino_data = '';
 ?>

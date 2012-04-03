@@ -35,7 +35,7 @@
 		var pusher = new Pusher('<?php echo $key; ?>');
 		Pusher.channel_auth_endpoint = '<?php echo $private_auth; ?>';
 
-		var arduino_test_channel = pusher.subscribe('arduino_test_channel');
+		var arduino_test_channel = pusher.subscribe('<?php echo $arduino_channel;?>');
 		arduino_test_channel.bind('arduino_event_register', function(data) { document.getElementById('season').innerHTML = "Connected!"; });
 		arduino_test_channel.bind('arduino_event_1', function(data){ arduinoEvent(1); });
 		arduino_test_channel.bind('arduino_event_2', function(data){ arduinoEvent(2); });
