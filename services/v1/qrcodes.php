@@ -234,7 +234,7 @@ class QRCodes extends Module
      */
 	public function getQRCodeNearbyObjectForPlayer($intGameID, $strCode, $intPlayerID)
 	{
-		
+	$strCode = urldecode($strCode);	
 		$prefix = $this->getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 		
