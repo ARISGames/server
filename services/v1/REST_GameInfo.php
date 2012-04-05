@@ -33,7 +33,7 @@ while ($gameObject = mysql_fetch_object($gamesRs)) {
 	$logCount = $obj->count;
 	if ($_REQUEST['minLogCount'] > $logCount) continue;
 
-	
+
 	//Calc the player log count
 	$q = "SELECT COUNT(DISTINCT player_id) AS count FROM player_log WHERE game_id = {$gameId}";
 	$rs = mysql_query($q);
@@ -52,7 +52,7 @@ while ($gameObject = mysql_fetch_object($gamesRs)) {
 	$rs = mysql_query($q);
 	$obj = mysql_fetch_object($rs);
 	$itemCount = $obj->count;		
-	
+
 	//Calc the npc count
 	$q = "SELECT COUNT(DISTINCT npc_id) AS count FROM {$gameId}_npcs";
 	$rs = mysql_query($q);
@@ -64,10 +64,10 @@ while ($gameObject = mysql_fetch_object($gamesRs)) {
 	$rs = mysql_query($q);
 	$obj = mysql_fetch_object($rs);
 	$locationCount = $obj->count;
-	
+
 	$totalObjectCount = $nodeCount + $itemCount + $npcCount + $locationCount;
 	if ($_REQUEST['minObjectCount'] > $totalObjectCount) continue;
-	
+
 	//Calc the first Location
 	$q = "SELECT latitude, longitude FROM {$gameId}_locations LIMIT 1";
 	$rs = mysql_query($q);
@@ -76,10 +76,10 @@ while ($gameObject = mysql_fetch_object($gamesRs)) {
 	$longitude = $obj->longitude;
 
 	$kml[] = ' <Placemark id="placemark' . $gameId . '">';
-  	$kml[] = ' <name><![CDATA[' . $gameName . ']]></name>';
-  	$description = array("<![CDATA[");
-  	$description[] = '<p><strong>Description:</strong>' . $gameDescription . '</p>';
-  	$description[] = '<p><strong>Player Count:</strong>' . $playerCount . '</p>';
+	$kml[] = ' <name><![CDATA[' . $gameName . ']]></name>';
+	$description = array("<![CDATA[");
+	$description[] = '<p><strong>Description:</strong>' . $gameDescription . '</p>';
+	$description[] = '<p><strong>Player Count:</strong>' . $playerCount . '</p>';
 	$description[] = '<p><strong>PLog Count:</strong>' . $logCount . '</p>';
 	$description[] = '<p><strong>Node Count:</strong>' . $nodeCount . '</p>';
 	$description[] = '<p><strong>Item Count:</strong>' . $itemCount . '</p>';
@@ -87,14 +87,14 @@ while ($gameObject = mysql_fetch_object($gamesRs)) {
 	$description[] = '<p><strong>Location Count:</strong>' . $locationCount . '</p>';
 	$description[] = '<p><strong>Total Object Count:</strong>' . $totalObjectCount . '</p>';
 
-  	$description[] = "]]>";
-  	$descriptionHtml = join("\n", $description);
+	$description[] = "]]>";
+	$descriptionHtml = join("\n", $description);
 	$kml[] = ' <description>' . $descriptionHtml . '</description>';
-  	$kml[] = ' <Point>';
-  	$kml[] = ' <coordinates>' . $longitude . ','  . $latitude . '</coordinates>';
-  	$kml[] = ' </Point>';
-  	$kml[] = ' </Placemark>';
-	
+	$kml[] = ' <Point>';
+	$kml[] = ' <coordinates>' . $longitude . ','  . $latitude . '</coordinates>';
+	$kml[] = ' </Point>';
+	$kml[] = ' </Placemark>';
+
 	if ($locationCount > 0) {
 		$xml[] = '<game>';
 		$xml[] = '	<id>' . $gameId . '</id>';
@@ -108,10 +108,10 @@ while ($gameObject = mysql_fetch_object($gamesRs)) {
 		$xml[] = '	<totalCount>' . $totalObjectCount . '</totalCount>';
 		$xml[] = '</game>';
 	}
-	
+
 	$csv[] = 	'"' . $gameId . '","' . $gameName  . '","' . $playerCount . '","' .  
-				$logCount . '","' .  $nodeCount . '","' .  $itemCount . '","' .  
-				$npcCount . '","' .  $locationCount . '","' . $totalObjectCount . '","' .  $latitude . '","' .  $longitude . '"';
+		$logCount . '","' .  $nodeCount . '","' .  $itemCount . '","' .  
+		$npcCount . '","' .  $locationCount . '","' . $totalObjectCount . '","' .  $latitude . '","' .  $longitude . '"';
 }
 
 switch ($_REQUEST['type']) {
@@ -133,7 +133,7 @@ switch ($_REQUEST['type']) {
 		header('Content-Disposition: attachment; filename="ARISGames.xml"');
 		echo $xmlOutput;
 		break;
-	
+
 	case 'csv':
 		//Construct CSV
 		$csvOutput = join("\n", $csv);
@@ -141,7 +141,7 @@ switch ($_REQUEST['type']) {
 		header('Content-Disposition: attachment; filename="ARISGames.csv"');
 		echo $csvOutput;
 		break;
-		
+
 	default:
 		echo 'Please add a "type" GET variable of "kml","xml" or "csv"';
 }
