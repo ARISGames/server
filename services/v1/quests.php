@@ -44,17 +44,18 @@ class Quests extends Module
 		$activeQuests = array();
 		$completedQuests = array();
 		
+		NetDebug::trace("PHIL- START");
 		//Walk the rs add each quest to the correct array
 		while ($quest = mysql_fetch_object($rsResult)) {
 			
 			$display = $this->objectMeetsRequirements ($prefix, 
-												$intPlayerID, 
-												"QuestDisplay", 
-												$quest->quest_id);
+									$intPlayerID, 
+									"QuestDisplay", 
+									$quest->quest_id);
 			$complete = $this->objectMeetsRequirements ($prefix, 
-												$intPlayerID, 
-												"QuestComplete", 
-												$quest->quest_id);	
+									$intPlayerID, 
+									"QuestComplete", 
+									$quest->quest_id);	
 												
 			//NetDebug::trace("Quest " . $quest->quest_id . ": display = $display complete = $complete");									
 			

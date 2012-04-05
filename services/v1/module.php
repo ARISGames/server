@@ -567,7 +567,7 @@ abstract class Module
 			//Check the requirement
 			
 			$requirementMet = FALSE;
-			NetDebug::trace("Checking ".$requirement['requirement']);
+			//NetDebug::trace("Checking ".$requirement['requirement']);
 			switch ($requirement['requirement']) {
 				//Log related
 				case Module::kREQ_PLAYER_VIEWED_ITEM:
@@ -771,11 +771,11 @@ abstract class Module
 		
 		@mysql_query($query);
 		
-		NetDebug::trace($query);
+		//NetDebug::trace($query);
         
 		
 		if (mysql_error()) {
-			NetDebug::trace(mysql_error());
+			//NetDebug::trace(mysql_error());
 			return false;
 		}
 		

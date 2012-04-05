@@ -29,7 +29,15 @@ class Notes extends Module
 	$title = addslashes($title);
         $query = "UPDATE notes SET title = '{$title}', public_to_map = '{$publicToMap}', public_to_notebook = '{$publicToNotebook}', sort_index='{$sortIndex}' WHERE note_id = '{$noteId}'";
         @mysql_query($query);
-		if (mysql_error()) return new returnData(1, NULL, mysql_error());
+	if (mysql_error()) return new returnData(1, NULL, mysql_error());
+
+	$query = "SELECT * FROM notes WHERE note_id = '{$noteId}'";
+	$result = mysql_query($query);
+	$noteobj = mysql_fetch_object($result);
+
+        $query = "UPDATE ".$noteobj->game_id."_locations SET name = '{$title}' WHERE type='PlayerNote' AND type_id = '{$noteId}'";
+        @mysql_query($query);
+	if (mysql_error()) return new returnData(1, NULL, mysql_error());
         
         return new returnData(0);
     }
@@ -260,20 +268,6 @@ class Notes extends Module
 
     function playerLiked($playerId, $noteId)
     {
-        $query = "SELECT owner_id, game_id FROM notes WHERE note_id = '{$noteId}'";
-        $result = @mysql_query($query);
-        if (mysql_error()) return new returnData(1, NULL, mysql_error());
-	$questownerobj = mysql_fetch_object($result);
-	$questowner = $questownerobj->owner_id;
-	$gameId = $questownerobj->game_id;
-
-	//PHIL_REQ_CODE
-	//Another chance to complete a quest, or send a webhook... FOR SOMEONE ELSE. THE HUMANITY.
-        $qObs = Module::appendCompletedQuestsIfReady($questowner, $gameId, Module::kLOG_GET_NOTE_LIKE);
-        $wObs = Module::fireOffWebHooksIfReady($questowner, $gameId, Module::kLOG_GET_NOTE_LIKE);
-	//PHIL_REQ_CODE
-	//Another chance to complete a quest, or send a webhook... this time at least for yourself.
-	Module::appendLog($playerId, $gameId, Module::kLOG_GIVE_NOTE_LIKE, $noteId, null);
 
 	$query = "SELECT COUNT(*) as liked FROM note_likes WHERE player_id = '{$playerId}' AND note_id = '{$noteId}' LIMIT 1";
 	$result = mysql_query($query);
@@ -456,8 +450,24 @@ class Notes extends Module
     
 	function likeNote($playerId, $noteId)
 	{
+        	$query = "SELECT owner_id, game_id FROM notes WHERE note_id = '{$noteId}'";
+        	$result = @mysql_query($query);
+        	if (mysql_error()) return new returnData(1, NULL, mysql_error());
+		$questownerobj = mysql_fetch_object($result);
+		$questowner = $questownerobj->owner_id;
+		$gameId = $questownerobj->game_id;
+
+		//PHIL_REQ_CODE
+		//Another chance to complete a quest, or send a webhook... FOR SOMEONE ELSE. THE HUMANITY.
+        	$qObs = Module::appendCompletedQuestsIfReady($questowner, $gameId, Module::kLOG_GET_NOTE_LIKE);
+        	$wObs = Module::fireOffWebHooksIfReady($questowner, $gameId, Module::kLOG_GET_NOTE_LIKE);
+		//PHIL_REQ_CODE
+		//Another chance to complete a quest, or send a webhook... this time at least for yourself.
+		Module::appendLog($playerId, $gameId, Module::kLOG_GIVE_NOTE_LIKE, $noteId, null);
+
 		$query = "INSERT INTO note_likes (player_id, note_id) VALUES ('{$playerId}', '{$noteId}')";
 		mysql_query($query);
+
 		return new returnData(0);
 	}
 
