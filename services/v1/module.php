@@ -434,9 +434,10 @@ abstract class Module
 	 * @return boolean
 	 */
 
-	//Spelled 'distAnce' wrong in function name and variable name... afraid to change it... the repurcussions could be ASTRONOMICAL.
+	//Spelled 'distAnce' wrong in function name and variable name... afraid to change it... the repercussions could be ASTRONOMICAL.
 	protected function playerHasUploadedMediaItemWithinDistence($intGameID, $intPlayerID, $dblLatitude, $dblLongitude, $dblDistenceInMeters, $qty, $mediaType) 
 	{
+		NetDebug::trace("playerHasUploadedMediaItemWithinDistence(gid:$intGameID, pid:$intPlayerID, lat:$dblLatitude, lon:$dblLongitude, dist:$dblDistenceInMeters, qty:$qty, type:$mediaType)");
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return FALSE;
 
@@ -452,9 +453,25 @@ abstract class Module
 			(((acos(sin(({$dblLatitude}*pi()/180)) * sin((origin_latitude*pi()/180))+cos(({$dblLatitude}*pi()/180)) * 
 				cos((origin_latitude*pi()/180)) * 
 				cos((({$dblLongitude} - origin_longitude)*pi()/180))))*180/pi())*60*1.1515*1.609344*1000) < {$dblDistenceInMeters}";
-		NetDebug::trace($query);
+		//NetDebug::trace($query);
 		$rsResult = @mysql_query($query);
 		if (@mysql_num_rows($rsResult) >= $qty) return true;
+
+		NetDebug::trace("Still here...");
+		
+		if($mediaType == Module::kLOG_UPLOAD_MEDIA_ITEM)
+			$query = "SELECT * FROM note_content LEFT JOIN notes ON note_content.note_id = notes.note_id WHERE owner_id = '{$intPlayerID}'";
+		else if($mediaType == Module::kLOG_UPLOAD_MEDIA_ITEM_IMAGE)
+			$query = "SELECT * FROM note_content LEFT JOIN notes ON note_content.note_id = notes.note_id WHERE owner_id = '{$intPlayerID}' AND type='PHOTO'";
+		else if($mediaType == Module::kLOG_UPLOAD_MEDIA_ITEM_AUDIO)
+			$query = "SELECT * FROM note_content LEFT JOIN notes ON note_content.note_id = notes.note_id WHERE owner_id = '{$intPlayerID}' AND type='AUDIO'";
+		else if($mediaType == Module::kLOG_UPLOAD_MEDIA_ITEM_VIDEO)
+			$query = "SELECT * FROM note_content LEFT JOIN notes ON note_content.note_id = notes.note_id WHERE owner_id = '{$intPlayerID}' AND type='VIDEO'";
+		else
+			NetDebug::trace("error...");
+		$result = mysql_query($query);
+		NetDebug::trace(mysql_num_rows($result)." -  ".$qty);
+		if (@mysql_num_rows($result) >= $qty) return true;
 		else return false;
 	}	    
 
@@ -726,6 +743,7 @@ abstract class Module
 	 */
 	protected function appendLog($intPlayerID, $intGameID, $strEventType, $strEventDetail1=null, $strEventDetail2=null)
 	{
+		NetDebug::trace("appendLog(pid:$intPlayerID, gid:$intGameID, etype:$strEventType, eDet:$strEventDetail1=null, eDet2:$strEventDetail2=null)");
 		/*
 		   READ THIS TO UNDERSTAND HOW THIS RIDICULOUS CODE WORKS
 		   ------------------------------------------------------
@@ -803,6 +821,8 @@ abstract class Module
 	// *** ^^^ LIES! Now there is also logic in notes.php! THIS IS GETTING OUT OF HAND!!
 	protected function appendCompletedQuestsIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1 = null, $strEventDetail2 = null)
 	{
+
+		NetDebug::trace("appendCompletedQuestsIfReady(pid:$intPlayerId, gid:$intGameID, eType:$strEventType, eDet:$strEventDetail1 = null, eDet2:$strEventDetail2 = null)");
 		if($strEventDetail1 == null) $strEventDetail1 = "N/A";
 		if($strEventDetail2 == null) $strEventDetail2 = "N/A";
 
@@ -822,6 +842,7 @@ abstract class Module
 	// Takes as input an event AND a quest ID. Checks if the current event completes THAT quest. If yes, returns a bunch of data
 	// about the quest called a 'Quest Object', and if not, returns "NO".
 	protected function appendCompletedQuestIfReady($intPlayerId, $intGameID, $strEventType, $strEventDetail1, $strEventDetail2, $intQid){
+		NetDebug::trace("appendCompletedQuestIfReady(pid:$intPlayerId, gid:$intGameID, eType:$strEventType, eDet:$strEventDetail1, eDet:$strEventDetail2, qid:$quest->quest_id);");
 
 		//PHIL_REQ_CODE:
 		// $unfinishedBusiness contains two parts-
@@ -830,6 +851,7 @@ abstract class Module
 		$unfinishedBusiness = Module::getOutstandingRequirements($intGameID, $intPlayerId, 'QuestComplete', $intQid);
 
 		for($x = 0; $x < count($unfinishedBusiness->unfinishedORRequirements); $x++){
+			NetDebug::trace("Unfinished OR requirement $x");
 			if($strEventDetail1 == $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_1']){
 
 				//PHIL_REQ_CODE: Weird special calculations in case that event type is dealing with inventory
@@ -842,12 +864,26 @@ abstract class Module
 					}
 					if($strEventDetail2 >= 0){
 						if($newQty >= $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
+							//PHIL_REQ_CODE: this DOES append the quest, because it is called from something that was not derived from appending a log
 							Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+							$qOb = new stdClass();
+							$qOb->append = true;
+							$qOb->id = $intQid;
+							$qOb->pid = $intPlayerId;
+							$qOb->gid = $intGameID;
+							return $qOb;
 						}
 					}
 					else {
 						if($newQty < $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
+							//PHIL_REQ_CODE: this DOES append the quest, because it is called from something that was not derived from appending a log
 							Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+							$qOb = new stdClass();
+							$qOb->append = true;
+							$qOb->id = $intQid;
+							$qOb->pid = $intPlayerId;
+							$qOb->gid = $intGameID;
+							return $qOb;
 						}
 					}
 				}
@@ -859,7 +895,14 @@ abstract class Module
 					$result = mysql_query($query);
 					$qty = mysql_num_rows($result);
 					if($qty >= $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
+						//PHIL_REQ_CODE: this DOES append the quest, because it is called from something that was not derived from appending a log
 						Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+						$qOb = new stdClass();
+						$qOb->append = true;
+						$qOb->id = $intQid;
+						$qOb->pid = $intPlayerId;
+						$qOb->gid = $intGameID;
+						return $qOb;
 					}
 				}
 				// END weird special note count calculations
@@ -877,7 +920,16 @@ abstract class Module
 					}
 					$qty = $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2'];
 					if(($qty == "" && $num > 0) || $num > $qty)
+					{
+						//PHIL_REQ_CODE: this DOES append the quest, because it is called from something that was not derived from appending a log
 						Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+						$qOb = new stdClass();
+						$qOb->append = true;
+						$qOb->id = $intQid;
+						$qOb->pid = $intPlayerId;
+						$qOb->gid = $intGameID;
+						return $qOb;
+					}
 				}
 				// END weird special note count calculations
 
@@ -891,8 +943,14 @@ abstract class Module
 						$res= mysql_query($query);
 						$qty = mysql_num_rows($res);
 						if($qty >= $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
+							//PHIL_REQ_CODE: this DOES append the quest, because it is called from something that was not derived from appending a log
 							Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
-							return;
+							$qOb = new stdClass();
+							$qOb->append = true;
+							$qOb->id = $intQid;
+							$qOb->pid = $intPlayerId;
+							$qOb->gid = $intGameID;
+							return $qOb;
 						}
 					}
 				}
@@ -904,7 +962,14 @@ abstract class Module
 					$result = mysql_query($query);
 					$qty = mysql_num_rows($result);
 					if($qty >= $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
+						//PHIL_REQ_CODE: this DOES append the quest, because it is called from something that was not derived from appending a log
 						Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+						$qOb = new stdClass();
+						$qOb->append = true;
+						$qOb->id = $intQid;
+						$qOb->pid = $intPlayerId;
+						$qOb->gid = $intGameID;
+						return $qOb;
 					}
 				}
 				// END weird special note comment count calculations
@@ -919,8 +984,14 @@ abstract class Module
 						$res= mysql_query($query);
 						$qty = mysql_num_rows($res);
 						if($qty >= $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
+							//PHIL_REQ_CODE: this DOES append the quest, because it is called from something that was not derived from appending a log
 							Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
-							return;
+							$qOb = new stdClass();
+							$qOb->append = true;
+							$qOb->id = $intQid;
+							$qOb->pid = $intPlayerId;
+							$qOb->gid = $intGameID;
+							return $qOb;
 						}
 					}
 				}
@@ -933,8 +1004,6 @@ abstract class Module
 				// END weird special note comment count calculations
 
 				else{
-					NetDebug::trace("WOAH WOAH WOAH ".$strEventType.", ".$unfinishedBusiness->unfinishedORRequirements[$x]['event']);
-					NetDebug::trace("WOAH WOAH WOAH ".$strEventDetail2.", ".$unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']);
 					if($strEventType == $unfinishedBusiness->unfinishedORRequirements[$x]['event']){
 						if($strEventDetail2 == $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
 							//PHIL_REQ_CODE: 
@@ -955,10 +1024,31 @@ abstract class Module
 					}
 				}
 			}
+			//PHIL_REQ_CODE: This is unique in that the appendation of the log includes an id that need not be reflected in the requirement
+			else if($strEventType == Module::kLOG_UPLOAD_MEDIA_ITEM || 
+				$strEventType == Module::kLOG_UPLOAD_MEDIA_ITEM_IMAGE ||
+				$strEventType == Module::kLOG_UPLOAD_MEDIA_ITEM_AUDIO ||
+				$strEventType == Module::kLOG_UPLOAD_MEDIA_ITEM_VIDEO)
+			{
+				if($strEventType == $unfinishedBusiness->unfinishedORRequirements[$x]['event']){
+					$qty = $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2'];
+					if(Module::playerHasUploadedMediaItemWithinDistence($intGameID, $intPlayerID, 0,0, 100000000, $qty, $strEventType))
+					{
+						Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+						$qOb = new stdClass();
+						$qOb->append = true;
+						$qOb->id = $intQid;
+						$qOb->pid = $intPlayerId;
+						$qOb->gid = $intGameID;
+						return $qOb;
+					}
+				}
+			}
 		}
 
 		//PHIL_REQ_CODE: Above 'loop' comments also apply to this 'if'. Only difference is that any one of those will denote the quest completed, while this NEEDS to be the only one.
 		if(count($unfinishedBusiness->unfinishedANDRequirements) == 1){            
+			NetDebug::trace("Unfinished AND requirement $x");
 			if($strEventDetail1 == $unfinishedBusiness->unfinishedANDRequirements[0]['requirement_detail_1']){
 
 				//Weird special calculations in case that event type is dealing with inventory
@@ -975,12 +1065,24 @@ abstract class Module
 					}
 					if($strEventDetail2 >= 0){
 						if($newQty >= $unfinishedBusiness->unfinishedANDRequirements[0]['requirement_detail_2']){
-							Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+							//Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+							$qOb = new stdClass();
+							$qOb->append = true;
+							$qOb->id = $intQid;
+							$qOb->pid = $intPlayerId;
+							$qOb->gid = $intGameID;
+							return $qOb;
 						}
 					}
 					else {
 						if($newQty < $unfinishedBusiness->unfinishedANDRequirements[0]['requirement_detail_2']){
-							Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+							//Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+							$qOb = new stdClass();
+							$qOb->append = true;
+							$qOb->id = $intQid;
+							$qOb->pid = $intPlayerId;
+							$qOb->gid = $intGameID;
+							return $qOb;
 						}
 					}
 				}
@@ -994,7 +1096,13 @@ abstract class Module
 						$newQty += $strEventDetail2;
 					}
 					if($newQty >= $unfinishedBusiness->unfinishedANDRequirements[$x]['requirement_detail_2']){
-						Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+						//Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+						$qOb = new stdClass();
+						$qOb->append = true;
+						$qOb->id = $intQid;
+						$qOb->pid = $intPlayerId;
+						$qOb->gid = $intGameID;
+						return $qOb;
 					}
 				}
 				// END weird special note count calculations
@@ -1010,10 +1118,60 @@ abstract class Module
 						if($comQty = mysql_num_rows($res))
 							$comQty += $strEventDetail2;
 						if($comQty >= $unfinishedBusiness->unfinishedANDRequirements[$x]['requirement_detail_2']){
-							Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
-							return;
+							//Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+							$qOb = new stdClass();
+							$qOb->append = true;
+							$qOb->id = $intQid;
+							$qOb->pid = $intPlayerId;
+							$qOb->gid = $intGameID;
+							return $qOb;
 						}
 					}
+				}
+				// END weird special note comment count calculations
+
+				//PHIL_REQ_CODE: Weird special calculations in case that event type is dealing with note comment given count
+				else if($strEventType == Module::kLOG_GIVE_NOTE_COMMENT && $unfinishedBusiness->unfinishedANDRequirements[$x]['event'] == Module::kLOG_GIVE_NOTE_COMMENT){
+					$query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerId}' AND parent_note_id != 0";
+					$result = mysql_query($query);
+					$qty = mysql_num_rows($result);
+					if($qty >= $unfinishedBusiness->unfinishedANDRequirements[$x]['requirement_detail_2']){
+						//Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+						$qOb = new stdClass();
+						$qOb->append = true;
+						$qOb->id = $intQid;
+						$qOb->pid = $intPlayerId;
+						$qOb->gid = $intGameID;
+						return $qOb;
+					}
+				}
+				// END weird special note comment count calculations
+
+				//PHIL_REQ_CODE: Weird special calculations in case that event type is dealing with note like count
+				else if($strEventType == Module::kLOG_GET_NOTE_LIKE && $unfinishedBusiness->unfinishedANDRequirements[$x]['event'] == Module::kLOG_GET_NOTE_LIKE){
+					$query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerId}' AND parent_note_id = 0";
+					$result = mysql_query($query);
+					while($note = mysql_fetch_object($result))
+					{
+						$query = "SELECT note_id FROM note_likes WHERE note_id = '{$note->note_id}'";
+						$res= mysql_query($query);
+						$qty = mysql_num_rows($res);
+						if($qty >= $unfinishedBusiness->unfinishedANDRequirements[$x]['requirement_detail_2']){
+							//Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+							$qOb = new stdClass();
+							$qOb->append = true;
+							$qOb->id = $intQid;
+							$qOb->pid = $intPlayerId;
+							$qOb->gid = $intGameID;
+							return $qOb;
+						}
+					}
+				}
+				// END weird special note like count calculations
+
+				//PHIL_REQ_CODE: Weird special calculations in case that event type is dealing with note like given count
+				else if($strEventType == Module::kLOG_GIVE_NOTE_LIKE && $unfinishedBusiness->unfinishedANDRequirements[$x]['event'] == Module::kLOG_GIVE_NOTE_LIKE){
+					//Do nothing, as giving a like cannot currently complete any quests. (recieving can, but that's taken care of above)
 				}
 				// END weird special note comment count calculations
 
@@ -1028,6 +1186,29 @@ abstract class Module
 							$qOb->gid = $intGameID;
 							return $qOb;
 						}
+					}
+				}
+			}
+			//PHIL_REQ_CODE: This is unique in that the appendation of the log includes an id that need not be reflected in the requirement
+			else if($strEventType == Module::kLOG_UPLOAD_MEDIA_ITEM || 
+				$strEventType == Module::kLOG_UPLOAD_MEDIA_ITEM_IMAGE ||
+				$strEventType == Module::kLOG_UPLOAD_MEDIA_ITEM_AUDIO ||
+				$strEventType == Module::kLOG_UPLOAD_MEDIA_ITEM_VIDEO)
+			{
+				NetDebug::trace("Media Requirement $strEventType - ".$unfinishedBusiness->unfinishedANDRequirements[$x]['event']);
+				if($strEventType == $unfinishedBusiness->unfinishedANDRequirements[$x]['event']){
+					NetDebug::trace("Almost there");
+					$qty = $unfinishedBusiness->unfinishedANDRequirements[$x]['requirement_detail_2'];
+					if(Module::playerHasUploadedMediaItemWithinDistence($intGameID, $intPlayerID, 0,0, 100000000, $qty, $strEventType))
+					{
+						NetDebug::trace("Here");
+						Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+						$qOb = new stdClass();
+						$qOb->append = true;
+						$qOb->id = $intQid;
+						$qOb->pid = $intPlayerId;
+						$qOb->gid = $intGameID;
+						return $qOb;
 					}
 				}
 			}
@@ -1102,16 +1283,95 @@ abstract class Module
 					}
 					if($strEventDetail2 >= 0){
 						if($newQty >= $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
-							Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+							Module::fireOffWebHook($intWid, $intPlayerId, $intGameID);
 						}
 					}
 					else {
 						if($newQty < $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
-							Module::appendCompletedQuest($intQid, $intPlayerId, $intGameID);
+							Module::fireOffWebHook($intWid, $intPlayerId, $intGameID);
 						}
 					}
 				}
 				// END weird special inventory calculations
+
+				//PHIL_REQ_CODE: Weird special calculations in case that event type is dealing with note count
+				else if($strEventType == Module::kLOG_GET_NOTE && $unfinishedBusiness->unfinishedORRequirements[$x]['event'] == Module::kLOG_GET_NOTE){
+					$query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerId}' AND parent_note_id = 0";
+					$result = mysql_query($query);
+					$qty = mysql_num_rows($result);
+					if($qty >= $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
+						Module::fireOffWebHook($intWid, $intPlayerId, $intGameID);
+					}
+				}
+				// END weird special note count calculations
+
+				//PHIL_REQ_CODE: Weird special calculations in case that event type is dealing with note count with tag
+				else if($strEventType == Module::kLOG_TAG_NOTE && $unfinishedBusiness->unfinishedORRequirements[$x]['event'] == Module::kLOG_TAG_NOTE){
+					$query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerID}' AND parent_note_id = 0";
+					$result = @mysql_query($query);
+					$num = 0;
+					while($noteobj = mysql_fetch_object($result))
+					{
+						$query = "SELECT * FROM note_tags WHERE note_id='{$noteobj->note_id}' AND tag_id='{$tag}'";
+						$result2 = mysql_query($query);
+						if(mysql_num_rows($result2)>0) $num++;
+					}
+					$qty = $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2'];
+					if(($qty == "" && $num > 0) || $num > $qty)
+						Module::fireOffWebHook($intWid, $intPlayerId, $intGameID);
+				}
+				// END weird special note count calculations
+
+				//PHIL_REQ_CODE: Weird special calculations in case that event type is dealing with note comment count
+				else if($strEventType == Module::kLOG_GET_NOTE_COMMENT && $unfinishedBusiness->unfinishedORRequirements[$x]['event'] == Module::kLOG_GET_NOTE_COMMENT){
+					$query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerId}' AND parent_note_id = 0";
+					$result = mysql_query($query);
+					while($note = mysql_fetch_object($result))
+					{
+						$query = "SELECT note_id FROM notes WHERE parent_note_id = '{$note->note_id}'";
+						$res= mysql_query($query);
+						$qty = mysql_num_rows($res);
+						if($qty >= $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
+							Module::fireOffWebHook($intWid, $intPlayerId, $intGameID);
+							return;
+						}
+					}
+				}
+				// END weird special note comment count calculations
+
+				//PHIL_REQ_CODE: Weird special calculations in case that event type is dealing with note comment given count
+				else if($strEventType == Module::kLOG_GIVE_NOTE_COMMENT && $unfinishedBusiness->unfinishedORRequirements[$x]['event'] == Module::kLOG_GIVE_NOTE_COMMENT){
+					$query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerId}' AND parent_note_id != 0";
+					$result = mysql_query($query);
+					$qty = mysql_num_rows($result);
+					if($qty >= $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
+						Module::fireOffWebHook($intWid, $intPlayerId, $intGameID);
+					}
+				}
+				// END weird special note comment count calculations
+
+				//PHIL_REQ_CODE: Weird special calculations in case that event type is dealing with note like count
+				else if($strEventType == Module::kLOG_GET_NOTE_LIKE && $unfinishedBusiness->unfinishedORRequirements[$x]['event'] == Module::kLOG_GET_NOTE_LIKE){
+					$query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerId}' AND parent_note_id = 0";
+					$result = mysql_query($query);
+					while($note = mysql_fetch_object($result))
+					{
+						$query = "SELECT note_id FROM note_likes WHERE note_id = '{$note->note_id}'";
+						$res= mysql_query($query);
+						$qty = mysql_num_rows($res);
+						if($qty >= $unfinishedBusiness->unfinishedORRequirements[$x]['requirement_detail_2']){
+							Module::fireOffWebHook($intWid, $intPlayerId, $intGameID);
+							return;
+						}
+					}
+				}
+				// END weird special note like count calculations
+
+				//PHIL_REQ_CODE: Weird special calculations in case that event type is dealing with note like given count
+				else if($strEventType == Module::kLOG_GIVE_NOTE_LIKE && $unfinishedBusiness->unfinishedORRequirements[$x]['event'] == Module::kLOG_GIVE_NOTE_LIKE){
+					//Do nothing, as giving a like cannot currently complete any quests. (recieving can, but that's taken care of above)
+				}
+				// END weird special note comment count calculations
 
 				else{
 					if($strEventType == $unfinishedBusiness->unfinishedORRequirements[$x]['event']){
@@ -1153,6 +1413,85 @@ abstract class Module
 					}
 				}
 				// END weird special inventory calculations
+
+				//PHIL_REQ_CODE: Weird special calculations in case that event type is dealing with note count
+				else if($strEventType == Module::kLOG_GET_NOTE && $unfinishedBusiness->unfinishedANDRequirements[$x]['event'] == Module::kLOG_GET_NOTE){
+					$query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerId}' AND parent_note_id = 0";
+					$result = mysql_query($query);
+					$qty = mysql_num_rows($result);
+					if($qty >= $unfinishedBusiness->unfinishedANDRequirements[$x]['requirement_detail_2']){
+						Module::fireOffWebHook($intWid, $intPlayerId, $intGameID);
+					}
+				}
+				// END weird special note count calculations
+
+				//PHIL_REQ_CODE: Weird special calculations in case that event type is dealing with note count with tag
+				else if($strEventType == Module::kLOG_TAG_NOTE && $unfinishedBusiness->unfinishedANDRequirements[$x]['event'] == Module::kLOG_TAG_NOTE){
+					$query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerID}' AND parent_note_id = 0";
+					$result = @mysql_query($query);
+					$num = 0;
+					while($noteobj = mysql_fetch_object($result))
+					{
+						$query = "SELECT * FROM note_tags WHERE note_id='{$noteobj->note_id}' AND tag_id='{$tag}'";
+						$result2 = mysql_query($query);
+						if(mysql_num_rows($result2)>0) $num++;
+					}
+					$qty = $unfinishedBusiness->unfinishedANDRequirements[$x]['requirement_detail_2'];
+					if(($qty == "" && $num > 0) || $num > $qty)
+						Module::fireOffWebHook($intWid, $intPlayerId, $intGameID);
+				}
+				// END weird special note count calculations
+
+				//PHIL_REQ_CODE: Weird special calculations in case that event type is dealing with note comment count
+				else if($strEventType == Module::kLOG_GET_NOTE_COMMENT && $unfinishedBusiness->unfinishedANDRequirements[$x]['event'] == Module::kLOG_GET_NOTE_COMMENT){
+					$query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerId}' AND parent_note_id = 0";
+					$result = mysql_query($query);
+					while($note = mysql_fetch_object($result))
+					{
+						$query = "SELECT note_id FROM notes WHERE parent_note_id = '{$note->note_id}'";
+						$res= mysql_query($query);
+						$qty = mysql_num_rows($res);
+						if($qty >= $unfinishedBusiness->unfinishedANDRequirements[$x]['requirement_detail_2']){
+							Module::fireOffWebHook($intWid, $intPlayerId, $intGameID);
+							return;
+						}
+					}
+				}
+				// END weird special note comment count calculations
+
+				//PHIL_REQ_CODE: Weird special calculations in case that event type is dealing with note comment given count
+				else if($strEventType == Module::kLOG_GIVE_NOTE_COMMENT && $unfinishedBusiness->unfinishedANDRequirements[$x]['event'] == Module::kLOG_GIVE_NOTE_COMMENT){
+					$query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerId}' AND parent_note_id != 0";
+					$result = mysql_query($query);
+					$qty = mysql_num_rows($result);
+					if($qty >= $unfinishedBusiness->unfinishedANDRequirements[$x]['requirement_detail_2']){
+						Module::fireOffWebHook($intWid, $intPlayerId, $intGameID);
+					}
+				}
+				// END weird special note comment count calculations
+
+				//PHIL_REQ_CODE: Weird special calculations in case that event type is dealing with note like count
+				else if($strEventType == Module::kLOG_GET_NOTE_LIKE && $unfinishedBusiness->unfinishedANDRequirements[$x]['event'] == Module::kLOG_GET_NOTE_LIKE){
+					$query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerId}' AND parent_note_id = 0";
+					$result = mysql_query($query);
+					while($note = mysql_fetch_object($result))
+					{
+						$query = "SELECT note_id FROM note_likes WHERE note_id = '{$note->note_id}'";
+						$res= mysql_query($query);
+						$qty = mysql_num_rows($res);
+						if($qty >= $unfinishedBusiness->unfinishedANDRequirements[$x]['requirement_detail_2']){
+							Module::fireOffWebHook($intWid, $intPlayerId, $intGameID);
+							return;
+						}
+					}
+				}
+				// END weird special note like count calculations
+
+				//PHIL_REQ_CODE: Weird special calculations in case that event type is dealing with note like given count
+				else if($strEventType == Module::kLOG_GIVE_NOTE_LIKE && $unfinishedBusiness->unfinishedANDRequirements[$x]['event'] == Module::kLOG_GIVE_NOTE_LIKE){
+					//Do nothing, as giving a like cannot currently complete any quests. (recieving can, but that's taken care of above)
+				}
+				// END weird special note comment count calculations
 
 				else{
 					if($strEventType == $unfinishedBusiness->unfinishedANDRequirements[0]['event']){
@@ -1196,9 +1535,10 @@ abstract class Module
 	 */
 
 	protected function getOutstandingRequirements($strPrefix, $intPlayerID, $strObjectType, $intObjectID){
+		NetDebug::trace("getOutstandingRequirements(gid:$strPrefix, pid:$intPlayerID, oType:$strObjectType, oid:$intObjectID)");
 		//Fetch the requirements
 		$query = "SELECT requirement,
-			requirement_detail_1,requirement_detail_2,requirement_detail_3,
+			requirement_detail_1,requirement_detail_2,requirement_detail_3,requirement_detail_4,
 			boolean_operator 
 				FROM {$strPrefix}_requirements 
 				WHERE content_type = '{$strObjectType}' AND content_id = '{$intObjectID}'";
