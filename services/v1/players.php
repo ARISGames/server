@@ -22,16 +22,16 @@ class Players extends Module
 		$query = "SELECT player_id FROM players 
 			WHERE user_name = '{$strNewUserName}' LIMIT 1";
 
-		if (mysql_fetch_array(mysql_query($query))) {
+		if (mysql_fetch_object(mysql_query($query))) {
 			return new returnData(0, 0, 'user exists');
 		}
 
 		$query = "INSERT INTO players (user_name, password, 
 			first_name, last_name, email, created) 
 			VALUES ('{$strNewUserName}', MD5('$strPassword'),
-					'{$strFirstName}','{$strLastName}','{$strEmail}', NOW())";
+			'{$strFirstName}','{$strLastName}','{$strEmail}', NOW())";
 
-		@mysql_query($query);
+		mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 
 		return new returnData(0, mysql_insert_id());

@@ -314,16 +314,14 @@ class Notes extends Module
 		if (mysql_error()) return new returnData(1, NULL, mysql_error());
 
 		while($commentNote = mysql_fetch_object($result))
-		{
 			Notes::deleteNote($commentNote->note_id);
-		}
 
 		//Delete Note locations
 		Locations::deleteLocationsForObject($noteObj->game_id, "PlayerNote", $noteId);
 		
 		//Delete the folder record
 		//EditorFolderContents::deleteContent($noteObj->game_id, "PlayerNote", $noteId); //This would cause an infinite loop becasue it deletes the note
-		$query = "DELETE FROM {$noteObj->game_id}_folder_contents WHERE content_type = 'PlayerNote' AND object_content_id = '{$noteId}'";
+		$query = "DELETE FROM {$noteObj->game_id}_folder_contents WHERE content_type = 'PlayerNote' AND content_id = '{$noteId}'";
 		mysql_query($query);
 		if (mysql_error()) return new returnData(1, NULL, mysql_error());
 

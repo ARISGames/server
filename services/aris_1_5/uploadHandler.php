@@ -33,7 +33,7 @@ if ($_FILES['file']['error']) die ("file upload error");
 $gameMediaDirectory = $media->getMediaDirectory($_POST['gameID'])->data;
 
 $pathInfo = '';
-if ($_REQUEST['fileName']) {
+if (@$_REQUEST['fileName']) {
 	//We are coming from the iPhone Client
 	$pathInfo = pathinfo($_REQUEST['fileName']);
 }
