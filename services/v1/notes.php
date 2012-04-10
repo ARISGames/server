@@ -299,29 +299,33 @@ class Notes extends Module
 
 	function deleteNote($noteId)
 	{
-		//If noteId is 0, it will rather elegantly delete EVERYTHING in the note database.
-		if($noteId == 0)
-			return new returnData(0);
+		//If noteId is 0, it will rather elegantly delete EVERYTHING in the note database 
+		//becasue 0 is used for the parent_id of all new notes
+		if($noteId == 0) return new returnData(0);
 
+		$query = "SELECT * FROM notes WHERE note_id = '{$noteId}' LIMIT 1";
 
-		$query = "SELECT * FROM notes WHERE note_id = '{$noteId}'";
 		$result = @mysql_query($query);
 		$noteObj = mysql_fetch_object($result);
 
 		$query = "SELECT note_id FROM notes WHERE parent_note_id = '{$noteId}'";
 		$result = @mysql_query($query);
+
 		if (mysql_error()) return new returnData(1, NULL, mysql_error());
 
 		while($commentNote = mysql_fetch_object($result))
 		{
-			Notes::deleteNote($noteObj->note_id);
+			Notes::deleteNote($commentNote->note_id);
 		}
 
 		//Delete Note locations
 		Locations::deleteLocationsForObject($noteObj->game_id, "PlayerNote", $noteId);
-		//EditorFolderContents::deleteContent($noteObj->game_id, "PlayerNote", $noteId);
+		
+		//Delete the folder record
+		//EditorFolderContents::deleteContent($noteObj->game_id, "PlayerNote", $noteId); //This would cause an infinite loop becasue it deletes the note
 		$query = "DELETE FROM {$noteObj->game_id}_folder_contents WHERE content_type = 'PlayerNote' AND object_content_id = '{$noteId}'";
 		mysql_query($query);
+		if (mysql_error()) return new returnData(1, NULL, mysql_error());
 
 		//Delete the Note's Content
 		$query = "DELETE FROM note_content WHERE note_id = '{$noteId}'";
