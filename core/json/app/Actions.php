@@ -49,6 +49,10 @@ function deserializationAction(&$body)
 					//This line was always setting the $value to an empty string
 					//$value = json_decode($value, true);
 				} //Else leave value as is
+                
+                // decode slashes. slashes are double encoded on client side so that they don't get confused as part of the overall URL
+                $value = str_replace("%2F", "/", $value);
+                
 			}
 			else
 			{
