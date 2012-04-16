@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Dynamite Game</title>
+<script src="http://js.pusher.com/1.11/pusher.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+//RECEIVE
+var pusher = new Pusher('7fe26fe9f55d4b78ea02');
+Pusher.channel_auth_endpoint = '<?php echo $private_auth; ?>';
+
+var arduino_channel = pusher.subscribe('arduino-pusher_room_channel');
+arduino_channel.bind('arduino_event_register', function(data) {
+                     document.getElementById('arduino_messages').innerHTML = document.getElementById('arduino_messages').innerHTML + "<br />\nMessage Received (arduino_event_register): "+data;
+                     });
+arduino_channel.bind('First_Slot_Filled', function(data) {
+                     document.getElementById("hole1").src = "images/holefull.jpg";
+                     });
+arduino_channel.bind('Second_Slot_Filled', function(data) {
+                     document.getElementById("hole2").src = "images/holefull.jpg";
+                     });
+arduino_channel.bind('Third_Slot_Filled', function(data) {
+                     document.getElementById("hole3").src = "images/holefull.jpg"; 
+                     });
+arduino_channel.bind('Fourth_Slot_Filed', function(data) {
+                     document.getElementById("hole4").src = "images/holefull.jpg";
+                     });
+arduino_channel.bind('Fifth_Slot_Filled', function(data) {
+                     document.getElementById("hole5").src = "images/holefull.jpg";
+                     });
+arduino_channel.bind('Sixth_Slot_Filled', function(data) {
+                     document.getElementById("hole6").src = "images/holefull.jpg";
+                     });
+arduino_channel.bind('First_Slot_Empty', function(data) {
+                     document.getElementById("hole1").src = "images/hole.jpg";
+                     });
+arduino_channel.bind('Second_Slot_Empty', function(data) {
+                     document.getElementById("hole2").src = "images/hole.jpg";
+                     });
+arduino_channel.bind('Third_Slot_Empty', function(data) {
+                     document.getElementById("hole3").src = "images/hole.jpg";
+                     });
+arduino_channel.bind('Fourth_Slot_Empty', function(data) {
+                     document.getElementById("hole4").src = "images/hole.jpg";
+                     });
+arduino_channel.bind('Fifth_Slot_Empty', function(data) {
+                     document.getElementById("hole5").src = "images/hole.jpg";
+                     });
+arduino_channel.bind('Sixth_Slot_Empty', function(data) {
+                     document.getElementById("hole6").src = "images/hole.jpg";
+                     });
+arduino_channel.bind('Collapsed', function(data) {
+                     var collapse = "collapse";
+                     explosionFunction(collapse);
+                     });
+arduino_channel.bind('Demolished', function(data) {
+                     var demolish = "demolish";
+                     explosionFunction(demolish);
+                     });
+
+function startGame()
+{
+    document.getElementById("opening").style.display = "none";
+    document.getElementById("wall").style.display = "block";
+    document.getElementById("failureImage").style.display = "none";
+    document.getElementById("successImage").style.display = "none";
+}
+
+function explosionFunction(typeOfExplosion){
+    document.getElementById("wall").style.display = "none";
+    document.getElementById("failureImage").style.display = "none";
+    document.getElementById("successImage").style.display = "none";
+    document.getElementById("explosion").style.display = "block";
+    var t=setTimeout("end(\""+typeOfExplosion+"\")",2000);
+}
+
+function end(typeOfExplosion){
+    document.getElementById("explosion").style.display = "none";
+    if(typeOfExplosion == "collapse"){
+        document.getElementById("failureImage").style.display = "block";
+        document.getElementById("successImage").style.display = "none";
+    }
+    else{
+        document.getElementById("failureImage").style.display = "none";
+        document.getElementById("successImage").style.display = "block";
+    }
+}
+
+</script>
+</head>
+<body>
+ 
+<div id="start" style="display:block;">
+<img src="images/Opening.jpg" id="opening" alt="Miners planting explosives." onClick="startGame()" width="300" height="400" />
+</div>
+
+<div id="wall" style="display:none;">
+<table>
+<tr>
+<td><img src="images/hole.jpg" id="hole1" alt="Drilled out hole to put dynamite in." width="100" height="200" /></td>
+<td><img src="images/hole.jpg" id="hole2" alt="Drilled out hole to put dynamite in." width="100" height="200" /></td>
+<td><img src="images/hole.jpg" id="hole3" alt="Drilled out hole to put dynamite in." width="100" height="200" /></td>
+</tr>
+<tr>
+<td><img src="images/hole.jpg" id="hole4" alt="Drilled out hole to put dynamite in." width="100" height="200" /></td>
+<td><img src="images/hole.jpg" id="hole5" alt="Drilled out hole to put dynamite in." width="100" height="200" /></td>
+<td><img src="images/hole.jpg" id="hole6" alt="Drilled out hole to put dynamite in." width="100" height="200" /></td>
+</tr>
+</table>
+</div>
+
+<div id="explosion" style="display:none;">
+<img src="images/explosion.jpg" id="boom" alt="Explosion" width="300" height="400" />
+</div>
+
+<div id="successImage" style="display:none;">
+<img src="images/Success.jpg" id="win" alt="Safely exploded wall." onClick="startGame()" width="300" height="400" />
+</div>
+
+<div id="failureImage" style="display:none;">
+<img src="images/failure2.jpg" id="lose" alt="Collapsed mine." onClick="startGame()" width="300" height="400" />
+</div>
+
+<div id="arduino_messages">
+Waiting...
+</div>
+
+</body>
+</html>

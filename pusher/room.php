@@ -10,6 +10,7 @@
 		var pusher = new Pusher('<?php echo $key; ?>');
 		Pusher.channel_auth_endpoint = '<?php echo $private_auth; ?>';
 
+		//Public
 		var pub_channel = pusher.subscribe('<?php echo $public_channel; ?>');
 		pub_channel.bind('<?php echo $public_event; ?>', function(data) {
 			document.getElementById('public_messages').innerHTML = document.getElementById('public_messages').innerHTML + "<br />\nMessage Received (public): "+data;
@@ -18,6 +19,7 @@
 			document.getElementById('public_messages').innerHTML = document.getElementById('public_messages').innerHTML + "<br />\nMessage Received (public- client): "+data;
 		});
 
+		//Private
 		var priv_channel = pusher.subscribe('<?php echo $private_channel; ?>');
 		priv_channel.bind('<?php echo $private_event; ?>', function(data) {
 			document.getElementById('private_messages').innerHTML = document.getElementById('private_messages').innerHTML + "<br />\nMessage Received (private): "+data;
@@ -26,29 +28,30 @@
 			document.getElementById('private_messages').innerHTML = document.getElementById('private_messages').innerHTML + "<br />\nMessage Received (private- client): "+data;
 		});
 
+		//Arduino
 		var arduino_channel = pusher.subscribe('<?php echo $arduino_channel; ?>');
-		arduino_test_channel.bind('arduino_event_register', function(data) {
+		arduino_channel.bind('arduino_event_register', function(data) {
 			document.getElementById('arduino_messages').innerHTML = document.getElementById('arduino_messages').innerHTML + "<br />\nMessage Received (arduino_event_register): "+data;
 		});
-		arduino_test_channel.bind('arduino_event_1', function(data) {
+		arduino_channel.bind('arduino_event_1', function(data) {
 			document.getElementById('arduino_messages').innerHTML = document.getElementById('arduino_messages').innerHTML + "<br />\nMessage Received (arduino_event_1): "+data;
 		});
-		arduino_test_channel.bind('arduino_event_2', function(data) {
+		arduino_channel.bind('arduino_event_2', function(data) {
 			document.getElementById('arduino_messages').innerHTML = document.getElementById('arduino_messages').innerHTML + "<br />\nMessage Received (arduino_event_2): "+data;
 		});
-		arduino_test_channel.bind('arduino_event_3', function(data) {
+		arduino_channel.bind('arduino_event_3', function(data) {
 			document.getElementById('arduino_messages').innerHTML = document.getElementById('arduino_messages').innerHTML + "<br />\nMessage Received (arduino_event_3): "+data;
 		});
-		arduino_test_channel.bind('arduino_event_4', function(data) {
+		arduino_channel.bind('arduino_event_4', function(data) {
 			document.getElementById('arduino_messages').innerHTML = document.getElementById('arduino_messages').innerHTML + "<br />\nMessage Received (arduino_event_4): "+data;
 		});
-		arduino_test_channel.bind('arduino_event_5', function(data) {
+		arduino_channel.bind('arduino_event_5', function(data) {
 			document.getElementById('arduino_messages').innerHTML = document.getElementById('arduino_messages').innerHTML + "<br />\nMessage Received (arduino_event_5): "+data;
 		});
-		arduino_test_channel.bind('arduino_event_6', function(data) {
+		arduino_channel.bind('arduino_event_6', function(data) {
 			document.getElementById('arduino_messages').innerHTML = document.getElementById('arduino_messages').innerHTML + "<br />\nMessage Received (arduino_event_6): "+data;
 		});
-		arduino_test_channel.bind('arduino_event_7', function(data) {
+		arduino_channel.bind('arduino_event_7', function(data) {
 			document.getElementById('arduino_messages').innerHTML = document.getElementById('arduino_messages').innerHTML + "<br />\nMessage Received (arduino_event_7): "+data;
 		});
 		

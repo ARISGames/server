@@ -14,7 +14,10 @@ else if($account == "PHIL")
 	$app_id = '15816';
 }
 
+$public_send = 'public_send.php';
 $private_auth = 'private_auth.php';
+$private_send = 'private_send.php';
+$arduino_send = 'arduino_send.php';
 
 $public_channel = 'public-pusher_room_channel';
 $public_event = 'public-pusher_room_event';

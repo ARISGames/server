@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Barman Game</title>
+<script src="http://js.pusher.com/1.11/pusher.min.js" type="text/javascript"></script>
+<script type="text/javascript">
+
+//RECEIVE
+var pusher = new Pusher('7fe26fe9f55d4b78ea02');
+
+var arduino_channel = pusher.subscribe('arduino-pusher_room_channel');
+arduino_channel.bind('arduino_event_register', function(data) {
+                     document.getElementById('arduino_messages').innerHTML = document.getElementById('arduino_messages').innerHTML + "<br />\nMessage Received (arduino_event_register): "+data;
+                     });
+arduino_channel.bind('0,0', function(data) {
+                     var blockID = "0,0";
+                     changeColor(blockID, data);
+                     });
+arduino_channel.bind('0,1', function(data) {
+                     var blockID = "0,1";
+                     changeColor(blockID, data);
+                     });
+arduino_channel.bind('0,2', function(data) {
+                     var blockID = "0,2";
+                     changeColor(blockID, data);
+                     });
+arduino_channel.bind('1,0', function(data) {
+                     var blockID = "1,0";
+                     changeColor(blockID, data);
+                     });
+arduino_channel.bind('1,1', function(data) {
+                     var blockID = "1,1";
+                     changeColor(blockID, data);
+                     });
+arduino_channel.bind('1,2', function(data) {
+                     var blockID = "1,2";
+                     changeColor(blockID, data);
+                     });
+arduino_channel.bind('2,0', function(data) {
+                     var blockID = "2,0";
+                     changeColor(blockID, data);
+                     });
+arduino_channel.bind('2,1', function(data) {
+                     var blockID = "2,1";
+                     changeColor(blockID, data);
+                     });
+arduino_channel.bind('2,2', function(data) {
+                     var blockID = "2,2";
+                     changeColor(blockID, data);
+                     });
+arduino_channel.bind('2,2', function(data) {
+                     var blockID = "2,2";
+                     changeColor(blockID, data);
+                     });
+arduino_channel.bind('2,2', function(data) {
+                     var blockID = "2,2";
+                     changeColor(blockID, data);
+                     });
+arduino_channel.bind('win', function(data) {
+                     document.getElementById("mineField").style.display = "none";
+                     document.getElementById("winImage").style.display = "block";
+
+                     });
+arduino_channel.bind('collapse', function(data) {
+                     document.getElementById("mineField").style.display = "none";
+                     document.getElementById("loseImage").style.display = "block";
+                     });
+
+function changeColor(blockID, data)
+{
+   document.getElementById(blockID).src = "images/" + data + ".jpg"; 
+}
+
+function reset()
+{
+    changeColor("0,0", "gray");
+    changeColor("0,1", "gray");
+    changeColor("0,2", "gray");
+    changeColor("1,0", "gray");
+    changeColor("1,1", "gray");
+    changeColor("1,2", "gray");
+    changeColor("2,0", "gray");
+    changeColor("2,1", "gray");
+    changeColor("2,2", "gray");
+    document.getElementById("mineField").style.display = "block";
+    document.getElementById("winImage").style.display = "none";
+    document.getElementById("loseImage").style.display = "none";
+}
+</script>
+</head>
+<body>
+
+
+<div id = "mineField" style = "display:block;">
+<table cellpadding = 0 cellspacing = 2>
+<tr>
+<td><img src="images/gray.jpg" id="0,0" alt="Top left square." width="50" height="50" /></td>
+<td><img src="images/gray.jpg" id="0,1" alt="Top middle square." width="50" height="50" /></td>
+<td><img src="images/gray.jpg" id="0,2" alt="Top right square." width="50" height="50" /></td>
+</tr>
+<tr>
+<td><img src="images/gray.jpg" id="1,0" alt="Middle left square." width="50" height="50" /></td>
+<td><img src="images/gray.jpg" id="1,1" alt="Middle middle square." width="50" height="50" /></td>
+<td><img src="images/gray.jpg" id="1,2" alt="Middle right square." width="50" height="50" /></td>
+</tr>
+<tr>
+<td><img src="images/gray.jpg" id="2,0" alt="Bottom left square." width="50" height="50" /></td>
+<td><img src="images/gray.jpg" id="2,1" alt="Bottom middle square." width="50" height="50" /></td>
+<td><img src="images/gray.jpg" id="2,2" alt="Bottom right square." width="50" height="50" /></td>
+</tr>
+</table>
+</div>
+
+<div id = "winImage" style = "display:none;">
+<img src="images/collapse.jpg" id="win" onClick = "reset()" alt="Collapsed mine." width="300" height="400" />
+</div>
+
+<div id = "loseImage" style = "display:none;">
+<img src="images/failure2.jpg" id="lose" onClick = "reset()" alt="Collapsed mine with casualties." width="300" height="400" />
+</div>
+
+<br/>
+<br/>
+
+<div id="arduino_messages">
+Waiting...
+</div>
+
+</body>
+</html>
