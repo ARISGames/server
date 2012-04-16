@@ -139,17 +139,17 @@ class Games extends Module
 					@mysql_query($query);
 					$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$intGameId}', 'PLAYER', '5')";
 					@mysql_query($query);
-					$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$intGameId}', 'CAMERA',  '6')";
+					//$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$intGameId}', 'CAMERA',  '6')";
+					//@mysql_query($query);
+					//$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$intGameId}', 'MICROPHONE',  '7')";
+					//@mysql_query($query);
+					$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$intGameId}', 'NOTE',  '6')";
 					@mysql_query($query);
-					$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$intGameId}', 'MICROPHONE',  '7')";
+					$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$intGameId}', 'PICKGAME', '7')";
 					@mysql_query($query);
-					$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$intGameId}', 'NOTE',  '8')";
+					$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$intGameId}', 'LOGOUT', '8')";
 					@mysql_query($query);
-					$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$intGameId}', 'PICKGAME',  '9')";
-					@mysql_query($query);
-					$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$intGameId}', 'LOGOUT',  '10')";
-					@mysql_query($query);
-					$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$intGameId}', 'STARTOVER',  '11')";
+					$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$intGameId}', 'STARTOVER', '9')";
 					@mysql_query($query);
 					$query = "SELECT * FROM game_tab_data WHERE game_id = '{$intGameId}' ORDER BY tab_index ASC";
 					$result = mysql_query($query);
@@ -557,17 +557,17 @@ class Games extends Module
 				@mysql_query($query);
 				$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'PLAYER', '5')";
 				@mysql_query($query);
-				$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'CAMERA',  '6')";
+				//$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'CAMERA',  '6')";
+				//@mysql_query($query);
+				//$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'MICROPHONE',  '7')";
+				//@mysql_query($query);
+				$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'NOTE', '6')";
 				@mysql_query($query);
-				$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'MICROPHONE',  '7')";
+				$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'PICKGAME', '7')";
 				@mysql_query($query);
-				$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'NOTE',  '8')";
+				$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'LOGOUT', '8')";
 				@mysql_query($query);
-				$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'PICKGAME',  '9')";
-				@mysql_query($query);
-				$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'LOGOUT',  '10')";
-				@mysql_query($query);
-				$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'STARTOVER',  '11')";
+				$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'STARTOVER', '9')";
 				@mysql_query($query);
 				if (mysql_error()) return new returnData(6, NULL, 'cannot create game_tab_data table- ' . mysql_error());	
 
@@ -1027,6 +1027,10 @@ class Games extends Module
 				NetDebug::trace("$query" . ":" . mysql_error());
 
 				$query = "ALTER TABLE players ADD show_on_map TINYINT NOT NULL DEFAULT 1";
+				mysql_query($query);
+				NetDebug::trace("$query" . ":" . mysql_error());
+
+				$query = "DELETE FROM game_tab_data WHERE tab = 'MICROPHONE' OR tab = 'CAMERA'";
 				mysql_query($query);
 				NetDebug::trace("$query" . ":" . mysql_error());
 
