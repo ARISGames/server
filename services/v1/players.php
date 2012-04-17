@@ -450,6 +450,58 @@ class Players extends Module
 		return new returnData(0);
 	}
 
+	/**
+	 * Reset and email editor a new password
+	 * @returns 0 on success
+	 */
+	public function resetAndEmailNewPassword($strEmail) {
+		//create a new password
+		$chars = 'abcdefghijklmnopqrstuvwxyz1234567890';
+		$length = 6;
+		$newPass = '';
+		for ($i=0; $i<$length; $i++) {
+			$char = substr($chars, rand(0,35), 1);
+			$newPass .= $char;
+		}
+		NetDebug::trace("New Password: {$newPass}");
+
+		//set the editor record to this pw
+		$query = "UPDATE players SET password = MD5('{$newPass}') 
+			WHERE email = '{$strEmail}'";
+
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error' . mysql_error());
+
+		if (!mysql_affected_rows()) return new returnData(4, NULL, "Email is not an editor");
+
+		//email it to them
+		$subject = "Reset ARIS Password";
+		$body = "Your new password is: $newPass";
+		if (Module::sendEmail($strEmail, $subject, $body)) return new returnData(0, NULL);
+		else return new returnData(5, NULL, "Mail could not be sent");
+	}
+
+
+	/**
+	 * Change an Player's PAssword
+	 * @returns 0 on success, 4 bad editorID or password
+	 */
+	public function changePassword($intPlayerID, $strOldPassword, $strNewPassword)
+	{	
+		if ($strOldPassword == $strNewPassword) return new returnData(0, NULL);
+
+		$query = "UPDATE players 
+			SET password = MD5('{$strNewPassword}')
+			WHERE password = MD5('{$strOldPassword}')
+			AND player_id = {$intPlayerID}";
+
+		NetDebug::trace($query);
+
+		@mysql_query($query);
+
+		if (mysql_affected_rows() < 1) return new returnData(4, NULL, 'No players exist with matching ID and password');
+		return new returnData(0, NULL);
+	}	
 
 
 
@@ -688,58 +740,5 @@ class Players extends Module
 
 		return new returnData(0,$log);
 	}
-
-	/**
-	 * Reset and email editor a new password
-	 * @returns 0 on success
-	 */
-	public function resetAndEmailNewPassword($strEmail) {
-		//create a new password
-		$chars = 'abcdefghijklmnopqrstuvwxyz1234567890';
-		$length = 6;
-		$newPass = '';
-		for ($i=0; $i<$length; $i++) {
-			$char = substr($chars, rand(0,35), 1);
-			$newPass .= $char;
-		}
-		NetDebug::trace("New Password: {$newPass}");
-
-		//set the editor record to this pw
-		$query = "UPDATE players SET password = MD5('{$newPass}') 
-			WHERE email = '{$strEmail}'";
-
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, 'SQL Error' . mysql_error());
-
-		if (!mysql_affected_rows()) return new returnData(4, NULL, "Email is not an editor");
-
-		//email it to them
-		$subject = "Reset ARIS Password";
-		$body = "Your new password is: $newPass";
-		if (Module::sendEmail($strEmail, $subject, $body)) return new returnData(0, NULL);
-		else return new returnData(5, NULL, "Mail could not be sent");
-	}
-
-
-	/**
-	 * Change an Player's PAssword
-	 * @returns 0 on success, 4 bad editorID or password
-	 */
-	public function changePassword($intPlayerID, $strOldPassword, $strNewPassword)
-	{	
-		if ($strOldPassword == $strNewPassword) return new returnData(0, NULL);
-
-		$query = "UPDATE players 
-			SET password = MD5('{$strNewPassword}')
-			WHERE password = MD5('{$strOldPassword}')
-			AND player_id = {$intPlayerID}";
-
-		NetDebug::trace($query);
-
-		@mysql_query($query);
-
-		if (mysql_affected_rows() < 1) return new returnData(4, NULL, 'No players exist with matching ID and password');
-		return new returnData(0, NULL);
-	}	
 }
 ?>

@@ -8,7 +8,7 @@
 	{
         	var xmlhttp;
         	xmlhttp=new XMLHttpRequest();
-        	xmlhttp.open("POST","http://qa.arisgames.org/server/json.php/v1."+fn,false);
+        	xmlhttp.open("POST","../../../../json.php/v1."+fn,false);
         	xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
         	xmlhttp.send(params); //Synchronous call
 
@@ -24,32 +24,56 @@
 		}
 	}
 
+	function parseURLParams(url) {
+  		var queryStart = url.indexOf("?") + 1;
+  		var queryEnd   = url.indexOf("#") + 1 || url.length + 1;
+  		var query      = url.slice(queryStart, queryEnd - 1);
+	
+  		var params  = {};
+  		if (query === url || query === "") return params;
+  		var nvPairs = query.replace(/\+/g, " ").split("&");
+
+  		for (var i=0; i<nvPairs.length; i++) {
+    			var nv = nvPairs[i].split("=");
+    			var n  = decodeURIComponent(nv[0]);
+    			var v  = decodeURIComponent(nv[1]);
+    			if ( !(n in params) ) {
+      				params[n] = [];
+    			}
+    			params[n].push(nv.length === 2 ? v : null);
+  		}
+  		return params;
+	}
+
 	function pageLoad()
 	{
-		
-		//get players' backpacks whom have player_ids between 3809 and 3850
-		var players = new Array();
-		for(var i = 3809; i <= 3850; i++)
+		var gameId;
+		if(gameId = parseInt(parseURLParams(document.URL).gameId))
 		{
-			players.push(i);
+			var bpRequestObject = new Object();
+			bpRequestObject.gameId = gameId;
+			sendRequest("players.getPlayerBackpacksFromArray", JSON.stringify(bpRequestObject));
 		}
-
-
-		//get player backpack with player_id 92
-		//var players = 98;
-
-
-		//get all players' backpacks in game
-		//var players = null;
-
-		var bpRequestObject = new Object();
-		bpRequestObject.gameId = 966;
-		bpRequestObject.playerArray = players;
-		sendRequest("players.getPlayerBackpacksFromArray", JSON.stringify(bpRequestObject));
+		else
+			document.getElementById('playerBackPacks').innerHTML = "<form>Game Id:<input type='text' id='game_id_form'/><input type='button' value='Submit' onClick='submitForm();'/></form>";
 	}
+
+	function submitForm()
+	{
+		var gameId;
+		if(gameId = document.getElementById('game_id_form').value)
+		{	
+			var bpRequestObject = new Object();
+			bpRequestObject.gameId = gameId;
+			sendRequest("players.getPlayerBackpacksFromArray", JSON.stringify(bpRequestObject));
+		}
+		else
+			alert("Please Enter a Valid Game ID");
+	}
+
 </script>
 </head>
 <body onload='pageLoad()' id='body'>
-<div id='playerBackPacks'> Waiting on Server </div>
+<div id='playerBackPacks'> Waiting on Server... </div>
 </body>
 </html>
