@@ -439,7 +439,7 @@ abstract class Module
 	{
 		NetDebug::trace("playerHasUploadedMediaItemWithinDistence(gid:$intGameID, pid:$intPlayerID, lat:$dblLatitude, lon:$dblLongitude, dist:$dblDistenceInMeters, qty:$qty, type:$mediaType)");
 		$prefix = Module::getPrefix($intGameID);
-		if (!$prefix) return FALSE;
+		if (!$prefix) return false;
 
 		$query = "SELECT {$prefix}_items.*
 			FROM player_log, {$prefix}_items
@@ -460,18 +460,21 @@ abstract class Module
 		NetDebug::trace("Still here...");
 		
 		if($mediaType == Module::kLOG_UPLOAD_MEDIA_ITEM)
-			$query = "SELECT * FROM note_content LEFT JOIN notes ON note_content.note_id = notes.note_id WHERE owner_id = '{$intPlayerID}'";
+			$query = "SELECT * FROM note_content LEFT JOIN notes ON note_content.note_id = notes.note_id LEFT JOIN ".$intGameID."_locations ON notes.note_id = ".$intGameID."_locations.type_id WHERE owner_id = '{$intPlayerID}'";
 		else if($mediaType == Module::kLOG_UPLOAD_MEDIA_ITEM_IMAGE)
-			$query = "SELECT * FROM note_content LEFT JOIN notes ON note_content.note_id = notes.note_id WHERE owner_id = '{$intPlayerID}' AND type='PHOTO'";
+			$query = "SELECT * FROM note_content LEFT JOIN notes ON note_content.note_id = notes.note_id LEFT JOIN ".$intGameID."_locations ON notes.note_id = ".$intGameID."_locations.type_id WHERE owner_id = '{$intPlayerID}' AND note_content.type='PHOTO'";
 		else if($mediaType == Module::kLOG_UPLOAD_MEDIA_ITEM_AUDIO)
-			$query = "SELECT * FROM note_content LEFT JOIN notes ON note_content.note_id = notes.note_id WHERE owner_id = '{$intPlayerID}' AND type='AUDIO'";
+			$query = "SELECT * FROM note_content LEFT JOIN notes ON note_content.note_id = notes.note_id LEFT JOIN ".$intGameID."_locations ON notes.note_id = ".$intGameID."_locations.type_id WHERE owner_id = '{$intPlayerID}' AND note_content.type='AUDIO'";
 		else if($mediaType == Module::kLOG_UPLOAD_MEDIA_ITEM_VIDEO)
-			$query = "SELECT * FROM note_content LEFT JOIN notes ON note_content.note_id = notes.note_id WHERE owner_id = '{$intPlayerID}' AND type='VIDEO'";
+			$query = "SELECT * FROM note_content LEFT JOIN notes ON note_content.note_id = notes.note_id LEFT JOIN ".$intGameID."_locations ON notes.note_id = ".$intGameID."_locations.type_id WHERE owner_id = '{$intPlayerID}' AND note_content.type='VIDEO'";
 		else
 			NetDebug::trace("error...");
-		$result = mysql_query($query);
-		NetDebug::trace(mysql_num_rows($result)." -  ".$qty);
-		if (@mysql_num_rows($result) >= $qty) return true;
+		$queryappendation = "AND (((acos(sin(({$dblLatitude}*pi()/180)) * sin((".$intGameID."_locations.latitude*pi()/180))+cos(({$dblLatitude}*pi()/180)) * 
+                                cos((".$intGameID."_locations.latitude*pi()/180)) * 
+                                cos((({$dblLongitude} - ".$intGameID."_locations.longitude)*pi()/180))))*180/pi())*60*1.1515*1.609344*1000) < {$dblDistenceInMeters}";
+		$result = mysql_query($query.$queryappendation);
+		NetDebug::trace(mysql_num_rows($result)." - ".$qty);
+		if (mysql_num_rows($result) >= $qty) return true;
 		else return false;
 	}	    
 
