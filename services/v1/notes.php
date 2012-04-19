@@ -490,9 +490,9 @@ class Notes extends Module
 			[
 			{
 				"lat" : "43.613609",
-					"enterer" : "M. Sommers",
-					"collection_name" : "Isotelus-Diplograptus community, Maquoketa Fm., Upper Iowa River, Minnesota",
-					"lng" : "-92.427780"
+				"enterer" : "M. Sommers",
+				"collection_name" : "Isotelus-Diplograptus community, Maquoketa Fm., Upper Iowa River, Minnesota",
+				"lng" : "-92.427780"
 			},
 			{
 				"lat" : "43.016945",
