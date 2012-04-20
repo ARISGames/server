@@ -37,7 +37,6 @@ class Players extends Module
 		return new returnData(0, mysql_insert_id());
 	}
 
-
 	/**
 	 * Login
 	 * @returns player id in data for success, null otherwise
@@ -55,34 +54,10 @@ class Players extends Module
 
 		$player = @mysql_fetch_object($rs);
 
-		Module::appendLog($intPlayerID, NULL, Module::kLOG_LOGIN);
+		Module::appendLog($intPlayerID, NULL, Module::kLOG_LOGIN);//Only place outside of Module's EVENT_PIPELINE that can append the Log
 
 		return new returnData(0, intval($player->player_id));
 	}
-
-	/**
-	 * Login - DEPRECIATED
-	 * @returns 0 with player id for success, 4 for failure
-	 */
-	public function login($strUser,$strPassword)
-	{
-
-		$query = "SELECT * FROM players 
-			WHERE user_name = '{$strUser}' and password = MD5('{$strPassword}') LIMIT 1";
-
-		NetDebug::trace($query);
-
-		$rs = @mysql_query($query);
-		if (mysql_num_rows($rs) < 1) return new returnData(4, NULL, 'bad username or password');
-
-		$player = @mysql_fetch_object($rs);
-
-		Module::appendLog($intPlayerID, NULL, Module::kLOG_LOGIN);
-
-		return new returnData(0, intval($player->player_id));
-	}
-
-
 
 	/**
 	 * updates the player's last game
@@ -234,7 +209,7 @@ class Players extends Module
 	public function updatePlayerLocation($intPlayerID, $intGameID, $floatLat, $floatLong)
 	{
 		NetDebug::trace("Inserting Log");
-		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_MOVE, $floatLat, $floatLong);
+		Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_MOVE, $floatLat, $floatLong);
 		if (mysql_affected_rows()) return new returnData(0, TRUE);
 		else return new returnData(0, FALSE);
 	}
@@ -251,11 +226,10 @@ class Players extends Module
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		Module::applyPlayerStateChanges($prefix, $intPlayerID, Module::kLOG_VIEW_NODE, $intNodeID);
-		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_VIEW_NODE, $intNodeID);
+		Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_NODE, $intNodeID);
 
 		return new returnData(0, TRUE);
 	}
-
 
 	public function giveItemToPlayer($intGameId, $intItemID, $intPlayerID, $qtyToGive=1) {
 		Module::giveItemToPlayer($intGameId, $intItemID, $intPlayerID, $qtyToGive=1);
@@ -264,7 +238,6 @@ class Players extends Module
 	public function takeItemFromPlayer($intGameId, $intItemID, $intPlayerID, $qtyToGive=1) {
 		Module::takeItemFromPlayer($intGameId, $intItemID, $intPlayerID, $qtyToGive=1);
 	}
-
 
 	/**
 	 * Player Viewed an Item, exectute it's actions
@@ -275,8 +248,7 @@ class Players extends Module
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		Module::applyPlayerStateChanges($prefix, $intPlayerID, Module::kLOG_VIEW_ITEM, $intItemID);
-		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_VIEW_ITEM, $intItemID);
+		Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_ITEM, $intItemID);
 
 		return new returnData(0, TRUE);
 	}
@@ -286,20 +258,17 @@ class Players extends Module
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		Module::applyPlayerStateChanges($prefix, $intPlayerID, Module::kLOG_VIEW_NPC, $intNpcID);
-		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_VIEW_NPC, $intNpcID);
+		Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_NPC, $intNpcID);
 
 		return new returnData(0, TRUE);
 	}
-
 
 	public function webPageViewed($intGameID, $intPlayerID, $intWebPageID)
 	{	
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		Module::applyPlayerStateChanges($prefix, $intPlayerID, Module::kLOG_VIEW_WEBPAGE, $intWebPageID);
-		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_VIEW_WEBPAGE, $intWebPageID);
+		Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_WEBPAGE, $intWebPageID);
 
 		return new returnData(0, TRUE);
 	}
@@ -309,8 +278,7 @@ class Players extends Module
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		Module::applyPlayerStateChanges($prefix, $intPlayerID, Module::kLOG_VIEW_AUGBUBBLE, $intAugBubbleID);
-		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_VIEW_AUGBUBBLE, $intAugBubbleID);
+		Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_AUGBUBBLE, $intAugBubbleID);
 
 		return new returnData(0, TRUE);
 	}
@@ -339,15 +307,11 @@ class Players extends Module
 			$qtyGiven = Module::giveItemToPlayer($prefix, $intItemID, $intPlayerID, $loc->item_qty);
 			Module::decrementItemQtyAtLocation($prefix, $intLocationID, $qtyGiven); 
 
-			Module::appendLog($intPlayerID, $intGameID, Module::kLOG_PICKUP_ITEM, $intItemID, $qtyGiven);
-
 			return new returnData(0, $qtyGiven, "Location has qty 0");
 		}
 
 		$qtyGiven = Module::giveItemToPlayer($prefix, $intItemID, $intPlayerID, $qty);
 		Module::decrementItemQtyAtLocation($prefix, $intLocationID, $qtyGiven); 
-
-		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_PICKUP_ITEM, $intItemID, $qtyGiven);
 
 		return new returnData(0, TRUE);
 
@@ -365,8 +329,6 @@ class Players extends Module
 		Module::takeItemFromPlayer($prefix, $intItemID, $intPlayerID, $qty);
 		Module::giveItemToWorld($prefix, $intItemID, $floatLat, $floatLong, $qty);
 
-		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_DROP_ITEM, $intItemID, $qty);
-
 		return new returnData(0, FALSE);
 	}		
 
@@ -381,10 +343,9 @@ class Players extends Module
 
 		Module::giveNoteToWorld($prefix, $noteID, $floatLat, $floatLong);
 
-		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_DROP_NOTE, $noteID, '1');
-
 		return new returnData(0, FALSE);
 	}	
+
 	/**
 	 * Removes an Item from the players Inventory
 	 * @returns returnData with data=true if changes were made
@@ -395,9 +356,7 @@ class Players extends Module
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		Module::takeItemFromPlayer($prefix, $intItemID, $intPlayerID, $qty);
-
-		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_DESTROY_ITEM, $intItemID, $qty);
-
+		Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_DESTROY_ITEM, $intItemID, $qty);
 
 		return new returnData(0, FALSE);
 	}		
@@ -408,7 +367,7 @@ class Players extends Module
 	 */
 	public function mapViewed($intGameID, $intPlayerID)
 	{
-		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_VIEW_MAP);
+		Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_MAP);
 		return new returnData(0, FALSE);
 
 	}
@@ -422,9 +381,8 @@ class Players extends Module
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_VIEW_QUESTS);
+		Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_QUESTS);
 		return new returnData(0, FALSE);
-
 	}
 
 	/**
@@ -433,10 +391,8 @@ class Players extends Module
 	 */	
 	public function inventoryViewed($intGameID, $intPlayerID)
 	{
-
-		Module::appendLog($intPlayerID, $intGameID, Module::kLOG_VIEW_INVENTORY);
+		Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_INVENTORY);
 		return new returnData(0, FALSE);
-
 	}			
 
 	/**

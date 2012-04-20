@@ -174,6 +174,4 @@ class Conversations extends Module
 		if (mysql_affected_rows()) return new returnData(0);
 		else return new returnData(2, NULL, 'invalid conversation id');
 	}	
-
-
 }

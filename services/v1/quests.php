@@ -15,9 +15,7 @@ class Quests extends Module
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		
 		$query = "SELECT * FROM {$prefix}_quests ORDER BY sort_index";
-		//NetDebug::trace($query);
 
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -44,18 +42,14 @@ class Quests extends Module
 		$activeQuests = array();
 		$completedQuests = array();
 		
-		NetDebug::trace("PHIL- START");
 		//Walk the rs add each quest to the correct array
 		while ($quest = mysql_fetch_object($rsResult)) {
 			
-			$display = $this->objectMeetsRequirements ($prefix, 
+			$display = Module::objectMeetsRequirements ($prefix, 
 					$intPlayerID, 
 					"QuestDisplay", 
 					$quest->quest_id);
-			$complete = $this->objectMeetsRequirements ($prefix, 
-					$intPlayerID, 
-					"QuestComplete", 
-					$quest->quest_id);	
+			$complete = Module::playerHasLog($prefix, $intPlayerID, Module::kLOG_COMPLETE_QUEST, $quest->quest_id);
 
 			//NetDebug::trace("Quest " . $quest->quest_id . ": display = $display complete = $complete");									
 

@@ -11,16 +11,12 @@ class Notes extends Module
 	//Returns note_id
 	function createNewNote($gameId, $playerId)
 	{
-		//PHIL_REQ_CODE
-		//Another chance to complete a quest, or send a webhook. Oh God help us.
-		$qObs = Module::appendCompletedQuestsIfReady($playerId, $gameId, Module::kLOG_GET_NOTE);
-		$wObs = Module::fireOffWebHooksIfReady($playerId, $gameId, Module::kLOG_GET_NOTE);
-
 		$query = "INSERT INTO notes (game_id, owner_id, title) VALUES ('{$gameId}', '{$playerId}', 'New Note')";
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(1, NULL, mysql_error());
 		$nId = mysql_insert_id();
 		EditorFoldersAndContent::saveContent($gameId, false, 0, 'PlayerNote', $nId, 0);
+		Module::processGameEvent($playerId, $gameId, Module::kLOG_GET_NOTE, $nId);
 		return new returnData(0, $nId);
 	}
 
@@ -42,7 +38,7 @@ class Notes extends Module
 		return new returnData(0);
 	}
 
-	function addContentToNote($noteId, $gameId, $playerId, $mediaId, $type, $text, $title='')
+	function addContentToNote($noteId, $gameId, $playerId, $mediaId, $type, $text, $title='', $lat=0, $lon=0)
 	{
 		$text = addslashes($text);
 		if($title == '') $title = Date('F jS Y h:i:s A');
@@ -52,15 +48,15 @@ class Notes extends Module
 		if (mysql_error()) return new returnData(1, NULL, mysql_error());
 		$contentId = mysql_insert_id();
 
-		Module::appendLog($playerId, $gameId, Module::kLOG_UPLOAD_MEDIA_ITEM, $contentId);
+		Module::processGameEvent($playerId, $gameId, Module::kLOG_UPLOAD_MEDIA_ITEM, $contentId, $lat, $lon);
 		if($type == "PHOTO"){
-			Module::appendLog($playerId, $gameId, Module::kLOG_UPLOAD_MEDIA_ITEM_IMAGE, $contentId);
+			Module::processGameEvent($playerId, $gameId, Module::kLOG_UPLOAD_MEDIA_ITEM_IMAGE, $contentId, $lat, $lon);
 		}
 		else if($type == "AUDIO"){
-			Module::appendLog($playerId, $gameId, Module::kLOG_UPLOAD_MEDIA_ITEM_AUDIO, $contentId);
+			Module::processGameEvent($playerId, $gameId, Module::kLOG_UPLOAD_MEDIA_ITEM_AUDIO, $contentId, $lat, $lon);
 		}
 		else if($type == "VIDEO"){
-			Module::appendLog($playerId, $gameId, Module::kLOG_UPLOAD_MEDIA_ITEM_VIDEO, $contentId);
+			Module::processGameEvent($playerId, $gameId, Module::kLOG_UPLOAD_MEDIA_ITEM_VIDEO, $contentId, $lat, $lon);
 		}
 		return new returnData(0, $contentId);
 	}
@@ -110,13 +106,7 @@ class Notes extends Module
 		$questownerobj = mysql_fetch_object($result);
 		$questowner = $questownerobj->owner_id;
 
-		//PHIL_REQ_CODE
-		//Another chance to complete a quest, or send a webhook... for ANOTHER PERSON. THIS IS CRAZY. 
-		$qObs = Module::appendCompletedQuestsIfReady($questowner, $gameId, Module::kLOG_GET_NOTE_COMMENT);
-		$wObs = Module::fireOffWebHooksIfReady($questowner, $gameId, Module::kLOG_GET_NOTE_COMMENT);
-		//PHIL_REQ_CODE
-		//Another chance to complete a quest, or send a webhook... this time for you.
-		Module::appendLog($playerId, $gameId, Module::kLOG_GIVE_NOTE_COMMENT, $noteId, null);
+		Module::processGameEvent($playerId, $gameId, Module::kLOG_GIVE_NOTE_COMMENT, $noteId);
 
 		$query = "INSERT INTO notes (game_id, owner_id, parent_note_id, title) VALUES ('{$gameId}', '{$playerId}', '{$noteId}', '{$title}')";
 		$result = @mysql_query($query);
@@ -459,13 +449,7 @@ class Notes extends Module
 		$questowner = $questownerobj->owner_id;
 		$gameId = $questownerobj->game_id;
 
-		//PHIL_REQ_CODE
-		//Another chance to complete a quest, or send a webhook... FOR SOMEONE ELSE. THE HUMANITY.
-		$qObs = Module::appendCompletedQuestsIfReady($questowner, $gameId, Module::kLOG_GET_NOTE_LIKE);
-		$wObs = Module::fireOffWebHooksIfReady($questowner, $gameId, Module::kLOG_GET_NOTE_LIKE);
-		//PHIL_REQ_CODE
-		//Another chance to complete a quest, or send a webhook... this time at least for yourself.
-		Module::appendLog($playerId, $gameId, Module::kLOG_GIVE_NOTE_LIKE, $noteId, null);
+		Module::processGameEvent($playerId, $gameId, Module::kLOG_GIVE_NOTE_LIKE, $noteId);
 
 		$query = "INSERT INTO note_likes (player_id, note_id) VALUES ('{$playerId}', '{$noteId}')";
 		mysql_query($query);
