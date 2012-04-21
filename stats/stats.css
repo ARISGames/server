@@ -1,0 +1,274 @@
+html
+{
+}
+
+body
+{
+  background: #F4F4F4;
+  font-family: calibri,tahoma,arial,sans-serif;
+  font-size: 1em;
+  height: 100%;
+  width: 100%;
+  margin-top: 1.875em;
+}
+
+#main
+{
+  width: 62.5em;
+  margin: 0 auto;
+}
+
+a:link
+{
+  color: #AAAAAA;
+  text-decoration: none;
+}
+
+a:visited
+{
+  color: #AAAAAA;
+  text-decoration: none;
+}
+
+a:hover
+{
+  color: #336699;
+  text-decoration: underline;
+}
+
+.backgroundPlate
+{
+  width: 100%;
+  position: absolute;
+  left: 0;
+  background-color: #222;
+  z-index: -10;
+}
+
+#topPlate
+{
+  height: 29.375em;
+  top: 0;
+}
+
+#bottomPlate
+{
+  height: 3.125em;
+  position: relative;
+  top: 3.125em;
+}
+
+#bottomBar
+{
+  width: 62.5em;
+  margin: 0 auto;
+  color: #AAAAAA;
+}
+ 
+#header
+{
+  height: 5em;
+}
+
+img#title
+{
+  float: left;
+}
+
+#logotext
+{
+  font-family: arial,sans-serif;
+  color: #fff;
+  font-size: 3em;
+  font-weight: bold;
+  position: relative;
+  top: 0.3em;
+}
+
+#mapContainer 
+{
+  margin:0 auto;
+  margin-top: 2%;
+  border: 0.625em solid white;
+  height: 25em;
+  text-align: center;
+}
+
+#mainStatsContainer
+{
+  margin:0 auto;
+  margin-top: 1%;
+  font-family: calibri, arial, sans-serif;
+  font-weight: bold;
+  text-align: center;
+}
+
+.statsContainer
+{
+  margin: 0 1%;
+  width: 29%;
+}
+
+.graph
+{
+width: 80%; 
+height: 3.75em;
+margin: 0 auto;
+border-top: 1px solid #AAAAAA;
+border-bottom: 1px solid #AAAAAA;
+}
+
+#totalPlayers
+{
+  float:left;
+}
+
+#totalGames
+{
+  margin:0 auto;
+}
+
+#totalEditors
+{
+  float:right;
+}
+
+.bigNum
+{
+  margin: 0;
+  font-size: 4em;
+}
+
+.bigText
+{
+  margin: 0;
+  font-size: 2em;
+}
+
+.graphText
+{
+  margin: 0;
+  padding: 0;
+  font-size: 1em;
+  color: #AAAAAA;
+  position: relative;
+  bottom: 0.125em;
+}
+
+#topTenGames
+{
+  margin: 0 auto;
+  width: 100%;
+  border: 0.125em solid #AAAAAA;
+  border-radius: 1em;
+  -moz-border-radius: 1em;
+  position: relative;
+  top: 1.25em;
+}
+
+#liveFeedContainer
+{
+  margin-top: 1%;
+  float: left;
+  width: 40%;
+  height: 31.25em;
+  border: 0.125em solid white;
+  border-radius: 1em;
+  -moz-border-radius: 1em;
+}
+
+h1
+{
+  text-align: center;
+}
+
+#topTenElementForDay, #topTenElementForWeek, #topTenElementForMonth
+{
+  display: none;
+}
+
+.topTenElement
+{
+  position:relative;
+  border-top: 0.125em solid #AAAAAA;
+  height: 5.6em;
+}
+
+.topTenNumBox
+{
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 10%;
+  font-family: arial,sans-serif;
+  color: #336699;
+  font-size: 0.5em;
+  font-weight: bold;
+}
+
+.topTenNum
+{
+  text-align: center;
+  line-height: 1.5em;
+}
+
+.topTenGameNameAndDesc
+{
+  position: absolute;
+  top: 0;
+  left: 10%;
+  height: 100%;
+  width: 80%;
+}
+
+.topTenGameCount
+{
+  text-align: center;
+  position: absolute;
+  top: 0;
+  left: 90%;
+  height: 100%;
+  width: 10%;
+}
+
+.topTenName, .topTenAuthor, .topTenDescription, .topTenPlayerText
+{
+  margin: 0.125em;
+  padding: 0;
+}
+
+.topTenDescription
+{
+  font-style: italic;
+}
+
+.topTenPlayerCount
+{
+  font-family: arial,sans-serif;
+  color: #FF9900;
+  font-size: 3em;
+  font-weight: bold;
+}
+
+#topTenButtonBox
+{
+  width: 11em;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.topTenImg
+{
+  margin: 1.5em 0 0 0.4em;
+}
+
+button {
+  background-color: #555;
+  color: white;
+  margin: 0.625em auto;
+  border: solid white 0.125em;
+  border-radius: 1em;
+  -moz-border-radius: 1em;
+}
+
