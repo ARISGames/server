@@ -1031,6 +1031,10 @@ class Games extends Module
 				mysql_query($query);
 				NetDebug::trace("$query" . ":" . mysql_error());
 
+				$query = "ALTER TABLE player_log CHANGE event_type event_type ENUM('LOGIN','MOVE','PICKUP_ITEM','DROP_ITEM','DROP_NOTE','DESTROY_ITEM','VIEW_ITEM','VIEW_NODE','VIEW_NPC','VIEW_WEBPAGE','VIEW_AUGBUBBLE','VIEW_MAP','VIEW_QUESTS','VIEW_INVENTORY','ENTER_QRCODE','UPLOAD_MEDIA_ITEM','UPLOAD_MEDIA_ITEM_IMAGE','UPLOAD_MEDIA_ITEM_AUDIO','UPLOAD_MEDIA_ITEM_VIDEO','RECEIVE_WEBHOOK','SEND_WEBHOOK','COMPLETE_QUEST','GET_NOTE','GIVE_NOTE_LIKE','GET_NOTE_LIKE','GIVE_NOTE_COMMENT','GET_NOTE_COMMENT') CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL";
+				mysql_query($query);
+				NetDebug::trace("$query" . ":" . mysql_error());
+
 				return new returnData(0, FALSE);
 			}
 

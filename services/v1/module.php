@@ -742,7 +742,7 @@ abstract class Module
 	 */
 	public function processGameEvent($playerId, $gameId, $eventType, $eventDetail1='N/A', $eventDetail2='N/A', $eventDetail3='N/A', $eventDetail4='N/A')
 	{
-		NetDebug::trace("Processing Event: playerId:$playerId, gameId:$gameId, eventType:$eventType, eventDetail1:$eventDetail1, eventDetail2:$eventDetail2, eventDetail3:$eventDetail3, eventDetail4:$eventDetail4");
+		NetDebug::trace("Module::processGameEvent: playerId:$playerId, gameId:$gameId, eventType:$eventType, eventDetail1:$eventDetail1, eventDetail2:$eventDetail2, eventDetail3:$eventDetail3, eventDetail4:$eventDetail4");
 		Module::appendLog($playerId, $gameId, $eventType, $eventDetail1, $eventDetail2, $eventDetail3);
 		Module::applyPlayerStateChanges($gameId, $playerId, $eventType, $eventDetail1);
 
@@ -777,6 +777,8 @@ abstract class Module
 	protected function appendLog($playerId, $gameId, $eventType, $eventDetail1='N/A', $eventDetail2='N/A', $eventDetail3='N/A')
 	{
 		$query = "INSERT INTO player_log (player_id, game_id, event_type, event_detail_1, event_detail_2, event_detail_3) VALUES ({$playerId},{$gameId},'{$eventType}','{$eventDetail1}','{$eventDetail2}','{$eventDetail3}')";
+		NetDebug::trace("Module::appendLog: $query");
+
 		@mysql_query($query);
 	}
 
@@ -824,7 +826,7 @@ abstract class Module
 	protected function getUnfiredWebhooks($playerId, $gameId)
 	{
 		//Get all webhooks for game
-		$query = "SELECT * FROM web_hooks WHERE game_id = '{$gameId}'";
+		$query = "SELECT * FROM web_hooks WHERE game_id = '{$gameId}' AND incoming = 0";
 		$result = mysql_query($query);
 		$gameWebhooks = array();
 		while($gameWebhook = mysql_fetch_object($result))
@@ -877,14 +879,14 @@ abstract class Module
 	protected function fireOffWebHook($playerId, $gameId, $webHookId){
 		Module::appendLog($playerId, $gameId, "SEND_WEBHOOK", $webHookId);
 
-		$query = "SELECT * FROM web_hooks WHERE web_hook_id = '{$webHookId}'";
+		$query = "SELECT * FROM web_hooks WHERE web_hook_id = '{$webHookId}' LIMIT 1";
 		$result = mysql_query($query);
 		$webHook = mysql_fetch_object($result);
 		$name = str_replace(" ", "", $webHook->name);
 		$name = str_replace("{playerId}", $playerId, $webHook->name);
 		$url = $webHook->url . "?hook=" . $name . "&wid=" . $webHook->web_hook_id . "&gameid=" . $gameId . "&playerid=" . $playerId; 
-		NetDebug::trace($url);
-		file_get_contents($url);
+		NetDebug::trace("Module::fireOffWebHook: Final URL: $url");
+		@file_get_contents($url);
 	}
 
 	/**
