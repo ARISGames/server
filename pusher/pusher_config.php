@@ -17,6 +17,8 @@ else if($account == "PHIL")
 $public_send = 'public_send.php';
 $private_auth = 'private_auth.php';
 $private_send = 'private_send.php';
+$presence_auth = 'presence_auth.php';
+$private_send = 'presence_send.php';
 $arduino_send = 'arduino_send.php';
 
 $public_channel = 'public-pusher_room_channel';
@@ -25,6 +27,10 @@ $public_data = '';
 
 $private_channel = 'private-pusher_room_channel';
 $private_event = 'private-pusher_room_event';
+$private_data = '';
+
+$private_channel = 'presence-pusher_room_channel';
+$private_event = 'presence-pusher_room_event';
 $private_data = '';
 
 $arduino_channel = 'arduino-pusher_room_channel';

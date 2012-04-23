@@ -1,31 +1,20 @@
-<?php require_once('pusher_config.php'); ?>
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Pusher Room</title>
+	<title>Choose Video</title>
 	<script src="http://js.pusher.com/1.11/pusher.min.js" type="text/javascript"></script>
 	<script type="text/javascript">
 
 		//RECEIVE
-		var pusher = new Pusher('<?php echo $key; ?>');
-		Pusher.channel_auth_endpoint = '<?php echo $private_auth; ?>';
+		var pusher = new Pusher('7fe26fe9f55d4b78ea02');
 
 		//Public
-		var pub_channel = pusher.subscribe('<?php echo $public_channel; ?>');
+		var pub_channel = pusher.subscribe('arduino-choose_video_channel');
 		pub_channel.bind('<?php echo $public_event; ?>', function(data) {
 			document.getElementById('public_messages').innerHTML = document.getElementById('public_messages').innerHTML + "<br />\nMessage Received (public): "+data;
 		});
 		pub_channel.bind('<?php echo "client-".$public_event; ?>', function(data) {
 			document.getElementById('public_messages').innerHTML = document.getElementById('public_messages').innerHTML + "<br />\nMessage Received (public- client): "+data;
-		});
-
-		//Private
-		var priv_channel = pusher.subscribe('<?php echo $private_channel; ?>');
-		priv_channel.bind('<?php echo $private_event; ?>', function(data) {
-			document.getElementById('private_messages').innerHTML = document.getElementById('private_messages').innerHTML + "<br />\nMessage Received (private): "+data;
-		});
-		priv_channel.bind('<?php echo "client-".$private_event; ?>', function(data) {
-			document.getElementById('private_messages').innerHTML = document.getElementById('private_messages').innerHTML + "<br />\nMessage Received (private- client): "+data;
 		});
 
 		//Arduino
@@ -76,36 +65,7 @@
 </head>
 <body>
 	<table>
-		<tr>
-		<td width="300px">
-			PUBLIC
-		</td>
-		<td width="300px">
-			PRIVATE
-		</td>
-		<td width="300px">
-			ARDUINO
-		</td>
-		</tr>
-		<tr>
-		<td valign="top">
-	
-			<input type="text" id="public_sendtext"></input>
-			<input type="button" value="Send" onClick="message('public');"></input>
-			<div id="public_messages">
-			Waiting...
-			</div>
 
-		</td>
-		<td valign="top">
-
-			<input type="text" id="private_sendtext"></input>
-			<input type="button" value="Send" onClick="message('private');"></input>
-			<div id="private_messages">
-			Waiting...
-			</div>
-
-		</td>
 		<td valign="top">
 
 			<input type="text" id="arduino_sendtext"></input>
