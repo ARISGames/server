@@ -1,24 +1,39 @@
+<?php require_once('pusher_config.php'); ?>
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Choose Video</title>
+	<title>Pusher Room</title>
 	<script src="http://js.pusher.com/1.11/pusher.min.js" type="text/javascript"></script>
 	<script type="text/javascript">
 
 		//RECEIVE
-		var pusher = new Pusher('7fe26fe9f55d4b78ea02');
+		var pusher = new Pusher('<?php echo $key; ?>');
 
 		//Public
-		var pub_channel = pusher.subscribe('arduino-choose_video_channel');
+		var pub_channel = pusher.subscribe('<?php echo $public_channel; ?>');
 		pub_channel.bind('<?php echo $public_event; ?>', function(data) {
 			document.getElementById('public_messages').innerHTML = document.getElementById('public_messages').innerHTML + "<br />\nMessage Received (public): "+data;
 		});
-		pub_channel.bind('<?php echo "client-".$public_event; ?>', function(data) {
-			document.getElementById('public_messages').innerHTML = document.getElementById('public_messages').innerHTML + "<br />\nMessage Received (public- client): "+data;
+
+		//Private
+		Pusher.channel_auth_endpoint = '<?php echo $private_auth; ?>';
+		var priv_channel = pusher.subscribe('<?php echo $private_channel; ?>');
+		priv_channel.bind('<?php echo $private_event; ?>', function(data) {
+			document.getElementById('private_messages').innerHTML = document.getElementById('private_messages').innerHTML + "<br />\nMessage Received (private): "+data;
+		});
+
+		//Presence
+		Pusher.channel_auth_endpoint = '<?php echo $presence_auth; ?>';
+		var pres_channel = pusher.subscribe('<?php echo $presence_channel; ?>');
+		pres_channel.bind('<?php echo $presence_event; ?>', function(data) {
+			document.getElementById('presence_messages').innerHTML = document.getElementById('presence_messages').innerHTML + "<br />\nMessage Received (presence): "+data;
 		});
 
 		//Arduino
 		var arduino_channel = pusher.subscribe('<?php echo $arduino_channel; ?>');
+		arduino_channel.bind('<?php echo $arduino_event; ?>', function(data) {
+			document.getElementById('arduino_messages').innerHTML = document.getElementById('arduino_messages').innerHTML + "<br />\nMessage Received (arduino): "+data;
+		});
 		arduino_channel.bind('arduino_event_register', function(data) {
 			document.getElementById('arduino_messages').innerHTML = document.getElementById('arduino_messages').innerHTML + "<br />\nMessage Received (arduino_event_register): "+data;
 		});
@@ -50,7 +65,7 @@
         	{
                 	var xmlhttp;
                 	xmlhttp=new XMLHttpRequest();
-                	xmlhttp.open("POST","http://arisgames.org/devserver/pusher/"+room+"_send.php",false);
+                	xmlhttp.open("POST","http://dev.arisgames.org/server/pusher/"+room+"_send.php",false);
                 	xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
                 	xmlhttp.send(room+'_data='+data); //Synchronous call
 	
@@ -65,7 +80,48 @@
 </head>
 <body>
 	<table>
+		<tr>
+		<td width="300px">
+			PUBLIC
+		</td>
+		<td width="300px">
+			PRIVATE
+		</td>
+		<td width="300px">
+			PRESENCE
+		</td>
+		<td width="300px">
+			ARDUINO
+		</td>
+		</tr>
+		<tr>
+		<td valign="top">
+	
+			<input type="text" id="public_sendtext"></input>
+			<input type="button" value="Send" onClick="message('public');"></input>
+			<div id="public_messages">
+			Waiting...
+			</div>
 
+		</td>
+		<td valign="top">
+
+			<input type="text" id="private_sendtext"></input>
+			<input type="button" value="Send" onClick="message('private');"></input>
+			<div id="private_messages">
+			Waiting...
+			</div>
+
+		</td>
+		<td valign="top">
+
+			<input type="text" id="presence_sendtext"></input>
+			<input type="button" value="Send" onClick="message('presence');"></input>
+			<div id="presence_messages">
+			Waiting...
+			</div>
+
+		</td>
 		<td valign="top">
 
 			<input type="text" id="arduino_sendtext"></input>
@@ -80,3 +136,4 @@
 	
 </body>
 </html>
+

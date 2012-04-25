@@ -12,5 +12,5 @@ if(!$data) $data = $arduino_data;
 
 $pusher = new Pusher($key, $secret, $app_id, true);
 $pusher->trigger($channel, $event, $data);
-echo $channel."->".$event."->".$data;
+echo $data;
 ?>

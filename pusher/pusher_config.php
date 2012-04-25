@@ -18,7 +18,7 @@ $public_send = 'public_send.php';
 $private_auth = 'private_auth.php';
 $private_send = 'private_send.php';
 $presence_auth = 'presence_auth.php';
-$private_send = 'presence_send.php';
+$presence_send = 'presence_send.php';
 $arduino_send = 'arduino_send.php';
 
 $public_channel = 'public-pusher_room_channel';
@@ -29,9 +29,9 @@ $private_channel = 'private-pusher_room_channel';
 $private_event = 'private-pusher_room_event';
 $private_data = '';
 
-$private_channel = 'presence-pusher_room_channel';
-$private_event = 'presence-pusher_room_event';
-$private_data = '';
+$presence_channel = 'presence-pusher_room_channel';
+$presence_event = 'presence-pusher_room_event';
+$presence_data = '';
 
 $arduino_channel = 'arduino-pusher_room_channel';
 $arduino_event = 'arduino-pusher_room_event';
