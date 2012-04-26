@@ -1,13 +1,18 @@
 <?php
+    
+//Accepts a request for a private authentication token
+//http://dev.arisgames.org/server/pusher2/private_auth.php?channel=mychannel&socket_id=someid
+    
 require_once('pusher_config.php');
 require_once('Pusher.php');
 
 $pusher = new Pusher($key, $secret, $app_id, true);
 
-$channel = (isset($_POST['channel_name']) ? $_POST['channel_name'] : $_GET['channel_name']);
-if(!$channel) $channel = $private_channel;
+if ($_REQUEST['channel']) $channel = $_REQUEST['channel'];
+else $channel = $private_default_channel;
 
-$socket_id = (isset($_POST['socket_id']) ? $_POST['socket_id'] : $_GET['socket_id']);
+$socket_id = $_REQUEST['socket_id'];
 
 echo $pusher->socket_auth($channel, $socket_id);
+    
 ?>

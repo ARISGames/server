@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Host</title>
+        <script src="http://js.pusher.com/1.11/pusher.min.js" type="text/javascript"></script>
+        <script type="text/javascript">
+            
+            //RECEIVE
+            var pusher = new Pusher('7fe26fe9f55d4b78ea02');
+            Pusher.channel_auth_endpoint = 'presence_auth.php';
+            var pusher_channel = 'choose_video';
+            var presence_channel = pusher.subscribe('presence-choose_video'); //pusher_room_channel arduino-choose_video
+
+            presence_channel.bind('pusher:member_added', function(members) {
+                                  sendRequest('a');// You have something listening on a presence channel and sending data on an arduino channel. It's confusing the room.php code. -Phil
+                                  });
+            presence_channel.bind('pusher:member_removed', function(members) {
+                                  sendRequest('s');
+                                  });
+            
+            //SEND
+            function sendRequest(data)
+        	{
+                var xmlhttp;
+                xmlhttp=new XMLHttpRequest();
+                xmlhttp.open("POST","http://dev.arisgames.org/server/pusher2/public_send.php?channel="+pusher_channel,false);
+                xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+                xmlhttp.send('data='+data); //Synchronous call
+                
+                document.getElementById('public_messages').innerHTML = document.getElementById('public_messages').innerHTML + "<br />\nMessage Sent (): "+xmlhttp.responseText;
+        	}
+            
+            </script>
+    </head>
+    <body>
+        <table>
+            <tr>
+                <td width="300px">
+                    PUBLIC
+                </td>
+            </tr>
+            <tr>
+                <td valign="top">
+                    <div id="public_messages">
+                        Waiting...
+                    </div>
+                    
+                </td>
+            </tr>
+        </table>
+        
+    </body>
+</html>
+

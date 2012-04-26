@@ -21,19 +21,19 @@ $presence_auth = 'presence_auth.php';
 $presence_send = 'presence_send.php';
 $arduino_send = 'arduino_send.php';
 
-$public_channel = 'public-pusher_room_channel';
-$public_event = 'public-pusher_room_event';
-$public_data = '';
+$public_default_channel = 'public-default-channel';
+$public_default_event = 'default-event';
+$public_default_data = '';
 
-$private_channel = 'private-pusher_room_channel';
-$private_event = 'private-pusher_room_event';
-$private_data = '';
+$private_default_channel = 'private-default-channel';
+$private_default_event = 'default-event';
+$private_default_data = '';
 
-$presence_channel = 'presence-pusher_room_channel';
-$presence_event = 'presence-pusher_room_event';
-$presence_data = '';
+$presence_default_channel = 'presence-default-channel';
+$presence_default_event = 'default-event';
+$presence_default_data = '';
 
-$arduino_channel = 'arduino-pusher_room_channel';
-$arduino_event = 'arduino-pusher_room_event';
-$adruino_data = '';
+$arduino_default_channel = 'arduino-default-channel';
+$arduino_default_event = 'default-event';
+$adruino_default_data = '';
 ?>

@@ -10,12 +10,13 @@
             var voted = false;
             var votesfor1 = 0;
             var votesfor2 = 0;
-            var pusher_channel = 'arduino-choose_video';
+            var pusher_channel = 'choose_video';
             var pusher_event_register = 'arduino_event_register';
+            var presence_channel = pusher.subscribe('presence-choose_video'); //pusher_room_channel arduino-choose_video
+
 
             //Arduino
             var arduino_channel = pusher.subscribe(pusher_channel);
-            var presence_channel = pusher.subscribe('presence-pusher_room_channel');
             arduino_channel.bind('arduino_event_register', function(data) {
                                  document.getElementById('arduino_messages').innerHTML = document.getElementById('arduino_messages').innerHTML + "<br />\nMessage Received(arduino_event_register): "+data;
                                  });
@@ -42,36 +43,24 @@
                                  var time = 15-data;
                                  document.getElementById('arduino_messages').innerHTML = time;
                                  });
-            presence_channel.bind('pusher:member_added', function(members) {
-                                  sendRequest('a', "arduino");// You have something listening on a presence channel and sending data on an arduino channel. It's confusing the room.php code. -Phil
-                                  });
-            presence_channel.bind('pusher:member_removed', function(members) {
-                                  sendRequest('s', "arduino");
-                                  });
             
             
             //SEND
-            function sendRequest(data, room)
+            function sendRequest(data)
         	{
                 var xmlhttp;
                 xmlhttp=new XMLHttpRequest();
-                xmlhttp.open("POST","http://dev.arisgames.org/server/pusher/"+room+"_send.php?arduino_channel=MYROOM",false);
+                xmlhttp.open("POST","http://dev.arisgames.org/server/pusher2/public_send.php?channel="+pusher_channel,false); //?arduino_channel="+pusher_channel
                 xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-                xmlhttp.send(room+'_data='+data); //Synchronous call
-                
-              //  document.getElementById(room+'_messages').innerHTML = document.getElementById(room+'_messages').innerHTML + "<br />\nMessage Sent ("+room+"): "+xmlhttp.responseText;
+                xmlhttp.send('data='+data); //Synchronous call
         	}
             
-        	function message(room)
-        	{
-                sendRequest(document.getElementById(room+'_sendtext').value, room);
-            }
             function vote(voteNumber)
             {
                 if(!voted){
                     document.getElementById("video1").src = "images/grayOne.jpg"; 
                     document.getElementById("video2").src = "images/grayTwo.jpg"; 
-                    sendRequest(voteNumber, "arduino"); 
+                    sendRequest(voteNumber); 
                 }
                 voted = true;
             }
@@ -81,7 +70,7 @@
                     document.getElementById("video2").src = "images/two.jpg"; 
                     document.getElementById("introduction").style.display = "block";
                     document.getElementById("votingOptions").style.display = "none";
-                    //sendRequest(voteNumber, "arduino"); 
+                    //sendRequest(voteNumber); 
                     voted = false;
             }
             </script>
