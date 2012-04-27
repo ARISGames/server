@@ -21,6 +21,10 @@ $presence_auth = 'presence_auth.php';
 $presence_send = 'presence_send.php';
 $arduino_send = 'arduino_send.php';
 
+$default_channel = 'default-channel';
+$default_event = 'default-event';
+$default_data = '';
+
 $public_default_channel = 'public-default-channel';
 $public_default_event = 'default-event';
 $public_default_data = '';
@@ -36,4 +40,26 @@ $presence_default_data = '';
 $arduino_default_channel = 'arduino-default-channel';
 $arduino_default_event = 'default-event';
 $adruino_default_data = '';
+
+function setDefaults($room)
+{
+	if($room == 'public')
+	{
+		$default_channel = $public_default_channel;
+		$default_event = $public_default_event;
+		$default_data = $public_default_data;
+	}
+	else if($room == 'private')
+	{
+		$default_channel = $private_default_channel;
+		$default_event = $private_default_event;
+		$default_data = $private_default_data;
+	}
+	else if($room == 'presence')
+	{
+		$default_channel = $presence_default_channel;
+		$default_event = $presence_default_event;
+		$default_data = $presence_default_data;
+	}
+}
 ?>

@@ -1,114 +1,173 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Choose Video</title>
-        <script src="http://js.pusher.com/1.11/pusher.min.js" type="text/javascript"></script>
-        <script type="text/javascript">
-            
-            var pusher = new Pusher('7fe26fe9f55d4b78ea02');
-            Pusher.channel_auth_endpoint = 'presence_auth.php';
-            var voted = false;
-            var votesfor1 = 0;
-            var votesfor2 = 0;
-            var pusher_channel = 'choose_video';
-            var pusher_event_register = 'arduino_event_register';
-            var presence_channel = pusher.subscribe('presence-choose_video'); //pusher_room_channel arduino-choose_video
+<head>
+<title>Choose Video</title>
+<meta name="viewport" content="width=320; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;"/>
+<style type="text/css">
+    body {
+        font-family: Helvetica, Geneva, Arial, sans-serif;
+        font-size: 12px;
+        color: #444444;
+        background-color: black;
+        background-image: url('choose_video_background.jpg');
+        background-repeat: no-repeat;
+        width: 320px;
+    }
+    p {}
+    h1 {font-size: 26px;}    
+    h2 {font-size: 20px;}
+    h3 {font-size: 12px; color: #666666; margin-top:-15px;}
+    button {width:100px; height:30px;}
+
+</style>
+    
+<script src="http://js.pusher.com/1.11/pusher.min.js" type="text/javascript"></script>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.1/jquery.min.js"></script>
+<script src="json2.js"></script>
+<script type="text/javascript">
+    
+    //Define States
+    var kStateWaitingForVoters = "WAITING_FOR_VOTERS";
+    var kStateVoting = "VOTING";
+    const kStateVoted = "VOTED";
+    const kStatePlaying = "PLAYING";
+    
+    //Define Pusher Events
+    const kEventCastVote = "vote_cast";
+    const kEventUpdate = "update";
+    
+    //Init state
+    var pusher = new Pusher('7fe26fe9f55d4b78ea02');
+    Pusher.channel_auth_endpoint = 'presence_auth.php';
+    var pusher_channel_name = 'presence-choose-video';
+    var pusher_channel = pusher.subscribe(pusher_channel_name);
+    var state = kStateWaitingForVoters;
+
+    //Pusher Bindings
+    pusher_channel.bind(kEventUpdate, function(data) {
+        //console.log('Update event recieved with data:' + data);
+        
+        var dataObject = JSON.parse(data);
+        
+        //console.log('After JSON parse:' + data);
+                
+        var aState = dataObject.state;                 
+        var aTimeRemaining = dataObject.timeRemaining;
+        var aVotesFor1 = dataObject.votesFor1;
+        var aVotesFor2 = dataObject.votesFor2;                
+        var aTotalVoters = dataObject.totalVoters;    
+                        
+        console.log('State:' + aState + ' Time:' + aTimeRemaining +
+                    ' Votes for 1:' + aVotesFor1 + ' Votes for 2:' + aVotesFor2 + ' Total Voters:' + aTotalVoters);
+        
+        //Change State?
+        if ((aState != state) && !(aState == kStateVoting && state == kStateVoted)) changeState(aState);
+
+        //Perform Updates?
+        if (state == kStateWaitingForVoters) updateWaitingForVotersTimeRemaining(aTimeRemaining);
+        if (state == kStateVoting || state == kStateVoted) {
+            updateVotingTimeRemaining(aTimeRemaining);
+            updateVotingPercentagesAndRemainingVotes(aVotesFor1,aVotesFor2,aTotalVoters);
+        }
+    });
+    
+    //Helper Functions
+    function sendPush(event, data)
+    {
+        console.log('Sending a Pusher Event: ' + event + ' With Data:' + data);
+        var xmlhttp;
+        xmlhttp=new XMLHttpRequest();
+        xmlhttp.open("POST","http://dev.arisgames.org/server/pusher/pusher_send.php",false);
+        xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xmlhttp.send("channel="+pusher_channel_name+"&event="+event+"&data="+data); //Synchronous call
+    }
+    
+    function sendVote(voteNumber)
+    {
+        changeState(kStateVoted);
+        sendPush(kEventCastVote,voteNumber);             
+    }
+    
+    function updateWaitingForVotersTimeRemaining(time){
+        document.getElementById('waitingForVotersTimeRemaining').innerHTML = time + " seconds remaining for others to join";
+    }
+    
+    function updateVotingTimeRemaining(time){
+        document.getElementById('votingTimeRemaining').innerHTML = time + " seconds remaining to vote";
+    }
+    
+    function updateVotingPercentagesAndRemainingVotes(votesFor1,votesFor2,totalVoters){
+        remainingVotes = totalVoters - (votesFor1 + votesFor2);
+        document.getElementById('votesFor1').innerHTML = votesFor1/totalVoters*100;
+        document.getElementById('votesFor2').innerHTML = votesFor2/totalVoters*100;
+        document.getElementById('remainingVotes').innerHTML = totalVoters - (votesFor1 + votesFor2);
+    }
+    
+    function changeState(newState)
+    {
+        console.log('Changing to State:' + newState);
+        
+        //Reset the possible elements
+        document.getElementById('waitingScreen').style.display = "none";
+        document.getElementById('votingScreen').style.display = "none";
+        document.getElementById('playingScreen').style.display = "none";
+        document.getElementById('button1').disabled = true;
+        document.getElementById('button2').disabled = true;
 
 
-            //Arduino
-            var arduino_channel = pusher.subscribe(pusher_channel);
-            arduino_channel.bind('arduino_event_register', function(data) {
-                                 document.getElementById('arduino_messages').innerHTML = document.getElementById('arduino_messages').innerHTML + "<br />\nMessage Received(arduino_event_register): "+data;
-                                 });
-            arduino_channel.bind('Start', function(data) {
-                                 document.getElementById("introduction").style.display = "none";
-                                 document.getElementById("votingOptions").style.display = "block";
-                                 });
-            arduino_channel.bind('Done_Voting', function(data) {
-                                 document.getElementById('arduino_messages').innerHTML = "Please enjoy video ";
-                                 if(votesfor1 >= votesfor2){
-                                 document.getElementById('arduino_messages').innerHTML += "1";
-                                 }
-                                 else{
-                                 document.getElementById('arduino_messages').innerHTML += "2";
-                                 }
-                                 var t=setTimeout("reset()",5000);
-                                 });
-            arduino_channel.bind('Vote', function(data) {
-                                 votesfor1 = data.charAt(0);
-                                 votesfor2 = data.charAt(1);
-                                 document.getElementById('arduino_messages').innerHTML = "Votes for Video 1: " + votesfor1 + " Votes for Video 2: " + votesfor2;
-                                 });
-            arduino_channel.bind('Clock_Time', function(data) {
-                                 var time = 15-data;
-                                 document.getElementById('arduino_messages').innerHTML = time;
-                                 });
-            
-            
-            //SEND
-            function sendRequest(data)
-        	{
-                var xmlhttp;
-                xmlhttp=new XMLHttpRequest();
-                xmlhttp.open("POST","http://dev.arisgames.org/server/pusher2/public_send.php?channel="+pusher_channel,false); //?arduino_channel="+pusher_channel
-                xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-                xmlhttp.send('data='+data); //Synchronous call
-        	}
-            
-            function vote(voteNumber)
-            {
-                if(!voted){
-                    document.getElementById("video1").src = "images/grayOne.jpg"; 
-                    document.getElementById("video2").src = "images/grayTwo.jpg"; 
-                    sendRequest(voteNumber); 
-                }
-                voted = true;
-            }
-            function reset()
-            {
-                    document.getElementById("video1").src = "images/one.jpg"; 
-                    document.getElementById("video2").src = "images/two.jpg"; 
-                    document.getElementById("introduction").style.display = "block";
-                    document.getElementById("votingOptions").style.display = "none";
-                    //sendRequest(voteNumber); 
-                    voted = false;
-            }
-            </script>
-    </head>
-    <body>
-        
-        <div id="introduction" style = "display:block;">
-              <img src="images/black.jpg" id="intro" alt="Introduction" width="200" height="300" />
-        </div>
-        
-        <div id="votingOptions" style = "display:none;">
-        <br/>
-        <br/>
-        <br/>
-        <table cellpadding = 0 cellspacing = 100>
+        switch (newState) {
+            case kStateWaitingForVoters:
+                document.getElementById('waitingScreen').style.display = "block";
+                break;
+            case kStateVoting:
+                document.getElementById('votingScreen').style.display = "block";
+                document.getElementById('votesFor1').innerHTML = 0;
+                document.getElementById('votesFor2').innerHTML = 0;
+                document.getElementById('remainingVotes').innerHTML = 0;
+                document.getElementById('button1').disabled = false;
+                document.getElementById('button2').disabled = false;
+                break;
+            case kStateVoted:                
+                document.getElementById('votingScreen').style.display = "block";
+                break;
+            case kStatePlaying:
+                document.getElementById('playingScreen').style.display = "block";
+                break;
+        }
+        state = newState;
+    }
+                     
+</script>
+</head>
+<body>
+    <h1>Life in a Sod House</h1>
+    <h3>Technical Demo</h3>
+    <div id="waitingScreen" style = "display:block;">
+        <p><div id = "waitingForVotersTimeRemaining"></div></p>
+    </div>
+
+    <div id="votingScreen" style = "display:none;">
+        <p><div id = "votingTimeRemaining"></div></p>
+        <p>Which video would you like to see?</p>
+        <table>
             <tr>
-                <td>
-                    <div>
-                    <img src="images/one.jpg" id="video1" alt="One" onClick="vote('v1');" width="50" height="100" />
-                    </div>
-                </td>
-                <td>
-                    <div>
-                        <img src="images/two.jpg" id="video2" alt="Two" onClick="vote('v2');" width="50" height="100" />
-                    </div>
-                </td>
+                <td><button onClick = "sendVote(1)" id="button1">Grasshopers!</button></td>
+                <td><button onClick = "sendVote(2)" id="button2">Blizzard!</button></td>
             </tr>
-        </table>
-        <br/>
-        <br/>
-        <br/>
-        <br/>
-        </div>
-            
-        <div id="arduino_messages">
-        </div>
-        
-        
-        
-    </body>
+            <tr>
+                <td><div id = "votesFor1"></div> percent</td><td><div id = "votesFor2"></div> percent</td>
+            </tr>
+         </table>   
+        <p><div id = "remainingVotes"></div> remaining votes</p>
+    </div>
+    
+    <div id="playingScreen" style = "display:none;">
+        <p>This space could easily be used for time syncronized:</p>
+        <ul>
+            <li>"fun facts" about the video</li>
+            <li>secondary video or audio effects</li>
+            <li>additional interactive content</li>
+        </ul>
+    </div>
+</body>
 </html>
