@@ -3630,7 +3630,10 @@ class Notes extends Module
 
 		$contents = array();
 		while($content = mysql_fetch_object($result))
+		{
+			$content->media_url = Media::getMediaDirectoryURL($content->game_id)->data . '/' . $content->file_name;
 			$contents[] = $content;
+		}
 
 		return $contents;
 	}

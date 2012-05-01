@@ -255,7 +255,7 @@ function formatPage(game)
 							}
 	
 								add("<div class='attrib note_attrib attrib_public note_public_to_notebook'>\n");					
-							if(note.public_to_notebook)
+							if(note.public_to_notebook == 1 && note.public_to_map == 1)
 									add("PUBLIC");
 							else
 									add("PRIVATE");
