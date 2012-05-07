@@ -6,7 +6,7 @@
 <style type="text/css">
     body {
         font-family: Helvetica, Geneva, Arial, sans-serif;
-        font-size: 12px;
+        font-size: 16px;
         color: #444444;
         background-color: black;
         background-image: url('choose_video_background.jpg');
@@ -16,12 +16,12 @@
     p {}
     h1 {font-size: 26px;}    
     h2 {font-size: 20px;}
-    h3 {font-size: 12px; color: #666666; margin-top:-15px;}
+    h3 {font-size: 16px; color: #666666; margin-top:-15px;}
     button {width:100px; height:30px;}
 
 </style>
     
-<script src="http://js.pusher.com/1.11/pusher.min.js" type="text/javascript"></script>
+<script src="http://js.pusher.com/1.12/pusher.min.js" type="text/javascript"></script>
 <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.4.1/jquery.min.js"></script>
 <script src="json2.js"></script>
 <script type="text/javascript">
@@ -61,10 +61,14 @@
                     ' Votes for 1:' + aVotesFor1 + ' Votes for 2:' + aVotesFor2 + ' Total Voters:' + aTotalVoters);
         
         //Change State?
+        //If the state coming from the server is different that the current state and 
+        //the update isn't trying to reset us to voting from voting
         if ((aState != state) && !(aState == kStateVoting && state == kStateVoted)) changeState(aState);
 
-        //Perform Updates?
+        //Perform a time update for the waiting for voters state
         if (state == kStateWaitingForVoters) updateWaitingForVotersTimeRemaining(aTimeRemaining);
+                        
+        //Perform a time update for the voting/voted states
         if (state == kStateVoting || state == kStateVoted) {
             updateVotingTimeRemaining(aTimeRemaining);
             updateVotingPercentagesAndRemainingVotes(aVotesFor1,aVotesFor2,aTotalVoters);

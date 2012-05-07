@@ -2,8 +2,8 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Pusher Room</title>
-	<script src="http://js.pusher.com/1.11/pusher.min.js" type="text/javascript"></script>
+	<title>Host Room</title>
+	<script src="http://js.pusher.com/1.12/pusher.min.js" type="text/javascript"></script>
 	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.3.1/jquery.min.js"></script>
 	<script src="json2.js"></script>
 	<script type="text/javascript">
@@ -25,6 +25,7 @@
 		var leave_event = 'pusher:member_removed';
 		var vote_event = 'vote_cast';
 		var video_end_event = 'ready_to_play';
+		var subscribe_event = 'pusher:subscription_succeeded';
 		
 		//My sent events
 		var update_event = 'update';
@@ -52,17 +53,26 @@
 		//Presence
 		Pusher.channel_auth_endpoint = presence_auth;
 		var pres_channel = pusher.subscribe(presence_channel);
+			//START
+		pres_channel.bind(subscribe_event, function(members) {
+			appendConsole(presence_console, "<font color='#0000FF'>PUSHER:</font> "+members.count);
+  			stateObj.totalVoters = members.count-1;
+			if(stateObj.totalVoters > 0) setState(WAITING_FOR_VOTERS_STATE);
+			update();
+		})
 			//JOIN
 		pres_channel.bind(join_event, function(data) {
 			appendConsole(presence_console, "<font color='#00FF00'>RECEIVED:</font> "+join_event+"<br />"+JSON.stringify(data));
 			stateObj.totalVoters++;
 			if(stateObj.totalVoters == 1) setState(WAITING_FOR_VOTERS_STATE);
+			update();
 		});
 			//LEAVE
 		pres_channel.bind(leave_event, function(data) {
 			appendConsole(presence_console, "<font color='#00FF00'>RECEIVED:</font> "+leave_event+"<br />"+JSON.stringify(data));
 			if(stateObj.totalVoters > 0) stateObj.totalVoters--;
 			if(stateObj.totalVoters == 0) setState(WAITING_FOR_CLIENT_STATE);
+			update();
 		});
 			//VOTE
 		pres_channel.bind(vote_event, function(data) {
@@ -91,7 +101,7 @@
 
 		function appendConsole(console, info)
 		{
-			document.getElementById(console).innerHTML = document.getElementById(console).innerHTML + "<br />"+info+"<br />";
+			document.getElementById(console).innerHTML = "<br />"+info+"<br />" + document.getElementById(console).innerHTML;
 		}
 
 		function clearConsoles()
@@ -133,8 +143,7 @@
 		var PLAYING_STATE = "PLAYING";
 	
 		//Dials 'n Knobs
-		var TIME_TO_WAIT_FOR_JOIN = 10;
-		var TIME_TO_WAIT_FOR_VOTE = 20;
+		var TIME_TO_WAIT_FOR_JOIN = 15;
 		var TIME_TO_WAIT_FOR_VOTE = 20;
 
 		//Containers
@@ -150,7 +159,8 @@
 				}
 				else if(stateObj.state == VOTING_STATE)
 				{
-					setState(PLAYING_STATE);
+					if(stateObj.totalVoters > 0) setState(PLAYING_STATE);
+					else setState(WAITING_FOR_CLIENT_STATE);
 				}
 			}
 			else
@@ -199,14 +209,26 @@
 		*
 		*/
 	
+		function updateNumVoters()
+		{
+			stateObj.totalVoters = document.getElementById('numVoterChanger').value;
+			update();
+		}
+
+		function load()
+		{
+			document.getElementById(data_console).innerHTML = "STATE:"+stateObj.state+"<br />TOTAL VOTERS:"+stateObj.totalVoters+"<br />VOTESFOR1:"+stateObj.votesFor1+"<br />VOTESFOR2:"+stateObj.votesFor2+"<br />TIMEREMAINING:"+stateObj.timeRemaining;
+		}
 	</script>
 </head>
-<body>
-	<input type='button' value='clear consoles' onClick='clearConsoles()' />
+<body onload="load()">
+	<input type='button' value='clear consoles' onClick='clearConsoles()' /><br />
 	<table>
 		<tr>
 		<td width="300px">
-			<u>DATA</u>
+			<u>DATA</u><br />
+	<input id='numVoterChanger' type='text' value='' />
+	<input type='button' value='update num voters' onClick='updateNumVoters()' />
 		</td>
 		<td width="300px">
 			<u>PUBLIC</u>
