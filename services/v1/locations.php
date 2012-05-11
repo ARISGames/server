@@ -227,11 +227,19 @@ class Locations extends Module
 					$query = "SELECT icon_media_id FROM aug_bubbles WHERE aug_bubble_id = {$location->type_id} LIMIT 1";
 					break;
 				case 'PlayerNote':
-					//No icon_media_id for notes...
+					$query = "SELECT public_to_map FROM notes WHERE note_id = {$location->type_id} LIMIT 1";
 					break;
 			}
 
-			if ($location->type != 'PlayerNote') {
+			if ($location->type == 'PlayerNote') {
+				$rsObject = @mysql_query($query);
+				$object = @mysql_fetch_object($rsObject);
+				if (!$object || $object->public_to_map == 0) {
+					NetDebug::trace("Skipping Location:'{$location->location_id}' becasue it points to something bogus, or it isn't shared to map");	
+					continue;
+				}
+			}
+			else {
 				$rsObject = @mysql_query($query);
 				$object = @mysql_fetch_object($rsObject);
 				if (!$object) {

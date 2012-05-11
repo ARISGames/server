@@ -3,13 +3,14 @@ require_once("module.php");
 require_once("media.php");
 require_once("games.php");
 require_once("locations.php");
+require_once("players.php");
 require_once("playerStateChanges.php");
 require_once("editorFoldersAndContent.php");
 
 class Notes extends Module
 {
 	//Returns note_id
-	function createNewNote($gameId, $playerId)
+	function createNewNote($gameId, $playerId, $lat=0, $lon=0)
 	{
 		$query = "INSERT INTO notes (game_id, owner_id, title) VALUES ('{$gameId}', '{$playerId}', 'New Note')";
 		@mysql_query($query);
@@ -17,6 +18,7 @@ class Notes extends Module
 		$nId = mysql_insert_id();
 		EditorFoldersAndContent::saveContent($gameId, false, 0, 'PlayerNote', $nId, 0);
 		Module::processGameEvent($playerId, $gameId, Module::kLOG_GET_NOTE, $nId);
+		Players::dropNote($gameId, $playerId, $nId, $lat, $lon);
 		return new returnData(0, $nId);
 	}
 
