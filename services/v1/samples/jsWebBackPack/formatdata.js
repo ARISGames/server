@@ -15,7 +15,14 @@ function formatPage(game)
 	add("<div class='pageheader'>\n");
 		add("<div class='gameicon'>\n");
 			if(game.icon_url)
-				add("<a href='"+game.media_url+"'><img class='gameiconimage' src='"+game.icon_url+"' alt='"+game.media_name+"' /></a>\n");
+			{
+				if(game.media_url)
+					add("<a href='"+game.media_url+"'><img class='gameiconimage' src='"+game.icon_url+"' alt='"+game.media_name+"' /></a>\n");
+				else
+					add("<img class='gameiconimage' src='"+game.icon_url+"' alt='"+game.media_name+"' />\n");
+			}
+			else if(game.media_url)
+				add("<a href='"+game.media_url+"'><img class='gameiconimage' src='"+game.media_url+"' alt='"+game.media_name+"' /></a>\n");
 		add("</div>\n");//<- class gameicon
 		add("<div class='gametext'>\n");
 			add("<div class='gametitle'>\n");

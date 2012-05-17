@@ -1604,8 +1604,8 @@ class Games extends Module
 			public function getGamesContainingText($intPlayerId, $latitude, $longitude, $textToFind, $boolIncludeDevGames = 1, $page = 0){
 				$textToFind = addSlashes($textToFind);
 				$textToFind = urldecode($textToFind);
-				if($boolIncludeDevGames) $query = "SELECT game_id, name FROM games WHERE (name LIKE '%{$textToFind}%' OR description LIKE '%{$textToFind}%') ORDER BY name ASC LIMIT ".($page*20).", 20";
-				else $query = "SELECT game_id, name FROM games WHERE (name LIKE '%{$textToFind}%' OR description LIKE '%{$textToFind}%') AND ready_for_public = 1 ORDER BY name ASC LIMIT ".($page*20).", 20";
+				if($boolIncludeDevGames) $query = "SELECT game_id, name FROM games WHERE (name LIKE '%{$textToFind}%' OR description LIKE '%{$textToFind}%') ORDER BY name ASC LIMIT ".($page*25).", 25";
+				else $query = "SELECT game_id, name FROM games WHERE (name LIKE '%{$textToFind}%' OR description LIKE '%{$textToFind}%') AND ready_for_public = 1 ORDER BY name ASC LIMIT ".($page*25).", 25";
 
 				$result = mysql_query($query);
 				$games = array();
@@ -1875,8 +1875,8 @@ class Games extends Module
 				$game = mysql_fetch_object($result);
 				if(!$game) return "Invalid Game ID";
 
-				$game->media_url = Media::getMediaDirectoryURL($gameId)->data . '/' . $game->media_url;
-				$game->icon_url = Media::getMediaDirectoryURL($gameId)->data . '/' . $game->icon_url;
+				if($game->media_url) $game->media_url = Media::getMediaDirectoryURL($gameId)->data . '/' . $game->media_url;
+				if($game->icon_url) $game->icon_url = Media::getMediaDirectoryURL($gameId)->data . '/' . $game->icon_url;
 
 
 				$query = "SELECT editors.name FROM game_editors JOIN editors ON editors.editor_id = game_editors.editor_id WHERE game_editors.game_id = '{$gameId}'";
