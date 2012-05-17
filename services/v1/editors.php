@@ -67,7 +67,7 @@ class Editors extends Module
 
 		$body = "<p><strong>You signed up to become an editor for ARIS!</strong> To get things started well, we wanted to make sure you knew about a few things and had places to look for help.</p>
 			<p>For starters, there are demo videos and documentation at http://arisgames.org/make/training-videos/.</p>
-			<p>If you have questions and want to talk with other users, go to http://groups.google.com/group/arisgames. You can post a new discussion there or send an email to arisgames@googlegroups.com.</p>
+			<p>If you have questions and want to talk with other users, join our google group at http://groups.google.com/group/arisgames. You can post a new discussion there or send an email to arisgames@googlegroups.com.</p>
 			<p>If you discover bugs or have new ideas, please tell us at http://arisgames.lighthouseapp.com.</p>
 			<p>Just so you don't forget, your username is $strUser and your password is $strPassword</p>
 			<p>Good luck making games!</p>";
