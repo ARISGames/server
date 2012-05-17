@@ -1249,8 +1249,6 @@ class Games extends Module
 
 			}		
 
-
-
 			/**
 			 * Copy a game to a new game
 			 * Not yet implemented
@@ -1260,9 +1258,6 @@ class Games extends Module
 			{
 				return new returnData(5, NULL, "Copy Game Not Implemented on Server");
 			}	
-
-
-
 
 			/**
 			 * Delete a new game
@@ -1356,10 +1351,6 @@ class Games extends Module
 
 				return new returnData(0);	
 			}	
-
-
-
-
 
 			/**
 			 * Creates a game archive package
@@ -1610,11 +1601,11 @@ class Games extends Module
 			 * @returns array of gameId's who's corresponding games contain the search string
 			 */
 
-			public function getGamesContainingText($intPlayerId, $latitude, $longitude, $textToFind, $boolIncludeDevGames = 1){
+			public function getGamesContainingText($intPlayerId, $latitude, $longitude, $textToFind, $boolIncludeDevGames = 1, $page = 0){
 				$textToFind = addSlashes($textToFind);
 				$textToFind = urldecode($textToFind);
-				if($boolIncludeDevGames) $query = "SELECT game_id, name FROM games WHERE (name LIKE '%{$textToFind}%' OR description LIKE '%{$textToFind}%') ORDER BY name ASC";
-				else $query = "SELECT game_id, name FROM games WHERE (name LIKE '%{$textToFind}%' OR description LIKE '%{$textToFind}%') AND ready_for_public = 1 ORDER BY name ASC";
+				if($boolIncludeDevGames) $query = "SELECT game_id, name FROM games WHERE (name LIKE '%{$textToFind}%' OR description LIKE '%{$textToFind}%') ORDER BY name ASC LIMIT ".($page*20).", 20";
+				else $query = "SELECT game_id, name FROM games WHERE (name LIKE '%{$textToFind}%' OR description LIKE '%{$textToFind}%') AND ready_for_public = 1 ORDER BY name ASC LIMIT ".($page*20).", 20";
 
 				$result = mysql_query($query);
 				$games = array();
@@ -1714,9 +1705,10 @@ class Games extends Module
 				$rs = mysql_query($query);
 				$editors = mysql_fetch_object($rs);
 
-				$newGameId = Games::createGame($editors->editor_id, $game->name . "_copy", $game->description, $game->pc_media_id, $game->icon_media_id, $game->media_id,
+				$newGameId = Games::createGame($editors->editor_id, $game->name . "_copy", $game->description, 
+						$game->pc_media_id, $game->icon_media_id, $game->media_id,
 						$game->is_locational, $game->ready_for_public, 
-						$game->allow_player_created_locations, $game->delete_player_locations_on_reset,
+						$game->allow_share_note_to_map, $game->allow_share_note_to_book, $game->allow_player_tags, $game->allow_player_comments,
 						$game->on_launch_node_id, $game->game_complete_node_id, $game->inventory_weight_cap);
 
 
