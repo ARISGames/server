@@ -7,6 +7,20 @@ function add(string)
 	htmlcontent+=string;
 }
 
+function format_img(src, alt, href, classes)
+{
+	if(src)
+	{
+		if(href)
+			return "<a href='"+href+"'><img class='"+classes+"' src='"+src+"' alt='"+alt+"' /></a>\n";
+		else
+			return "<img class='"+classes+"' src='"+src+"' alt='"+alt+"' />\n";
+	}
+	else if(href)
+		return "<a href='"+href+"'><img class='"+classes+"' src='"+href+"' alt='"+alt+"' /></a>\n";
+	else return "";
+}
+
 function formatPage(game)
 {
 	add("<div class='page'>\n");
@@ -14,15 +28,7 @@ function formatPage(game)
 	//Set header of page
 	add("<div class='pageheader'>\n");
 		add("<div class='gameicon'>\n");
-			if(game.icon_url)
-			{
-				if(game.media_url)
-					add("<a href='"+game.media_url+"'><img class='gameiconimage' src='"+game.icon_url+"' alt='"+game.media_name+"' /></a>\n");
-				else
-					add("<img class='gameiconimage' src='"+game.icon_url+"' alt='"+game.media_name+"' />\n");
-			}
-			else if(game.media_url)
-				add("<a href='"+game.media_url+"'><img class='gameiconimage' src='"+game.media_url+"' alt='"+game.media_name+"' /></a>\n");
+			add(format_img(game.icon_url, game.media_url, game.media_url, 'gameiconimage'));
 		add("</div>\n");//<- class gameicon
 		add("<div class='gametext'>\n");
 			add("<div class='gametitle'>\n");
@@ -63,7 +69,7 @@ function formatPage(game)
 			add("<div class='player'>\n");
 			add("<div class='playerheader'>\n");
 				add("<div class='playericon'>\n");
-					add("<a href='api.php?mode=web&gameId="+game.game_id+"&playerId="+bp.owner.player_id+"'><img class='playericonimage' src='profpic.png' /></a>");
+					add(format_img('profpic.png', '', 'index.html?mode=web&gameId='+game.game_id+'&playerId='+bp.owner.player_id, 'playericonimage'));
 				add("</div>\n");//<- class 'playericon'
 				add("<div class='playertext'>\n");
 				add("<div class='playername'>"+bp.owner.user_name+"</div>\n");
@@ -107,7 +113,7 @@ function formatPage(game)
 					if(attribute.icon_url)
 					{
 						add("<div class='attrib attribute_attrib attribute_icon'>\n");
-						add("<a href='"+attribute.media_url+"'><img class='thumbnail' src = '"+attribute.icon_url+"' alt = '"+attribute.icon_name+"'/></a>\n");
+							add(format_img(attribute.icon_url, attribute.icon_name, attribute.media_url, 'thumbnail'));
 						add("</div>\n"); //<- class 'attribute_icon_file_name'
 					}
 	
@@ -174,7 +180,7 @@ function formatPage(game)
 							if(item.icon_url)
 							{
 								add("<div class='attrib item_attrib item_icon'>\n");					
-									add("<a href='"+item.media_url+"'><img class='thumbnail' src = '"+item.icon_url+"' alt = '"+item.icon_name+"'/></a>\n");
+									add(format_img(item.icon_url, item.icon_name, item.media_url, 'thumbnail'));
 								add("</div>\n"); //<- class 'item_icon_url'
 							}
 	
@@ -247,7 +253,8 @@ function formatPage(game)
 							if(note.username)
 							{
 								add("<div class='attrib note_attrib note_icon'>\n");
-									add("<a href='api.php?mode=web&gameId="+game.game_id+"&playerId="+note.owner_id+"'><img class='playernoteiconimage' src='profpic.png' /></a><br />"+note.username+"\n");
+									add(format_img('profpic.png', '', 'index.html?mode=web&gameId='+game.game_id+'&playerId='+note.owner_id, 'playernoteiconimage'));
+									add("<br />"+note.username+"\n");
 								add("</div>\n"); //<- class 'note_icon_file_name'
 							}
 	
@@ -288,24 +295,36 @@ function formatPage(game)
 										if(notecontent.type == "PHOTO")
 										{
 											add("<div class='attrib notecontent_attrib notecontent_media'>\n");
-												add("<a href='"+notecontent.media_url+"'><img class='thumbnail' src='"+notecontent.media_url+"' /></a>\n");
+												add(format_img(notecontent.media_url, '', notecontent.media_url, 'thumbnail'));
 											add("</div>\n");//<- class 'notecontent_media'
 										}	
 										if(notecontent.type == "AUDIO")
 										{
 											add("<div class='attrib notecontent_attrib notecontent_media'>\n");
-												add("<a href='"+notecontent.media_url+"'><img class='thumbnail' src='defaultAudioIcon.png' /></a>\n");
+												add(format_img('defaultAudioIcon.png', '', notecontent.media_url, 'thumbnail'));
 											add("</div>\n");//<- class 'notecontent_media'
 										}	
 										if(notecontent.type == "VIDEO")
 										{
 											add("<div class='attrib notecontent_attrib notecontent_media'>\n");
-												add("<a href='"+notecontent.media_url+"'><img class='thumbnail' src='defaultVideoIcon.png' /></a>\n");
+												add(format_img('defaultVideoIcon.png', '', notecontent.media_url, 'thumbnail'));
 											add("</div>\n");//<- class 'notecontent_media'
 										}	
+										if(notecontent.type == "TEXT")
+										{
+											add("<div class='attrib notecontent_attrib notecontent_media'>\n");
+												add(notecontent.title);
+											add("</div>\n");//<- class 'notecontent_media'
+										}
 									add("</div>\n");//<- class 'left'
 									add("<div class='right'>\n");
-										if(notecontent.title)
+										if(notecontent.type == "TEXT")
+										{
+											add("<div class='attrib notecontent_attrib attrib_title notecontent_title'>\n");
+												add(notecontent.text);
+											add("</div>\n");//<- class 'notecontent_title'
+										}
+										else if(notecontent.title)
 										{
 											add("<div class='attrib notecontent_attrib attrib_title notecontent_title'>\n");
 												add(notecontent.title);
@@ -335,8 +354,9 @@ function formatPage(game)
 			
 										if(comment.username)
 										{
-											add("<div class='attrib comment_attrib comment_icon'>\n");					
-									add("<a href='api.php?mode=web&gameId="+game.game_id+"&playerId="+comment.owner_id+"'><img class='playercommenticonimage' src='profpic.png' /></a><br />"+comment.username+"\n");
+											add("<div class='attrib comment_attrib comment_icon'>\n");
+												add(format_img('profpic.png', '', 'index.html?mode=web&gameId='+game.game_id+'&playerId='+comment.owner_id, 'playercommenticonimage'));
+												add("<br />"+comment.username+"\n");
 											add("</div>\n"); //<- class 'comment_icon_file_name'
 										}
 			

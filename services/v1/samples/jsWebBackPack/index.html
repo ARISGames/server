@@ -13,7 +13,7 @@
         	xmlhttp.send(params); //Synchronous call
 
         	var response=JSON.parse(xmlhttp.responseText);
-		//alert(xmlhttp.responseText);
+		alert(xmlhttp.responseText);
 		if(response.returnCode == 1) //Error
 		{
 			document.getElementById('playerBackPacks').innerHTML = response.data;	
