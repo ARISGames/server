@@ -10,6 +10,7 @@ class Config
 	
 	const gamedataFSPath		= '/path/to/gamedata'; //Make Sure this directory is writable
 	const gamedataWWWPath		= 'http://server/path/to/gamedata';
+	const serverWWWPath		= 'http://server';
 	const serverErrorLog		= '/path/to/aris_error_log.txt'; //Make sure this file is writable
 	const gameMediaSubdir		= ''; //if this is used, you must include the trailing slash
 
