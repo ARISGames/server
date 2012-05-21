@@ -30,7 +30,8 @@ $nextRow = @mysql_fetch_assoc($result);
 while ($nextRow) 
 {
 	$row = $nextRow;
-	$noteId = $row['note_id'];
+	if(isset($row['note_id'])) $noteId = $row['note_id'];
+	else continue;
 	$mediaHtml = "";
 	while($nextrow = @mysql_fetch_assoc($result) && $nextrow->note_id == $noteId)
 	{

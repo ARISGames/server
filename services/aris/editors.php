@@ -12,7 +12,7 @@ class Editors extends Module
 	{
 		
 		$query = "SELECT * FROM editors 
-				WHERE name = '$strUser' and password = rrr LIMIT 1";
+				WHERE name = '$strUser' and password = MD5('{$strPassword}') LIMIT 1";
 		
 		//NetDebug::trace($query);
 
@@ -98,6 +98,31 @@ class Editors extends Module
 		return new returnData(0, NULL);
 	}	
     
+    
+    /**
+     * Get an Editor's Password
+     * @returns password on success, 4 bad editorID
+     */
+    public function getPassword($intEditorID)
+	{	
+		$query = "SELECT password 
+        FROM editors 
+        WHERE editor_id = {$intEditorID}";
+		
+		NetDebug::trace($query);
+		
+		$result = @mysql_query($query);
+        if (mysql_error()) return new returnData(3, NULL, 'SQL Error' . mysql_error());
+        
+        if (!$editor = mysql_fetch_array($result)) return new returnData(4, NULL, "Not an editor");
+		
+		if (mysql_affected_rows() < 1) return new returnData(4, NULL, 'No editors exist with matching ID');
+		return new returnData(0, $editor['password']);
+	}	
+    
+
+	
+	
 	/**
      * Reset and email editor a new password
      * @returns 0 on success
@@ -121,7 +146,7 @@ class Editors extends Module
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error' . mysql_error());
 		if (!mysql_affected_rows()) return new returnData(4, NULL, "Email is not an editor");
 		
-        $query2 = "SELECT editor_id FROM editors WHERE email = '{$strEmail}'";
+        $query2 = "SELECT editor_id WHERE email = '{$strEmail}'";
         $result = @mysql_query($query2);
         if (!$editor = mysql_fetch_array($result)) return new returnData(4, NULL, "Not an editor");
         

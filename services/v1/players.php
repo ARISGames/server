@@ -421,19 +421,39 @@ class Players extends Module
 		}
 		NetDebug::trace("New Password: {$newPass}");
 
+        $amppos = strrpos($strEmail, "@");
+        if($amppos === false)
+            $query = "UPDATE players SET password = MD5('{$newPass}') WHERE user_name = '{$strEmail}'";	
+        else 
+            $query = "UPDATE players SET password = MD5('{$newPass}') WHERE email = '{$strEmail}'";
+
+        
 		//set the editor record to this pw
-		$query = "UPDATE players SET password = MD5('{$newPass}') 
-			WHERE email = '{$strEmail}'";
+	
 
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error' . mysql_error());
+		if (!mysql_affected_rows()) return new returnData(4, NULL, "Email is not an player");
 
-		if (!mysql_affected_rows()) return new returnData(4, NULL, "Email is not an editor");
+        if($amppos === false) {
+            $query2 = "SELECT * FROM players WHERE user_name = '{$strEmail}'";   
+        }
+        else 
+            $query2 = "SELECT * FROM players WHERE email = '{$strEmail}'";
+
+        
+        
+        $result = @mysql_query($query2);
+        if (!$player = mysql_fetch_array($result)) return new returnData(4, NULL, "Not an editor");
+        
+        $playerid = $player['player_id'];
+        $username = $player['user_name'];
+        $email = $player['email'];
 
 		//email it to them
 		$subject = "Reset ARIS Password";
-		$body = "Your new password is: $newPass";
-		if (Module::sendEmail($strEmail, $subject, $body)) return new returnData(0, NULL);
+        $body = "Your new password is: $newPass. <br><br>Click this link to change your password: <a href=".Config::serverWWWPath."/resetpassword.php?t=p&i=$playerid&u=$username&p=$newPass'>Change ARIS Password</a>" ;
+		if (Module::sendEmail($email, $subject, $body)) return new returnData(0, NULL);
 		else return new returnData(5, NULL, "Mail could not be sent");
 	}
 
