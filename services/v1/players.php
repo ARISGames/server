@@ -411,51 +411,32 @@ class Players extends Module
 	 * @returns 0 on success
 	 */
 	public function resetAndEmailNewPassword($strEmail) {
-		//create a new password
-		$chars = 'abcdefghijklmnopqrstuvwxyz1234567890';
-		$length = 6;
-		$newPass = '';
-		for ($i=0; $i<$length; $i++) {
-			$char = substr($chars, rand(0,35), 1);
-			$newPass .= $char;
-		}
-		NetDebug::trace("New Password: {$newPass}");
 
         $amppos = strrpos($strEmail, "@");
-        if($amppos === false)
-            $query = "UPDATE players SET password = MD5('{$newPass}') WHERE user_name = '{$strEmail}'";	
-        else 
-            $query = "UPDATE players SET password = MD5('{$newPass}') WHERE email = '{$strEmail}'";
-
-        
-		//set the editor record to this pw
-	
-
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, 'SQL Error' . mysql_error());
-		if (!mysql_affected_rows()) return new returnData(4, NULL, "Email is not an player");
-
         if($amppos === false) {
             $query2 = "SELECT * FROM players WHERE user_name = '{$strEmail}'";   
         }
         else 
             $query2 = "SELECT * FROM players WHERE email = '{$strEmail}'";
-
         
-        
+        NetDebug::trace($query2);
         $result = @mysql_query($query2);
-        if (!$player = mysql_fetch_array($result)) return new returnData(4, NULL, "Not an editor");
+        if (!$player = mysql_fetch_array($result)) return new returnData(4, NULL, "Not a player");
         
         $playerid = $player['player_id'];
         $username = $player['user_name'];
         $email = $player['email'];
-
+        $scrambledpassword = MD5($player['password']);
+        
 		//email it to them
-		$subject = "Reset ARIS Password";
-        $body = "Your new password is: $newPass. <br><br>Click this link to change your password: <a href=".Config::serverWWWPath."/resetpassword.php?t=p&i=$playerid&u=$username&p=$newPass'>Change ARIS Password</a>" ;
-		if (Module::sendEmail($email, $subject, $body)) return new returnData(0, NULL);
-		else return new returnData(5, NULL, "Mail could not be sent");
+ 		$subject = "ARIS Password Request";
+ 		$body = "We received a forgotten password request for your ARIS account. If you did not make this request, do nothing and your account info will not change. <br><br>To reset your password, simply click the link below. Please remember that passwords are case sensitive. If you are not able to click on the link, please copy and paste it into your web browser.<br><br> <a href='".Config::serverWWWPath."/resetpassword.php?t=p&i=$playerid&p=$scrambledpassword'>".Config::serverWWWPath."/resetpassword.php?t=p&i=$playerid&p=$scrambledpassword</a> <br><br> Regards, <br>ARIS";
+        
+ 		if (Module::sendEmail($email, $subject, $body)) return new returnData(0, NULL);
+  		else return new returnData(5, NULL, "Mail could not be sent");
 	}
+    
+
 
 
 	/**

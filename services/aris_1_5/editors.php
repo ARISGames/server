@@ -99,35 +99,39 @@ class Editors extends Module
 	}	
     
 	/**
-     * Reset and email editor a new password
+     * Sends email to with link for changing their password 
      * @returns 0 on success
      */
 	public function resetAndEmailNewPassword($strEmail) {
 		//create a new password
-		$chars = 'abcdefghijklmnopqrstuvwxyz1234567890';
+		/*$chars = 'abcdefghijklmnopqrstuvwxyz1234567890';
 		$length = 6;
 		$newPass = '';
 		for ($i=0; $i<$length; $i++) {
 			$char = substr($chars, rand(0,35), 1);
 			$newPass .= $char;
-		}
-		NetDebug::trace("New Password: {$newPass}");
+		}*/
+		//NetDebug::trace("New Password: {$newPass}");
 
 		//set the editor record to this pw
-		$query = "UPDATE editors SET password = MD5('{$newPass}') 
-				WHERE email = '{$strEmail}'";
+		//$query = "UPDATE editors SET password = MD5('{$newPass}') 
+		//		WHERE email = '{$strEmail}'";
 		
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, 'SQL Error' . mysql_error());
-		if (!mysql_affected_rows()) return new returnData(4, NULL, "Email is not an editor");
+		//@mysql_query($query);
+		//if (mysql_error()) return new returnData(3, NULL, 'SQL Error' . mysql_error());
+		//if (!mysql_affected_rows()) return new returnData(4, NULL, "Email is not an editor");
 		
-        $query2 = "SELECT editor_id FROM editors WHERE email = '{$strEmail}'";
+        $query2 = "SELECT editor_id, password FROM editors WHERE email = '{$strEmail}'";
         $result = @mysql_query($query2);
         if (!$editor = mysql_fetch_array($result)) return new returnData(4, NULL, "Not an editor");
         
+        $editorid = $editor['editor_id'];
+        $scrambledpassword = MD5({$editor['password']);
+            
 		//email it to them
- 		$subject = "Reset ARIS Password";
- 		$body = "Your new password is: $newPass. <br>Click this link to change your password: http://arisgames.org/resetpassword.php$editor/$newPass";
+ 		$subject = "ARIS Password Request";
+ 		$body = "We received a forgotten password request for your ARIS account. If you did not make this request, do nothing and your account info will not change. <br><br>To reset your password, simply click the link below. Please remember that passwords are case sensitive. If you are not able to click on the link, please copy and paste it into your web browser.<br> ".Config::serverWWWPath."/resetpassword.php?t=e&i=$editorid&p=$scrambledpassword";
+
  		if (Module::sendEmail($strEmail, $subject, $body)) return new returnData(0, NULL);
   		else return new returnData(5, NULL, "Mail could not be sent");
 	}

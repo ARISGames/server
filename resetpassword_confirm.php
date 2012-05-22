@@ -3,32 +3,20 @@
     // Function to display form
     function showForm($errorName=false,$errorOldPassword=false,$errorNewPassword=false, $errorVerifyPassword=false){
         if ($errorName)  $errorTextName  = " Username is not found.  Please enter a valid username.";
-        if ($errorOldPassword) $errorTextOldPassword = " The old password is incorrect. Please try again.";
-        if ($errorNewPassword)  $errorTextNewPassword = " Your new password needs to be at least 6 characters long.";
+        if ($errorOldPassword) $errorTextOldPassword = " This form has expired. If you still want to change your password, click the 'Forgot Password' link again in ARIS to be sent a new email for changing your password.";
+        if ($errorNewPassword)  $errorTextNewPassword = " Please enter a new password.";
         if ($errorVerifyPassword)  $errorTextVerifyPassword = " The new passwords are not the same. Please verify your new password.";
         
-        echo '<html><head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><link rel="stylesheet" type="text/css" href="resetpassword.css"><link rel="stylesheet" type="text/css" href="http://arisgames.org/wp-content/themes/Play/style.css" media="screen" /><title>Reset ARIS Password</title></head><body><div id="header" class="inners"><div class="content-head">	<div class="logo"><a href="http://arisgames.org"><img src="http://arisgames.org/wp-content/uploads/2010/08/ARISLogo1.png" border="0" class="png" alt="ARIS - Mobile Learning Experiences" /></a></div><div class="menu">	<ul id="nav-ie" class="topnav fl fr sf-js-enabled sf-shadow"><li ><a href="/"><span></span></a></li><li class="page_item page-item-2062"><a href="http://arisgames.org/press/" title="Press"><span>Press</span></a></li><li class="page_item page-item-2573 current_page_item"><a href="http://arisgames.org/design-jam-recap/" title="Design Jam Recap"><span>Design Jam Recap</span></a></li><li class="page_item page-item-1470"><a href="http://arisgames.org/demo/" title="Demo"><span>Demo</span></a></li><li class="page_item page-item-1520"><a href="http://arisgames.org/blog/" title="Community Blog"><span>Community Blog</span></a></li><li class="page_item page-item-1971"><a href="http://arisgames.org/projects-and-papers/" title="Projects"><span>Projects</span></a></li><li class="page_item page-item-5"><a href="http://arisgames.org/design-team/" title="Design Team"><span>Design Team</span></a></li></ul>    </div>		  <div class="clear"></div>             </div></div><h1>Change Your ARIS Password<br></h1><br>';
+        echo'<html><head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><link rel="stylesheet" type="text/css" href="resetpassword.css"><link rel="stylesheet" type="text/css" href="http://arisgames.org/wp-content/themes/Play/style.css" media="screen" /><title>Reset ARIS Password</title></head><body><div id="header" class="inners"><div class="content-head">	<div class="logo"><a href="http://arisgames.org"><img src="http://arisgames.org/wp-content/uploads/2010/08/ARISLogo1.png" border="0" class="png" alt="ARIS - Mobile Learning Experiences" /></a>   </div><span id="logotext"><br>Change Your Password</span><div class="menu">	<ul id="nav-ie" class="topnav fl fr sf-js-enabled sf-shadow"><li ><a href="/"><span></span></a></li></ul>    </div>		  <div class="clear"></div></div></div>';
         
 
         echo "<form action='resetpassword_confirm.php' method='POST' name='ResetPassword'>";
         echo "<div class='tab'>";
-        echo "<br>ARIS Account Type:<br>";
-        echo "<table cellspacing='7'><td>";
-        echo "<input type='radio' name='accounttype' value='player' ";
-        if ($_POST['accounttype'] == 'player') echo "checked";
-        echo "> Player</td>  ";
-        echo "<td><input type='radio' name='accounttype' value='editor' ";
-        if ($_POST['accounttype'] == 'editor') echo "checked";  
-        echo "> Editor</td></table><br>";
-        echo "Username: <br>";
-        echo "<input name='username' value='". $_POST['username'] . "'>";
-        if ($errorName) echo "<span class='red'>$errorTextName</span>";  // display error if needed
-        //echo "<br><br>id:";
-        //echo "<br><input name='editorid' value='". $_POST['editorid'] . "'>";
-        echo "<br><br>Old Password:<br>";
-        echo "<input type = 'password' name='oldpassword' value='". $_POST['oldpassword']  . "'>";
-        if ($errorOldPassword) echo "<span class='red'>$errorTextOldPassword</span>"; // display error if needed
-        echo "<br>";
+        echo "<input type = 'hidden' name='accounttype' value='". $_POST['accounttype']  . "'>";
+        echo "<input type = 'hidden' name='oldpassword' value='". $_POST['oldpassword']  . "'>";
+        echo "<input type = 'hidden' name='editorid' value='". $_POST['editorid']  . "'><br>";
+        echo "<input type = 'hidden' name='username' value='". $_POST['username']  . "'>";
+        echo "<strong>Username: ".$_POST['username']."</strong><br>";
         echo "<br>New Password:<br>";
         echo "<input name='newpassword' type='password' value='". $_POST['newpassword'] . "'>"; 
         if ($errorNewPassword) echo "<span class='red'>$errorTextNewPassword</span>";
@@ -36,6 +24,8 @@
         echo "<input name='confirmpassword' type='password' value='". $_POST['confirmpassword'] . "'>";
         if ($errorVerifyPassword) echo "<span class='red'>$errorTextVerifyPassword</span>";  // display error if needed
         echo "<br><br><input name='Submit' value='Submit' type='submit'><br>";
+        if ($errorName) echo "<br><span class='red'>$errorTextName</span>";
+        if ($errorOldPassword) echo "<br><span class='red'>$errorTextOldPassword</span>";
         echo "</form>";
     }
     
@@ -55,7 +45,7 @@
         $confirmpassword  = isset($_POST['confirmpassword'])  ? trim($_POST['confirmpassword'])  : '';
         $editorid  = isset($_POST['editorid'])  ? trim($_POST['editorid'])  : '';
         $accounttype  = isset($_POST['accounttype'])  ? trim($_POST['accounttype'])  : '';
-
+        
         
         // setup database connection
         $conn = @mysql_connect(Config::dbHost, Config::dbUser, Config::dbPass);
@@ -63,22 +53,23 @@
 		mysql_query("set names utf8");
 		mysql_query("set charset set utf8");
         
-        // Check if username is in the database
-        if ($accounttype == 'editor')
-            $query = "SELECT password FROM editors WHERE name= '$username'";// AND editor_id = '$editorid'";
+        // Check if user is in the database
+        if ($accounttype == 'e')
+            $query = "SELECT password FROM editors WHERE editor_id = $editorid";
         else 
-            $query = "SELECT password FROM players WHERE user_name= '$username'";
+            $query = "SELECT password FROM players WHERE player_id = $editorid";
+        
         
 		$rsResult = @mysql_query($query);
 		if (mysql_num_rows($rsResult) < 1) $errorName = true;
 		$editorRecord = mysql_fetch_array($rsResult);
-        
-        
-        // Check if old password matches
-        if (MD5($oldpassword) != $editorRecord['password']) $errorOldPassword = true;
 
+        
+        // Check if double-MD5 old password matches
+        if ($oldpassword != MD5($editorRecord['password'])) $errorOldPassword = true;
+                                                
         // Check if new password is long enough
-        if (strlen($newpassword) < 6) $errorNewPassword = true;
+        if (strlen($newpassword) < 1) $errorNewPassword = true;
         
         // Check if new password matches confirm password
         if ($newpassword != $confirmpassword) $errorVerifyPassword = true;
@@ -88,30 +79,23 @@
             showForm($errorName,$errorOldPassword,$errorNewPassword, $errorVerifyPassword);
         } else {
             
-            //echo $accounttype;
-        
-            
             // update new password in database
-            if ($accounttype == 'editor') {
+            if ($accounttype == 'e') {
                 $query = "UPDATE editors 
                 SET password = MD5('{$newpassword}')
-                WHERE password = MD5('{$oldpassword}')
-                AND name = '{$username}'";
+                WHERE editor_id = $editorid";
             } else {
                 $query = "UPDATE players 
                 SET password = MD5('{$newpassword}') 
-                WHERE password = MD5('{$oldpassword}') 
-                AND user_name = '{$username}'";
+                WHERE player_id = $editorid";
             }
-            
-            //echo $query;
             
             @mysql_query($query);
             
-             echo '<html><head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><link rel="stylesheet" type="text/css" href="resetpassword.css"><link rel="stylesheet" type="text/css" href="http://arisgames.org/wp-content/themes/Play/style.css" media="screen" /><title>Reset ARIS Password</title></head><body><div id="header" class="inners"><div class="content-head">	<div class="logo"><a href="http://arisgames.org"><img src="http://arisgames.org/wp-content/uploads/2010/08/ARISLogo1.png" border="0" class="png" alt="ARIS - Mobile Learning Experiences" /></a></div><div class="menu">	<ul id="nav-ie" class="topnav fl fr sf-js-enabled sf-shadow"><li ><a href="/"><span></span></a></li><li class="page_item page-item-2062"><a href="http://arisgames.org/press/" title="Press"><span>Press</span></a></li><li class="page_item page-item-2573 current_page_item"><a href="http://arisgames.org/design-jam-recap/" title="Design Jam Recap"><span>Design Jam Recap</span></a></li><li class="page_item page-item-1470"><a href="http://arisgames.org/demo/" title="Demo"><span>Demo</span></a></li><li class="page_item page-item-1520"><a href="http://arisgames.org/blog/" title="Community Blog"><span>Community Blog</span></a></li><li class="page_item page-item-1971"><a href="http://arisgames.org/projects-and-papers/" title="Projects"><span>Projects</span></a></li><li class="page_item page-item-5"><a href="http://arisgames.org/design-team/" title="Design Team"><span>Design Team</span></a></li></ul>    </div>		  <div class="clear"></div>             </div></div><h1>Change Your ARIS Password<br></h1><br>';
+        echo'<html><head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><link rel="stylesheet" type="text/css" href="resetpassword.css"><link rel="stylesheet" type="text/css" href="http://arisgames.org/wp-content/themes/Play/style.css" media="screen" /><title>Reset ARIS Password</title></head><body><div id="header" class="inners"><div class="content-head">	<div class="logo"><a href="http://arisgames.org"><img src="http://arisgames.org/wp-content/uploads/2010/08/ARISLogo1.png" border="0" class="png" alt="ARIS - Mobile Learning Experiences" /></a>   </div><span id="logotext"><br>Change Your Password</span><div class="menu">	<ul id="nav-ie" class="topnav fl fr sf-js-enabled sf-shadow"><li ><a href="/"><span></span></a></li></ul>    </div>		  <div class="clear"></div></div></div>';
             
             if (mysql_affected_rows() < 1) 
-                echo '<div class="tab">There was a problem changing your password.</div>';
+                echo '<div class="tab">A problem has occured, and your password has not been changed.<br>(This could occur if your new password is the same as your old password.) </div>';
             else 
                 echo '<div class="tab">Your password has been successfully changed.</div>';
              
