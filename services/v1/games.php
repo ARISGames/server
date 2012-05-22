@@ -1204,10 +1204,14 @@ class Games extends Module
 				$query = "INSERT INTO {$newPrefix}_requirements (requirement_id, content_type, content_id, requirement, boolean_operator, requirement_detail_1, requirement_detail_2, requirement_detail_3, requirement_detail_4) SELECT requirement_id, content_type, content_id, requirement, boolean_operator, requirement_detail_1, requirement_detail_2, requirement_detail_3, requirement_detail_4 FROM {$prefix}_requirements";
 				mysql_query($query);
 
+                //Remove the tabs created by createGame
+                $query = "DELETE FROM game_tab_data WHERE game_id = {$newPrefix}";
+				$result = mysql_query($query);
+                
 				$query = "SELECT * FROM game_tab_data WHERE game_id = {$prefix}";
 				$result = mysql_query($query);
 				while($row = mysql_fetch_object($result)){
-					$query = "INSERT INTO game_tab_data (game_id, tab, tab_index) VALUES ('{$newPrefix}', '{$row->tab}', '{$row->index}')";
+					$query = "INSERT INTO game_tab_data (game_id, tab, tab_index) VALUES ('{$newPrefix}', '{$row->tab}', '{$row->tab_index}')";
 					mysql_query($query);
 				}
 
