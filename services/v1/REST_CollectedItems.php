@@ -1,4 +1,8 @@
 <?php
+/*
+NOTE-
+Google caches the result of the kml path presented it in a weird way (clearing browser cache doesn't seem to clear it). So, if it's 'not updating' when you edit it, that's why.
+*/
 
 require_once('../../config.class.php');
 require_once('media.php');
@@ -13,7 +17,7 @@ $query = "SELECT m.note_id, m.user_name, m.content_id, m.title, m.file_name, {$p
   (SELECT notes.note_id, players.user_name FROM notes LEFT JOIN players ON notes.owner_id = players.player_id WHERE game_id='{$prefix}')
   AS n LEFT JOIN note_content ON n.note_id = note_content.note_id)
  AS nc LEFT JOIN media ON nc.media_id = media.media_id)
-AS m LEFT JOIN {$prefix}_locations ON m.note_id = {$prefix}_locations.type_id ";
+AS m LEFT JOIN {$prefix}_locations ON m.note_id = {$prefix}_locations.type_id ORDER BY note_id ASC";
 $result = @mysql_query($query);
 
 if (mysql_error()) die ("<html><body>ERROR: Bad gameId- $query</body></html>");
@@ -23,21 +27,19 @@ $kml = array('<?xml version="1.0" encoding="UTF-8"?>');
 $kml[] = '<kml xmlns="http://earth.google.com/kml/2.1">';
 $kml[] = ' <Document>';
 
-$noteId = 0;
 $row;
 $nextRow = @mysql_fetch_assoc($result);
-// Iterates through the rows, printing a node for each row.
+$count = 0;
+
 while ($nextRow) 
 {
-	$row = $nextRow;
-	if(isset($row['note_id'])) $noteId = $row['note_id'];
-	else continue;
 	$mediaHtml = "";
-	while($nextrow = @mysql_fetch_assoc($result) && $nextrow->note_id == $noteId)
-	{
-		$kml[] = ' <Placemark id="placemark' . $row['content_id'] . '">';
-		$kml[] = ' <name>' . htmlentities($row['title']) . '</name>';
-	
+	$kml[] = ' <Placemark id="placemark' . $count . '">';
+	$kml[] = ' <name>' . htmlentities($nextRow['title']) . '</name>';
+	$description = array("<![CDATA[");
+	$description[] = "<strong>Created By:</strong> {$nextRow['user_name']}<br/>";
+	do{
+		$row = $nextRow;
 		$mediaURL = Config::gamedataWWWPath . "/{$_REQUEST['gameId']}/{$row['file_name']}";
 
 		$mediaObject = new Media;
@@ -45,15 +47,32 @@ while ($nextRow)
 
 		if ($type == Media::MEDIA_IMAGE) $mediaHtml .= "<a target='_blank' href='{$mediaURL}'><img src='$mediaURL'/></a>";
 		else if ($type == Media::MEDIA_AUDIO) $mediaHtml .= "<a target='_blank' href='{$mediaURL}'>Link to Audio</a>"; 
-		else if ($type == Media::MEDIA_VIDEO) $mediaHtml .= '<div style="margin-left: auto; margin-right:auto;">
-			<object height="175" width="212">
-				<param value="' . $mediaURL . '" name="movie">
-				<param value="transparent" name="wmode">
-				<embed wmode="transparent" type="application/x-shockwave-flash"
-				src="'.$mediaURL.'" height="175"
-				width="212">
+		else if ($type == Media::MEDIA_VIDEO) $mediaHtml .= "<div style='margin-left: auto; margin-right:auto;'>
+			<object height='175' width='212'>
+				<param value='" . $mediaURL . "' name='movie'>
+				<param value='transparent' name='wmode'>
+				<embed wmode='transparent' type='application/x-shockwave-flash'
+				src='".$mediaURL."' height='175'
+				width='212'>
 				</object>
-				</div>';
+				</div>";
+		$mediaHtml.="<br />";
+		if(!($nextRow = @mysql_fetch_assoc($result))) $nextRow = false; 
+	} while($nextRow && $nextRow['note_id'] == $row['note_id']);
+	//echo $mediaHtml;
+	$description[] = $mediaHtml;
+	//$description[] = "<strong>Date:</strong> {$row['origin_timestamp']}<br/>";
+	//$description[] = '<p>' . $row['description'] . '</p>';
+	$description[] = "]]>";
+	$descriptionHtml = join("\n", $description);
+
+	$kml[] = ' <description>' . $descriptionHtml . '</description>';
+	$kml[] = ' <Point>';
+	$kml[] = ' <coordinates>' . $row['longitude'] . ','  . $row['latitude'] . '</coordinates>';
+	$kml[] = ' </Point>';
+	$kml[] = ' </Placemark>';
+	$count++;
+} 
 
 		/*
 		   <![CDATA[<div style="font-size:larger">
@@ -83,22 +102,6 @@ YouTubeVideos</a>
 </div>
 ]]>
 		 */
-	}
-
-	$description = array("<![CDATA[");
-	$description[] = "<strong>Created By:</strong> {$row['user_name']}<br/>";
-	//$description[] = "<strong>Date:</strong> {$row['origin_timestamp']}<br/>";
-	//$description[] = '<p>' . $row['description'] . '</p>';
-	$description[] = $mediaHtml;
-	$description[] = "]]>";
-	$descriptionHtml = join("\n", $description);
-
-	$kml[] = ' <description>' . $descriptionHtml . '</description>';
-	$kml[] = ' <Point>';
-	$kml[] = ' <coordinates>' . $row['longitude'] . ','  . $row['latitude'] . '</coordinates>';
-	$kml[] = ' </Point>';
-	$kml[] = ' </Placemark>';
-} 
 
 // End KML file
 $kml[] = ' </Document>';
@@ -112,6 +115,7 @@ switch ($_REQUEST['type']) {
 		echo $kmlOutput;
 		break;
 	case 'map':
+		//echo $kmlOutput;
 		$kmlPath = 'http://' . $_SERVER['SERVER_NAME'] . $_SERVER['PHP_SELF'] . '?type=kml&gameId=' . $_REQUEST['gameId'];
 		//echo $kmlPath;
 		include ('REST_GoogleMapWithKMLVariable.inc.php');
