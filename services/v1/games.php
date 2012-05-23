@@ -926,6 +926,19 @@ class Games extends Module
 				if (mysql_errno() == 1062) return new returnData(4, NULL, 'duplicate');
 				if (mysql_error()) return new returnData(3, NULL, 'sql error');
 
+                                $query = "SELECT email FROM editors WHERE editor_id = $intEditorID";
+                                $result = mysql_query($query);
+                                $emailObj = mysql_fetch_object($result);
+                                $email = $emailObj->email;
+
+                                $query = "SELECT name FROM games WHERE game_id = $intGameID";
+                                $result = mysql_query($query);
+                                $gameObj = mysql_fetch_object($result);
+                                $game = $gameObj->name;
+
+                                $body = "An owner of ARIS Game \"".$game."\" has promoted you to editor. Go to ".Config::serverWWWPath."/editor and log in to begin collaborating!";
+                                Module::sendEmail($email, "You are now an editor of ARIS Game \"$game\"", $body);
+
 				return new returnData(0);	
 			}	
 
