@@ -704,7 +704,6 @@ abstract class Module
 	 * @return boolean. True if a change was made, false otherwise
 	 */	
 	protected function applyPlayerStateChanges($strPrefix, $intPlayerID, $strEventType, $strEventDetail) {	
-                Module::serverErrorLog("$strPrefix $intPlayerID $strEventType $strEventDetail");
 		$changeMade = FALSE;
 
 		//Fetch the state changes
