@@ -265,6 +265,19 @@
   font-size:18px;
 }
 
+.attrib_likes
+{
+  float:left;
+  text-align:left;
+  font-size:12px;
+}
+
+.likeimage
+{
+  max-width:12px;
+  max-height:12px;
+}
+
 /* Same as .attrib_title, but for name of items and attributes */
 .attrib_name
 {
