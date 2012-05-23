@@ -225,7 +225,7 @@ class Players extends Module
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		Module::applyPlayerStateChanges($prefix, $intPlayerID, Module::kLOG_VIEW_NODE, $intNodeID);
+		//Module::applyPlayerStateChanges($prefix, $intPlayerID, Module::kLOG_VIEW_NODE, $intNodeID); //Was causing duplicate playerStateChanges (changed 5/23/12 Phil)
 		Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_NODE, $intNodeID);
 
 		return new returnData(0, TRUE);
