@@ -6,23 +6,21 @@
 
   
   <link rel="stylesheet" type="text/css" href="resetpassword.css">
-  <link rel="stylesheet" type="text/css" href="http://arisgames.org/wp-content/themes/Play/style.css" media="screen" />
+  <link rel="stylesheet" type="text/css" href="style.css" media="screen" />
   <title>Reset ARIS Password</title>
-
   
 </head><body>
 <div id="header" class="inners">
-<div class="content-head">	
 
 <div class="logo">
-<a href="http://arisgames.org"><img src="http://arisgames.org/wp-content/uploads/2010/08/ARISLogo1.png" border="0" class="png" alt="ARIS - Mobile Learning Experiences" /></a>   
+<?php
+    require_once('./server/config.class.php');
+echo "<a href='".Config::serverWWWPath."'><img src='".Config::serverWWWPath."/wp-content/uploads/2010/08/ARISLogo1.png' border='0' class='png' alt='ARIS - Mobile Learning Experiences' /></a>";
+?>
 </div>
-<span id="logotext"><br>Change Your Password</span>
-<div class="menu">	
-<ul id="nav-ie" class="topnav fl fr sf-js-enabled sf-shadow"><li ><a href="/"><span></span></a></li></ul>    </div>		  
-<div class="clear"></div>             
+<br><span id="logotext"><br>Change Your Password</span>
+<ul id="nav-ie" class="topnav fl fr sf-js-enabled sf-shadow"><li ><a href="/"><span></span></a></li></ul>    </div>		           
 
-</div>
 </div>
 
 <form method="POST" action="resetpassword_confirm.php" name="ResetPassword"><br>
@@ -48,17 +46,13 @@
     echo "<input type = 'hidden' name='oldpassword' value='".$_GET['p']."'>";
     echo "<input type = 'hidden' name='editorid' value='".$_GET['i']."'>";
     echo "<input type = 'hidden' name='username' value='".$editorRecord['user_name']."'>";
-    echo "<strong>Username: ".$editorRecord['user_name']."</strong><br>";
+    echo "<table cellspacing='20'><tr><td>Username: </td><td>".$editorRecord['user_name']."</td>";
 
 ?>
-<br>
-New Password:<br>
-  <input name="newpassword" type="password"><br>
-  <br>
-Confirm New Password:<br>
-  <input name="confirmpassword" type="password"><br>
-  <br>
-  <input name="Submit" value="Submit" type="submit"><br>
+<tr><td>New Password:<br></td> <td><input name="newpassword" type="password"></td></tr>
+<tr><td>Confirm New Password:<br></td> <td><input name="confirmpassword" type="password"></td></tr>
+<tr><td></td><td><input name="Submit" value="Submit" type="submit"><br></td></tr>
+</table>
 </div>
 </form>
 

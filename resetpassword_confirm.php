@@ -7,7 +7,10 @@
         if ($errorNewPassword)  $errorTextNewPassword = " Please enter a new password.";
         if ($errorVerifyPassword)  $errorTextVerifyPassword = " The new passwords are not the same. Please verify your new password.";
         
-        echo'<html><head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><link rel="stylesheet" type="text/css" href="resetpassword.css"><link rel="stylesheet" type="text/css" href="http://arisgames.org/wp-content/themes/Play/style.css" media="screen" /><title>Reset ARIS Password</title></head><body><div id="header" class="inners"><div class="content-head">	<div class="logo"><a href="http://arisgames.org"><img src="http://arisgames.org/wp-content/uploads/2010/08/ARISLogo1.png" border="0" class="png" alt="ARIS - Mobile Learning Experiences" /></a>   </div><span id="logotext"><br>Change Your Password</span><div class="menu">	<ul id="nav-ie" class="topnav fl fr sf-js-enabled sf-shadow"><li ><a href="/"><span></span></a></li></ul>    </div>		  <div class="clear"></div></div></div>';
+        echo '<html><head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><link rel="stylesheet" type="text/css" href="resetpassword.css"><link rel="stylesheet" type="text/css" href="style.css" media="screen" /><title>Reset ARIS Password</title></head><body><div id="header" class="inners"><div class="logo">';
+        echo "<a href='".Config::serverWWWPath."'><img src='".Config::serverWWWPath."/wp-content/uploads/2010/08/ARISLogo1.png' border='0' class='png' alt='ARIS - Mobile Learning Experiences' /></a>";
+        echo '</div><br><span id="logotext"><br>Change Your Password</span><ul id="nav-ie" class="topnav fl fr sf-js-enabled sf-shadow"><li ><a href="/"><span></span></a></li></ul>    </div>		         </div>';
+
         
 
         echo "<form action='resetpassword_confirm.php' method='POST' name='ResetPassword'>";
@@ -16,14 +19,13 @@
         echo "<input type = 'hidden' name='oldpassword' value='". $_POST['oldpassword']  . "'>";
         echo "<input type = 'hidden' name='editorid' value='". $_POST['editorid']  . "'><br>";
         echo "<input type = 'hidden' name='username' value='". $_POST['username']  . "'>";
-        echo "<strong>Username: ".$_POST['username']."</strong><br>";
-        echo "<br>New Password:<br>";
-        echo "<input name='newpassword' type='password' value='". $_POST['newpassword'] . "'>"; 
+        echo "<table cellspacing='20'><tr><td>Username: </td><td>".$_POST['username']."</td>";
+        echo "<tr><td>New Password:<br></td> <td><input name='newpassword' type='password' value='". $_POST['newpassword'] . "'>";
         if ($errorNewPassword) echo "<span class='red'>$errorTextNewPassword</span>";
-        echo "<br><br>Confirm New Password:<br>";  // display error if needed
-        echo "<input name='confirmpassword' type='password' value='". $_POST['confirmpassword'] . "'>";
+        echo "</td></tr><tr><td>Confirm New Password:<br></td> <td><input name='confirmpassword' type='password' value='". $_POST['confirmpassword'] . "'>";
         if ($errorVerifyPassword) echo "<span class='red'>$errorTextVerifyPassword</span>";  // display error if needed
-        echo "<br><br><input name='Submit' value='Submit' type='submit'><br>";
+        echo "</td></tr><tr><td></td><td><input name='Submit' value='Submit' type='submit'><br></td></tr>";
+        echo "</table>";
         if ($errorName) echo "<br><span class='red'>$errorTextName</span>";
         if ($errorOldPassword) echo "<br><span class='red'>$errorTextOldPassword</span>";
         echo "</form>";
@@ -92,8 +94,11 @@
             
             @mysql_query($query);
             
-        echo'<html><head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><link rel="stylesheet" type="text/css" href="resetpassword.css"><link rel="stylesheet" type="text/css" href="http://arisgames.org/wp-content/themes/Play/style.css" media="screen" /><title>Reset ARIS Password</title></head><body><div id="header" class="inners"><div class="content-head">	<div class="logo"><a href="http://arisgames.org"><img src="http://arisgames.org/wp-content/uploads/2010/08/ARISLogo1.png" border="0" class="png" alt="ARIS - Mobile Learning Experiences" /></a>   </div><span id="logotext"><br>Change Your Password</span><div class="menu">	<ul id="nav-ie" class="topnav fl fr sf-js-enabled sf-shadow"><li ><a href="/"><span></span></a></li></ul>    </div>		  <div class="clear"></div></div></div>';
+            echo '<html><head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><link rel="stylesheet" type="text/css" href="resetpassword.css"><link rel="stylesheet" type="text/css" href="style.css" media="screen" /><title>Reset ARIS Password</title></head><body><div id="header" class="inners"><div class="logo">';
+            echo "<a href='".Config::serverWWWPath."'><img src='".Config::serverWWWPath."/wp-content/uploads/2010/08/ARISLogo1.png' border='0' class='png' alt='ARIS - Mobile Learning Experiences' /></a>";
+            echo '</div><br><span id="logotext"><br>Change Your Password</span><ul id="nav-ie" class="topnav fl fr sf-js-enabled sf-shadow"><li ><a href="/"><span></span></a></li></ul>    </div>		         </div>';
             
+       
             if (mysql_affected_rows() < 1) 
                 echo '<div class="tab">A problem has occured, and your password has not been changed.<br>(This could occur if your new password is the same as your old password.) </div>';
             else 
