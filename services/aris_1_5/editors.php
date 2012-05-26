@@ -126,7 +126,7 @@ class Editors extends Module
         if (!$editor = mysql_fetch_array($result)) return new returnData(4, NULL, "Not an editor");
         
         $editorid = $editor['editor_id'];
-        $scrambledpassword = MD5({$editor['password']);
+        $scrambledpassword = MD5({$editor['password']});
             
 		//email it to them
  		$subject = "ARIS Password Request";
