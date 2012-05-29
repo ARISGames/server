@@ -278,7 +278,6 @@ class Items extends Module
 			if($content->icon_url) $content->icon_url = Media::getMediaDirectoryURL($content->icon_game_id)->data . '/' . $content->icon_url;
 			$contents[] = $content;
 		}
-
 		return $contents;
 	}
 

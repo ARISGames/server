@@ -1164,11 +1164,24 @@ class Games extends Module
 				$game = @mysql_fetch_object($rs);
 				if (!$game) return new returnData(2, NULL, "invalid game id");
 
+                                $compatibleName = false;
+                                $appendNo = 1;
+                                while(!$compatibleName)
+                                {
+                                  $query = "SELECT * FROM games WHERE name = '".$game->name."_copy".$appendNo."'";
+                                  $result = mysql_query($query);
+                                  if(mysql_fetch_object($result))
+                                    $appendNo++;
+                                  else
+                                    $compatibleName = true;
+                                }
+                                $game->name = $game->name."_copy".$appendNo;
+
 				$query = "SELECT editor_id FROM game_editors WHERE game_id = {$intGameID}";
 				$rs = mysql_query($query);
 				$editors = mysql_fetch_object($rs);
 
-				$newGameId = Games::createGame($editors->editor_id, $game->name . "_copy", $game->description, 
+				$newGameId = Games::createGame($editors->editor_id, $game->name, $game->description, 
 						$game->pc_media_id, $game->icon_media_id, $game->media_id,
 						$game->is_locational, $game->ready_for_public, 
 						$game->allow_share_note_to_map, $game->allow_share_note_to_book, $game->allow_player_tags, $game->allow_player_comments,
@@ -1286,7 +1299,7 @@ class Games extends Module
 					mysql_query($query);
 					$newID = mysql_insert_id();
 
-					copy(("../../gamedata/" . $prefix . "/" . $row->file_name),("../../gamedata/" . $newPrefix . "/" . $row->file_name));
+					if($row->file_name != "") copy(("../../gamedata/" . $prefix . "/" . $row->file_name),("../../gamedata/" . $newPrefix . "/" . $row->file_name));
 
 					$query = "UPDATE {$newPrefix}_items SET icon_media_id = {$newID} WHERE icon_media_id = $row->media_id";
 					mysql_query($query);

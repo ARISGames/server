@@ -295,8 +295,8 @@ abstract class Module
 			$obj = @mysql_fetch_object($result);
 			$title = $obj->title;
 
-			$query = "INSERT INTO {$strGamePrefix}_locations (name, type, type_id, icon_media_id, latitude, longitude, error, item_qty)
-				VALUES ('{$title}','PlayerNote','{$noteId}', '71', '{$floatLat}','{$floatLong}', '{$error}','1')";
+			$query = "INSERT INTO {$strGamePrefix}_locations (name, type, type_id, icon_media_id, latitude, longitude, error, item_qty, hidden, force_view, allow_quick_travel)
+				VALUES ('{$title}','PlayerNote','{$noteId}', '71', '{$floatLat}','{$floatLong}', '{$error}','1',0,0,0)";
 			NetDebug::trace($query . ' ' . mysql_error());  
 			@mysql_query($query);
 
