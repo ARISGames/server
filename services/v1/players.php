@@ -137,7 +137,7 @@ class Players extends Module
 			LEFT JOIN player_log ON players.player_id = player_log.player_id
 			WHERE players.show_on_map = '1' AND players.last_game_id =  '{$intGameID}' AND 
 			players.player_id != '{$intPlayerID}' AND
-			player_log.timestamp > DATE_SUB( NOW( ) , INTERVAL 20 MINUTE ) 
+			player_log.timestamp > DATE_SUB( NOW( ) , INTERVAL $timeLimitInMinutes MINUTE ) 
 			GROUP BY player_id";
 
 
