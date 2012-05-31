@@ -8,7 +8,7 @@
         if ($errorVerifyPassword)  $errorTextVerifyPassword = " The new passwords are not the same. Please verify your new password.";
         
         echo '<html><head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><link rel="stylesheet" type="text/css" href="resetpassword.css"><link rel="stylesheet" type="text/css" href="../style.css" media="screen" /><title>Reset ARIS Password</title></head><body><div id="header" class="inners"><div class="logo">';
-        echo "<a href='".Config::WWWPath."'><img src='".Config::WWWPath."/wp-content/uploads/2010/08/ARISLogo1.png' border='0' class='png' alt='ARIS - Mobile Learning Experiences' /></a>";
+        echo "<a href='http://arisgames.org'><img src='http://arisgames.org/wp-content/uploads/2010/08/ARISLogo1.png' border='0' class='png' alt='ARIS - Mobile Learning Experiences' /></a>";
         echo '</div><br><span id="logotext"><br>Change Your Password</span><ul id="nav-ie" class="topnav fl fr sf-js-enabled sf-shadow"><li ><a href="/"><span></span></a></li></ul>    </div>		         </div>';
         
         
@@ -121,7 +121,7 @@
             @mysql_query($query);
             
             echo '<html><head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><link rel="stylesheet" type="text/css" href="resetpassword.css"><link rel="stylesheet" type="text/css" href="../style.css" media="screen" /><title>Reset ARIS Password</title></head><body><div id="header" class="inners"><div class="logo">';
-            echo "<a href='".Config::WWWPath."'><img src='".Config::WWWPath."/wp-content/uploads/2010/08/ARISLogo1.png' border='0' class='png' alt='ARIS - Mobile Learning Experiences' /></a>";
+            echo "<a href='http://arisgames.org'><img src='http://arisgames.org/wp-content/uploads/2010/08/ARISLogo1.png' border='0' class='png' alt='ARIS - Mobile Learning Experiences' /></a>";
             echo '</div><br><span id="logotext"><br>Change Your Password</span><ul id="nav-ie" class="topnav fl fr sf-js-enabled sf-shadow"><li ><a href="/"><span></span></a></li></ul>    </div>		         </div>';
             
             
