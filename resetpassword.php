@@ -1,5 +1,5 @@
 <?php
-    require_once('./server/config.class.php');
+    require_once('./config.class.php');
     // Function to display form
     function showForm($errorName=false,$errorOldPassword=false,$errorNewPassword=false, $errorVerifyPassword=false){
         if ($errorName)  $errorTextName  = " Username is not found.  Please enter a valid username.";
@@ -7,8 +7,8 @@
         if ($errorNewPassword)  $errorTextNewPassword = " Please enter a new password.";
         if ($errorVerifyPassword)  $errorTextVerifyPassword = " The new passwords are not the same. Please verify your new password.";
         
-        echo '<html><head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><link rel="stylesheet" type="text/css" href="resetpassword.css"><link rel="stylesheet" type="text/css" href="style.css" media="screen" /><title>Reset ARIS Password</title></head><body><div id="header" class="inners"><div class="logo">';
-        echo "<a href='".Config::serverWWWPath."'><img src='".Config::serverWWWPath."/wp-content/uploads/2010/08/ARISLogo1.png' border='0' class='png' alt='ARIS - Mobile Learning Experiences' /></a>";
+        echo '<html><head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><link rel="stylesheet" type="text/css" href="resetpassword.css"><link rel="stylesheet" type="text/css" href="../style.css" media="screen" /><title>Reset ARIS Password</title></head><body><div id="header" class="inners"><div class="logo">';
+        echo "<a href='".Config::WWWPath."'><img src='".Config::WWWPath."/wp-content/uploads/2010/08/ARISLogo1.png' border='0' class='png' alt='ARIS - Mobile Learning Experiences' /></a>";
         echo '</div><br><span id="logotext"><br>Change Your Password</span><ul id="nav-ie" class="topnav fl fr sf-js-enabled sf-shadow"><li ><a href="/"><span></span></a></li></ul>    </div>		         </div>';
         
         
@@ -17,7 +17,6 @@
         echo "<div class='tab'>";
         
         if (!empty($_GET)) {
-            require_once('./server/config.class.php'); 
             // setup database connection
             $conn = @mysql_connect(Config::dbHost, Config::dbUser, Config::dbPass);
             mysql_select_db (Config::dbSchema);
@@ -121,8 +120,8 @@
             
             @mysql_query($query);
             
-            echo '<html><head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><link rel="stylesheet" type="text/css" href="resetpassword.css"><link rel="stylesheet" type="text/css" href="style.css" media="screen" /><title>Reset ARIS Password</title></head><body><div id="header" class="inners"><div class="logo">';
-            echo "<a href='".Config::serverWWWPath."'><img src='".Config::serverWWWPath."/wp-content/uploads/2010/08/ARISLogo1.png' border='0' class='png' alt='ARIS - Mobile Learning Experiences' /></a>";
+            echo '<html><head><meta content="text/html; charset=ISO-8859-1" http-equiv="content-type"><link rel="stylesheet" type="text/css" href="resetpassword.css"><link rel="stylesheet" type="text/css" href="../style.css" media="screen" /><title>Reset ARIS Password</title></head><body><div id="header" class="inners"><div class="logo">';
+            echo "<a href='".Config::WWWPath."'><img src='".Config::WWWPath."/wp-content/uploads/2010/08/ARISLogo1.png' border='0' class='png' alt='ARIS - Mobile Learning Experiences' /></a>";
             echo '</div><br><span id="logotext"><br>Change Your Password</span><ul id="nav-ie" class="topnav fl fr sf-js-enabled sf-shadow"><li ><a href="/"><span></span></a></li></ul>    </div>		         </div>';
             
             
