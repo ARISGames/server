@@ -178,7 +178,7 @@ class Games extends Module
 				$gameObj = mysql_fetch_object($result);
                 
                 //Check if Game Has Been Played
-                $query = "SELECT * FROM player_log WHERE game_id = '{$intGameId}' AND player_id = '{$intPlayerId}' AND deleted = 0";
+                $query = "SELECT * FROM player_log WHERE game_id = '{$intGameId}' AND player_id = '{$intPlayerId}' AND deleted = 0 LIMIT 1";
 				$result = mysql_query($query);
                 if(mysql_num_rows($result) > 0){
                     $gameObj->has_been_played = true;
