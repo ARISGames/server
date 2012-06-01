@@ -1248,7 +1248,7 @@ class Games extends Module
 				$query = "INSERT INTO {$newPrefix}_quests (quest_id, name, description, text_when_complete, icon_media_id) SELECT quest_id, name, description, text_when_complete, icon_media_id FROM {$prefix}_quests";
 				mysql_query($query);
 
-				$query = "INSERT INTO {$newPrefix}_requirements (requirement_id, content_type, content_id, requirement, boolean_operator, requirement_detail_1, requirement_detail_2, requirement_detail_3, requirement_detail_4) SELECT requirement_id, content_type, content_id, requirement, boolean_operator, requirement_detail_1, requirement_detail_2, requirement_detail_3, requirement_detail_4 FROM {$prefix}_requirements";
+				$query = "INSERT INTO {$newPrefix}_requirements (requirement_id, content_type, content_id, requirement, not_operator, boolean_operator, requirement_detail_1, requirement_detail_2, requirement_detail_3, requirement_detail_4) SELECT requirement_id, content_type, content_id, requirement, not_operator, boolean_operator, requirement_detail_1, requirement_detail_2, requirement_detail_3, requirement_detail_4 FROM {$prefix}_requirements";
 				mysql_query($query);
 
                                 //Remove the tabs created by createGame
