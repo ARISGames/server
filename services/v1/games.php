@@ -141,6 +141,8 @@ class Games extends Module
 					@mysql_query($query);
 					$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$intGameId}', 'NOTE',  '6')";
 					@mysql_query($query);
+					$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$intGameId}', 'STARTOVER', '998')";
+					@mysql_query($query);
 					$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$intGameId}', 'PICKGAME', '9999')";
 					@mysql_query($query);
 					$query = "SELECT * FROM game_tab_data WHERE game_id = '{$intGameId}' ORDER BY tab_index ASC";
@@ -561,6 +563,8 @@ class Games extends Module
 				@mysql_query($query);
 				$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'NOTE', '6')";
 				@mysql_query($query);
+				$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'STARTOVER', '998')";
+				@mysql_query($query);
 				$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'PICKGAME', '9999')";
 				@mysql_query($query);
 				if (mysql_error()) return new returnData(6, NULL, 'cannot create game_tab_data table- ' . mysql_error());	
@@ -635,51 +639,36 @@ class Games extends Module
 			/**
 			 * Updates all game databases using upgradeGameDatabase
 			 */	
-			public function upgradeGameDatabases($startingGameIndex) 
+			public function upgradeGameDatabases($startingGameIndex = 0) 
 			{		
-
 				NetDebug::trace("Upgrading Game Databases:\n");
 
+                                //restructure table
+                                $query = "ALTER TABLE game_tab_data CHANGE tab tab ENUM('GPS','NEARBY','QUESTS','INVENTORY','PLAYER','QR','NOTE','STARTOVER','PICKGAME') NOT NULL;";
+				mysql_query($query);
+				NetDebug::trace("$query" . ":" . mysql_error());
+
+                                //make PICKGAME last tab
+                                $query = "UPDATE game_tab_data SET tab_index ='9999' WHERE tab='PICKGAME'";
+				mysql_query($query);
+				NetDebug::trace("$query" . ":" . mysql_error());  
+
+                                $query = "SELECT game_id FROM game_tab_data WHERE game_id > $startingGameIndex GROUP BY game_id";
+                                $result = mysql_query($query);
+                                while($gid = mysql_fetch_object($result))
+                                {
+                                  $query = "INSERT INTO game_tab_data (game_id, tab, tab_index) VALUES ($gid->game_id, 'STARTOVER', 998);";
+                                  $res = mysql_query($query);
+                                }
+
 				$query = "SELECT * FROM games WHERE game_id > $startingGameIndex ORDER BY game_id";
-				$rs = @mysql_query($query);
+				$rs = mysql_query($query);
 				if (mysql_error())  return new returnData(3, NULL, 'SQL error');
 
 				while ($game = mysql_fetch_object($rs)) {
 					NetDebug::trace("Upgrade Game: {$game->game_id}");
 					$upgradeResult = Games::upgradeGameDatabase($game->game_id);
 				}
-
-				//System wide changes below
-				$query = "ALTER TABLE game_tab_data ADD id MEDIUMINT NOT NULL AUTO_INCREMENT KEY FIRST";
-				mysql_query($query);
-				NetDebug::trace("$query" . ":" . mysql_error());
-                
-                                //delete individually
-                                $query = "DELETE FROM game_tab_data WHERE tab='STARTOVER'";
-				mysql_query($query);
-				NetDebug::trace("$query" . ":" . mysql_error());
-                
-                                $query = "DELETE FROM game_tab_data WHERE tab='LOGOUT'";
-				mysql_query($query);
-				NetDebug::trace("$query" . ":" . mysql_error());
-                
-                                $query = "DELETE FROM game_tab_data WHERE tab='CAMERA'";
-				mysql_query($query);
-				NetDebug::trace("$query" . ":" . mysql_error());
-                
-                                $query = "DELETE FROM game_tab_data WHERE tab='MICROPHONE'";
-				mysql_query($query);
-				NetDebug::trace("$query" . ":" . mysql_error());                
-                
-                                //restructure table
-                                $query = "ALTER TABLE game_tab_data CHANGE tab tab ENUM('PICKGAME','GPS','NEARBY','QUESTS','INVENTORY','PLAYER','QR','NOTE')";
-				mysql_query($query);
-				NetDebug::trace("$query" . ":" . mysql_error());
-                
-                                //make PICKGAME last tab
-                                $query = "UPDATE game_tab_data SET tab_index ='9999' WHERE tab='PICKGAME'";
-				mysql_query($query);
-				NetDebug::trace("$query" . ":" . mysql_error());  
 
 				return new returnData(0, FALSE);
 			}
@@ -696,8 +685,6 @@ class Games extends Module
 				Module::serverErrorLog("Upgrade Game $intGameID");
 
 				$prefix = Module::getPrefix($intGameID);                
-                
-                
 			}
 
 
