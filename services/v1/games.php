@@ -653,6 +653,11 @@ class Games extends Module
 				mysql_query($query);
 				NetDebug::trace("$query" . ":" . mysql_error());  
 
+                                //Deletes all 'STARTOVER' tabs (to be re-added by the next function. Necessary to prevent dups)
+                                $query = "DELETE FROM game_tab_data WHERE tab = 'STARTOVER'";
+                                mysql_query($query);
+				NetDebug::trace("$query" . ":" . mysql_error());  
+
                                 $query = "SELECT game_id FROM game_tab_data WHERE game_id > $startingGameIndex GROUP BY game_id";
                                 $result = mysql_query($query);
                                 while($gid = mysql_fetch_object($result))
