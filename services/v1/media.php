@@ -249,7 +249,7 @@ class Media extends Module
 	 */
 	public function getMediaType($strMediaFileName) {
 		$mediaParts = pathinfo($strMediaFileName);
-		$mediaExtension = isset($mediaParts['extension']) ? $mediaParts['extension'] : "";
+		$mediaExtension = $mediaParts['extension'];
 
 		$validImageAndIconTypes = array('jpg','png');
 		$validAudioTypes = array('mp3','m4a','caf');
