@@ -12,7 +12,6 @@ class Notes extends Module
   //Returns note_id
   function createNewNote($gameId, $playerId, $lat=0, $lon=0)
   {
-    Module::serverErrorLog("NOW NOW");
     $query = "INSERT INTO notes (game_id, owner_id, title) VALUES ('{$gameId}', '{$playerId}', 'New Note')";
     @mysql_query($query);
     if (mysql_error()) return new returnData(1, NULL, mysql_error());
