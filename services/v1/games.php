@@ -643,6 +643,31 @@ class Games extends Module
 			{		
 				NetDebug::trace("Upgrading Game Databases:\n");
 
+                                //Create 'spawnables' table
+                                $query = "CREATE TABLE spawnables (
+                                spawnable_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                                game_id INT NOT NULL,
+                                type ENUM('Node', 'Item', 'Npc', 'WebPage', 'AugBubble', 'PlayerNote') NOT NULL,
+                                type_id INT NOT NULL,
+                                amount INT NOT NULL DEFAULT 1,
+                                area INT NOT NULL DEFAULT 10,
+                                amount_restriction ENUM('PER_PLAYER', 'TOTAL') NOT NULL DEFAULT 'PER_PLAYER',
+                                location_bound_type ENUM('PLAYER', 'LOCATION') NOT NULL DEFAULT 'PLAYER',
+                                latitude DOUBLE NOT NULL default 0,
+                                longitude DOUBLE NOT NULL default 0,
+                                spawn_probability DOUBLE NOT NULL default 1.0,
+                                spawn_rate INT NOT NULL DEFAULT 10,
+                                delete_when_viewed TINYINT(1) NOT NULL DEFAULT 0,
+                                last_spawn TIMESTAMP NOT NULL DEFAULT CURRENT TIMESTAMP,
+                                error_range INT NOT NULL DEFAULT 10,
+                                force_view TINYINT(1) NOT NULL DEFAULT 0,
+                                hidden TINYINT(1) NOT NULL DEFAULT 0,
+                                allow_quick_travel TINYINT(1) NOT NULL DEFAULT 0,
+                                wiggle TINYINT(1) NOT NULL DEFAULT 1,
+                                time_to_live INT NOT NULL DEFAULT 100);";
+                                mysql_query($query);
+				NetDebug::trace("$query" . ":" . mysql_error());  
+
                                 //restructure table
                                 $query = "ALTER TABLE game_tab_data CHANGE tab tab ENUM('GPS','NEARBY','QUESTS','INVENTORY','PLAYER','QR','NOTE','STARTOVER','PICKGAME') NOT NULL;";
 				mysql_query($query);
@@ -690,6 +715,14 @@ class Games extends Module
 				Module::serverErrorLog("Upgrade Game $intGameID");
 
 				$prefix = Module::getPrefix($intGameID);                
+
+                                $query = "ALTER TABLE ".$prefix."_locations ADD COLUMN spawnstamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP";
+                                mysql_query($query);
+				NetDebug::trace("$query" . ":" . mysql_error());  
+
+                                $query = "ALTER TABLE ".$prefix."_requirements CHANGE content_type content_type ENUM('Node','QuestDisplay','QuestComplete','Location','OutgoingWebHook','Spawnable')";
+                                mysql_query($query);
+				NetDebug::trace("$query" . ":" . mysql_error());  
 			}
 
 

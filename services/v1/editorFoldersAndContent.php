@@ -345,6 +345,8 @@ class EditorFoldersAndContent extends Module
 		else if ($content->content_type == "AugBubble") AugBubbles::deleteAugBubble($intGameID, $content->content_id);
 		else if ($content->content_type == "PlayerNote") Notes::deleteNote($content->content_id);
 
+                Spawnables:deleteSpawnablesForObject($intGameID, $content->content_type, $content->content_id);
+
 		if (mysql_affected_rows()) return new returnData(0);
 		else return new returnData(2, 'invalid folder id');
 	}	

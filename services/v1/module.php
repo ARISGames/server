@@ -113,6 +113,24 @@ abstract class Module
 
 	}	
 
+        /*
+         * Converts meters to degrees (lat/lon)
+         */
+        protected function mToDeg($meters)
+        {
+          //Ridiculous approximation, but fine for most cases
+          return $meters/10000;
+        }
+
+        /*
+         * Converts degrees (lat/lon) to meters
+         */
+        protected function degToM($degrees)
+        {
+          //Ridiculous approximation, but fine for most cases
+          return 10000*$degrees;
+        }
+
 	/**
 	 * Adds the specified item to the specified player. Returns the actual number added after concidering item max
 	 */
@@ -569,10 +587,10 @@ abstract class Module
 
 		//Fetch the requirements
 		$query = "SELECT requirement,
-			requirement_detail_1,requirement_detail_2,requirement_detail_3,requirement_detail_4,
-			boolean_operator, not_operator
-				FROM {$strPrefix}_requirements 
-				WHERE content_type = '{$strObjectType}' AND content_id = '{$intObjectID}'";
+			  requirement_detail_1,requirement_detail_2,requirement_detail_3,requirement_detail_4,
+			  boolean_operator, not_operator
+			  FROM {$strPrefix}_requirements 
+			  WHERE content_type = '{$strObjectType}' AND content_id = '{$intObjectID}'";
 		$rsRequirments = @mysql_query($query);
 
 		$andsMet = FALSE;
