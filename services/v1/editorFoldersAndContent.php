@@ -1,5 +1,6 @@
 <?php
 require_once("module.php");
+require_once("spawnables.php");
 require_once("nodes.php");
 require_once("items.php");
 require_once("npcs.php");
@@ -188,6 +189,7 @@ class EditorFoldersAndContent extends Module
 		$media = $mediaReturnObject->data;
 		$content->icon_media = $media;
 		$content->icon_media_id = $contentDetails->icon_media_id;
+                $content->is_spawnable = Spawnables::hasSpawnable($intGameID, $content->content_type, $content->content_id);
 
 		if ($content->content_type != 'WebPage' && $content->content_type != 'PlayerNote' && $content->content_type != 'AugBubble'){
 			//Get the Media
@@ -330,6 +332,8 @@ class EditorFoldersAndContent extends Module
 		$content = @mysql_fetch_object($contentQueryResult);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
+                Spawnables::deleteSpawnablesOfObject($intGameID, $content->content_type, $content->content_id);
+
 		//Delete the content record
 		$query = "DELETE FROM {$prefix}_folder_contents WHERE object_content_id = {$intContentID}";
 		NetDebug::trace($query);
@@ -345,7 +349,6 @@ class EditorFoldersAndContent extends Module
 		else if ($content->content_type == "AugBubble") AugBubbles::deleteAugBubble($intGameID, $content->content_id);
 		else if ($content->content_type == "PlayerNote") Notes::deleteNote($content->content_id);
 
-                Spawnables:deleteSpawnablesForObject($intGameID, $content->content_type, $content->content_id);
 
 		if (mysql_affected_rows()) return new returnData(0);
 		else return new returnData(2, 'invalid folder id');
