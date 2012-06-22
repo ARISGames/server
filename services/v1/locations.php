@@ -224,7 +224,6 @@ class Locations extends Module
       WHERE {$prefix}_locations.latitude != '' AND {$prefix}_locations.longitude != ''
       AND spawnable_id IS NULL AND ({$prefix}_locations.type != 'Item' OR (item_qty IS NULL OR item_qty != 0))
       ";
-    Module::serverErrorLog($query);
     $rsLocations = @mysql_query($query);
     if (mysql_error()) return new returnData(3, NULL, "SQL Error" . mysql_error());
 
@@ -323,6 +322,7 @@ class Locations extends Module
     $query = "SELECT * FROM spawnables WHERE game_id = ".$prefix;
     $results = mysql_query($query);
     while($spawnable = mysql_fetch_object($results)){
+      
       //If spawnable and object it links to meet requirments, add it to the array
       NetDebug::trace('Spawnable ' . $spawnable->spawnable_id . ' Found. Checking Reqs');	
 
@@ -414,7 +414,7 @@ class Locations extends Module
         $secondsOfSpawning = strtotime("now")-strtotime($spawnable->last_spawned);
         while($secondsOfSpawning > $spawnable->spawn_rate && $numLocs < $spawnable->amount)
         {
-          if(rand(0,100)/100 > $spawnable->spawn_probability)
+          if(rand(0,100) < $spawnable->spawn_probability)
           {
             $numLocs++;
             $newLat = $lat+Module::mToDeg(((rand(0,100)/50)*$spawnable->area)-$spawnable->area);
@@ -436,7 +436,7 @@ class Locations extends Module
         $secondsOfSpawning = strtotime("now")-strtotime($spawnable->last_spawned);
         if($secondsOfSpawning > $spawnable->spawn_rate && $numLocs < $spawnable->amount)
         {
-          if(rand(0,100)/100 > $spawnable->spawn_probability)
+          if(rand(0,100) < $spawnable->spawn_probability)
           {
             $numLocs++;
             $newLat = $lat+Module::mToDeg(((rand(0,100)/50)*$spawnable->area)-$spawnable->area);
@@ -458,7 +458,6 @@ class Locations extends Module
       if($spawnable->time_to_live != -1)
       {
         $query = "DELETE FROM ".$intGameID."_locations WHERE type = '".$spawnable->type."' AND type_id = ".$spawnable->type_id." AND spawnstamp < NOW() - INTERVAL ".$spawnable->time_to_live." SECOND";
-        Module::serverErrorLog($query);
         mysql_query($query);
       }
 
