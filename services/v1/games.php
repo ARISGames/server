@@ -658,7 +658,7 @@ class Games extends Module
                                 spawn_probability DOUBLE NOT NULL default 1.0,
                                 spawn_rate INT NOT NULL DEFAULT 10,
                                 delete_when_viewed TINYINT(1) NOT NULL DEFAULT 0,
-                                last_spawn TIMESTAMP NOT NULL DEFAULT CURRENT TIMESTAMP,
+                                last_spawn TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                 error_range INT NOT NULL DEFAULT 10,
                                 force_view TINYINT(1) NOT NULL DEFAULT 0,
                                 hidden TINYINT(1) NOT NULL DEFAULT 0,
