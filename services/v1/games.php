@@ -720,6 +720,10 @@ class Games extends Module
                                 mysql_query($query);
 				NetDebug::trace("$query" . ":" . mysql_error());  
 
+                                $query = "ALTER TABLE ".$prefix."_locations ADD COLUMN wiggle TINYINT(1) NOT NULL DEFAULT 0";
+                                mysql_query($query);
+				NetDebug::trace("$query" . ":" . mysql_error());  
+
                                 $query = "ALTER TABLE ".$prefix."_requirements CHANGE content_type content_type ENUM('Node','QuestDisplay','QuestComplete','Location','OutgoingWebHook','Spawnable')";
                                 mysql_query($query);
 				NetDebug::trace("$query" . ":" . mysql_error());  
