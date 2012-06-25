@@ -230,7 +230,20 @@ class Players extends Module
 
     return new returnData(0, TRUE);
   }
+ 
+  /**
+  * Sets the item quantity for a specific item for a plyer.  (Sets an absolute amount, regardless fo current item quantity.
+  */
+  public function setItemCountForPlayer($obj) {
+        $intGameId = $obj['gameId'];
+        $intItemID = $obj['itemId'];
+        $intPlayerID = $obj['playerId'];
+        $qty = $obj['qty'];
+        
+        Module::setItemCountForPlayer($intGameId, $intItemID, $intPlayerID, $qty);
+  }
 
+    
   public function giveItemToPlayer($intGameId, $intItemID, $intPlayerID, $qtyToGive=1) {
     Module::giveItemToPlayer($intGameId, $intItemID, $intPlayerID, $qtyToGive=1);
   }
@@ -284,6 +297,7 @@ class Players extends Module
   }
 
 
+    
   /**
    * Removes an Item from the Map and Gives it to the Player
    * @returns returnData with data=true if changes were made
