@@ -410,7 +410,6 @@ class Games extends Module
 				@mysql_query($query);
 				if (mysql_error()) return new returnData(6, NULL, 'cannot create requirments table' . mysql_error());
 
-
 				$query = "CREATE TABLE {$strShortName}_locations (
 					location_id int(11) NOT NULL auto_increment,
 						    name varchar(255) NOT NULL,
@@ -425,6 +424,8 @@ class Games extends Module
 						    hidden enum('0','1') NOT NULL default '0',
 						    force_view enum('0','1') NOT NULL default '0',
 						    allow_quick_travel enum('0','1') NOT NULL default '0',
+						    wiggle TINYINT(1) NOT NULL default '0',
+						    spawnstamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 						    PRIMARY KEY  (location_id)
 							    )ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
 				NetDebug::trace($query);	
