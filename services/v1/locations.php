@@ -220,7 +220,7 @@ class Locations extends Module
 
     //Gets all non-spawned locations
     $query = "SELECT {$prefix}_locations.*, spawnables.spawnable_id FROM {$prefix}_locations 
-      LEFT JOIN spawnables ON ({$prefix}_locations.type = spawnables.type AND {$prefix}_locations.type_id = spawnables.type_id)
+      LEFT JOIN spawnables ON (spawnables.game_id = {$prefix} AND {$prefix}_locations.type = spawnables.type AND {$prefix}_locations.type_id = spawnables.type_id)
       WHERE {$prefix}_locations.latitude != '' AND {$prefix}_locations.longitude != ''
       AND spawnable_id IS NULL AND ({$prefix}_locations.type != 'Item' OR (item_qty IS NULL OR item_qty != 0))
       ";
