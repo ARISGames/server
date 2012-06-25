@@ -156,6 +156,32 @@ abstract class Module
 	}
 
 	/**
+	 * Sets the item count for specified item and player. Returns the actual number added after considering item max
+	 */
+	protected function setItemCountForPlayer($strGamePrefix, $intItemID, $intPlayerID, $qty) {
+		$currentQty = Module::itemQtyInPlayerInventory($strGamePrefix, $intPlayerID, $intItemID);
+		$item = Items::getItem($strGamePrefix, $intItemID)->data;
+		$maxQty = $item->max_qty_in_inventory; 
+
+		//Module::serverErrorLog("Module: setItemCountForPlayer: Player currently has $currentQty. Setting to $qty.");
+
+
+		if ($qty > $maxQty  && $maxQty != -1) {
+			//we are going over the limit
+			$qty =  $maxQty;
+			//Module::serverErrorLog("Module: setItemCountForPlayer: Attempted to go over item max qty. Request change to $qty");
+		}
+
+		if ($qty < 0) return 0;
+		else {
+            $amountToAdjust = $qty - $currentQty;
+			Module:: adjustQtyForPlayerItem($strGamePrefix, $intItemID, $intPlayerID, $amountToAdjust);
+            //Module::serverErrorLog("Module: setItemCountForPlayer: Player amount of item is being adjusted by $amountToAdjust.");
+			return $qty;
+		}
+	}
+
+	/**
 	 * Removes the specified item from the user.
 	 */ 
 	protected function takeItemFromPlayer($strGamePrefix, $intItemID, $intPlayerID, $qtyToTake=1) {
@@ -173,7 +199,7 @@ abstract class Module
 	}
 
 	/**
-	 * Updates the qty a player has of an item
+	 * Updates the qty a player has of an item 
 	 */ 
 	protected function adjustQtyForPlayerItem($strGamePrefix, $intItemID, $intPlayerID, $amountOfAdjustment) {
 		//Get any existing record

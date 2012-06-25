@@ -62,6 +62,34 @@ class Items extends Module
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 		return new returnData(0, $rsResult);
 	}	
+    
+    /**
+	 * Gets the qty of an item in th eplayer's inventory
+	 *
+	 * @param Object $obj is an object with the gameId, playerId and itemId
+	 * @return returnData
+	 * @returns the qty of the item
+	 */
+    public static function getItemCountForPlayer($obj)
+    {
+        $gameId = $obj['gameId'];
+        $playerId = $obj['playerId'];
+        $itemId = $obj['itemId'];
+
+        $prefix = Module::getPrefix($gameId);
+		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        
+        
+		$query = "SELECT qty FROM {$prefix}_player_items WHERE player_id = $playerId AND item_id = $itemId";
+
+        
+		$rsResult = @mysql_query($query);
+        $row = @mysql_fetch_row($rsResult);
+		if (!$rsResult) return new returnData(0, NULL);
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+		return new returnData(0, $row[0]);
+
+    }
 
 	/**
 	 * Gets the Attributes for a player
