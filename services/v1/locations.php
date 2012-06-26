@@ -305,6 +305,8 @@ class Locations extends Module
         $location->icon_media_id = $objectsIconMediaId;
       }
 
+      $location->delete_when_viewed = 0;
+
       //Add it
       $arrayLocations[] = $location;
     }
@@ -444,6 +446,7 @@ class Locations extends Module
         //If location's icon is not defined, use the object's icon
         if (!$locobj->icon_media_id) 
           $locobj->icon_media_id = $object->icon_media_id;
+        $locobj->delete_when_viewed = $spawnable->delete_when_viewed;
 
         //Add it
         $arrayLocations[] = $locobj;
