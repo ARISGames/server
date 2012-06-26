@@ -417,8 +417,9 @@ class Locations extends Module
         if(rand(0,100) < $spawnable->spawn_probability)
         {
           $numLocs++;
-          $newLat = $lat+Module::mToDeg(((rand(0,100)/50)*$spawnable->area)-$spawnable->area);
-          $newLon = $lon+Module::mToDeg(((rand(0,100)/50)*$spawnable->area)-$spawnable->area);
+          $spawnLoc = Module::randomLatLnWithinRadius($lat, $lon, $spawnable->area);
+          $newLat = $spawnLoc->lat;//$lat+Module::mToDeg(((rand(0,100)/50)*$spawnable->area)-$spawnable->area);
+          $newLon = $spawnLoc->lon;//$lon+Module::mToDeg(((rand(0,100)/50)*$spawnable->area)-$spawnable->area);
           Locations::createLocationWithQrCode($intGameID, $spawnable->location_name, $spawnable->icon_media_id, $newLat, $newLon, $spawnable->error_range, $spawnable->type, $spawnable->type_id, 1, $spawnable->hidden, $spawnable->force_view, $spawnable->allow_quick_travel, $spawnable->wiggle, '', 0, "You've incorrectly encountered a spawnable! Weird...");
         }
         $query = "UPDATE spawnables SET last_spawned = now() WHERE spawnable_id = ".$spawnable->spawnable_id;

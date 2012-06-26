@@ -362,6 +362,21 @@ abstract class Module
     return ($miles * 1609.344); //convert to meters
   }
 
+  protected function randomLatLnWithinRadius($originLat, $originLon, $maxDistTrueScale)
+  {
+    $radius = (rand(0,1000)/1000)*$maxDistTrueScale;
+    $xDelt = rand(-1000,1000)/1000;
+    $yDelt = rand(-1000,1000)/1000;
+
+    $distLargeScale = Module::metersBetweenLatLngs($originLat, $originLon, $originLat+$yDelt, $originLon+$xDelt);
+    $maxDistLargeScale = ($distLargeScale/$radius) * $maxDistTrueScale;
+    $xDelt = $xDelt * ($maxDistTrueScale/$maxDistLargeScale);
+    $yDelt = $yDelt * ($maxDistTrueScale/$maxDistLargeScale);
+    $locObj->lat = $originLat + $yDelt;
+    $locObj->lon = $originLon + $xDelt;
+
+    return $locObj;
+  }
 
   /**
    * Checks if a record Exists
