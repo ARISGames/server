@@ -649,6 +649,7 @@ class Games extends Module
                                 game_id INT NOT NULL,
                                 type ENUM('Node', 'Item', 'Npc', 'WebPage', 'AugBubble', 'PlayerNote') NOT NULL,
                                 type_id INT NOT NULL,
+                                location_name TINYTEXT NOT NULL DEFAULT '',
                                 amount INT NOT NULL DEFAULT 1,
                                 area INT NOT NULL DEFAULT 10,
                                 amount_restriction ENUM('PER_PLAYER', 'TOTAL') NOT NULL DEFAULT 'PER_PLAYER',
