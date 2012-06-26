@@ -127,11 +127,6 @@ abstract class Module
    */
   protected function degToM($degrees)
   {
-    //$r = 6371; //Radius of Earth (km)
-    //$radians = $degrees*0.01745329; //(pi/180)
-    //$k = 2*pow(sin($radians/2),2);
-    //$k = 2*atan2(sqrt($k),sqrt(1-$k));
-    //return $k*$r;
     //Ridiculous approximation, but fine for most cases
     return 500000*$degrees;
   }
@@ -846,11 +841,10 @@ abstract class Module
     }
     if($shouldCheckSpawnablesForDeletion)
     {
-      $query = "SELECT * FROM spawnables WHERE game_id = $gameId AND type = $type AND type_id = $eventDetail1 LIMIT 1";
+      $query = "SELECT * FROM spawnables WHERE game_id = $gameId AND type = '$type' AND type_id = $eventDetail1 LIMIT 1";
       $result = mysql_query($query);
-      if($obj = mysql_fetch_object($result) && $obj->delete_when_viewed == 1) 
+      if(($obj = mysql_fetch_object($result)) && $obj->delete_when_viewed == 1) 
       {
-        //NOTE- NEED TO PASS $eventDetail2 AS LOCATION_ID FROM CLIENT!!!
         $query = "DELETE FROM ".$gameId."_locations WHERE location_id = $eventDetail2";
         mysql_query($query);
       }
