@@ -386,8 +386,8 @@ class Locations extends Module
       }
       else if($spawnable->location_bound_type == 'LOCATION')
       {
-        $lat = $spawnable->lat;
-        $lon = $spawnable->lon;
+        $lat = $spawnable->latitude;
+        $lon = $spawnable->longitude;
       }
 
       if($spawnable->amount_restriction == 'PER_PLAYER')
