@@ -322,7 +322,7 @@ class Locations extends Module
     $query = "SELECT * FROM spawnables WHERE game_id = ".$prefix;
     $results = mysql_query($query);
     while($spawnable = mysql_fetch_object($results)){
-      
+
       //If spawnable and object it links to meet requirments, add it to the array
       NetDebug::trace('Spawnable ' . $spawnable->spawnable_id . ' Found. Checking Reqs');	
 
@@ -404,55 +404,31 @@ class Locations extends Module
       }
       else if($spawnable->amount_restriction == 'TOTAL')
       {
-        $query = "SELECT * FROM ".$prefix."_locations WHERE type = ".$spawnable->type." AND type_id = ".$spawnable->type_id;
+        $query = "SELECT * FROM ".$prefix."_locations WHERE type = '".$spawnable->type."' AND type_id = ".$spawnable->type_id;
         $result = mysql_query($query);
         $numLocs = mysql_num_rows($result);
       }
 
-      if($spawnable->location_bound_type == 'LOCATION')
+      $secondsOfSpawning = strtotime("now")-strtotime($spawnable->last_spawned);
+      while($secondsOfSpawning > $spawnable->spawn_rate && $numLocs < $spawnable->amount)
       {
-        $secondsOfSpawning = strtotime("now")-strtotime($spawnable->last_spawned);
-        while($secondsOfSpawning > $spawnable->spawn_rate && $numLocs < $spawnable->amount)
+        if(rand(0,100) < $spawnable->spawn_probability)
         {
-          if(rand(0,100) < $spawnable->spawn_probability)
-          {
-            $numLocs++;
-            $newLat = $lat+Module::mToDeg(((rand(0,100)/50)*$spawnable->area)-$spawnable->area);
-            $newLon = $lon+Module::mToDeg(((rand(0,100)/50)*$spawnable->area)-$spawnable->area);
-            Locations::createLocationWithQrCode($intGameID, $spawnable->title, $spawnable->icon_media_id, $newLat, $newLon, $spawnable->error_range, $spawnable->type, $spawnable->type_id, 1, $spawnable->hidden, $spawnable->force_view, $spawnable->allow_quick_travel, $spawnable->wiggle, '', 0, "You've incorrectly encountered a spawnable! Weird...");
-          }
-          $secondsOfSpawning-=$spawnable->spawn_rate;
-          $query = "UPDATE spawnables SET last_spawned = now() WHERE spawnable_id = ".$spawnable->spawnable_id;
-          mysql_query($query);
+          $numLocs++;
+          $newLat = $lat+Module::mToDeg(((rand(0,100)/50)*$spawnable->area)-$spawnable->area);
+          $newLon = $lon+Module::mToDeg(((rand(0,100)/50)*$spawnable->area)-$spawnable->area);
+          Locations::createLocationWithQrCode($intGameID, $spawnable->title, $spawnable->icon_media_id, $newLat, $newLon, $spawnable->error_range, $spawnable->type, $spawnable->type_id, 1, $spawnable->hidden, $spawnable->force_view, $spawnable->allow_quick_travel, $spawnable->wiggle, '', 0, "You've incorrectly encountered a spawnable! Weird...");
         }
-        if($numLocs >= $spawnable->amount)
-        {
-          $query = "UPDATE spawnables SET last_spawned = now() WHERE spawnable_id = ".$spawnable->spawnable_id;
-          mysql_query($query);
-        } 
+        $query = "UPDATE spawnables SET last_spawned = now() WHERE spawnable_id = ".$spawnable->spawnable_id;
+        mysql_query($query);
+        $secondsOfSpawning-=$spawnable->spawn_rate;
+        if(location_bound_type != 'LOCATION') $secondsOfSpawning = 0; //Only simulate once unless location bound is a location
       }
-      else
+      if($numLocs >= $spawnable->amount)
       {
-        $secondsOfSpawning = strtotime("now")-strtotime($spawnable->last_spawned);
-        if($secondsOfSpawning > $spawnable->spawn_rate && $numLocs < $spawnable->amount)
-        {
-          if(rand(0,100) < $spawnable->spawn_probability)
-          {
-            $numLocs++;
-            $newLat = $lat+Module::mToDeg(((rand(0,100)/50)*$spawnable->area)-$spawnable->area);
-            $newLon = $lon+Module::mToDeg(((rand(0,100)/50)*$spawnable->area)-$spawnable->area);
-            Locations::createLocationWithQrCode($intGameID, $spawnable->title, $spawnable->icon_media_id, $newLat, $newLon, $spawnable->error_range, $spawnable->type, $spawnable->type_id, 1, $spawnable->hidden, $spawnable->force_view, $spawnable->allow_quick_travel, $spawnable->wiggle, '', 0, "You've incorrectly encountered a spawnable! Weird...");
-          }
-          $secondsOfSpawning-=$spawnable->spawn_rate;
-          $query = "UPDATE spawnables SET last_spawned = now() WHERE spawnable_id = ".$spawnable->spawnable_id;
-          mysql_query($query);
-        }
-        if($numLocs >= $spawnable->amount)
-        {
-          $query = "UPDATE spawnables SET last_spawned = now() WHERE spawnable_id = ".$spawnable->spawnable_id;
-          mysql_query($query);
-        } 
-      }
+        $query = "UPDATE spawnables SET last_spawned = now() WHERE spawnable_id = ".$spawnable->spawnable_id;
+        mysql_query($query);
+      } 
 
       //Destroy spawnables
       if($spawnable->time_to_live != -1)
