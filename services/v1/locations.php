@@ -219,10 +219,10 @@ class Locations extends Module
     $arrayLocations = array();
 
     //Gets all non-spawned locations
-    $query = "SELECT {$prefix}_locations.*, spawnables.spawnable_id FROM {$prefix}_locations 
+    $query = "SELECT {$prefix}_locations.*, spawnables.spawnable_id, spawnables.active FROM {$prefix}_locations 
       LEFT JOIN spawnables ON (spawnables.game_id = {$prefix} AND {$prefix}_locations.type = spawnables.type AND {$prefix}_locations.type_id = spawnables.type_id)
       WHERE {$prefix}_locations.latitude != '' AND {$prefix}_locations.longitude != ''
-      AND spawnable_id IS NULL AND ({$prefix}_locations.type != 'Item' OR (item_qty IS NULL OR item_qty != 0))
+      AND (spawnable_id IS NULL OR active = 0) AND ({$prefix}_locations.type != 'Item' OR (item_qty IS NULL OR item_qty != 0))
       ";
     $rsLocations = @mysql_query($query);
     if (mysql_error()) return new returnData(3, NULL, "SQL Error" . mysql_error());
@@ -319,7 +319,7 @@ class Locations extends Module
 
 
     //Get all spawned locations (needs separate calculations, as requirements are not associated with each location)
-    $query = "SELECT * FROM spawnables WHERE game_id = ".$prefix;
+    $query = "SELECT * FROM spawnables WHERE game_id = ".$prefix." AND active = 1";
     $results = mysql_query($query);
     while($spawnable = mysql_fetch_object($results)){
 

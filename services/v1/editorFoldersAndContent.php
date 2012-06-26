@@ -189,7 +189,7 @@ class EditorFoldersAndContent extends Module
 		$media = $mediaReturnObject->data;
 		$content->icon_media = $media;
 		$content->icon_media_id = $contentDetails->icon_media_id;
-                $content->is_spawnable = Spawnables::hasSpawnable($intGameID, $content->content_type, $content->content_id);
+                $content->is_spawnable = Spawnables::hasActiveSpawnable($intGameID, $content->content_type, $content->content_id);
 
 		if ($content->content_type != 'WebPage' && $content->content_type != 'PlayerNote' && $content->content_type != 'AugBubble'){
 			//Get the Media

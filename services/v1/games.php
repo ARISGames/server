@@ -316,7 +316,6 @@ class Games extends Module
 				$strFullName = addslashes($strFullName);	
 				$strDescription = addslashes($strDescription);
 
-
 				//Check if a game with this name has already been created
 				$query = "SELECT * FROM games WHERE name = '{$strFullName}'";
 				NetDebug::trace($query);
@@ -665,6 +664,7 @@ class Games extends Module
                                 hidden TINYINT(1) NOT NULL DEFAULT 0,
                                 allow_quick_travel TINYINT(1) NOT NULL DEFAULT 0,
                                 wiggle TINYINT(1) NOT NULL DEFAULT 1,
+                                active TINYINT(1) NOT NULL DEFAULT 1,
                                 time_to_live INT NOT NULL DEFAULT 100);";
                                 mysql_query($query);
 				NetDebug::trace("$query" . ":" . mysql_error());  
@@ -728,6 +728,8 @@ class Games extends Module
                                 $query = "ALTER TABLE ".$prefix."_requirements CHANGE content_type content_type ENUM('Node','QuestDisplay','QuestComplete','Location','OutgoingWebHook','Spawnable')";
                                 mysql_query($query);
 				NetDebug::trace("$query" . ":" . mysql_error());  
+
+                                /* MAKE SURE TO REFLECT ANY CHANGES IN HERE IN createGame AS WELL!!!!! */
 			}
 
 

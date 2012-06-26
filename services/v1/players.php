@@ -256,42 +256,42 @@ class Players extends Module
    * Player Viewed an Item, exectute it's actions
    * @returns returnData with data=true if a player state change was made
    */
-  public function itemViewed($intGameID, $intPlayerID, $intItemID)
+  public function itemViewed($intGameID, $intPlayerID, $intItemID, $intLocationID = 0)
   {
     $prefix = Module::getPrefix($intGameID);
     if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-    Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_ITEM, $intItemID);
+    Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_ITEM, $intItemID, $intLocationID);
 
     return new returnData(0, TRUE);
   }
 
-  public function npcViewed($intGameID, $intPlayerID, $intNpcID)
+  public function npcViewed($intGameID, $intPlayerID, $intNpcID, $intLocationID = 0)
   {	
     $prefix = Module::getPrefix($intGameID);
     if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-    Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_NPC, $intNpcID);
+    Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_NPC, $intNpcID, $intLocationID);
 
     return new returnData(0, TRUE);
   }
 
-  public function webPageViewed($intGameID, $intPlayerID, $intWebPageID)
+  public function webPageViewed($intGameID, $intPlayerID, $intWebPageID, $intLocationID = 0)
   {	
     $prefix = Module::getPrefix($intGameID);
     if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-    Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_WEBPAGE, $intWebPageID);
+    Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_WEBPAGE, $intWebPageID, $intLocationID);
 
     return new returnData(0, TRUE);
   }
 
-  public function augBubbleViewed($intGameID, $intPlayerID, $intAugBubbleID)
+  public function augBubbleViewed($intGameID, $intPlayerID, $intAugBubbleID, $intLocationID = 0)
   {	
     $prefix = Module::getPrefix($intGameID);
     if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-    Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_AUGBUBBLE, $intAugBubbleID);
+    Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_AUGBUBBLE, $intAugBubbleID, $intLocationID);
 
     return new returnData(0, TRUE);
   }
