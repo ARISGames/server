@@ -319,8 +319,8 @@ class Games extends Module
 				//Check if a game with this name has already been created
 				$query = "SELECT * FROM games WHERE name = '{$strFullName}'";
 				NetDebug::trace($query);
-				if (mysql_num_rows(mysql_query($query)) > 0) 
-					return new returnData(4, NULL, 'duplicate name');
+				if (mysql_num_rows($result = mysql_query($query)) > 0) 
+					return new returnData(4, mysql_fetch_object($result)->game_id, 'duplicate name');
 
 
 				//Create the game record in SQL
@@ -424,6 +424,7 @@ class Games extends Module
 						    force_view enum('0','1') NOT NULL default '0',
 						    allow_quick_travel enum('0','1') NOT NULL default '0',
 						    wiggle TINYINT(1) NOT NULL default '0',
+                            show_title TINYINT(1) NOT NULL default '0',
 						    spawnstamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 						    PRIMARY KEY  (location_id)
 							    )ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
@@ -666,6 +667,7 @@ class Games extends Module
                                 allow_quick_travel TINYINT(1) NOT NULL DEFAULT 0,
                                 wiggle TINYINT(1) NOT NULL DEFAULT 1,
                                 active TINYINT(1) NOT NULL DEFAULT 1,
+                                show_title TINYINT(1) NOT NULL DEFAULT 0,
                                 time_to_live INT NOT NULL DEFAULT 100);";
                                 mysql_query($query);
 				NetDebug::trace("$query" . ":" . mysql_error());  
@@ -702,7 +704,7 @@ class Games extends Module
 					$upgradeResult = Games::upgradeGameDatabase($game->game_id);
 				}
 
-				return new returnData(0, FALSE);
+				return new returnData(0);
 			}
 
 
@@ -724,7 +726,11 @@ class Games extends Module
 
                                 $query = "ALTER TABLE ".$prefix."_locations ADD COLUMN wiggle TINYINT(1) NOT NULL DEFAULT 0";
                                 mysql_query($query);
-				NetDebug::trace("$query" . ":" . mysql_error());  
+				NetDebug::trace("$query" . ":" . mysql_error()); 
+                                //add show_title
+                                $query = "ALTER TABLE ".$prefix."_locations ADD column show_title tinyint(1) NOT NULL DEFAULT 1;";
+                                mysql_query($query);
+				NetDebug::trace("$query" . ":" . mysql_error()); 
 
                                 $query = "ALTER TABLE ".$prefix."_requirements CHANGE content_type content_type ENUM('Node','QuestDisplay','QuestComplete','Location','OutgoingWebHook','Spawnable')";
                                 mysql_query($query);

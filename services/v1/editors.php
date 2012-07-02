@@ -30,7 +30,6 @@ class Editors extends Module
      */
 	public function createEditor($strUser, $strPassword, $strEmail, $strComments)
 	{	
-	
 		$query = "SELECT editor_id FROM editors 
 				  WHERE name = '{$strUser}' LIMIT 1";
 			
@@ -73,9 +72,17 @@ class Editors extends Module
 		<p>Good luck making games!</p>";
 
 		if (Module::sendEmail($strEmail, $subject, $body)) return new returnData(0, mysql_insert_id());
-		else return new returnData(4, mysql_insert_id(), "Account created but email not sent");
+		else return new returnData(6, mysql_insert_id(), "Account created but email not sent");
 	}
 	
+	public function deleteEditor($strUser, $strPassword)
+	{	
+		$query = "DELETE FROM editors WHERE name = '{$strUser}' AND password = '".md5($strPassword)."';";
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
+                return new returnData(0); 
+        }
+		
 	
 	/**
      * Change an Editor's PAssword

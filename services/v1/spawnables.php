@@ -3,12 +3,12 @@ require_once("module.php");
 
 class Spawnables extends Module
 {
-  public static function createSpawnable($gameId, $type, $typeId, $locationName, $amount, $area, $amountRestriction, $locationBoundType, $lat, $lon, $spawnProbability, $spawnRate, $deleteWhenViewed, $timeToLive, $errorRange, $forceView, $hidden, $allowQuickTravel, $wiggle)
+  public static function createSpawnable($gameId, $type, $typeId, $locationName, $amount, $area, $amountRestriction, $locationBoundType, $lat, $lon, $spawnProbability, $spawnRate, $deleteWhenViewed, $timeToLive, $errorRange, $forceView, $hidden, $allowQuickTravel, $wiggle, $showTitle = 0)
   {
     if($spawnableId = Spawnables::hasSpawnable($gameId, $type, $typeId))
       $query = "UPDATE spawnables SET active = 1 WHERE game_id = $gameId AND type = '$type' AND type_id = $typeId";
     else
-      $query = "INSERT INTO spawnables (game_id, type, type_id, location_name, amount, area, amount_restriction, location_bound_type, latitude, longitude, spawn_probability, spawn_rate, delete_when_viewed, time_to_live, error_range, force_view, hidden, allow_quick_travel, wiggle, active) VALUES ($gameId, '{$type}', $typeId, '$locationName', $amount, $area, '{$amountRestriction}', '{$locationBoundType}', $lat, $lon, $spawnProbability, $spawnRate, $deleteWhenViewed, $timeToLive, $errorRange, $forceView, $hidden, $allowQuickTravel, $wiggle, 1);";
+      $query = "INSERT INTO spawnables (game_id, type, type_id, location_name, amount, area, amount_restriction, location_bound_type, latitude, longitude, spawn_probability, spawn_rate, delete_when_viewed, time_to_live, error_range, force_view, hidden, allow_quick_travel, wiggle, show_title, active) VALUES ($gameId, '{$type}', $typeId, '$locationName', $amount, $area, '{$amountRestriction}', '{$locationBoundType}', $lat, $lon, $spawnProbability, $spawnRate, $deleteWhenViewed, $timeToLive, $errorRange, $forceView, $hidden, $allowQuickTravel, $wiggle, $showTitle, 1);";
 
     mysql_query($query);
     $spawnableId = mysql_insert_id();
@@ -60,12 +60,12 @@ class Spawnables extends Module
   }
 
   //Optionally by spawnableId or by gameId, type, and typeId
-  public static function updateSpawnable($spawnableId = 0, $gameId, $type, $typeId, $locationName, $amount, $area, $amountRestriction, $locationBoundType, $lat, $lon, $spawnProbability, $spawnRate, $deleteWhenViewed, $timeToLive, $errorRange, $forceView, $hidden, $allowQuickTravel, $wiggle, $active = 1)
+  public static function updateSpawnable($spawnableId = 0, $gameId, $type, $typeId, $locationName, $amount, $area, $amountRestriction, $locationBoundType, $lat, $lon, $spawnProbability, $spawnRate, $deleteWhenViewed, $timeToLive, $errorRange, $forceView, $hidden, $allowQuickTravel, $wiggle, $active = 1, $showTitle = 0)
   {
     if($spawnableId == 0)
-      $query = "UPDATE spawnables SET location_name = '$locationName', amount = $amount, area = $area, amount_restriction = '{$amountRestriction}', location_bound_type = '{$locationBoundType}', latitude = $lat, longitude = $lon, spawn_probability = $spawnProbability, spawn_rate = $spawnRate, delete_when_viewed = $deleteWhenViewed, time_to_live = $timeToLive, error_range = $errorRange, force_view = $forceView, hidden = $hidden, allow_quick_travel = $allowQuickTravel, wiggle = $wiggle, active = $active WHERE game_id = $gameId AND type = '{$type}' AND type_id = $typeId";
+      $query = "UPDATE spawnables SET location_name = '$locationName', amount = $amount, area = $area, amount_restriction = '{$amountRestriction}', location_bound_type = '{$locationBoundType}', latitude = $lat, longitude = $lon, spawn_probability = $spawnProbability, spawn_rate = $spawnRate, delete_when_viewed = $deleteWhenViewed, time_to_live = $timeToLive, error_range = $errorRange, force_view = $forceView, hidden = $hidden, allow_quick_travel = $allowQuickTravel, wiggle = $wiggle, show_title = $showTitle, active = $active WHERE game_id = $gameId AND type = '{$type}' AND type_id = $typeId";
     else
-      $query = "UPDATE spawnables SET game_id = $gameId, type = '$type', type_id = $typeId, location_name = '$locationName', amount = $amount, area = $area, amount_restriction = '{$amountRestriction}', location_bound_type = '{$locationBoundType}', latitude = $lat, longitude = $lon, spawn_probability = $spawnProbability, spawn_rate = $spawnRate, delete_when_viewed = $deleteWhenViewed, time_to_live = $timeToLive, error_range = $errorRange, force_view = $forceView, hidden = $hidden, allow_quick_travel = $allowQuickTravel, wiggle = $wiggle, active = $active WHERE spawnable_id = $spawnableId";
+      $query = "UPDATE spawnables SET game_id = $gameId, type = '$type', type_id = $typeId, location_name = '$locationName', amount = $amount, area = $area, amount_restriction = '{$amountRestriction}', location_bound_type = '{$locationBoundType}', latitude = $lat, longitude = $lon, spawn_probability = $spawnProbability, spawn_rate = $spawnRate, delete_when_viewed = $deleteWhenViewed, time_to_live = $timeToLive, error_range = $errorRange, force_view = $forceView, hidden = $hidden, allow_quick_travel = $allowQuickTravel, wiggle = $wiggle, show_title = $showTitle, active = $active WHERE spawnable_id = $spawnableId";
     mysql_query($query);
     return new returnData(0);
   }
