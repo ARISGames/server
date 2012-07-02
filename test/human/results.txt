@@ -1,0 +1,84 @@
+  -Running 'createPlayer'...
+	Duplicate name- deleting and re-calling...
+	Created Player(8663)
+  Test 'createPlayer' Succeeded (No Description)
+  -Running 'blah'...
+	Ran exampleTest Smoothly!
+x Test 'blah' Failed (Nothin' to say.)
+  -Running 'createEditor'...
+	Duplicate name- deleting and re-calling...
+	Created Editor(2111)
+  Test 'createEditor' Succeeded (No Description)
+  -Running 'createGame'...
+	Duplicate name- deleting and re-calling...
+	Created Game(3170)
+  Test 'createGame' Succeeded (No Description)
+  -Running 'createPlaque'...
+	Created Plaque(1)
+  Test 'createPlaque' Succeeded (No Description)
+  -Running 'createAugbubble'...
+	Created Augbubble(327)
+  Test 'createAugbubble' Succeeded (No Description)
+  -Running 'createNpc'...
+	Created Npc(1)
+  Test 'createNpc' Succeeded (No Description)
+  -Running 'createItem'...
+	Created Item(1)
+  Test 'createItem' Succeeded (No Description)
+  -Running 'createWebpage'...
+	Created Webpage(528)
+  Test 'createWebpage' Succeeded (No Description)
+  -Running 'createPlaqueLocations'...
+	Created Plaque(1) Location(1)
+  Test 'createPlaqueLocations' Succeeded (No Description)
+  -Running 'createAugbubbleLocations'...
+	Created Augbubble(327) Location(2)
+  Test 'createAugbubbleLocations' Succeeded (No Description)
+  -Running 'createNpcLocations'...
+	Created Npc(1) Location(3)
+  Test 'createNpcLocations' Succeeded (No Description)
+  -Running 'createItemLocations'...
+	Created Item(1) Location(4)
+  Test 'createItemLocations' Succeeded (No Description)
+  -Running 'createWebpageLocations'...
+	Created Webpage(528) Location(5)
+  Test 'createWebpageLocations' Succeeded (No Description)
+  -Running 'getLocationsBeforeReqs'...
+	Found Location: Id-1 Type-Node TypeId-1
+	Found Location: Id-2 Type-AugBubble TypeId-327
+	Found Location: Id-3 Type-Npc TypeId-1
+	Found Location: Id-4 Type-Item TypeId-1
+	Found Location: Id-5 Type-WebPage TypeId-528
+  Test 'getLocationsBeforeReqs' Succeeded (No Description)
+  -Running 'createQuests'...
+	Created Quest(1)
+  Test 'createQuests' Succeeded (No Description)
+  -Running 'setRequirementsForLocs'...
+	Adding Requirement to Location: Id-4
+	Success(1)
+	Adding Requirement to Location: Id-3
+	Success(2)
+	Adding Requirement to Location: Id-1
+	Success(3)
+	Adding Requirement to Location: Id-5
+	Success(4)
+	Adding Requirement to Location: Id-2
+	Success(5)
+  Test 'setRequirementsForLocs' Succeeded (No Description)
+  -Running 'getQuestsBeforeReqs'...
+	Found Active Quest(1)
+  Test 'getQuestsBeforeReqs' Succeeded (No Description)
+  -Running 'getLocationsAfterReqs'...
+  Test 'getLocationsAfterReqs' Succeeded (No Description)
+  -Running 'setRequirementsForQuests'...
+	Adding Requirement to Quest: Id-1
+	Success(6)
+  Test 'setRequirementsForQuests' Succeeded (No Description)
+  -Running 'getQuestsAfterReqs'...
+	Found Active Quest(1)
+  Test 'getQuestsAfterReqs' Succeeded (No Description)
+
+  Results:
+  Tests Run- 21/21
+  Tests Passed- 20/21
+  Tests Failed- 1/21

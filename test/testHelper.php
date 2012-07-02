@@ -182,12 +182,27 @@ class TestHelper
      */
     public function outputResults()
     {
-        if(TestConf::verbosity == 0) return;
-        if(TestConf::verbosity > 1) echo "\n";
-        echo "  Results:\n";
-        echo "  Tests Run- ".$this->testsRun."/".$this->testsFound."\n";
-        echo "  Tests Passed- ".$this->testsPassed."/".$this->testsRun."\n";
-        echo "  Tests Failed- ".$this->testsFailed."/".$this->testsRun."\n";
+        if(TestConf::verbosity > 0)
+        {
+            if(TestConf::verbosity > 1) echo "\n";
+            echo "  Results:\n";
+            echo "  Tests Run- ".$this->testsRun."/".$this->testsFound."\n";
+            echo "  Tests Passed- ".$this->testsPassed."/".$this->testsRun."\n";
+            echo "  Tests Failed- ".$this->testsFailed."/".$this->testsRun."\n";
+        }
+
+        if(TestConf::sendMailOnFailure && $this->testsFailed > 0)
+        {
+            $body = "Click to see result details- ".Config::WWWPath."/server/test/".TestConf::resultsTextFile." <br />\n";
+            $body .= "Click (copy to browser) to re-run test- view-source:".substr(Config::WWWPath, 7)."/server/test/index.php <br />\n";
+            $this->sendEmail(TestConf::failureAlertee, "ARIS Unit Tests-".$this->testsFailed."/".$this->testsRun." failed", $body);
+        }
+
+        $file = TestConf::svnStatusFile;
+        $fh = fopen($file, "w");
+        fwrite($fh, "NO");
+        fclose($fh);
+
         return true;
     }
 
@@ -210,13 +225,13 @@ class TestHelper
      */
     public function sendEmail($to, $subject, $body) 
     {
-        include_once('../../../libraries/phpmailer/class.phpmailer.php');
+        include_once('../libraries/phpmailer/class.phpmailer.php');
 
         if (empty($to))
             return false;
 
         $mail = new phpmailer;
-        $mail->PluginDir = '../../../libraries/phpmailer'; // plugin directory (eg smtp plugin)
+        $mail->PluginDir = '../libraries/phpmailer'; // plugin directory (eg smtp plugin)
 
         $mail->CharSet = 'UTF-8';
         $mail->Subject = substr(stripslashes($subject), 0, 900);
