@@ -1,23 +1,20 @@
   -Running 'createPlayer'...
 	Duplicate name- deleting and re-calling...
-	Created Player(8663)
+	Created Player(8668)
   Test 'createPlayer' Succeeded (No Description)
-  -Running 'blah'...
-	Ran exampleTest Smoothly!
-x Test 'blah' Failed (Nothin' to say.)
   -Running 'createEditor'...
 	Duplicate name- deleting and re-calling...
-	Created Editor(2111)
+	Created Editor(2116)
   Test 'createEditor' Succeeded (No Description)
   -Running 'createGame'...
 	Duplicate name- deleting and re-calling...
-	Created Game(3170)
+	Created Game(3175)
   Test 'createGame' Succeeded (No Description)
   -Running 'createPlaque'...
 	Created Plaque(1)
   Test 'createPlaque' Succeeded (No Description)
   -Running 'createAugbubble'...
-	Created Augbubble(327)
+	Created Augbubble(332)
   Test 'createAugbubble' Succeeded (No Description)
   -Running 'createNpc'...
 	Created Npc(1)
@@ -26,13 +23,13 @@ x Test 'blah' Failed (Nothin' to say.)
 	Created Item(1)
   Test 'createItem' Succeeded (No Description)
   -Running 'createWebpage'...
-	Created Webpage(528)
+	Created Webpage(533)
   Test 'createWebpage' Succeeded (No Description)
   -Running 'createPlaqueLocations'...
 	Created Plaque(1) Location(1)
   Test 'createPlaqueLocations' Succeeded (No Description)
   -Running 'createAugbubbleLocations'...
-	Created Augbubble(327) Location(2)
+	Created Augbubble(332) Location(2)
   Test 'createAugbubbleLocations' Succeeded (No Description)
   -Running 'createNpcLocations'...
 	Created Npc(1) Location(3)
@@ -41,14 +38,14 @@ x Test 'blah' Failed (Nothin' to say.)
 	Created Item(1) Location(4)
   Test 'createItemLocations' Succeeded (No Description)
   -Running 'createWebpageLocations'...
-	Created Webpage(528) Location(5)
+	Created Webpage(533) Location(5)
   Test 'createWebpageLocations' Succeeded (No Description)
   -Running 'getLocationsBeforeReqs'...
 	Found Location: Id-1 Type-Node TypeId-1
-	Found Location: Id-2 Type-AugBubble TypeId-327
+	Found Location: Id-2 Type-AugBubble TypeId-332
 	Found Location: Id-3 Type-Npc TypeId-1
 	Found Location: Id-4 Type-Item TypeId-1
-	Found Location: Id-5 Type-WebPage TypeId-528
+	Found Location: Id-5 Type-WebPage TypeId-533
   Test 'getLocationsBeforeReqs' Succeeded (No Description)
   -Running 'createQuests'...
 	Created Quest(1)
@@ -78,7 +75,7 @@ x Test 'blah' Failed (Nothin' to say.)
 	Found Active Quest(1)
   Test 'getQuestsAfterReqs' Succeeded (No Description)
 
-  Results:
-  Tests Run- 21/21
-  Tests Passed- 20/21
-  Tests Failed- 1/21
+  Results:(2012-07-02 16:36:46)
+  Tests Run- 20/20
+  Tests Passed- 20/20
+  Tests Failed- 0/20

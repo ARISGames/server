@@ -185,7 +185,7 @@ class TestHelper
         if(TestConf::verbosity > 0)
         {
             if(TestConf::verbosity > 1) echo "\n";
-            echo "  Results:\n";
+            echo "  Results:(".date("Y-m-d H:i:s").")\n";
             echo "  Tests Run- ".$this->testsRun."/".$this->testsFound."\n";
             echo "  Tests Passed- ".$this->testsPassed."/".$this->testsRun."\n";
             echo "  Tests Failed- ".$this->testsFailed."/".$this->testsRun."\n";
