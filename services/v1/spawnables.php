@@ -60,7 +60,7 @@ class Spawnables extends Module
   }
 
   //Optionally by spawnableId or by gameId, type, and typeId
-  public static function updateSpawnable($spawnableId = 0, $gameId, $type, $typeId, $locationName, $amount, $area, $amountRestriction, $locationBoundType, $lat, $lon, $spawnProbability, $spawnRate, $deleteWhenViewed, $timeToLive, $errorRange, $forceView, $hidden, $allowQuickTravel, $wiggle, $active = 1, $showTitle = 0)
+  public static function updateSpawnable($spawnableId = 0, $gameId, $type, $typeId, $locationName, $amount, $area, $amountRestriction, $locationBoundType, $lat, $lon, $spawnProbability, $spawnRate, $deleteWhenViewed, $timeToLive, $errorRange, $forceView, $hidden, $allowQuickTravel, $wiggle, $active, $showTitle)
   {
     if($spawnableId == 0)
       $query = "UPDATE spawnables SET location_name = '$locationName', amount = $amount, area = $area, amount_restriction = '{$amountRestriction}', location_bound_type = '{$locationBoundType}', latitude = $lat, longitude = $lon, spawn_probability = $spawnProbability, spawn_rate = $spawnRate, delete_when_viewed = $deleteWhenViewed, time_to_live = $timeToLive, error_range = $errorRange, force_view = $forceView, hidden = $hidden, allow_quick_travel = $allowQuickTravel, wiggle = $wiggle, show_title = $showTitle, active = $active WHERE game_id = $gameId AND type = '{$type}' AND type_id = $typeId";

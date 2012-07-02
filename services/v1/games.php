@@ -660,7 +660,7 @@ class Games extends Module
                                 spawn_probability DOUBLE NOT NULL default 1.0,
                                 spawn_rate INT NOT NULL DEFAULT 10,
                                 delete_when_viewed TINYINT(1) NOT NULL DEFAULT 0,
-                                last_spawn TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                                last_spawned TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                                 error_range INT NOT NULL DEFAULT 10,
                                 force_view TINYINT(1) NOT NULL DEFAULT 0,
                                 hidden TINYINT(1) NOT NULL DEFAULT 0,
@@ -672,7 +672,20 @@ class Games extends Module
                                 mysql_query($query);
 				NetDebug::trace("$query" . ":" . mysql_error());  
 
-                                //restructure table
+                                $query = "ALTER TABLE spawnables ADD COLUMN active TINYINT(1) NOT NULL DEFAULT 1";
+                                mysql_query($query);
+				NetDebug::trace("$query" . ":" . mysql_error());  
+                                $query = "ALTER TABLE spawnables ADD COLUMN location_name TINYTEXT NOT NULL DEFAULT ''";
+                                mysql_query($query);
+				NetDebug::trace("$query" . ":" . mysql_error());  
+                                $query = "ALTER TABLE spawnables ADD COLUMN show_title TINYINT(1) NOT NULL DEFAULT 1";
+                                mysql_query($query);
+				NetDebug::trace("$query" . ":" . mysql_error());  
+                                $query = "ALTER TABLE spawnables CHANGE last_spawn last_spawned TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP";
+                                mysql_query($query);
+				NetDebug::trace("$query" . ":" . mysql_error());  
+
+                                //add stuff to spawnables
                                 $query = "ALTER TABLE game_tab_data CHANGE tab tab ENUM('GPS','NEARBY','QUESTS','INVENTORY','PLAYER','QR','NOTE','STARTOVER','PICKGAME') NOT NULL;";
 				mysql_query($query);
 				NetDebug::trace("$query" . ":" . mysql_error());
@@ -681,6 +694,11 @@ class Games extends Module
                                 $query = "UPDATE game_tab_data SET tab_index ='9999' WHERE tab='PICKGAME'";
 				mysql_query($query);
 				NetDebug::trace("$query" . ":" . mysql_error());  
+
+                                //restructure table
+                                $query = "ALTER TABLE game_tab_data CHANGE tab tab ENUM('GPS','NEARBY','QUESTS','INVENTORY','PLAYER','QR','NOTE','STARTOVER','PICKGAME') NOT NULL;";
+				mysql_query($query);
+				NetDebug::trace("$query" . ":" . mysql_error());
 
                                 //Deletes all 'STARTOVER' tabs (to be re-added by the next function. Necessary to prevent dups)
                                 $query = "DELETE FROM game_tab_data WHERE tab = 'STARTOVER'";

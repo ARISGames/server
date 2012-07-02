@@ -420,7 +420,7 @@ class Locations extends Module
           $spawnLoc = Module::randomLatLnWithinRadius($lat, $lon, $spawnable->area);
           $newLat = $spawnLoc->lat;//$lat+Module::mToDeg(((rand(0,100)/50)*$spawnable->area)-$spawnable->area);
           $newLon = $spawnLoc->lon;//$lon+Module::mToDeg(((rand(0,100)/50)*$spawnable->area)-$spawnable->area);
-          Locations::createLocationWithQrCode($intGameID, $spawnable->location_name, $spawnable->icon_media_id, $newLat, $newLon, $spawnable->error_range, $spawnable->type, $spawnable->type_id, 1, $spawnable->hidden, $spawnable->force_view, $spawnable->allow_quick_travel, $spawnable->wiggle, '', 0, "You've incorrectly encountered a spawnable! Weird...");
+          Locations::createLocationWithQrCode($intGameID, $spawnable->location_name, $spawnable->icon_media_id, $newLat, $newLon, $spawnable->error_range, $spawnable->type, $spawnable->type_id, 1, $spawnable->hidden, $spawnable->force_view, $spawnable->allow_quick_travel, $spawnable->wiggle, $spawnable->show_title, '', 0, "You've incorrectly encountered a spawnable! Weird...");
         }
         $query = "UPDATE spawnables SET last_spawned = now() WHERE spawnable_id = ".$spawnable->spawnable_id;
         mysql_query($query);
@@ -568,12 +568,12 @@ class Locations extends Module
   public function createLocation($intGameID, $strLocationName, $intIconMediaID, 
       $dblLatitude, $dblLongitude, $dblError,
       $strObjectType, $intObjectID,
-      $intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $boolAllowWiggle) {	
+      $intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $boolAllowWiggle, $boolDisplayAnnotation) {	
 
     Locations::createLocationWithQrCode($intGameID, $strLocationName, $intIconMediaID, 
         $dblLatitude, $dblLongitude, $dblError,
         $strObjectType, $intObjectID,
-        $intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $boolAllowWiggle, $qrCode = '', 0);
+        $intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $boolAllowWiggle, $boolDisplayAnnotation, $qrCode = '', 0);
   }
 
   /**
@@ -599,7 +599,7 @@ class Locations extends Module
   public function createLocationWithQrCode($intGameID, $strLocationName, $intIconMediaID, 
       $dblLatitude, $dblLongitude, $dblError,
       $strObjectType, $intObjectID,
-      $intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $boolAllowWiggle, $qrCode = '', $imageMatchId, $errorText) {
+      $intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $boolAllowWiggle, $boolDisplayAnnotation, $qrCode = '', $imageMatchId, $errorText) {
 
     $prefix = Module::getPrefix($intGameID);
     if (!$prefix) return new returnData(1, NULL, "invalid game id");
@@ -615,11 +615,11 @@ class Locations extends Module
 
     $query = "INSERT INTO {$prefix}_locations 
       (name, icon_media_id, latitude, longitude, error, 
-       type, type_id, item_qty, hidden, force_view, allow_quick_travel, wiggle)
+       type, type_id, item_qty, hidden, force_view, allow_quick_travel, wiggle, show_title)
       VALUES ('{$strLocationName}', '{$intIconMediaID}',
           '{$dblLatitude}','{$dblLongitude}','{$dblError}',
           '{$strObjectType}','{$intObjectID}','{$intQuantity}',
-          '{$boolHidden}','{$boolForceView}', '{$boolAllowQuickTravel}', '{$boolAllowWiggle}')";
+          '{$boolHidden}','{$boolForceView}', '{$boolAllowQuickTravel}', '{$boolAllowWiggle}', '{$boolDisplayAnnotation}')";
 
     NetDebug::trace("createLocation: Running a query = $query");	
 
@@ -665,7 +665,7 @@ class Locations extends Module
   public function updateLocation($intGameID, $intLocationID, $strLocationName, $intIconMediaID, 
       $dblLatitude, $dblLongitude, $dblError,
       $strObjectType, $intObjectID,
-      $intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel)
+      $intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $boolAllowWiggle, $boolDisplayAnnotations)
   {
     $prefix = Module::getPrefix($intGameID);
     if (!$prefix) return new returnData(1, NULL, "invalid game id");
@@ -689,7 +689,9 @@ class Locations extends Module
            item_qty = '{$intQuantity}',
            hidden = '{$boolHidden}',
            force_view = '{$boolForceView}',
-           allow_quick_travel = '{$boolAllowQuickTravel}'
+           allow_quick_travel = '{$boolAllowQuickTravel}',
+           wiggle = '{$boolAllowWiggle}',
+           show_title = '{$boolDisplayAnnotations}',
              WHERE location_id = '{$intLocationID}'";
 
     NetDebug::trace("updateLocation: Query: $query");		
@@ -730,10 +732,7 @@ class Locations extends Module
    * @returns a returnData object containing true if a record was modified
    * @see returnData
    */     
-  public function updateLocationWithQrCode($intGameID, $intLocationID, $strLocationName, $intIconMediaID, 
-      $dblLatitude, $dblLongitude, $dblError,
-      $strObjectType, $intObjectID,
-      $intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $boolAllowWiggle, $qrCode, $imageMatchId, $errorText)
+  public function updateLocationWithQrCode($intGameID, $intLocationID, $strLocationName, $intIconMediaID, $dblLatitude, $dblLongitude, $dblError, $strObjectType, $intObjectID, $intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $boolAllowWiggle, $boolDisplayAnnotation, $qrCode, $imageMatchId, $errorText)
   {
     $prefix = Module::getPrefix($intGameID);
     if (!$prefix) return new returnData(1, NULL, "invalid game id");
@@ -746,21 +745,21 @@ class Locations extends Module
     if ( !$this->isValidObjectType($intGameID, $strObjectType) or !strlen($strObjectType) > 0 )
       return new returnData(4, NULL, "invalid object type");
 
-    $query = "UPDATE {$prefix}_locations
-      SET 
-      name = '{$strLocationName}',
-           icon_media_id = '{$intIconMediaID}', 
-           latitude = '{$dblLatitude}', 
-           longitude = '{$dblLongitude}', 
-           error = '{$dblError}',
-           type = '{$strObjectType}',
-           type_id = '{$intObjectID}',
-           item_qty = '{$intQuantity}',
-           hidden = '{$boolHidden}',
-           force_view = '{$boolForceView}',
-           allow_quick_travel = '{$boolAllowQuickTravel}',
-           wiggle = '{$boolAllowWiggle}'
-             WHERE location_id = '{$intLocationID}'";
+    $query = "UPDATE {$prefix}_locations SET 
+    name = '{$strLocationName}',
+    icon_media_id = '{$intIconMediaID}', 
+    latitude = '{$dblLatitude}', 
+    longitude = '{$dblLongitude}', 
+    error = '{$dblError}',
+    type = '{$strObjectType}',
+    type_id = '{$intObjectID}',
+    item_qty = '{$intQuantity}',
+    hidden = '{$boolHidden}',
+    force_view = '{$boolForceView}',
+    allow_quick_travel = '{$boolAllowQuickTravel}',
+    wiggle = '{$boolAllowWiggle}',
+    show_title = '{$boolDisplayAnnotation}' 
+    WHERE location_id = '{$intLocationID}'";
     NetDebug::trace("updateLocation: Query: $query");		
     @mysql_query($query);
     if (mysql_error()) {
