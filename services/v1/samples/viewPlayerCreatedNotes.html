@@ -18,7 +18,7 @@ function sendRequest(fn, params)
   xmlhttp.send(params); //Synchronous call
 
   var response=JSON.parse(xmlhttp.responseText);
-  //alert(xmlhttp.responseText);
+  alert(xmlhttp.responseText);
   if(response.returnCode != 0) //Error
   {
     document.getElementById('map_canvas').innerHTML = response.data;	
@@ -103,7 +103,7 @@ function createMarker(note)
     {
       contentString += c.text;
     }
-    else if(c.type == "IMAGE")
+    else if(c.type == "PHOTO")
     {
       contentString += "<a href='"+c.media_url+"'><img src='"+c.media_url+"' width='100' /></a>";
     }
