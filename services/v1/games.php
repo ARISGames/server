@@ -716,6 +716,11 @@ class Games extends Module
 				$query = "SELECT * FROM games WHERE game_id > $startingGameIndex ORDER BY game_id";
 				$rs = mysql_query($query);
 				if (mysql_error())  return new returnData(3, NULL, 'SQL error');
+                
+                //add notebook-icon
+                $query = "INSERT INTO media (media_id,game_id,name,file_name,is_icon) VALUES (94,0,\"Default Note\",\"Notebook-icon.png\", 1);";
+				mysql_query($query);
+				NetDebug::trace("$query" . ":" . mysql_error());
 
 				while ($game = mysql_fetch_object($rs)) {
 					NetDebug::trace("Upgrade Game: {$game->game_id}");

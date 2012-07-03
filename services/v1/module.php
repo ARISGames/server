@@ -71,6 +71,9 @@ abstract class Module
   const kPLAYER_CREATED_ITEM_AUDIO_ICON_NUM = 34;
   const kPLAYER_CREATED_ITEM_VIDEO_ICON_NUM = 35;
   const kPLAYER_CREATED_ITEM_DEFAULT_PARENT_FOLDER_ID = '-1';
+    
+  //constants for note icon id
+  const kPLAYER_NOTE_DEFAULT_ICON = '94';
 
   public function Module()
   {
@@ -340,7 +343,7 @@ abstract class Module
       $title = $obj->title;
 
       $query = "INSERT INTO {$strGamePrefix}_locations (name, type, type_id, icon_media_id, latitude, longitude, error, item_qty, hidden, force_view, allow_quick_travel)
-        VALUES ('{$title}','PlayerNote','{$noteId}', '71', '{$floatLat}','{$floatLong}', '{$error}','1',0,0,0)";
+        VALUES ('{$title}','PlayerNote','{$noteId}', ".Module::kPLAYER_NOTE_DEFAULT_ICON.", '{$floatLat}','{$floatLong}', '{$error}','1',0,0,0)";
       NetDebug::trace($query . ' ' . mysql_error());  
       @mysql_query($query);
 
