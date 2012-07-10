@@ -369,6 +369,7 @@
             weight INT UNSIGNED NOT NULL DEFAULT  '0',
             url TINYTEXT NOT NULL,
             type ENUM(  'NORMAL',  'ATTRIB',  'URL', 'NOTE') CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  'NORMAL',
+            tradeable TINYINT(1) NOT NULL DEFAULT 1,
             PRIMARY KEY  (item_id)
             )ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
             NetDebug::trace($query);
@@ -393,7 +394,7 @@
             
             $query = "CREATE TABLE {$strShortName}_requirements (
             requirement_id int(11) NOT NULL auto_increment,
-            content_type enum('Node','QuestDisplay','QuestComplete','Location','OutgoingWebHook') NOT NULL,
+            content_type enum('Node','QuestDisplay','QuestComplete','Location','OutgoingWebHook','Spawnable') NOT NULL,
             content_id int(10) unsigned NOT NULL,
             requirement ENUM('PLAYER_HAS_ITEM','PLAYER_VIEWED_ITEM','PLAYER_VIEWED_NODE','PLAYER_VIEWED_NPC','PLAYER_VIEWED_WEBPAGE','PLAYER_VIEWED_AUGBUBBLE','PLAYER_HAS_UPLOADED_MEDIA_ITEM', 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE','PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO','PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO','PLAYER_HAS_COMPLETED_QUEST','PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK', 'PLAYER_HAS_NOTE', 'PLAYER_HAS_NOTE_WITH_TAG', 'PLAYER_HAS_NOTE_WITH_LIKES', 'PLAYER_HAS_NOTE_WITH_COMMENTS', 'PLAYER_HAS_GIVEN_NOTE_COMMENTS') NOT NULL,
             boolean_operator enum('AND','OR') NOT NULL DEFAULT 'AND',	
@@ -672,6 +673,10 @@
             time_to_live INT NOT NULL DEFAULT 100);";
             mysql_query($query);
             NetDebug::trace("$query" . ":" . mysql_error());  
+
+            $query = "ALTER TABLE player_log CHANGE timestamp timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP;";
+            mysql_query($query);
+            NetDebug::trace("$query" . ":" . mysql_error());  
             
             $query = "ALTER TABLE games ADD COLUMN allow_note_likes TINYINT(1) NOT NULL DEFAULT 1";
             mysql_query($query);
@@ -680,12 +685,15 @@
             $query = "ALTER TABLE spawnables ADD COLUMN active TINYINT(1) NOT NULL DEFAULT 1";
             mysql_query($query);
             NetDebug::trace("$query" . ":" . mysql_error());  
+
             $query = "ALTER TABLE spawnables ADD COLUMN location_name TINYTEXT NOT NULL DEFAULT ''";
             mysql_query($query);
             NetDebug::trace("$query" . ":" . mysql_error());  
+            
             $query = "ALTER TABLE spawnables ADD COLUMN show_title TINYINT(1) NOT NULL DEFAULT 1";
             mysql_query($query);
             NetDebug::trace("$query" . ":" . mysql_error());  
+
             $query = "ALTER TABLE spawnables CHANGE last_spawn last_spawned TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP";
             mysql_query($query);
             NetDebug::trace("$query" . ":" . mysql_error());  
@@ -726,6 +734,10 @@
             $query = "INSERT INTO media (media_id,game_id,name,file_name,is_icon) VALUES (94,0,\"Default Note\",\"Notebook-icon.png\", 1);";
             mysql_query($query);
             NetDebug::trace("$query" . ":" . mysql_error());
+
+            $query = "ALTER TABLE games ADD COLUMN allow_trading TINYINT(1) NOT NULL DEFAULT 1;";
+            mysql_query($query);
+            NetDebug::trace("$query" . ":" . mysql_error());
             
             while ($game = mysql_fetch_object($rs)) {
                 NetDebug::trace("Upgrade Game: {$game->game_id}");
@@ -763,10 +775,13 @@
             $query = "ALTER TABLE ".$prefix."_requirements CHANGE content_type content_type ENUM('Node','QuestDisplay','QuestComplete','Location','OutgoingWebHook','Spawnable')";
             mysql_query($query);
             NetDebug::trace("$query" . ":" . mysql_error());  
+
+            $query = "ALTER TABLE ".$prefix."_items ADD COLUMN tradeable TINYINT(1) NOT NULL DEFAULT 1;";
+            mysql_query($query);
+            NetDebug::trace("$query" . ":" . mysql_error());
             
             /* MAKE SURE TO REFLECT ANY CHANGES IN HERE IN createGame AS WELL!!!!! */
         }
-        
         
         /**
          * Sets a game's name
@@ -784,7 +799,6 @@
             
             if (mysql_affected_rows()) return new returnData(0, TRUE);
             else return new returnData(0, FALSE);		
-            
         }		
         
         /**
