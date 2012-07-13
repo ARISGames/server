@@ -82,13 +82,12 @@ class Items extends Module
 
         $query = "SELECT qty FROM {$prefix}_player_items WHERE player_id = $playerId AND item_id = $itemId";
 
-
         $rsResult = @mysql_query($query);
-        $row = @mysql_fetch_row($rsResult);
         if (!$rsResult) return new returnData(0, NULL);
+        $row = @mysql_fetch_row($rsResult);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+        Module::serverErrorLog("hey there-".$gameId." ".$playerId." ".$itemId." ".$query." ".$row[0]);
         return new returnData(0, $row[0]);
-
     }
 
     /**
@@ -286,17 +285,18 @@ class Items extends Module
         /* $giftsFromPNJSON format- 
            {"items":[{"item_id":1,"qtyDelta":3},{"item_id":2,"qtyDelta":4}]}
          */
-        $pOneGifts = json_decode($giftsFromPOneJSON)->items;
-        $pTwoGifts = json_decode($giftsFromPTwoJSON)->items;
+        $pOneGifts = $giftsFromPOneJSON["items"];
+        $pTwoGifts = $giftsFromPTwoJSON["items"];
+        
         foreach($pOneGifts as $pog)
         {
-            Module::adjustQtyForPlayerItem($gameId, $pog->item_id, $pOneId, -1*$pog->qtyDelta);
-            Module::adjustQtyForPlayerItem($gameId, $pog->item_id, $pTwoId, $pog->qtyDelta);
+            Module::adjustQtyForPlayerItem($gameId, $pog["item_id"], $pOneId, -1*$pog["qtyDelta"]);
+            Module::adjustQtyForPlayerItem($gameId, $pog["item_id"], $pTwoId, $pog["qtyDelta"]);
         }
-        foreach($pTwoGifts as $pog)
+        foreach($pTwoGifts as $ptg)
         {
-            Module::adjustQtyForPlayerItem($gameId, $pog->item_id, $pTwoId, -1*$pog->qtyDelta);
-            Module::adjustQtyForPlayerItem($gameId, $pog->item_id, $pOneId, $pog->qtyDelta);
+            Module::adjustQtyForPlayerItem($gameId, $ptg["item_id"], $pTwoId, -1*$ptg["qtyDelta"]);
+            Module::adjustQtyForPlayerItem($gameId, $ptg["item_id"], $pOneId, $ptg["qtyDelta"]);
         }
         return new returnData(0);
     }
