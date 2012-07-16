@@ -249,7 +249,7 @@ class Players extends Module
     /**
      * Sets the item quantity for a specific item for a plyer.  (Sets an absolute amount, regardless fo current item quantity.
      */
-    public function setItemCountForPlayer($obj) {
+    public function setItemCountForPlayerJSON($obj) {
         $intGameId = $obj['gameId'];
         $intItemID = $obj['itemId'];
         $intPlayerID = $obj['playerId'];
@@ -258,6 +258,10 @@ class Players extends Module
         Module::setItemCountForPlayer($intGameId, $intItemID, $intPlayerID, $qty);
     }
 
+    public function setItemCountForPlayer($intGameId, $intItemID, $intPlayerID, $qty)
+    {
+        Module::setItemCountForPlayer($intGameId, $intItemID, $intPlayerID, $qty);
+    }
 
     public function giveItemToPlayer($intGameId, $intItemID, $intPlayerID, $qtyToGive=1) {
         Module::giveItemToPlayer($intGameId, $intItemID, $intPlayerID, $qtyToGive=1);
