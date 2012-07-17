@@ -262,7 +262,7 @@ class Players extends Module
     {
         $rData = Module::setItemCountForPlayer($intGameId, $intItemID, $intPlayerID, $qty);
         if(!$rData->returnCode)
-            return new returnData(0, $rData));
+            return new returnData(0, $rData);
         else
             return $rData;
     }
@@ -271,7 +271,7 @@ class Players extends Module
     {
         $rData = Module::giveItemToPlayer($intGameId, $intItemID, $intPlayerID, $qtyToGive=1);
         if(!$rData->returnCode)
-            return new returnData(0, $rData));
+            return new returnData(0, $rData);
         else
             return $rData;
     }
@@ -280,7 +280,7 @@ class Players extends Module
     {
         $rData = Module::takeItemFromPlayer($intGameId, $intItemID, $intPlayerID, $qtyToGive=1);
         if(!$rData->returnCode)
-            return new returnData(0, $rData));
+            return new returnData(0, $rData);
         else
             return $rData;
     }
