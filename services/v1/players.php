@@ -260,7 +260,7 @@ class Players extends Module
 
     public function setItemCountForPlayer($intGameId, $intItemID, $intPlayerID, $qty)
     {
-        $rData = Module::setItemCountForPlayer($intGameId, $intItemID, $intPlayerID, $qty
+        $rData = Module::setItemCountForPlayer($intGameId, $intItemID, $intPlayerID, $qty);
         if(!$rData->returnCode)
             return new returnData(0, $rData));
         else
