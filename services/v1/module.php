@@ -122,7 +122,7 @@ abstract class Module
   protected function mToDeg($meters)
   {
     //Ridiculous approximation, but fine for most cases
-    return $meters/500000;
+    return $meters*6/500000;
   }
 
   /*
