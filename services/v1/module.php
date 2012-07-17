@@ -177,7 +177,7 @@ abstract class Module
     if ($qty < 0) return 0;
     else {
       $amountToAdjust = $qty - $currentQty;
-      Module:: adjustQtyForPlayerItem($strGamePrefix, $intItemID, $intPlayerID, $amountToAdjust);
+      Module::adjustQtyForPlayerItem($strGamePrefix, $intItemID, $intPlayerID, $amountToAdjust);
       //Module::serverErrorLog("Module: setItemCountForPlayer: Player amount of item is being adjusted by $amountToAdjust.");
       return $qty;
     }

@@ -738,6 +738,30 @@
             $query = "ALTER TABLE games ADD COLUMN allow_trading TINYINT(1) NOT NULL DEFAULT 1;";
             mysql_query($query);
             NetDebug::trace("$query" . ":" . mysql_error());
+
+            $query = "CREATE TABLE `overlays` {
+            `overlay_id` int(11) NOT NULL DEFAULT '0',
+            `game_id` int(11) DEFAULT NULL,
+            `sort_order` int(11) DEFAULT NULL,
+            `alpha` decimal(3,2) DEFAULT NULL,
+            `num_tiles` int(11) DEFAULT NULL,
+            `game_overlay_id` int(11) DEFAULT NULL,
+            PRIMARY KEY (`overlay_id`)
+            }";
+            mysql_query($query);
+            NetDebug::trace("$query" . ":" . mysql_error());
+            
+            $query = "CREATE TABLE `overlay_tiles` {
+            `overlay_id` int(11) DEFAULT NULL,
+            `media_id` int(11) DEFAULT NULL,
+            `zoom` int(11) DEFAULT NULL,
+            `x` int(11) DEFAULT NULL,
+            `x_max` int(11) DEFAULT NULL,
+            `y` int(11) DEFAULT NULL,
+            `y_max` int(11) DEFAULT NULL
+            }";
+            mysql_query($query);
+            NetDebug::trace("$query" . ":" . mysql_error());
             
             while ($game = mysql_fetch_object($rs)) {
                 NetDebug::trace("Upgrade Game: {$game->game_id}");

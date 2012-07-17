@@ -260,15 +260,29 @@ class Players extends Module
 
     public function setItemCountForPlayer($intGameId, $intItemID, $intPlayerID, $qty)
     {
-        Module::setItemCountForPlayer($intGameId, $intItemID, $intPlayerID, $qty);
+        $rData = Module::setItemCountForPlayer($intGameId, $intItemID, $intPlayerID, $qty
+        if(!$rData->returnCode)
+            return new returnData(0, $rData));
+        else
+            return $rData;
     }
 
-    public function giveItemToPlayer($intGameId, $intItemID, $intPlayerID, $qtyToGive=1) {
-        Module::giveItemToPlayer($intGameId, $intItemID, $intPlayerID, $qtyToGive=1);
+    public function giveItemToPlayer($intGameId, $intItemID, $intPlayerID, $qtyToGive=1) 
+    {
+        $rData = Module::giveItemToPlayer($intGameId, $intItemID, $intPlayerID, $qtyToGive=1);
+        if(!$rData->returnCode)
+            return new returnData(0, $rData));
+        else
+            return $rData;
     }
 
-    public function takeItemFromPlayer($intGameId, $intItemID, $intPlayerID, $qtyToGive=1) {
-        Module::takeItemFromPlayer($intGameId, $intItemID, $intPlayerID, $qtyToGive=1);
+    public function takeItemFromPlayer($intGameId, $intItemID, $intPlayerID, $qtyToGive=1) 
+    {
+        $rData = Module::takeItemFromPlayer($intGameId, $intItemID, $intPlayerID, $qtyToGive=1);
+        if(!$rData->returnCode)
+            return new returnData(0, $rData));
+        else
+            return $rData;
     }
 
     /**
