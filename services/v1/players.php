@@ -235,13 +235,13 @@ class Players extends Module
      * Player Viewed a Node, exectute it's actions
      * @returns returnData with data=true if a player state change was made
      */
-    public function nodeViewed($intGameID, $intPlayerID, $intNodeID)
+    public function nodeViewed($intGameID, $intPlayerID, $intNodeID, $intLocationID = 0)
     {	
         $prefix = Module::getPrefix($intGameID);
         if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
         //Module::applyPlayerStateChanges($prefix, $intPlayerID, Module::kLOG_VIEW_NODE, $intNodeID); //Was causing duplicate playerStateChanges (changed 5/23/12 Phil)
-        Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_NODE, $intNodeID);
+        Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_NODE, $intNodeID, $intLocationID);
 
         return new returnData(0, TRUE);
     }
