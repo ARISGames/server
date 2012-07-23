@@ -365,9 +365,9 @@ abstract class Module
     return ($miles * 1609.344); //convert to meters
   }
 
-  protected function randomLatLnWithinRadius($originLat, $originLon, $maxDistTrueScale)
+  protected function randomLatLnWithinRadius($originLat, $originLon, $minDistanceTrueScale, $maxDistTrueScale)
   {
-    $radius = (rand(0,1000)/1000)*$maxDistTrueScale;
+    $radius = ((rand(0,1000)/1000)*($maxDistTrueScale-$minDistTrueScale)) + $minDistTrueScale;
     $xDelt = rand(-1000,1000)/1000;
     $yDelt = rand(-1000,1000)/1000;
 
