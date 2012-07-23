@@ -223,14 +223,8 @@ class Locations extends Module
         $arrayLocations = array();
 
         //Gets all non-spawned locations
-        /*
-           $query = "SELECT {$prefix}_locations.*, spawnables.spawnable_id, spawnables.active FROM {$prefix}_locations 
-           LEFT JOIN spawnables ON (spawnables.game_id = {$prefix} AND {$prefix}_locations.type = spawnables.type AND {$prefix}_locations.type_id = spawnables.type_id)
-           WHERE {$prefix}_locations.latitude != '' AND {$prefix}_locations.longitude != ''
-           AND (spawnable_id IS NULL OR active = 0) AND ({$prefix}_locations.type != 'Item' OR (item_qty IS NULL OR item_qty != 0))
-           ";
-         */
-        $query = "SELECT {$prefix}_locations.*, gamefountains.fountain_id, gamefountains.spawn_probability, gamefountains.spawn_rate, gamefountains.max_amount, gamefountains.last_spawned, gamefountains.active FROM {$prefix}_locations LEFT JOIN (SELECT * FROM spawnables WHERE game_id = {$prefix}_locations.type = gamespawns.type AND {$prefix}_locations.type_id = gamespawns.type_id LEFT JOIN (SELECT * FROM fountains WHERE game_id = {$prefix}_locations.location_id = gamefountains.location_id WHERE {$prefix}_locations.latitude != '' AND 3080_locations.longitude != '' AND (spawnable_id IS NULL OR gamespawns.active = 0)";
+        $query = "SELECT {$prefix}_locations.*, gamefountains.fountain_id, gamefountains.spawn_probability, gamefountains.spawn_rate, gamefountains.max_amount, gamefountains.last_spawned, gamefountains.active FROM {$prefix}_locations LEFT JOIN (SELECT * FROM spawnables WHERE game_id = $prefix) AS gamespawns ON {$prefix}_locations.type = gamespawns.type AND {$prefix}_locations.type_id = gamespawns.type_id LEFT JOIN (SELECT * FROM fountains WHERE game_id = $prefix) AS gamefountains ON {$prefix}_locations.location_id = gamefountains.location_id WHERE {$prefix}_locations.latitude != '' AND {$prefix}_locations.longitude != '' AND (spawnable_id IS NULL OR gamespawns.active = 0)";
+
         $rsLocations = @mysql_query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error" . mysql_error());
 
