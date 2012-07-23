@@ -777,9 +777,9 @@ class Games extends Module
                     game_id INT NOT NULL, 
                     type ENUM('Location', 'Spawnable') NOT NULL, 
                     location_id INT NOT NULL, 
-                    spawn_probability double NOT NULL, 
-                    spawn_rate INT NOT NULL, 
-                    max_amount INT NOT NULL, 
+                    spawn_probability double NOT NULL DEFAULT 50, 
+                    spawn_rate INT NOT NULL DEFAULT 10, 
+                    max_amount INT NOT NULL DEFAULT 10, 
                     last_spawned TIMESTAMP NOT NULL,
                     active TINYINT(1) NOT NULL DEFAULT 1);";
                 mysql_query($query);
