@@ -7,7 +7,7 @@ class TestConf
     const resultsTextFile = "human/results.txt";
 
     const sendMailOnFailure = true;
-    const failureAlertee = "pdougherty@wisc.edu";
+    const failureAlertee = "arisgames-dev@googlegroups.com";
 
     const tr_SUCCESS = 0;
     const tr_FAIL = 1;

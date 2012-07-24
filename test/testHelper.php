@@ -198,6 +198,14 @@ class TestHelper
             $this->sendEmail(TestConf::failureAlertee, "ARIS Unit Tests-".$this->testsFailed."/".$this->testsRun." failed", $body);
         }
 
+        if(TestConf::sendMailOnFailure && $this->testsFailed < 1)
+        {
+            $body = "Tests Passed- ".$this->testsPassed."/".$this->testsRun."\n";
+            $this->sendEmail(TestConf::failureAlertee, "ARIS Unit Tests- ALL TESTS PASSED", $body);
+        }
+
+
+
         $file = TestConf::svnStatusFile;
         $fh = fopen($file, "w");
         fwrite($fh, "NO");
