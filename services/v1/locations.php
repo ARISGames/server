@@ -23,7 +23,6 @@ class Locations extends Module
         $query = "SELECT {$prefix}_locations.*, f.active AS is_fountain FROM {$prefix}_locations LEFT JOIN (SELECT active, location_id FROM fountains WHERE game_id = $prefix) AS f ON {$prefix}_locations.location_id = f.location_id";
         $rsResult = @mysql_query($query);
 
-        Module::serverErrorLog($rsResult);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error:".mysql_error());
         return new returnData(0, $rsResult);	
     }
@@ -178,7 +177,6 @@ class Locations extends Module
             WHERE {$prefix}_qrcodes.link_type = 'Location'";
         NetDebug::trace($query);	
 
-        Module::serverErrorLog($query);
         $rsResult = @mysql_query($query);
         NetDebug::trace(mysql_error());	
 
@@ -275,33 +273,33 @@ class Locations extends Module
             if($location->fountain_id && $location->active)
             {
                 $secondsOfSpawning = strtotime("now")-strtotime($location->last_spawned);
-                while($secondsOfSpawning > $location->spawn_rate && $location->qty < $location->max_amount)
+                while($secondsOfSpawning > $location->spawn_rate && $location->item_qty < $location->max_amount)
                 {
                     if(rand(0,100) < $location->spawn_probability)
                     {
-                        $location->qty++;
+                        $location->item_qty++;
                     }
                     $secondsOfSpawning-=$location->spawn_rate;
                     $query = "UPDATE fountains SET last_spawned = now() WHERE fountain_id = ".$location->fountain_id;
                     mysql_query($query);
                 }
-                if($location->qty >= $location->max_amount)
+                if($location->item_qty >= $location->max_amount)
                 {
                     $query = "UPDATE fountains SET last_spawned = now() WHERE fountain_id = ".$location->fountain_id;
                     mysql_query($query);
                 }
-                $query = "UPDATE locations SET qty = ".$location->qty." WHERE location_id = ".$location->location_id;
+                $query = "UPDATE locations SET item_qty = ".$location->item_qty." WHERE location_id = ".$location->location_id;
                 mysql_query($query);
             }
 
-            if($location->type == 'Item' && $location->qty < 1)
+            if($location->type == 'Item' && $location->item_qty < 1)
             {
-                NetDebug::trace("Skipping Location:'{$location->location_id}' becasue it has < 1 qty");
+                NetDebug::trace("Skipping Location:'{$location->location_id}' becasue it has < 1 item_qty");
                 continue;
             }
 
             //Does it meet it's requirements?
-            if (!$this->objectMeetsRequirements ($prefix, $intPlayerID, 'Location', $location->location_id)) {
+            if (!$this->objectMeetsRequirements($prefix, $intPlayerID, 'Location', $location->location_id)) {
                 // NetDebug::trace($prefix . " " . $intPlayerID . " 'Location' " . $location->location_id);
                 NetDebug::trace("Skipping Location:'{$location->location_id}' becasue it doesn't meet it's requirements");
                 continue;
