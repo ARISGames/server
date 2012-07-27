@@ -1,5 +1,5 @@
 <?php
-require_once("test.php");
+require_once("src/test.php");
 
 class createEditor extends Test
 {

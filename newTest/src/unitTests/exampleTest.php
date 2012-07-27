@@ -1,5 +1,5 @@
 <?php
-require_once("test.php"); //Ensure that this file is included
+require_once("src/test.php"); //Ensure that this file is included
 
 class exampleTest extends Test //and that it is extended here
 {

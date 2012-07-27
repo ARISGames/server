@@ -4,9 +4,9 @@ require_once('testHelper.php');
 
 echo "Updating svn...\n";
 exec("svn update /var/www/html/server",$output);
-echo "Complete. Output:\n";
-print_r($output);
-echo("\nRunning testHelper...\n\n");
+echo "Complete: ";
+echo $output[0];
+echo("\n\nRunning testHelper...\n\n");
 
 $testHelper = new TestHelper();
 $testHelper->runAllTests();

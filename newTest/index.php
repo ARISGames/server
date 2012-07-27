@@ -1,4 +1,5 @@
 <?php
+chdir("/var/www/html/server/newTest");
 require_once("src/testConf.php");
 exec("php ".TestConf::runTestsFile." > ".TestConf::resultsTextFile);
 

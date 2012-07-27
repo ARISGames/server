@@ -2,9 +2,11 @@
 /* 
 Used to organize and run all tests as a group. In charge of sending emails, writing files, making sure dependancies are set, etc...
 */
-require_once('../config.class.php');
+require_once('/var/www/html/server/config.class.php');
 require_once('testConf.php');
 require_once('testResult.php');
+
+chdir("/var/www/html/server/newTest/");
 
 class TestHelper
 {
@@ -25,14 +27,14 @@ class TestHelper
     {
         if (!function_exists('curl_init')) die('You must have cUrl installed to run these tests.');
 
-        if($unitTests = opendir("./unitTests"))
+        if($unitTests = opendir(TestConf::unitTestsDir))
         {
             while($unitTest = readdir($unitTests))
             {
                 if($this->isValidTestFile($unitTest))
                 {
                     $this->testsFound++;
-                    require_once("./unitTests/".$unitTest);
+                    require_once(TestConf::unitTestsDir."/".$unitTest);
                     $testName = substr($unitTest, 0, -4); //Gets name of file minus '.php'
                     $this->testNames[] = $testName;
                     $test = new $testName;
@@ -196,15 +198,16 @@ class TestHelper
 
         if(TestConf::sendMailOnFailure && $this->testsFailed > 0)
         {
-            $body = "Click to see result details- ".Config::WWWPath."/server/test/".TestConf::resultsTextFile." <br />\n";
-            $body .= "Click (copy to browser) to re-run test- view-source:".substr(Config::WWWPath, 7)."/server/test/index.php <br />\n";
+            $body = "Click to see result details- ".TestConf::wwwResultsTextFile." <br />\n";
+            $body .= "Click to re-run test- ".TestConf::wwwRunTestsFile." (click view-source in browser to see it nicely formatted) <br />\n";
             $this->sendEmail(TestConf::failureAlertee, "ARIS Unit Tests-".$this->testsFailed."/".$this->testsRun." failed", $body);
         }
-
-        $file = TestConf::svnStatusFile;
-        $fh = fopen($file, "w");
-        fwrite($fh, "NO");
-        fclose($fh);
+        if(TestConf::sendMailOnSuccess && $this->testsPassed == $this->testsRun)
+        {
+            $body = "Click to see result details- ".TestConf::wwwResultsTextFile." <br />\n";
+            $body .= "Click to re-run test- ".TestConf::wwwRunTestsFile." (click view-source in browser to see it nicely formatted) <br />\n";
+            $this->sendEmail(TestConf::successAlertee, "ARIS Unit Tests-".$this->testsPassed."/".$this->testsRun." passed", $body);
+        }
 
         return true;
     }
