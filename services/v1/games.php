@@ -476,16 +476,6 @@ class Games extends Module
                 @mysql_query($query);
                 if (mysql_error()) return new returnData(6, NULL, 'cannot create conversations table');
 
-
-                $query = "CREATE TABLE  `{$strShortName}_npc_greetings` (
-                    `npc_greeting_id` INT UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY ,
-                    `npc_id` INT UNSIGNED NOT NULL ,
-                    `script` TEXT NOT NULL
-                        ) ENGINE = INNODB;";
-                @mysql_query($query);
-                if (mysql_error()) return new returnData(6, NULL, 'cannot create npc greetings table');
-
-
                 $query = "CREATE TABLE {$strShortName}_npcs (
                     npc_id int(10) unsigned NOT NULL auto_increment,
                            name varchar(255) NOT NULL default '',
@@ -883,7 +873,7 @@ class Games extends Module
                 if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
 
                 //Fetch the table names for this game
-                $query = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='" . Config::dbSchema . "' AND TABLE_NAME LIKE '{$prefix}_%'";
+                $query = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='" . Config::dbSchema . "' AND TABLE_NAME LIKE '{$prefix}\_%'";
                 NetDebug::trace($query);
                 $result = mysql_query($query);
                 if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
@@ -979,7 +969,7 @@ class Games extends Module
                 //Create SQL File
                 $sqlFile = 'database.sql';
 
-                $getTablesCommand = Config::mysqlBinPath . "/mysql --user=" . Config::dbUser . " --password=". Config::dbPass ." -B --skip-column-names INFORMATION_SCHEMA -e \"SELECT TABLE_NAME FROM TABLES WHERE TABLE_SCHEMA='" .  Config::dbSchema . "' AND TABLE_NAME LIKE '{$prefix}_%'\"";
+                $getTablesCommand = Config::mysqlBinPath . "/mysql --user=" . Config::dbUser . " --password=". Config::dbPass ." -B --skip-column-names INFORMATION_SCHEMA -e \"SELECT TABLE_NAME FROM TABLES WHERE TABLE_SCHEMA='" .  Config::dbSchema . "' AND TABLE_NAME LIKE '{$prefix}\_%'\"";
 
                 exec($getTablesCommand, $output, $return);
 
@@ -1340,7 +1330,7 @@ class Games extends Module
              * @param The game Id to be duplicated
              *
              */
-            public function duplicateGame($intGameID, $intEditorID = 0){
+            public function duplicateGame($intGameID, $intEditorID = 0) {
 
                 Module::serverErrorLog("Duplicating Game ID:".$intGameID);
                 $prefix = Module::getPrefix($intGameID);
@@ -1416,9 +1406,6 @@ class Games extends Module
                 $query = "INSERT INTO {$newPrefix}_npc_conversations (conversation_id, npc_id, node_id, text) SELECT conversation_id, npc_id, node_id, text FROM {$prefix}_npc_conversations";
                 mysql_query($query);
 
-                $query = "INSERT INTO {$newPrefix}_npc_greetings (npc_greeting_id, npc_id, script) SELECT npc_greeting_id, npc_id, script FROM {$prefix}_npc_greetings";
-                mysql_query($query);
-
                 $query = "INSERT INTO {$newPrefix}_player_state_changes (id, event_type, event_detail, action, action_detail, action_amount) SELECT id, event_type, event_detail, action, action_detail, action_amount FROM {$prefix}_player_state_changes";
                 mysql_query($query);
 
@@ -1449,13 +1436,18 @@ class Games extends Module
                     mysql_query($query);
                 }
 
+                $originalAugBubbleId = array();
+                $newAugBubbleId = array();
                 $query = "SELECT * FROM aug_bubbles WHERE game_id = {$prefix}";
                 $result = mysql_query($query);
                 while($row = mysql_fetch_object($result)){
+                    array_push($originalAugBubbleId, $row->aug_bubble_id);
+                    
                     $query = "INSERT INTO aug_bubbles (game_id, name, description, icon_media_id) VALUES ('{$newPrefix}', '{$row->name}', '{$row->description}', '{$row->icon_media_id}')";
                     mysql_query($query);
                     $newID = mysql_insert_id();
-
+                    array_push($newAugBubbleId, $newID);
+                    
                     $query = "UPDATE aug_bubble_media SET aug_bubble_id = {$newID} WHERE aug_bubble_id = {$row->aug_bubble_id}";
                     mysql_query($query);
                     $query = "UPDATE {$newPrefix}_locations SET type_id = {$newID} WHERE type = 'AugBubble' AND type_id = {$row->aug_bubble_id}";
@@ -1466,12 +1458,17 @@ class Games extends Module
                     mysql_query($query);
                 }
 
+                $originalWebPageId = array();
+                $newWebPageId = array();
                 $query = "SELECT * FROM web_pages WHERE game_id = {$prefix}";
                 $result = mysql_query($query);
                 while($row = mysql_fetch_object($result)){
+                    array_push($originalWebPageId, $row->web_page_id);
+                    
                     $query = "INSERT INTO web_pages (game_id, name, url, icon_media_id) VALUES ('{$newPrefix}', '{$row->name}', '{$row->url}', '{$row->icon_media_id}')";
                     mysql_query($query);
                     $newID = mysql_insert_id();
+                    array_push($newWebPageId, $newID);
 
                     $query = "UPDATE {$newPrefix}_locations SET type_id = {$newID} WHERE type = 'WebPage' AND type_id = {$row->web_page_id}";
                     mysql_query($query);
@@ -1492,13 +1489,17 @@ class Games extends Module
                     mysql_query($query);
                 }
 
-
+                $originalMediaId = array();
+                $newMediaId = array();
                 $query = "SELECT * FROM media WHERE game_id = {$prefix}";
                 $result = mysql_query($query);
                 while($row = mysql_fetch_object($result)){
+                    array_push($originalMediaId, $row->media_id);
+                    
                     $query = "INSERT INTO media (game_id, name, file_name, is_icon) VALUES ('{$newPrefix}', '{$row->name}', '{$row->file_name}', '{$row->is_icon}')";
                     mysql_query($query);
                     $newID = mysql_insert_id();
+                    array_push($newMediaId, $newID);
 
                     if($row->file_name != "") copy(("../../gamedata/" . $prefix . "/" . $row->file_name),("../../gamedata/" . $newPrefix . "/" . $row->file_name));
 
@@ -1534,11 +1535,124 @@ class Games extends Module
                     mysql_query($query);
 
                 }
-
+                
+      /*          $query = "SELECT * FROM {$newPrefix}_npc_conversations";
+                $result = mysql_query($query);
+                while($row = mysql_fetch_object($result)) {
+                    if($row->text){
+                    $inputString = $row->text;
+                        if(strspn($inputString,"<>") > 0){
+                           $output = Games::replaceXMLIds($inputString, $originalAugBubbleId, $newAugBubbleId, $originalWebPageId, $newWebPageId, $originalMediaId, $newMediaId);
+                           $updateQuery = "UPDATE {$newPrefix}_npc_conversations SET text = '{$output}' WHERE conversation_id = {$row->conversation_id} AND npc_id = {$row->npc_id} AND node_id = {$row->node_id}";
+                           mysql_query($updateQuery);
+                        }
+                    }
+                } */
+                
+                //NOTE: substr removes <?xml version="1.0" ? //> from the beginning of the text
+                $query = "SELECT * FROM {$newPrefix}_nodes";
+                $result = mysql_query($query);
+                while($row = mysql_fetch_object($result)) {
+                    if($row->text){
+                        $inputString = $row->text;
+                        if((strspn($inputString,"<>") > 0) && !(substr_count($inputString,"<p>"))){
+                            $output = Games::replaceXMLIds($inputString, $originalAugBubbleId, $newAugBubbleId, $originalWebPageId, $newWebPageId, $originalMediaId, $newMediaId);
+                            $output = substr($output,22);
+                            $updateQuery = "UPDATE {$newPrefix}_nodes SET text = '".addslashes($output)."' WHERE node_id = {$row->node_id}";
+                            mysql_query($updateQuery);
+                        }
+                    }
+                }
+                
+                $query = "SELECT * FROM {$newPrefix}_npcs";
+                $result = mysql_query($query);
+                while($row = mysql_fetch_object($result)) {
+                    if($row->text){
+                    $inputString = $row->text;
+                        if((strspn($inputString,"<>") > 0) && !(substr_count($inputString,"<p>") > 0) && !(substr_count($inputString,"<b>") > 0) && !(substr_count($inputString,"<i>") > 0) && !(substr_count($inputString,"<img") > 0) && !(substr_count($inputString,"<table>") > 0)){
+                           $output = Games::replaceXMLIds($inputString, $originalAugBubbleId, $newAugBubbleId, $originalWebPageId, $newWebPageId, $originalMediaId, $newMediaId);
+                           $output = substr($output,22);
+                           $updateQuery = "UPDATE {$newPrefix}_npcs SET text = '".addslashes($output)."' WHERE npc_id = {$row->npc_id}";
+                           mysql_query($updateQuery);
+                        }
+                    }
+                    if($row->closing){
+                    $inputString = $row->closing;
+                        if((strspn($inputString,"<>") > 0) && !(substr_count($inputString,"<p>") > 0) && !(substr_count($inputString,"<b>") > 0) && !(substr_count($inputString,"<i>") > 0) && !(substr_count($inputString,"<img") > 0) && !(substr_count($inputString,"<table>") > 0)){
+                           $output = Games::replaceXMLIds($inputString, $originalAugBubbleId, $newAugBubbleId, $originalWebPageId, $newWebPageId, $originalMediaId, $newMediaId);
+                           $output = substr($output,22);
+                           $updateQuery = "UPDATE {$newPrefix}_npcs SET closing = '".addslashes($output)."' WHERE npc_id = {$row->npc_id}";
+                           mysql_query($updateQuery);
+                        }
+                    }
+                }
 
                 return new returnData(0, $newPrefix, NULL);
             }
-
+    
+            static function replaceXMLIds($inputString, $originalAugBubbleId, $newAugBubbleId, $originalWebPageId, $newWebPageId, $originalMediaId, $newMediaId)
+            {
+                    //      $kTagExitToPlaque = "exitToPlaque";
+                    $kTagExitToWebPage = "exitToWebPage";
+                    //      $kTagExitToCharacter = "exitToCharacter";
+                    $kTagExitToPanoramic = "exitToPanoramic";
+                    //      $kTagExitToItem = "exitToItem";
+                    $kTagVideo = "video";
+                    $kTagId = "id";
+                    $kTagPanoramic = "panoramic";
+                    $kTagWebpage = "webpage";
+                    //      $kTagPlaque = "plaque";
+                    //      $kTagItem = "item";
+                    $kTagMedia = "mediaId";
+                
+                    //& sign will break xml parser, so this is necessary
+                    $inputString = str_replace("&", "&#x26;", $inputString);
+                
+                    $xml = simplexml_load_string($inputString);
+                
+                    foreach($xml->children() as $child)
+                    {
+                        foreach($child->attributes() as $attributeTitle => $attributeValue)
+                        { 
+                            if(strcmp($attributeTitle, $kTagExitToWebPage) == 0){
+                                $child[$attributeTitle] = Games::getNewId($attributeValue, $originalWebPageId, $newWebPageId);
+                            }
+                            
+                            else if(strcmp($attributeTitle, $kTagExitToPanoramic) == 0){
+                                $child[$attributeTitle] = Games::getNewId($attributeValue, $originalAugBubbleId, $newAugBubbleId);
+                            }
+                            
+                            else if(strcmp($attributeTitle, $kTagMedia) == 0){
+                                $child[$attributeTitle] = Games::getNewId($attributeValue, $originalMediaId, $newMediaId);
+                            }
+                            else if(strcmp($child->getName(), $kTagVideo) == 0 && strcmp($attributeTitle, $kTagId) == 0){
+                                $child[$attributeTitle] = Games::getNewId($attributeValue, $originalMediaId, $newMediaId);
+                            }
+                            else if(strcmp($child->getName(), $kTagPanoramic) == 0 && strcmp($attributeTitle, $kTagId) == 0){
+                                $child[$attributeTitle] = Games::getNewId($attributeValue, $originalAugBubbleId, $newAugBubbleId);
+                            }
+                            else if(strcmp($child->getName(), $kTagWebpage) == 0 && strcmp($attributeTitle, $kTagId) == 0){
+                                $child[$attributeTitle] = Games::getNewId($attributeValue, $originalWebPageId, $newWebPageId);
+                            }
+                        }
+                    }
+                $output = $xml->asXML();
+                $output = str_replace("&#x2019;", "'", $output);
+                $output = str_replace("&amp;", "&", $output);
+                $output = str_replace("&#x2014;", "-", $output);
+                $output = str_replace("&#x201C;", "\"", $output);
+                $output = str_replace("&#x201D;", "\"", $output);
+                $output = str_replace("&#xB0;", "°", $output);
+                $output = str_replace("&#xAE;", "®", $output);
+                $output = str_replace("&#x2122;", "™", $output);
+                $output = str_replace("&#xA9;", "©", $output);
+                return $output;
+            }
+    
+            static function getNewId($id, $oldIdList, $newIdList)
+            {
+                return $newIdList[array_search($id,$oldIdList)];
+            }
 
             function addNoteTagToGame($gameId, $tag)
             {

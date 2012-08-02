@@ -774,7 +774,7 @@ abstract class Module
       AND event_detail = '{$strEventDetail}'";
     NetDebug::trace($query);
 
-    $rsStateChanges = @mysql_query($query);
+    if(!$rsStateChanges = @mysql_query($query)) return $changeMade;
 
     while ($stateChange = mysql_fetch_array($rsStateChanges)) {
       NetDebug::trace("State Change Found");
