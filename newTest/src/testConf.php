@@ -6,8 +6,8 @@ class TestConf
 
     const sendMailOnSuccess = true;
     const sendMailOnFailure = true;
-    const successAlertee = "pdougherty@wisc.edu";
-    const failureAlertee = "pdougherty@wisc.edu";
+    const successAlertee = "arisgames-dev@googlegroups.com";
+    const failureAlertee = "arisgames-dev@googlegroups.com";
 
     const tr_SUCCESS = 0;
     const tr_FAIL = 1;
