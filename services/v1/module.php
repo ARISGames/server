@@ -75,6 +75,54 @@ abstract class Module
   //constants for note icon id
   const kPLAYER_NOTE_DEFAULT_ICON = '94';
 
+    public function findLowestIdFromTable($tableName, $idColumnName)
+    {
+        $query = "
+        SELECT  $idColumnName
+        FROM    (
+            SELECT  1 AS $idColumnName
+        ) q1
+        WHERE   NOT EXISTS
+        (
+            SELECT  1
+            FROM    $tableName
+            WHERE   $idColumnName = 1
+        )
+        UNION ALL
+        SELECT  *
+        FROM    (
+            SELECT  $idColumnName + 1
+            FROM    $tableName t
+            WHERE   NOT EXISTS
+            (
+                SELECT  1
+                FROM    $tableName ti
+                WHERE   ti.$idColumnName = t.$idColumnName + 1
+            )
+            ORDER BY
+            $idColumnName
+            LIMIT 1
+        ) q2
+        ORDER BY
+        $idColumnName
+        LIMIT 1
+        ";
+        if($result = mysql_query($query))
+        {
+            if($lowestNonUsedId = mysql_fetch_object($result)->media_id)
+                return $lowestNonUsedId;
+        }
+        else
+        {
+            //Just going to use the next auto_increment id...
+            $query = "SELECT MAX($idColumnName) as 'nextAIID' FROM $tableName";
+            $result = mysql_query($query);
+            if($nextAutoIncrementId = mysql_fetch_object($result)->nextAIID)
+                return $nextAutoIncrementId;
+        }
+        return null;
+    }
+
   public function Module()
   {
     $this->conn = @mysql_connect(Config::dbHost, Config::dbUser, Config::dbPass);

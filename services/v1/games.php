@@ -947,13 +947,10 @@ class Games extends Module
              */		
             public function backupGame($intGameID)
             {
-
                 $prefix = Module::getPrefix($intGameID);
                 if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-
                 $tmpDir = "{$prefix}_backup_" . date('Y_m_d');
-
 
                 //Delete a previous backup with the same name
                 $rmCommand = "rm -rf ". Config::gamedataFSPath . "/backups/{$tmpDir}";
@@ -964,7 +961,6 @@ class Games extends Module
                 $mkdirCommand = "mkdir ". Config::gamedataFSPath . "/backups/{$tmpDir}";
                 exec($mkdirCommand, $output, $return);
                 if ($return) return new returnData(5, NULL, "cannot create backup dir, check file permissions");
-
 
                 //Create SQL File
                 $sqlFile = 'database.sql';
