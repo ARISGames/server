@@ -292,7 +292,7 @@ class Locations extends Module
                 mysql_query($query);
             }
 
-            if($location->type == 'Item' && $location->item_qty < 1)
+            if($location->type == 'Item' && $location->item_qty < 1 && $location->item_qty != -1)
             {
                 NetDebug::trace("Skipping Location:'{$location->location_id}' becasue it has < 1 item_qty");
                 continue;
