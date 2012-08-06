@@ -1532,19 +1532,6 @@ class Games extends Module
 
                 }
                 
-      /*          $query = "SELECT * FROM {$newPrefix}_npc_conversations";
-                $result = mysql_query($query);
-                while($row = mysql_fetch_object($result)) {
-                    if($row->text){
-                    $inputString = $row->text;
-                        if(strspn($inputString,"<>") > 0){
-                           $output = Games::replaceXMLIds($inputString, $originalAugBubbleId, $newAugBubbleId, $originalWebPageId, $newWebPageId, $originalMediaId, $newMediaId);
-                           $updateQuery = "UPDATE {$newPrefix}_npc_conversations SET text = '{$output}' WHERE conversation_id = {$row->conversation_id} AND npc_id = {$row->npc_id} AND node_id = {$row->node_id}";
-                           mysql_query($updateQuery);
-                        }
-                    }
-                } */
-                
                 //NOTE: substr removes <?xml version="1.0" ? //> from the beginning of the text
                 $query = "SELECT * FROM {$newPrefix}_nodes";
                 $result = mysql_query($query);
