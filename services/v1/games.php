@@ -158,7 +158,6 @@ class Games extends Module
                 return new returnData(0);
             }
 
-
             /**
              * Returns:
              * a 'game' object consisting of Game's name, id, description, editors, location(lat/lon), distance, is_locational,
@@ -1180,10 +1179,10 @@ class Games extends Module
                     COS(($longitude - longitude) * PI() / 180)) * 180 / PI()) * 60 * 1.1515) * 1609.344
                     AS `distance`
                     FROM {$gameId}_locations
-                    WHERE type != 'Item' OR item_qty > 0
+                    WHERE type != 'Item' OR (item_qty > 0 OR item_qty = -1)
                     ORDER BY distance ASC";
-                $nearestLocationRs = @mysql_query($query);
-                $nearestLocation = @mysql_fetch_object($nearestLocationRs);
+                $nearestLocationRs = mysql_query($query);
+                $nearestLocation = mysql_fetch_object($nearestLocationRs);
 
                 return $nearestLocation;
             }
@@ -1234,49 +1233,14 @@ class Games extends Module
              */
 
             public function getRecentGamesForPlayer($intPlayerId, $latitude, $longitude, $boolIncludeDevGames = 1){
-                $query = "SELECT player_log.game_id, player_log.timestamp, games.ready_for_public FROM player_log, games WHERE player_log.player_id = '{$intPlayerId}' AND player_log.game_id = games.game_id ORDER BY player_log.timestamp DESC";
-
+                $query = "SELECT p_log.*, games.ready_for_public FROM (SELECT player_id, game_id, timestamp FROM player_log WHERE player_id = {$intPlayerId} AND game_id != 0 ORDER BY timestamp DESC) as p_log LEFT JOIN games ON p_log.game_id = games.game_id ".($boolIncludeDevGames ? "" : "WHERE games.ready_for_public = 1")."GROUP BY game_id ORDER BY timestamp DESC LIMIT 10"; 
                 $result = mysql_query($query);
 
-                $x = 0;
                 $games = array();
-                if(!$boolIncludeDevGames) {
-                    while($x < 10 && $game = mysql_fetch_assoc($result)){
-                        $found = 0;
-                        foreach($games as $oldGame){
-                            if($oldGame->game_id == $game['game_id']){
-                                $found = 1;
-                            }
-                        }
-                        if(!$found){
-                            if($game['ready_for_public']){
-                                $gameObj = new stdClass;
-                                $gameObj = Games::getFullGameObject($game['game_id'], $intPlayerId, 1, 9999999999, $latitude, $longitude);
-                                if($gameObj != NULL){
-                                    $games[$x] = $gameObj;
-                                    $x++;
-                                }
-                            }
-                        }
-                    }
-                }
-                else {
-                    while($x < 10 && $game = mysql_fetch_assoc($result)){
-                        $found = 0;
-                        foreach($games as $oldGame){
-                            if($oldGame->game_id == $game['game_id']){
-                                $found = 1;
-                            }
-                        }
-                        if(!$found){
-                            $gameObj = new stdClass;
-                            $gameObj = Games::getFullGameObject($game['game_id'], $intPlayerId, 1, 9999999999, $latitude, $longitude);
-                            if($gameObj != NULL){
-                                $games[$x] = $gameObj;
-                                $x++;
-                            }
-                        }
-                    }
+                while($game = mysql_fetch_object($result))
+                {
+                    $gameObj = Games::getFullGameObject($game->game_id, $intPlayerId, 1, 9999999999, $latitude, $longitude);
+                    if($gameObj != NULL) $games[] = $gameObj;
                 }
 
                 return new returnData(0, $games);
