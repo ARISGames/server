@@ -1181,9 +1181,12 @@ class Games extends Module
             FROM {$gameId}_locations
             WHERE type != 'Item' OR (item_qty > 0 OR item_qty = -1)
             ORDER BY distance ASC";
-        $nearestLocationRs = mysql_query($query);
+        
+        if (!$nearestLocationRs = mysql_query($query)) {
+        	Module::serverErrorLog("Games: getNearestLocationOfGameToUser failed. Called for a game that doesn't seem to exist: {$gameId}");
+        	return null;
+        }
         $nearestLocation = mysql_fetch_object($nearestLocationRs);
-
         return $nearestLocation;
     }
 
