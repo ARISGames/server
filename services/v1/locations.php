@@ -474,7 +474,8 @@ class Locations extends Module
                 //If location's icon is not defined, use the object's icon
                 if (!$locobj->icon_media_id) 
                     $locobj->icon_media_id = $object->icon_media_id;
-                $locobj->delete_when_viewed = $spawnable->delete_when_viewed;
+                $locobj->delete_when_viewed = $spawnable->delete_when_viewed && $spawnable->active;
+                //Module::serverErrorLog($locobj->delete_when_viewed."<- final  ".$spawnable->delete_when_viewed." ".$spawnable->active);
 
                 //Add it
                 $arrayLocations[] = $locobj;

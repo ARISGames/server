@@ -907,12 +907,14 @@ abstract class Module
     }
     if($shouldCheckSpawnablesForDeletion)
     {
-        Module::serverErrorLog("Checking ".$type." ".$eventDetail2);
-      $query = "SELECT * FROM spawnables WHERE game_id = $gameId AND type = '$type' AND type_id = $eventDetail1 LIMIT 1";
+        //Module::serverErrorLog("Checking ".$type." ".$eventDetail2);
+      $query = "SELECT * FROM spawnables WHERE game_id = $gameId AND active = 1 AND type = '$type' AND type_id = $eventDetail1 LIMIT 1";
       $result = mysql_query($query);
-      if(($obj = mysql_fetch_object($result)) && $obj->delete_when_viewed == 1) 
+      if(($obj = mysql_fetch_object($result)) && $obj->delete_when_viewed == 1 && $obj->active == 1) 
       {
-        $query = "DELETE ".$gameId."_locations, ".$gameId."_qrcodes FROM ".$gameId."_locations LEFT JOIN ".$gameId."_qrcodes ON ".$gameId."_locations.location_id = ".$gameId."_qrcodes.type_id WHERE location_id = $eventDetail2";
+        //Module::serverErrorLog("Doin it!");
+        $query = "DELETE ".$gameId."_locations, ".$gameId."_qrcodes FROM ".$gameId."_locations LEFT JOIN ".$gameId."_qrcodes ON ".$gameId."_locations.location_id = ".$gameId."_qrcodes.link_id WHERE location_id = $eventDetail2";
+        //Module::serverErrorLog($query);
         mysql_query($query);
       }
     }
