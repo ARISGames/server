@@ -1504,6 +1504,7 @@ class Games extends Module
                 $inputString = $row->text;
                 if((strspn($inputString,"<>") > 0) && !(substr_count($inputString,"<p>") > 0) && !(substr_count($inputString,"<b>") > 0) && !(substr_count($inputString,"<i>") > 0) && !(substr_count($inputString,"<img") > 0) && !(substr_count($inputString,"<table>") > 0)){
                     $output = Games::replaceXMLIds($inputString, $originalAugBubbleId, $newAugBubbleId, $originalWebPageId, $newWebPageId, $originalMediaId, $newMediaId);
+		    if($output === false) return new returnData(1, NULL, "Syntax Error with Node {$row->node_id} with title: {$row->title} and text: {$row->text}");
                     $output = substr($output,22);
                     $updateQuery = "UPDATE {$newPrefix}_nodes SET text = '".addslashes($output)."' WHERE node_id = {$row->node_id}";
                     mysql_query($updateQuery);
@@ -1520,6 +1521,7 @@ class Games extends Module
                 if((strspn($inputString,"<>") > 0) && !(substr_count($inputString,"<p>") > 0) && !(substr_count($inputString,"<b>") > 0) && !(substr_count($inputString,"<i>") > 0) && !(substr_count($inputString,"<img") > 0) && !(substr_count($inputString,"<table>") > 0))
                 {
                     $output = Games::replaceXMLIds($inputString, $originalAugBubbleId, $newAugBubbleId, $originalWebPageId, $newWebPageId, $originalMediaId, $newMediaId);
+                    if($output === false) return new returnData(1, NULL, "Syntax Error with NPC {$row->npc_id} with name: {$row->name} and text: {$row->text}");
                     $output = substr($output,22);
                     $updateQuery = "UPDATE {$newPrefix}_npcs SET text = '".addslashes($output)."' WHERE npc_id = {$row->npc_id}";
                     mysql_query($updateQuery);
@@ -1530,6 +1532,7 @@ class Games extends Module
                 if((strspn($inputString,"<>") > 0) && !(substr_count($inputString,"<p>") > 0) && !(substr_count($inputString,"<b>") > 0) && !(substr_count($inputString,"<i>") > 0) && !(substr_count($inputString,"<img") > 0) && !(substr_count($inputString,"<table>") > 0))
                 {
                     $output = Games::replaceXMLIds($inputString, $originalAugBubbleId, $newAugBubbleId, $originalWebPageId, $newWebPageId, $originalMediaId, $newMediaId);
+                    if($output === false) return new returnData(1, NULL, "Syntax Error with NPC {$row->npc_id} with name: {$row->name} and closing: {$row->closing}");
                     $output = substr($output,22);
                     $updateQuery = "UPDATE {$newPrefix}_npcs SET closing = '".addslashes($output)."' WHERE npc_id = {$row->npc_id}";
                     mysql_query($updateQuery);
@@ -1557,7 +1560,10 @@ class Games extends Module
         //& sign will break xml parser, so this is necessary
         $inputString = str_replace("&", "&#x26;", $inputString);
 
-        $xml = simplexml_load_string($inputString);
+        @$xml = simplexml_load_string($inputString);
+	    if($xml === false){
+         	return false;
+        }
 
         foreach($xml->children() as $child)
         {
