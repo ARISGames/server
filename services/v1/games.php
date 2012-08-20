@@ -1504,7 +1504,7 @@ class Games extends Module
                 $inputString = $row->text;
                 if((strspn($inputString,"<>") > 0) && !(substr_count($inputString,"<p>") > 0) && !(substr_count($inputString,"<b>") > 0) && !(substr_count($inputString,"<i>") > 0) && !(substr_count($inputString,"<img") > 0) && !(substr_count($inputString,"<table>") > 0)){
                     $output = Games::replaceXMLIds($inputString, $originalAugBubbleId, $newAugBubbleId, $originalWebPageId, $newWebPageId, $originalMediaId, $newMediaId);
-		    if($output === false) return new returnData(1, NULL, "Problem reading the text of Node {$row->node_id}\nwith title:\n{$row->title} and text:\n{$row->text}\nPlease make sure all your xml tags have been properly opened and closed.");
+		    if($output === false) return new returnData(1, NULL, "Problem reading the text of Node {$row->node_id}\nwith title:\n{$row->title}\nand text:\n{$row->text}\nPlease make sure all your xml tags have been properly opened and closed.");
                     $output = substr($output,22);
                     $updateQuery = "UPDATE {$newPrefix}_nodes SET text = '".addslashes($output)."' WHERE node_id = {$row->node_id}";
                     mysql_query($updateQuery);
@@ -1521,7 +1521,7 @@ class Games extends Module
                 if((strspn($inputString,"<>") > 0) && !(substr_count($inputString,"<p>") > 0) && !(substr_count($inputString,"<b>") > 0) && !(substr_count($inputString,"<i>") > 0) && !(substr_count($inputString,"<img") > 0) && !(substr_count($inputString,"<table>") > 0))
                 {
                     $output = Games::replaceXMLIds($inputString, $originalAugBubbleId, $newAugBubbleId, $originalWebPageId, $newWebPageId, $originalMediaId, $newMediaId);
-                    if($output === false) return new returnData(1, NULL, "Problem reading the text of NPC {$row->npc_id}\nwith name:\n{$row->name} and text:\n{$row->text}\nPlease make sure all your xml tags have been properly opened and closed.");
+                    if($output === false) return new returnData(1, NULL, "Problem reading the text of NPC {$row->npc_id}\nwith name:\n{$row->name}\nand text:\n{$row->text}\nPlease make sure all your xml tags have been properly opened and closed.");
                     $output = substr($output,22);
                     $updateQuery = "UPDATE {$newPrefix}_npcs SET text = '".addslashes($output)."' WHERE npc_id = {$row->npc_id}";
                     mysql_query($updateQuery);
@@ -1532,7 +1532,7 @@ class Games extends Module
                 if((strspn($inputString,"<>") > 0) && !(substr_count($inputString,"<p>") > 0) && !(substr_count($inputString,"<b>") > 0) && !(substr_count($inputString,"<i>") > 0) && !(substr_count($inputString,"<img") > 0) && !(substr_count($inputString,"<table>") > 0))
                 {
                     $output = Games::replaceXMLIds($inputString, $originalAugBubbleId, $newAugBubbleId, $originalWebPageId, $newWebPageId, $originalMediaId, $newMediaId);
-                    if($output === false) return new returnData(1, NULL, "Problem reading the text of NPC {$row->npc_id}\nwith name:\n{$row->name} and closing:\n{$row->closing}\nPlease make sure all your xml tags have been properly opened and closed.");
+                    if($output === false) return new returnData(1, NULL, "Problem reading the text of NPC {$row->npc_id}\nwith name:\n{$row->name}\nand closing:\n{$row->closing}\nPlease make sure all your xml tags have been properly opened and closed.");
                     $output = substr($output,22);
                     $updateQuery = "UPDATE {$newPrefix}_npcs SET closing = '".addslashes($output)."' WHERE npc_id = {$row->npc_id}";
                     mysql_query($updateQuery);
