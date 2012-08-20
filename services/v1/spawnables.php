@@ -92,7 +92,7 @@ class Spawnables extends Module
         $result = mysql_query($query);
         $obj = mysql_fetch_object($result);
         $title = $obj->title;
-        Spawnables::createSpawnable($gameId, $type, $typeId, $title, 1, 5, 10, 'PER_PLAYER', 'PLAYER', 0, 0, 50, 10, 0, 100, 20, 0, 0, 0, 1, 0);
+        Spawnables::createSpawnable($gameId, $type, $typeId, $title, 5, 35, 50, 'PER_PLAYER', 'PLAYER', 0, 0, 50, 10, 0, 100, 15, 0, 0, 0, 1, 0);
         return Spawnables::getSpawnableForObject($gameId, $type, $typeId);
     }
 
