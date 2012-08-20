@@ -912,7 +912,7 @@ abstract class Module
       $result = mysql_query($query);
       if(($obj = mysql_fetch_object($result)) && $obj->delete_when_viewed == 1) 
       {
-        $query = "DELETE FROM ".$gameId."_locations WHERE location_id = $eventDetail2";
+        $query = "DELETE ".$gameId."_locations, ".$gameId."_qrcodes FROM ".$gameId."_locations LEFT JOIN ".$gameId."_qrcodes ON ".$gameId."_locations.location_id = ".$gameId."_qrcodes.type_id WHERE location_id = $eventDetail2";
         mysql_query($query);
       }
     }

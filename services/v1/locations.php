@@ -463,7 +463,7 @@ class Locations extends Module
             //Destroy spawnables
             if($spawnable->time_to_live != -1)
             {
-                $query = "DELETE FROM ".$intGameID."_locations WHERE type = '".$spawnable->type."' AND type_id = ".$spawnable->type_id." AND spawnstamp < NOW() - INTERVAL ".$spawnable->time_to_live." SECOND";
+                $query = "DELETE  ".$intGameID."_locations, ".$intGameID."_qrcodes FROM ".$intGameID."_locations LEFT_JOIN ".$intGameID."_qrcodes ON ".$intGameID."_locations.location_id = ".$intGameID."_qrcodes.link_id WHERE type = '".$spawnable->type."' AND type_id = ".$spawnable->type_id." AND spawnstamp < NOW() - INTERVAL ".$spawnable->time_to_live." SECOND";
                 mysql_query($query);
             }
 
