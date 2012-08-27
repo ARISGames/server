@@ -8,6 +8,7 @@ require_once("media.php");
 require_once("webpages.php");
 require_once("augbubbles.php");
 require_once("notes.php");
+require_once("overlays.php");
 
 
 class EditorFoldersAndContent extends Module
@@ -135,6 +136,11 @@ class EditorFoldersAndContent extends Module
 				mysql_query($query);
 			}
 		}
+		// NEED TO DO THIS FOR CUSTOM MAPS else if($row->content_type == "CustomMap") {
+		//	$query = "INSERT INTO overlays (game_id, name, url, icon_media_id) SELECT game_id, name, url, icon_media_id FROM web_pages WHERE web_page_id = '{$row->content_id}'";
+		//	mysql_query($query);
+		//	$newContentId = mysql_insert_id();
+		//}
 
 		$query = "INSERT INTO {$prefix}_folder_contents (folder_id, content_type, content_id, previous_id) VALUES ('{$row->folder_id}', '{$row->content_type}', '{$newContentId}', '{$row->previous_id}')";
 		mysql_query($query);
@@ -175,6 +181,10 @@ class EditorFoldersAndContent extends Module
 			$content->media = NULL;
 			$content->media_id = NULL;
 		}
+		else if ($content->content_type == 'CustomMap') {
+			$contentDetails = Overlays::getOverlay($intGameID,$content->content_id)->data;
+			$content->name = $contentDetails->name;
+		}
 		else if ($content->content_type == 'PlayerNote') {
 			$contentDetails = Notes::getNoteById($content->content_id)->data;
 			$content->name = $contentDetails->title;
@@ -191,7 +201,7 @@ class EditorFoldersAndContent extends Module
 		$content->icon_media_id = $contentDetails->icon_media_id;
                 $content->is_spawnable = Spawnables::hasActiveSpawnable($intGameID, $content->content_type, $content->content_id);
 
-		if ($content->content_type != 'WebPage' && $content->content_type != 'PlayerNote' && $content->content_type != 'AugBubble'){
+		if ($content->content_type != 'WebPage' && $content->content_type != 'PlayerNote' && $content->content_type != 'AugBubble' && $content->content_type != 'CustomMap'){
 			//Get the Media
 			$mediaHelper = new Media;
 			$mediaReturnObject = $mediaHelper->getMediaObject($intGameID, $contentDetails->media_id);
@@ -348,7 +358,7 @@ class EditorFoldersAndContent extends Module
 		else if ($content->content_type == "WebPage") WebPages::deleteWebPage($intGameID, $content->content_id);
 		else if ($content->content_type == "AugBubble") AugBubbles::deleteAugBubble($intGameID, $content->content_id);
 		else if ($content->content_type == "PlayerNote") Notes::deleteNote($content->content_id);
-
+		//else if ($content->content_type == "CustomMap") Overlays::deleteOverlay($intGameID,$content->content_id);  // NEED TO IMPLEMENT THIS IN OVERLAYS.PHP
 
 		if (mysql_affected_rows()) return new returnData(0);
 		else return new returnData(2, 'invalid folder id');

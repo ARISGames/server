@@ -1,4 +1,4 @@
-<?php
+/<?php
 require_once("module.php");
 require_once("media.php");
 require_once("quests.php");
@@ -393,7 +393,7 @@ class Games extends Module
 
         $query = "CREATE TABLE {$strShortName}_requirements (
             requirement_id int(11) NOT NULL auto_increment,
-                           content_type enum('Node','QuestDisplay','QuestComplete','Location','OutgoingWebHook','Spawnable') NOT NULL,
+                           content_type enum('Node','QuestDisplay','QuestComplete','Location','OutgoingWebHook','Spawnable', 'CustomMap') NOT NULL,
                            content_id int(10) unsigned NOT NULL,
                            requirement ENUM('PLAYER_HAS_ITEM','PLAYER_VIEWED_ITEM','PLAYER_VIEWED_NODE','PLAYER_VIEWED_NPC','PLAYER_VIEWED_WEBPAGE','PLAYER_VIEWED_AUGBUBBLE','PLAYER_HAS_UPLOADED_MEDIA_ITEM', 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE','PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO','PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO','PLAYER_HAS_COMPLETED_QUEST','PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK', 'PLAYER_HAS_NOTE', 'PLAYER_HAS_NOTE_WITH_TAG', 'PLAYER_HAS_NOTE_WITH_LIKES', 'PLAYER_HAS_NOTE_WITH_COMMENTS', 'PLAYER_HAS_GIVEN_NOTE_COMMENTS') NOT NULL,
                            boolean_operator enum('AND','OR') NOT NULL DEFAULT 'AND',	
@@ -534,7 +534,7 @@ class Games extends Module
         $query = "CREATE TABLE {$strShortName}_folder_contents (
             object_content_id int(10) unsigned NOT NULL auto_increment,
                               folder_id int(10) NOT NULL default '0',
-                              content_type enum('Node','Item','Npc','WebPage','AugBubble', 'PlayerNote') collate utf8_unicode_ci NOT NULL default 'Node',
+                              content_type enum('Node','Item','Npc','WebPage','AugBubble', 'PlayerNote', 'CustomMap') collate utf8_unicode_ci NOT NULL default 'Node',
                               content_id int(10) unsigned NOT NULL default '0',
                               previous_id int(10) unsigned NOT NULL default '0',
                               PRIMARY KEY  (object_content_id)
@@ -808,7 +808,7 @@ class Games extends Module
         mysql_query($query);
         NetDebug::trace("$query" . ":" . mysql_error()); 
 
-        $query = "ALTER TABLE ".$prefix."_requirements CHANGE content_type content_type ENUM('Node','QuestDisplay','QuestComplete','Location','OutgoingWebHook','Spawnable')";
+        $query = "ALTER TABLE ".$prefix."_requirements CHANGE content_type content_type ENUM('Node','QuestDisplay','QuestComplete','Location','OutgoingWebHook','Spawnable', 'CustomMap')";
         mysql_query($query);
         NetDebug::trace("$query" . ":" . mysql_error());  
 
@@ -910,6 +910,17 @@ class Games extends Module
         if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
         //And AugBubble Media
         $query = "DELETE FROM aug_bubble_media WHERE game_id = '{$intGameID}'";
+        NetDebug::trace($query);
+        @mysql_query($query);
+        if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
+		
+		//Delete Overlays
+        $query = "DELETE FROM overlays WHERE game_id = '{$intGameID}'";
+        NetDebug::trace($query);
+        @mysql_query($query);
+        if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
+        //And Overlay_tiles
+        $query = "DELETE FROM overlay_tiles WHERE game_id = '{$intGameID}'";
         NetDebug::trace($query);
         @mysql_query($query);
         if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
@@ -1354,7 +1365,7 @@ class Games extends Module
         $query = "INSERT INTO {$newPrefix}_folder_contents (object_content_id, folder_id, content_type, content_id, previous_id) SELECT object_content_id, folder_id, content_type, content_id, previous_id FROM {$prefix}_folder_contents";
         mysql_query($query);
 
-        $query = "INSERT INTO {$newPrefix}_items (item_id, name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight, url, type) SELECT item_id, name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight, url, type FROM {$prefix}_items";
+        $query = "INSERT INTO {$newPrefix}_items (item_id, name, description, is_attribute, icon_media_id, media_id, dropable, tradeable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight, url, type) SELECT item_id, name, description, is_attribute, icon_media_id, media_id, dropable, tradeable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight, url, type FROM {$prefix}_items";
         mysql_query($query);
 
         $query = "INSERT INTO {$newPrefix}_locations (location_id, name, description, latitude, longitude, error, type, type_id, icon_media_id, item_qty, hidden, force_view, allow_quick_travel) SELECT location_id, name, description, latitude, longitude, error, type, type_id, icon_media_id, item_qty, hidden, force_view, allow_quick_travel FROM {$prefix}_locations";
@@ -1498,6 +1509,8 @@ class Games extends Module
             mysql_query($query);
 
         }
+		
+		//GWS:NEED TO DO THIS FOR OVERLAYS
 
         //NOTE: substr removes <?xml version="1.0" ? //> from the beginning of the text
         $query = "SELECT * FROM {$newPrefix}_nodes";
