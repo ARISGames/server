@@ -358,7 +358,7 @@ class Overlays extends Module
                                         $dirZoomName = $dirZoom->getFilename();
                                         $dirXName = $dirX->getFilename();
                                         $fullFileName = $overlayId . "_" . $dirZoomName . "_" . $dirXName . "_" . $fileYName;
-                                        echo "FullFileName:" .$fullFileName . "> ";
+                                        //echo "FullFileName:" .$fullFileName . "> ";
                          
                          
                                         $fullNewDirAndFileName = $sGameDir . $fullFileName;
@@ -385,13 +385,16 @@ class Overlays extends Module
                    }
                     
                 }
-                
             }
         }
             }
             $i = $i + 1;
-            }
+        }
+
     
+        $query5 = "UPDATE overlays SET file_uploaded = 1 WHERE overlay_id = {$overlayId} and game_id = {$intGameID}";
+        $rsResult5 = @mysql_query($query5);
+        if (mysql_error()) return new returnData(3, NULL, "SQL Error setting zip file uploaded flag: ". $query5);  
         
         return new returnData(0, $fullOldDirAndFileName . "->" . $fullNewDirAndFileName);
     }
