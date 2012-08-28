@@ -172,7 +172,7 @@ class Locations extends Module
         $query = "SELECT {$prefix}_locations.*,{$prefix}_qrcodes.qrcode_id,{$prefix}_qrcodes.code,{$prefix}_qrcodes.match_media_id, {$prefix}_qrcodes.fail_text, f.active AS is_fountain
             FROM {$prefix}_locations 
             LEFT JOIN {$prefix}_qrcodes
-            ON {$prefix}_qrcodes.link_id = {$prefix}_locations.location_id LEFT JOIN
+            ON {$prefix}_locations.location_id = {$prefix}_qrcodes.link_id LEFT JOIN
             (SELECT location_id, active FROM fountains WHERE game_id = $prefix) AS f
             ON {$prefix}_locations.location_id = f.location_id";
         NetDebug::trace($query);	
