@@ -1119,9 +1119,14 @@ class Games extends Module
 		else $query = "INSERT INTO game_comments (game_id, player_id, rating, comment) VALUES ('{$intGameId}', '{$intPlayerId}', '{$intRating}', '{$comment}')";
 		mysql_query($query);
 
-		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
-		else return new returnData(0);
+                if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 
+                $query = "SELECT editors.email FROM (SELECT * FROM game_editors WHERE game_id = ".$intGameId.") AS ge LEFT JOIN editors ON ge.editor_id = editors.editor_id";
+                $result = mysql_query($query);
+                while($ob = mysql_fetch_object($result))
+                    Module::sendEmail($ob->email,"Your game was rated ".$intRating." stars!","A player had this to say about your game: \n\"".$comment."\"");
+
+		return new returnData(0);
 	}
 
 
