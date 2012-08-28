@@ -478,7 +478,7 @@ class Locations extends Module
                 //Module::serverErrorLog($locobj->delete_when_viewed."<- final  ".$spawnable->delete_when_viewed." ".$spawnable->active);
 
                 //Add it
-                if($locobj->type = 'Item' && ($locobj->item_qty == -1 || $locobj->item_qty > 0))
+                if($locobj->type != 'Item' || ($locobj->item_qty == -1 || $locobj->item_qty > 0))
                     $arrayLocations[] = $locobj;
             }
         }
