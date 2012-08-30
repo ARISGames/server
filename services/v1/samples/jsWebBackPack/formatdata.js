@@ -45,7 +45,10 @@ function formatPage(game)
     add("</div>\n");//<- class gameauthor
   }
   add("</div>\n");//<- class gameauthors
-  add("</div>\n");//<- )class 'gametext'
+  add("</div>\n");//<- class 'gametext'
+  add("<div class='gamelinks'>\n");
+  add("<a href='javascript:dump();'>Dump?</a>");
+  add("</div>\n");//<- class gamelinks
   add("</div>\n");//<- class pageheader
 
   add("<div class='spacer headerspacer'></div>\n");

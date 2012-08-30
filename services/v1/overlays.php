@@ -166,6 +166,57 @@ class Overlays extends Module
 		return $returnData;
 	}
 
+    /**
+	 * Fetch all Overlays and tiles for game
+	 * @returns the media
+	 */
+	public function getCurrentOverlaysForPlayer($intGameID, $intPlayerID)
+	{
+		$prefix = Module::getPrefix($intGameID);
+		if (!$prefix && $intGameID != 0) return new returnData(1, NULL, "invalid game id");
+        
+		if ($intGameID == 0) $query = "SELECT * FROM overlays, overlay_tiles, media WHERE game_id = 0 AND overlays.overlay_id = overlay_tiles.overlay_id AND overlay_tiles.media_id = media.media_id ORDER BY overlays.sort_index";
+		else $query = "SELECT * FROM overlays, overlay_tiles, media WHERE (overlays.game_id = {$prefix}) AND overlays.overlay_id = overlay_tiles.overlay_id AND overlay_tiles.media_id = media.media_id ORDER BY overlays.sort_index";
+        
+		//NetDebug::trace($query);
+        
+        
+		$rsResult = @mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+        
+		$returnData = new returnData(0, array());
+        
+		//For each overlay, get tiles and associated info
+		while ($overlayRow = mysql_fetch_array($rsResult)) {
+            
+            //Does it meet it's requirements?
+            if (!$this->objectMeetsRequirements($prefix, $intPlayerID, 'CustomMap', $overlayRow['overlay_id'])) {
+                //NetDebug::trace("Skipping Custom Map:'{$overlayRow['overlay_id']}' becasue it doesn't meet it's requirements");
+                continue;
+            }
+            else{
+                //NetDebug::trace("Requirement met. Awwe yeeeaaaah.");
+            }
+            
+			$tile = array();
+			$tile['overlay_id'] = $overlayRow['overlay_id'];
+			$tile['sort_order'] = $overlayRow['sort_order'];
+			$tile['alpha'] = $overlayRow['alpha'];
+            $tile['zoom'] = $overlayRow['zoom'];
+            $tile['file_name'] = $overlayRow['file_name'];
+            $tile['media_id'] = $overlayRow['media_id'];
+            $tile['x'] = $overlayRow['x'];
+            $tile['y'] = $overlayRow['y'];
+            
+			array_push($returnData->data, $tile);
+		}
+        
+		//NetDebug::trace($rsResult);
+        
+		return $returnData;
+	}
+
+    
 	/**
 	 * Fetch one Tile
 	 * @returns the media item
