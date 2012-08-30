@@ -57,7 +57,6 @@ class Nodes extends Module
 			$strOpt3Text, $intOpt3NodeID,
 			$strQACorrectAnswer, $intQAIncorrectNodeID, $intQACorrectNodeID)
 	{
-
 		$strTitle = addslashes($strTitle);	
 		$strText = addslashes($strText);	
 		$strOpt1Text = addslashes($strOpt1Text);	

@@ -70,9 +70,11 @@ class Conversations extends Module
 		$prefix = Module::getPrefix($gameId);
 
 
+                $nodeText = str_replace("“", "\"", $nodeText);
+                $nodeText = str_replace("”", "\"", $nodeText);
 
 		$query = "INSERT INTO {$prefix}_nodes (text)
-			VALUES ('{$conversationText}')";
+			VALUES ('{$nodeText}')";
 		NetDebug::trace("createNode: Running a query = $query");	
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);	
@@ -123,6 +125,8 @@ class Conversations extends Module
 		if (!$nodeIdObject) return new returnData(2, NULL, "No such conversation");			
 		$nodeId = $nodeIdObject->node_id;
 
+                $nodeText = str_replace("“", "\"", $nodeText);
+                $nodeText = str_replace("”", "\"", $nodeText);
 
 		$query = "UPDATE {$prefix}_nodes SET text = '{$nodeText}', title = '{$conversationText}' WHERE node_id = {$nodeId}";
 		NetDebug::trace("Running a query = $query");	

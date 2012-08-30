@@ -108,7 +108,10 @@ class Npcs extends Module
 	 */
 	public function createNpc($gameID, $name, $description, $greeting, $closing, $mediaID, $iconMediaID)
 	{
-
+                $greeting = str_replace("“", "\"", $greeting);
+                $greeting = str_replace("”", "\"", $greeting);
+                $closing = str_replace("“", "\"", $closing);
+                $closing = str_replace("”", "\"", $closing);
 		$name = addslashes($name);	
 		$description = addslashes($description);	
 		$greeting = addslashes($greeting);	
@@ -149,7 +152,10 @@ class Npcs extends Module
 	public function updateNpc($gameID, $npcID, 
 			$name, $description, $greeting, $closing, $mediaID, $iconMediaID)
 	{
-
+                $greeting = str_replace("“", "\"", $greeting);
+                $greeting = str_replace("”", "\"", $greeting);
+                $closing = str_replace("“", "\"", $closing);
+                $closing = str_replace("”", "\"", $closing);
 		$name = addslashes($name);	
 		$description = addslashes($description);	
 		$greeting = addslashes($greeting);			
