@@ -1124,8 +1124,15 @@ class Games extends Module
 
                 $query = "SELECT editors.email FROM (SELECT * FROM game_editors WHERE game_id = ".$intGameId.") AS ge LEFT JOIN editors ON ge.editor_id = editors.editor_id";
                 $result = mysql_query($query);
+                if(mysql_num_rows($result) > 0)
+                {
+                    $gameName = mysql_fetch_object(mysql_query("SELECT name FROM games WHERE game_id = $intGameId"))->name;
+                    $playerName = mysql_fetch_object(mysql_query("SELECT user_name FROM players WHERE player_id = $intPlayerId"))->user_name;
+                    $sub = "New Rating for '".$gameName."'";
+                    $body = "Congratulations! People are playing your ARIS game! \n".$playerName." Recently gave your game ".$intRating." stars out of 5" . (($comment && $comment != 'Comment') ? . ", commenting \"".$comment."\"" : ".");
+                }
                 while($ob = mysql_fetch_object($result))
-                    Module::sendEmail($ob->email,"Your game was rated ".$intRating." stars!","A player had this to say about your game: \n\"".$comment."\"");
+                    Module::sendEmail($ob->email,$sub,$body);
 
 		return new returnData(0);
 	}
