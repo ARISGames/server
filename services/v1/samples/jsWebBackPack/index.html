@@ -10,6 +10,7 @@
 <script type="text/javascript" src="jszip/jszip-inflate.js"></script>
 <script type="text/javascript">
         var gameJSON;
+        var jsonText;
 	function sendRequest(fn, params)
 	{
         	var xmlhttp;
@@ -18,7 +19,8 @@
         	xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
         	xmlhttp.send(params); //Synchronous call
 
-        	var response=JSON.parse(xmlhttp.responseText);
+                jsonText = xmlhttp.responseText;
+        	var response=JSON.parse(jsonText);
 		//alert(xmlhttp.responseText);
 		if(response.returnCode == 1) //Error
 		{
@@ -29,6 +31,7 @@
 			//document.getElementById('playerBackPacks').innerHTML = "Success!-<br />"+response.data;	
 			formatPage(response.data);
                         gameJSON = response.data;
+                        preloadDumpMedia(gameJSON);
 		}
 	}
 
@@ -85,8 +88,7 @@
         function dump()
         {
             var zip = new JSZip();
-            zip.file("jsondata.txt", JSON.stringify(gameJSON));
-            preloadDumpMedia(gameJSON);
+            zip.file("jsondata.txt", jsonText);
             var players = zip.folder("players");
             for(var i = 0; i < gameJSON.backpacks.length; i++)
             {
