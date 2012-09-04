@@ -310,7 +310,7 @@ class Games extends Module
 	public function createGame($intEditorID, $strFullName, $strDescription, $intPCMediaID, $intIconMediaID, $intMediaID,
 			$boolIsLocational, $boolReadyForPublic, 
 			$boolShareToMap, $boolShareToBook, $playerCreateTag, $playerCreateComments, $playerLikeNotes,
-			$intIntroNodeId, $intCompleteNodeId, $intInventoryCap)
+			$intIntroNodeId, $intCompleteNodeId, $intInventoryCap, $boolAllowTrading = true)
 	{
 		$strFullName = addslashes($strFullName);	
 		$strDescription = addslashes($strDescription);
@@ -326,11 +326,11 @@ class Games extends Module
 		$query = "INSERT INTO games (name, description, pc_media_id, icon_media_id, media_id,
 			is_locational, ready_for_public,
 			allow_share_note_to_map, allow_share_note_to_book, allow_player_tags, allow_note_comments, allow_note_likes,
-			on_launch_node_id, game_complete_node_id, inventory_weight_cap, created)
+			on_launch_node_id, game_complete_node_id, inventory_weight_cap, created, allow_trading)
 				VALUES ('{$strFullName}','{$strDescription}','{$intPCMediaID}','{$intIconMediaID}', '{$intMediaID}',
 						'{$boolIsLocational}', '{$boolReadyForPublic}', 
 						'{$boolShareToMap}', '{$boolShareToBook}', '{$playerCreateTag}', '{$playerCreateComments}','{$playerLikeNotes}',
-						'{$intIntroNodeId}','{$intCompleteNodeId}','{$intInventoryCap}', NOW())";
+						'{$intIntroNodeId}','{$intCompleteNodeId}','{$intInventoryCap}', NOW(), '{$boolAllowTrading}')";
 		@mysql_query($query);
 		if (mysql_error())  return new returnData(6, NULL, "cannot create game record using SQL: $query");
 		$newGameID = mysql_insert_id();
@@ -579,7 +579,7 @@ class Games extends Module
 	public function updateGame($intGameID, $strName, $strDescription, $intPCMediaID, $intIconMediaID, $intMediaID,
 			$boolIsLocational, $boolReadyForPublic,
 			$boolShareToMap, $boolShareToBook, $playerCreateTag, $playerCreateComments, $playerLikeNotes,
-			$intIntroNodeId, $intCompleteNodeId, $intInventoryCap)
+			$intIntroNodeId, $intCompleteNodeId, $intInventoryCap, $boolAllowTrading, $boolAllowTrading = true)
 	{
 		$strName = addslashes($strName);	
 		$strDescription = addslashes($strDescription);
@@ -600,7 +600,8 @@ class Games extends Module
 			     ready_for_public = '{$boolReadyForPublic}',
 			     on_launch_node_id = '{$intIntroNodeId}',
 			     game_complete_node_id = '{$intCompleteNodeId}',
-			     inventory_weight_cap = '{$intInventoryCap}'
+			     inventory_weight_cap = '{$intInventoryCap}',
+                             allow_trading = '{$boolAllowTrading}'
 				     WHERE game_id = {$intGameID}";
 		mysql_query($query);
 		if (mysql_error()) return new returnData(3, false, "SQL Error: " . mysql_error());
@@ -1342,7 +1343,7 @@ class Games extends Module
 					$game->pc_media_id, $game->icon_media_id, $game->media_id,
 					$game->is_locational, $game->ready_for_public, 
 					$game->allow_share_note_to_map, $game->allow_share_note_to_book, $game->allow_player_tags, $game->allow_player_comments, $game->allow_note_likes,
-					$game->on_launch_node_id, $game->game_complete_node_id, $game->inventory_weight_cap);
+					$game->on_launch_node_id, $game->game_complete_node_id, $game->inventory_weight_cap, $game->allow_trading);
 		}
 		else
 		{
@@ -1354,7 +1355,7 @@ class Games extends Module
 					$game->pc_media_id, $game->icon_media_id, $game->media_id,
 					$game->is_locational, $game->ready_for_public, 
 					$game->allow_share_note_to_map, $game->allow_share_note_to_book, $game->allow_player_tags, $game->allow_player_comments, $game->allow_note_likes,
-					$game->on_launch_node_id, $game->game_complete_node_id, $game->inventory_weight_cap);
+					$game->on_launch_node_id, $game->game_complete_node_id, $game->inventory_weight_cap, $game->allow_trading);
 
 			while($editors = mysql_fetch_object($rs)){
 				Games::addEditorToGame($editors->editor_id, $newGameId->data);
