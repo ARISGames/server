@@ -257,7 +257,7 @@ class Games extends Module
 			$playerOb = mysql_fetch_assoc($player);
 			$comments[$x]->username = $playerOb['user_name'];
 			$comments[$x]->rating = $row['rating'];
-			$comments[$x]->text = $row['comment'];
+			$comments[$x]->text = $row['comment'] == 'Comment' ? "" : $row['comment'];
 			$x++;
 		}
 		$gameObj->comments = $comments;
@@ -1114,6 +1114,7 @@ class Games extends Module
 	 */
 
 	public function saveComment($intPlayerId, $intGameId, $intRating, $comment) {
+                if($comment == 'Comment') $comment = "";
 		$query = "SELECT * FROM game_comments WHERE game_id = '{$intGameId}' AND player_id = '{$intPlayerId}'";
 		$result = mysql_query($query);
 		if(mysql_num_rows($result) > 0) $query = "UPDATE game_comments SET rating='{$intRating}', comment='{$comment}' WHERE game_id = '{$intGameId}' AND player_id = '{$intPlayerId}'";
