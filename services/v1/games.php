@@ -1130,7 +1130,7 @@ class Games extends Module
                     $gameName = mysql_fetch_object(mysql_query("SELECT name FROM games WHERE game_id = $intGameId"))->name;
                     $playerName = mysql_fetch_object(mysql_query("SELECT user_name FROM players WHERE player_id = $intPlayerId"))->user_name;
                     $sub = "New Rating for '".$gameName."'";
-                    $body = "Congratulations! People are playing your ARIS game! \n".$playerName." Recently gave your game ".$intRating." stars out of 5" . (($comment && $comment != 'Comment') ? . ", commenting \"".$comment."\"" : ".");
+                    $body = "Congratulations! People are playing your ARIS game! \n".$playerName." Recently gave your game ".$intRating." stars out of 5" . (($comment && $comment != 'Comment') ? ", commenting \"".$comment."\"" : ".");
                 }
                 while($ob = mysql_fetch_object($result))
                     Module::sendEmail($ob->email,$sub,$body);
