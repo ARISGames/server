@@ -82,12 +82,19 @@ class Overlays extends Module
 		
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
-        
-        if (!mysql_affected_rows()) {
+
+   		if (!mysql_affected_rows()) {
 			return new returnData(2, NULL, 'invalid event id');
 		}
+
+		$query2 = "DELETE FROM overlay_tiles WHERE overlay_id = {$intOverlayID}";
+		
+		$rsResult2 = @mysql_query($query2);
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
         
-        $query = "DELETE FROM {$prefix}_requirements WHERE content_type = 'CustomMap' AND content_id = '{$intOverlayID}'";
+   
+        
+      		 $query = "DELETE FROM {$prefix}_requirements WHERE content_type = 'CustomMap' AND content_id = '{$intOverlayID}'";
 		
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "{$query} SQL Error");
@@ -321,7 +328,7 @@ class Overlays extends Module
                                    $fileYShortName = substr($fileYName, 0, -4);
                                    $dirZoomName = $dirZoom->getFilename();
                                    $dirXName = $dirX->getFilename();
-                                   $fullFileName = $intOverlayID . "_" . $dirZoomName . "_" . $dirXName . "_" . $fileYName;
+                                   $fullFileName = $intOverlayID . "_" . $dirZoomName . "_" . $dirXName . "_" . $fileYName . "_" . time();
                                    $fullNewDirAndFileName = $sGameDir . $fullFileName;
                                    $fullOldDirAndFileName = $sOverlayDir. "/" . $intOverlayID . "/" . $dirZoomName . "/" . $dirXName . "/" . $fileYName;
                                     $query3 = "INSERT INTO media SET game_id = {$intGameID}, name = '{$fullFileName}', file_name = '{$fullFileName}'";
@@ -362,6 +369,15 @@ class Overlays extends Module
         $diOverlay = new DirectoryIterator($sOverlayDir);
         $i=0;
         //echo $sOverlayDir;
+
+
+
+		// delete any old tiles that we are replacing
+	
+		$query = "DELETE FROM overlay_tiles WHERE overlay_id = {$overlayId}";
+		$rsResult = @mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+
                 
                 // check if there's already a row in overlays table for this overlay.  if not, create one
                // $query = "REPLACE INTO overlays SET game_id = {$intGameID}, game_overlay_id={$gameOverlayId}";
