@@ -39,7 +39,7 @@ class Overlays extends Module
 			return new returnData(0, $overlayId); 			
 	}
 
-/**
+    /**
      * Update a specific Overlay
      * @returns true if edit was done, false if no changes were made
      */
@@ -283,151 +283,129 @@ class Overlays extends Module
         
 		return new returnData(0);
 	}
+    
+    
+    
 
     /**
 	 * Reads directory structure of overlays and populates overlay tables in database
 	 * @returns 0 on success
 	 */
-// To test::  http://dev.arisgames.org/server/json.php/v1.overlays.writeOverlaysToDatabase/3069
+    // To test::  http://dev.arisgames.org/server/json.php/v1.overlays.writeOverlaysToDatabase/3069
 
-     public function writeOverlaysToDatabase($intGameID)
-     {
-         // go to folder for game ID: /var/www/html/server/gamedata/{game_id}/MapOverlays/0
-         $sGameDir = "/var/www/html/server/gamedata/".$intGameID."/";
-         $sOverlayDir = $sGameDir ."MapOverlays";
-         $dirGame = new DirectoryIterator($sOverlayDir);
-         $intOverlayID = 0;
-         
-         // step through overlay folders for game
-           foreach ($dirGame as $dirOverlay) {
+    public function writeOverlaysToDatabase($intGameID)
+    {
+        // go to folder for game ID: /var/www/html/server/gamedata/{game_id}/MapOverlays/0
+        $sGameDir = "/var/www/html/server/gamedata/".$intGameID."/";
+        $sOverlayDir = $sGameDir ."MapOverlays";
+        $dirGame = new DirectoryIterator($sOverlayDir);
+        $intOverlayID = 0;
+        
+        // step through overlay folders for game
+        foreach ($dirGame as $dirOverlay) {
             if ($dirOverlay->isDir() && !$dirOverlay->isDot()) {
                 
-                 // check if there's already a row in overlays table for this overlay.  if not, create one
-                 $query = "INSERT IGNORE INTO overlays SET game_id = {$intGameID}, game_overlay_id={$intOverlayID}";
-                 $rsResult = @mysql_query($query);
-                 if (mysql_error()) return new returnData(3, NULL, "SQL Error at Overlay Level: " . $query);   
-                 
-                 $overlay_id = mysql_insert_id();
-                 
-                 $diOverlay = new DirectoryIterator($dirOverlay->getPath()."/".$dirOverlay->getFilename());
+                // check if there's already a row in overlays table for this overlay.  if not, create one
+                $query = "INSERT IGNORE INTO overlays SET game_id = {$intGameID}, game_overlay_id={$intOverlayID}";
+                $rsResult = @mysql_query($query);
+                if (mysql_error()) return new returnData(3, NULL, "SQL Error at Overlay Level: " . $query);   
                 
-                 // step through zoom level folders
-                 foreach ($diOverlay as $dirZoom) {
-                        if ($dirZoom->isDir() && !$dirZoom->isDot()) {   
-                            
-                            // step through y folders
-                            $diZoom = new DirectoryIterator($dirZoom->getPath()."/".$dirZoom->getFilename());
-                            foreach ($diZoom as $dirX) {
+                $overlay_id = mysql_insert_id();
+                
+                $diOverlay = new DirectoryIterator($dirOverlay->getPath()."/".$dirOverlay->getFilename());
+                
+                // step through zoom level folders
+                foreach ($diOverlay as $dirZoom) {
+                    if ($dirZoom->isDir() && !$dirZoom->isDot()) {   
+                        
+                        // step through y folders
+                        $diZoom = new DirectoryIterator($dirZoom->getPath()."/".$dirZoom->getFilename());
+                        foreach ($diZoom as $dirX) {
                             if ($dirX->isDir() && !$dirX->isDot()) {
-                                    
-                               // step through image files (with x value for filename)
+                                
+                                // step through image files (with x value for filename)
                                 $diX = new DirectoryIterator($dirX->getPath()."/".$dirX->getFilename());
-                               foreach ($diX as $fileY) {
-                                   if (!$fileY->isDot()) {
-                                   $fileYName = $fileY->getFilename();
-                                   $fileYShortName = substr($fileYName, 0, -4);
-                                   $dirZoomName = $dirZoom->getFilename();
-                                   $dirXName = $dirX->getFilename();
-                                   $fullFileName = $intOverlayID . "_" . $dirZoomName . "_" . $dirXName . "_" . $fileYName . "_" . time();
-                                   $fullNewDirAndFileName = $sGameDir . $fullFileName;
-                                   $fullOldDirAndFileName = $sOverlayDir. "/" . $intOverlayID . "/" . $dirZoomName . "/" . $dirXName . "/" . $fileYName;
-                                    $query3 = "INSERT INTO media SET game_id = {$intGameID}, name = '{$fullFileName}', file_name = '{$fullFileName}'";
-                                    $rsResult3 = @mysql_query($query3);
-                                    if (mysql_error()) return new returnData(3, NULL, "SQL Error inserting Media: ". $query3);   
-                               
-                                    $media_id = mysql_insert_id();
-                               
-                                    $query4 = "REPLACE INTO overlay_tiles SET overlay_id = {$overlay_id}, media_id={$media_id}, zoom={$dirZoomName}, x={$dirXName}, y={$fileYShortName}";
-                                    $rsResult4 = @mysql_query($query4);
-                                    if (mysql_error()) return new returnData(3, NULL, "SQL Error inserting tiles: ". $query4);  
-                                       
-                                    // copy file into root game directory
-                                    copy($fullOldDirAndFileName, $fullNewDirAndFileName);
-                                    
-                                   }
-                               }
-                               
-                                    
-                            }
+                                foreach ($diX as $fileY) {
+                                    if (!$fileY->isDot()) {
+                                        $fileYName = $fileY->getFilename();
+                                        $fileYShortName = substr($fileYName, 0, -4);
+                                        $dirZoomName = $dirZoom->getFilename();
+                                        $dirXName = $dirX->getFilename();
+                                        $fullFileName = $intOverlayID . "_" . $dirZoomName . "_" . $dirXName . "_" . $fileYName . "_" . time();
+                                        $fullNewDirAndFileName = $sGameDir . $fullFileName;
+                                        $fullOldDirAndFileName = $sOverlayDir. "/" . $intOverlayID . "/" . $dirZoomName . "/" . $dirXName . "/" . $fileYName;
+                                        $query3 = "INSERT INTO media SET game_id = {$intGameID}, name = '{$fullFileName}', file_name = '{$fullFileName}'";
+                                        $rsResult3 = @mysql_query($query3);
+                                        if (mysql_error()) return new returnData(3, NULL, "SQL Error inserting Media: ". $query3);   
+                                        
+                                        $media_id = mysql_insert_id();
+                                        
+                                        $query4 = "REPLACE INTO overlay_tiles SET overlay_id = {$overlay_id}, media_id={$media_id}, zoom={$dirZoomName}, x={$dirXName}, y={$fileYShortName}";
+                                        $rsResult4 = @mysql_query($query4);
+                                        if (mysql_error()) return new returnData(3, NULL, "SQL Error inserting tiles: ". $query4);  
+                                        
+                                        // copy file into root game directory
+                                        copy($fullOldDirAndFileName, $fullNewDirAndFileName);
+                                        
+                                    }
+                                }
+                                
+                                
                             }
                         }
-                 }
+                    }
+                }
                 $intOverlayID = $intOverlayID + 1;
             }
-            }
-     
-         return $fullOldDirAndFileName . "->" . $fullNewDirAndFileName;
-     }	
+        }
+        
+        return $fullOldDirAndFileName . "->" . $fullNewDirAndFileName;
+    }	
 
+    
     
     public function writeOverlayToDatabase($intGameID, $overlayId, $folderName)
     {
-            // to test:http://dev.arisgames.org/server/json.php/v1.overlays.writeOverlayToDatabase/3289/1/aris218f403f29adc83670ba6ccc2833b996 
+        // to test:http://dev.arisgames.org/server/json.php/v1.overlays.writeOverlayToDatabase/3289/1/aris218f403f29adc83670ba6ccc2833b996 
         // go to folder for game ID: /var/www/html/server/gamedata/{game_id}/
         $sGameDir = "/var/www/html/server/gamedata/".$intGameID."/";
         $sOverlayDir = $sGameDir . $folderName;
         $diOverlay = new DirectoryIterator($sOverlayDir);
         $i=0;
-        //echo $sOverlayDir;
-
-
-
-		// delete any old tiles that we are replacing
-	
+         
 		$query = "DELETE FROM overlay_tiles WHERE overlay_id = {$overlayId}";
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
-
-                
-                // check if there's already a row in overlays table for this overlay.  if not, create one
-               // $query = "REPLACE INTO overlays SET game_id = {$intGameID}, game_overlay_id={$gameOverlayId}";
-                //$rsResult = @mysql_query($query);
-               // if (mysql_error()) return new returnData(3, NULL, "SQL Error at Overlay Level: " . $query);   
-        foreach ($diOverlay as $dirMain1) { 
+        
+        
+         foreach ($diOverlay as $dirMain1) { 
             
             if ($dirMain1->isDir() && !$dirMain1->isDot() && $i!=0 ) { //&& !(strpos($dirMain1->getFilename(), "__") > 0) 
                 //echo "dirMain1:" . $dirMain1->getFilename() ."---- ";   
                 $diMain1 = new DirectoryIterator($dirMain1->getPath()."/".$dirMain1->getFilename());
-                  
-        foreach ($diMain1 as $dirZoom) { 
-            
-            //go to last one
-             if ($dirZoom->isDir() && !$dirZoom->isDot()) { //&& !(strpos($dirMain2->getFilename(), "__") > 0)
-                 //echo "$dirZoom:" . $dirZoom->getFilename() ."--- ";
-                 $diZoom = new DirectoryIterator($dirZoom->getPath()."/".$dirZoom->getFilename());
-                 
-                // step through zoom level folders
-                foreach ($diZoom as $dirX) {
+                
+                foreach ($diMain1 as $dirZoom) { 
                     
-                    if ($dirX->isDir() && !$dirX->isDot() ) { 
-                        //echo "$dirX:" . $dirX->getFilename() ."-- ";
-             
-             
-                        //echo $dirZoom->getFilename();
+                    //go to last one
+                    if ($dirZoom->isDir() && !$dirZoom->isDot()) { //&& !(strpos($dirMain2->getFilename(), "__") > 0)
+                        $diZoom = new DirectoryIterator($dirZoom->getPath()."/".$dirZoom->getFilename());
                         
-                        // step through y folders
-                        $diX = new DirectoryIterator($dirX->getPath()."/".$dirX->getFilename());
-                        foreach ($diX as $fileY) {
+                        // step through zoom level folders
+                        foreach ($diZoom as $dirX) {
                             
-                            //if ($dirX->isDir() && !$dirX->isDot()) {
-                                //echo "$fileY:" . $fileY->getFilename() ."- ";
+                            if ($dirX->isDir() && !$dirX->isDot() ) { 
                                 
-                                // step through image files (with x value for filename)
-                                //$diX = new DirectoryIterator($dirX->getPath()."/".$dirX->getFilename());
-                                //foreach ($diX as $fileY) {
-                                  //  echo "fileY:" . $fileY->getFilename() . " . ";
-                                    //echo strpos($fileY->getFilename(), ".png") . " . ";
+                                // step through y folders
+                                $diX = new DirectoryIterator($dirX->getPath()."/".$dirX->getFilename());
+                                foreach ($diX as $fileY) {
+
                                     if (strpos($fileY->getFilename(), ".png" ) > 0 ) {
                                         $fileYName = $fileY->getFilename();
-                                        //echo $fileYName . " > ";
                                         $fileYShortName = substr($fileYName, 0, -4);
                                         $dirMain1Name = $dirMain1->getFilename();
                                         $dirZoomName = $dirZoom->getFilename();
                                         $dirXName = $dirX->getFilename();
                                         $fullFileName = $overlayId . "_" . $dirZoomName . "_" . $dirXName . "_" . $fileYName;
-                                        //echo "FullFileName:" .$fullFileName . "> ";
-                         
-                         
                                         $fullNewDirAndFileName = $sGameDir . $fullFileName;
                                         $fullOldDirAndFileName = $sOverlayDir. "/" . $dirMain1Name . "/"  . $dirZoomName . "/" . $dirXName . "/" . $fileYName;
                                         $query3 = "INSERT INTO media SET game_id = {$intGameID}, name = '{$fullFileName}', file_name = '{$fullFileName}'";
@@ -444,28 +422,41 @@ class Overlays extends Module
                                         copy($fullOldDirAndFileName, $fullNewDirAndFileName);
                                         
                                     }
+                                    
+                                }
+ 
+                            }
                             
                         }
-                    
-                                
-                            //}
-                   }
-                    
+                    }
                 }
-            }
-        }
             }
             $i = $i + 1;
         }
-
-    
+        
+        
         $query5 = "UPDATE overlays SET file_uploaded = 1 WHERE overlay_id = {$overlayId} and game_id = {$intGameID}";
         $rsResult5 = @mysql_query($query5);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error setting zip file uploaded flag: ". $query5);  
         
+        // delete overlay folder now that it is no longer needed
+        $this->recursiveRemoveDirectory($sOverlayDir);
+        
         return new returnData(0, $fullOldDirAndFileName . "->" . $fullNewDirAndFileName);
     }
 
+    
+    public function recursiveRemoveDirectory($dir) {
+        $files = glob( $dir . '*', GLOB_MARK ); 
+        foreach( $files as $file ){ 
+            if( substr( $file, -1 ) == '/' ) 
+                $this->recursiveRemoveDirectory( $file ); 
+            else 
+                unlink( $file ); 
+        } 
+        
+        if (is_dir($dir)) rmdir( $dir );      
+    }
     
 
     public function unzipOverlay($intGameID, $origFile){ 
@@ -482,26 +473,11 @@ class Overlays extends Module
                 if(strpos(zip_entry_name($zip_entry), DIRECTORY_SEPARATOR) !== false){ 
                     $first = strpos(zip_entry_name($zip_entry), DIRECTORY_SEPARATOR); 
                     $last = strrpos(zip_entry_name($zip_entry), DIRECTORY_SEPARATOR); 
-                    //echo $first;
-                    //echo $last; 
-                   // if ($i<1) {
-                        $newdir = substr($origFile,0,strlen($origFile)-4) . "/";
-                        //$dir = $sOverlayDir."hello";
-                    //} else {
-                        $dir = $sOverlayDir . $newdir .  substr(zip_entry_name($zip_entry), 0, $last); 
-                        //$dir = $sOverlayDir . $newdir . substr(zip_entry_name($zip_entry), $first, $last); 
-                    //echo $newdir;
-                    //echo $first ."\n";
-                    //echo $last ."\n";
-                    //echo substr(zip_entry_name($zip_entry), $first, $last) ."\n";
-                    //echo $dir ."\n\n\n\n";
-                    //echo $dir . " - ";
-                    //}
-                    $file = substr(zip_entry_name($zip_entry), strrpos(zip_entry_name($zip_entry), DIRECTORY_SEPARATOR)+1); 
-                    //echo $last."\n";
-                    //echo $i;
+                    $newdir = substr($origFile,0,strlen($origFile)-4) . "/";
+                     $dir = $sOverlayDir . $newdir .  substr(zip_entry_name($zip_entry), 0, $last); 
+                      $file = substr(zip_entry_name($zip_entry), strrpos(zip_entry_name($zip_entry), DIRECTORY_SEPARATOR)+1); 
                     if(!is_dir($dir)){ 
-
+                        
                         $return = @mkdir($dir, 0755, true);
                         
                         if($return === false){ 
@@ -511,26 +487,22 @@ class Overlays extends Module
                     } 
                     if(strlen(trim($file)) > 0){ 
                         $return = @file_put_contents($dir."/".$file, zip_entry_read($zip_entry, zip_entry_filesize($zip_entry))); 
-                        //echo $dir."/".$file;
                         if($return === false){ 
-                            //die("Unable to write file $dir/$file\n");
                             $returnData = new returnData(1, "Unable to write file $dir/$file\n");
                             return $returnData;
                         } 
                     } 
                 }else{ 
-                    //echo $file;
                     file_put_contents($file, zip_entry_read($zip_entry, zip_entry_filesize($zip_entry))); 
                     $returnData = new returnData(0, $file);
                 } 
                 $i = $i +1;
             } 
         }else{ 
-           // echo "Unable to open zip file\n"; 
             $returnData = new returnData(1, "Unable to open zip file: {$fullFile}");
             return $returnData;
         } 
-       
+        
         
         
         $returnData = new returnData(0, $file);
@@ -547,7 +519,7 @@ class Overlays extends Module
         // Get info about the image
         // -- gdalinfo $imageFileName 
         // -- look for Upper Left ( 0.0, 0.0)  and Lower Right   (21600.0, 10800.0)
-           // ----- need to figure out where to send the output and how to parse it
+        // ----- need to figure out where to send the output and how to parse it
         $sGameDir = "/var/www/html/server/gamedata/{$intGameID}/";
         $sOverlayDir = "{$sGameDir}MapOverlays/{$intOverlayID}/";
         $cmd = "gdalinfo {$sGameDir}{$imageFileName}";
@@ -581,8 +553,8 @@ class Overlays extends Module
                 //echo $maxX . "      ";
                 //echo $maxY . "      ";
             }
-
-
+            
+            
         }  
         
         
@@ -590,9 +562,9 @@ class Overlays extends Module
         // Georeference  the image
         $cmd = "gdal_translate -of VRT -gcp {$minX} {$minY} {$minLon} {$minLat} -gcp {$minX} {$maxY} {$minLon} {$maxLat} -gcp {$maxX} {$maxY} {$maxLon} {$maxLat} {$sGameDir}{$imageFileName} {$sGameDir}{$imageFileName}.vrt";
         $exit = exec($cmd,$stdout, $stderr);  
-       // echo $cmd;
+        // echo $cmd;
         //echo $stderr;  
-
+        
         
         // warp the image
         //$cmd = "gdalwarp -of VRT {$sGameDir}{$imageFileName}.vrt {$sGameDir}{$imageFileName}2.vrt";  
@@ -605,8 +577,8 @@ class Overlays extends Module
         $exit = exec($cmd,$stdout, $stderr);  
         //echo $cmd;
         //echo $stdout;
-               
-
+        
+        
     }
     
 	/**
