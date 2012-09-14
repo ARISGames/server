@@ -136,11 +136,6 @@ class EditorFoldersAndContent extends Module
 				mysql_query($query);
 			}
 		}
-		// NEED TO DO THIS FOR CUSTOM MAPS else if($row->content_type == "CustomMap") {
-		//	$query = "INSERT INTO overlays (game_id, name, url, icon_media_id) SELECT game_id, name, url, icon_media_id FROM web_pages WHERE web_page_id = '{$row->content_id}'";
-		//	mysql_query($query);
-		//	$newContentId = mysql_insert_id();
-		//}
 
 		$query = "INSERT INTO {$prefix}_folder_contents (folder_id, content_type, content_id, previous_id) VALUES ('{$row->folder_id}', '{$row->content_type}', '{$newContentId}', '{$row->previous_id}')";
 		mysql_query($query);
@@ -358,7 +353,6 @@ class EditorFoldersAndContent extends Module
 		else if ($content->content_type == "WebPage") WebPages::deleteWebPage($intGameID, $content->content_id);
 		else if ($content->content_type == "AugBubble") AugBubbles::deleteAugBubble($intGameID, $content->content_id);
 		else if ($content->content_type == "PlayerNote") Notes::deleteNote($content->content_id);
-		//else if ($content->content_type == "CustomMap") Overlays::deleteOverlay($intGameID,$content->content_id);  // NEED TO IMPLEMENT THIS IN OVERLAYS.PHP
 
 		if (mysql_affected_rows()) return new returnData(0);
 		else return new returnData(2, 'invalid folder id');
