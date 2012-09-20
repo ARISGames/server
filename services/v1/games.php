@@ -579,7 +579,7 @@ class Games extends Module
 	public function updateGame($intGameID, $strName, $strDescription, $intPCMediaID, $intIconMediaID, $intMediaID,
 			$boolIsLocational, $boolReadyForPublic,
 			$boolShareToMap, $boolShareToBook, $playerCreateTag, $playerCreateComments, $playerLikeNotes,
-			$intIntroNodeId, $intCompleteNodeId, $intInventoryCap, $boolAllowTrading, $boolAllowTrading = true)
+			$intIntroNodeId, $intCompleteNodeId, $intInventoryCap, $boolAllowTrading = true)
 	{
 		$strName = addslashes($strName);	
 		$strDescription = addslashes($strDescription);
