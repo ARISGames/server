@@ -32,7 +32,7 @@ function Model()
     {
         for(var i = 0; i < this.tagNotes.length; i++)
         {
-            if(this.tagNotes[i].tags.toString().toLowerCase() >= tagNote.tags.toString().toLowerCase())
+            if(this.tagNotes[i].tagString.toLowerCase() >= tagNote.tagString.toLowerCase())
             {
                 this.tagNotes.splice(i, 0, tagNote);
                 return;

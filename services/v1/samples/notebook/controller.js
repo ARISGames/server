@@ -126,22 +126,31 @@ function Controller()
         {
             for(var j = 0; j < model.backpacks[i].notes.length; j++)
             {
+                //Fix up note tags
                 model.backpacks[i].notes[j].tags.sort(
                     function(a, b) {
                         if (a.tag.toLowerCase() < b.tag.toLowerCase()) return -1;
                         if (a.tag.toLowerCase() > b.tag.toLowerCase()) return 1;
                         return 0;
                     });
-                model.backpacks[i].notes[j].popularity = 0;
+                if(model.backpacks[i].notes[j].tags.length == 0) 
+                    model.backpacks[i].notes[j].tags[0] = {"tag":'(untagged)'}; //conform to tag object structure
+                model.backpacks[i].notes[j].tagString = '';
+                for(var k = 0; k < model.backpacks[i].notes[j].tags.length; k++)
+                    model.backpacks[i].notes[j].tagString += model.backpacks[i].notes[j].tags[k].tag+', ';
+                model.backpacks[i].notes[j].tagString = model.backpacks[i].notes[j].tagString.slice(0,-2); 
+                    
+                //Calculate popularity
+                model.backpacks[i].notes[j].popularity = model.backpacks[i].notes[j].likes+model.backpacks[i].notes[j].comments.count;
 
+                //Add to various note lists
                 model.addNote(model.backpacks[i].notes[j]);
                 model.addContributorNote(model.backpacks[i].notes[j]);
                 model.addTagNote(model.backpacks[i].notes[j]);
                 model.addPopularNote(model.backpacks[i].notes[j]);
-
+                
+                //Add contents to filter lists
                 model.addContributor(model.backpacks[i].notes[j].username);
-                if(model.backpacks[i].notes[j].tags.length == 0) 
-                    model.backpacks[i].notes[j].tags[0] = {"tag":'(untagged)'}; //conform to tag object structure
                 for(var k = 0; k < model.backpacks[i].notes[j].tags.length; k++)
                     model.addTag(model.backpacks[i].notes[j].tags[k].tag);
             }

@@ -293,7 +293,7 @@ div
 
 .note_view_header
 {
-    margin-bottom:20px;
+    margin-bottom:10px;
     width:560px;
 }
 
@@ -319,11 +319,15 @@ div
     color:#444444;
 }
 
+.note_view_tags
+{
+    margin:10px 0px;
+}
+
 .note_view_content_box
 {
     margin-bottom:10px;
     width:558px;
-    border:1px solid black;
     overflow-x:scroll;
 }
 
