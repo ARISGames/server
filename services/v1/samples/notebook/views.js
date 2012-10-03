@@ -100,16 +100,8 @@ function SelectionCell(html, odd, callback, object)
     this.hover = function()
     {
         self.hovered = true;
-        if(self.odd)
-        {
-            if(self.selected) self.html.style.backgroundColor = '#AAAAFF';
-            else self.html.style.backgroundColor = '#AAAAAA';
-        }
-        else
-        {
-            if(self.selected) self.html.style.backgroundColor = '#CCCCFF';
-            else self.html.style.backgroundColor = '#CCCCCC';
-        }
+        if(self.selected) self.html.style.backgroundColor = '#AAAAFF';
+        else self.html.style.backgroundColor = '#AAAAAA';
     };
     this.unhover = function()
     {
@@ -188,16 +180,8 @@ function SingleSelectionCell(html, odd, callback, object)
     this.hover = function()
     {
         self.hovered = true;
-        if(self.odd)
-        {
-            if(self.selected) self.html.style.backgroundColor = '#AAAAFF';
-            else self.html.style.backgroundColor = '#AAAAAA';
-        }
-        else
-        {
-            if(self.selected) self.html.style.backgroundColor = '#CCCCFF';
-            else self.html.style.backgroundColor = '#CCCCCC';
-        }
+        if(self.selected) self.html.style.backgroundColor = '#AAAAFF';
+        else self.html.style.backgroundColor = '#AAAAAA';
     };
     this.unhover = function()
     {
