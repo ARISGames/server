@@ -268,7 +268,7 @@ function NoteView(html, object)
                     content.innerHTML = this.object.contents[i].text;
                     break;
                 case 'PHOTO':
-                    content.innerHTML = '<img src="'+this.object.contents[i].media_url+'" />';
+                    content.innerHTML = '<img class="note_media" src="'+this.object.contents[i].media_url+'" />';
                     break;
                 case 'AUDIO':
                     content.innerHTML = this.object.contents[i].media_url;
