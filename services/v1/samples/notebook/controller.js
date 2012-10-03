@@ -135,7 +135,7 @@ function Controller()
                 if(model.backpacks[i].notes[j].tags.length == 0) 
                     model.backpacks[i].notes[j].tags[0] = '(untagged)';
                 for(var k = 0; k < model.backpacks[i].notes[j].tags.length; k++)
-                    model.addTag(model.backpacks[i].notes[j].tags[k]);
+                    model.addTag(model.backpacks[i].notes[j].tags[k].tag);
             }
         }
         this.populateMapContributors();
