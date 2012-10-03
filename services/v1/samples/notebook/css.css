@@ -334,6 +334,7 @@ div
 .note_content_cell
 {
     margin-bottom:10px;
+    overflow:hidden;
 }
 
 .note_media
