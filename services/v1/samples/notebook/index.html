@@ -1,0 +1,181 @@
+<html>
+<head>
+<title>Notebook</title>
+<link rel='stylesheet' type='text/css' href='css.css' />
+<script type="text/javascript" src="utils/json2.js"></script>
+<script type="text/javascript" src="utils/nbutils.js"></script>
+<script type="text/javascript" src="views.js"></script>
+<script type="text/javascript" src="model.js"></script>
+<script type="text/javascript" src="controller.js"></script>
+<script type="text/javascript" src="js.js"></script>
+<script type="text/javascript">
+
+window.addEventListener('load', pageLoad, false);
+//Defining here to make available to everyone
+var model;
+var controller;
+
+function pageLoad()
+{
+    controller = new Controller();
+    model = new Model();
+    var gameId;
+    var playerId;
+    if(gameId = parseInt(parseURLParams(document.URL).gameId))
+    {
+        playerId = parseInt(parseURLParams(document.URL).playerId);
+        startLoadGame(gameId, playerId);
+    }
+    else
+        document.getElementById('message').innerHTML = "<form>Game Id:<input type='text' id='game_id_form'/><input type='button' value='Submit' onClick='submitForm();'/></form>";
+}
+
+function submitForm()
+{
+    var gameId;
+    if(gameId = document.getElementById('game_id_form').value)
+        loadGame(gameId);
+    else
+        alert("Please Enter a Valid Game ID");
+}
+
+function startLoadGame(gameId, playerId)
+{
+    document.getElementById('message').innerHTML = "Waiting on Server...";
+    var bpRequestObject = new Object();
+    bpRequestObject.gameId = gameId;
+    if(playerId) bpRequestObject.playerArray = playerId;
+    callService("players.getPlayerBackpacksFromArray", finishLoadGame, '', JSON.stringify(bpRequestObject));
+}
+function finishLoadGame(responseText)
+{
+    responseData=JSON.parse(responseText);
+    if(responseData.returnCode == 1) //Error
+    {
+        document.getElementById('message').innerHTML = responseData.data;	
+        return;
+    }
+
+    model.gameJSONText = responseText;
+    model.gameData = responseData.data;
+
+    //Initialize a few views
+    model.views.contributorMapFilterSelector.appendChild(model.views.defaultContributorMapFilterSelectorCell);
+    model.views.contributorMapFilterSelector.appendChild(model.views.helperContributorMapFilterSelectorCell);
+    model.views.tagMapFilterSelector.appendChild(model.views.defaultTagMapFilterSelectorCell);
+    model.views.tagMapFilterSelector.appendChild(model.views.helperTagMapFilterSelectorCell);
+    model.views.contributorListFilterSelector.appendChild(model.views.defaultContributorListFilterSelectorCell);
+    model.views.contributorListFilterSelector.appendChild(model.views.helperContributorListFilterSelectorCell);
+    model.views.tagListFilterSelector.appendChild(model.views.defaultTagListFilterSelectorCell);
+    model.views.tagListFilterSelector.appendChild(model.views.helperTagListFilterSelectorCell);
+    model.views.noteListSelector.appendChild(model.views.defaultNoteListSelectorCell);
+
+    //  Simulate clicking of sort button then layout button to set initial state
+    model.views.contributorSortButton.select();
+    model.views.mapLayoutButton.select();
+    
+    controller.populateModel(model.gameData);
+
+    //  Set actual page visible
+    document.getElementById('message').style.display = 'none';
+    document.getElementById('content').style.display = 'block';
+}
+
+</script>
+</head>
+<body id='body'>
+<div id='message'></div>
+
+<div id='content'>
+    <div id='header_selector_box'>
+        <div id='header_selector_layout' class='header_selector_row'>
+            <div id='header_selector_layout_map' class='header_selector_row_button header_selector_layout_row_button'>Map</div>
+            <div id='header_selector_layout_list' class='header_selector_row_button header_selector_layout_row_button'>List</div>
+        </div>
+        <div id='header_selector_sort' class='header_selector_row'>
+            <div id='header_selector_sort_contributor' class='header_selector_row_button header_selector_sort_row_button'>Contributor</div>
+            <div id='header_selector_sort_tag' class='header_selector_row_button header_selector_sort_row_button'>Tag</div>
+            <div id='header_selector_sort_popularity' class='header_selector_row_button header_selector_sort_row_button'>Popularity</div>
+        </div>
+    </div>
+    <div id='map_layout' class='layout'>
+        <div id='map_filter_selector_box' class='filter_selector_box'>
+            <div id='contributor_map_filter_selector' class='map_filter_selector filter_selector'></div>
+            <div id='tag_map_filter_selector' class='map_filter_selector filter_selector'></div>
+        </div>
+        <div id='map'></div>
+        <div id='map_note_view_container' class='note_view_container'></div>
+    </div>
+    <div id='list_layout' class='layout'>
+        <div id='list_filter_selector_box' class='filter_selector_box'>
+            <div id='contributor_list_filter_selector' class='list_filter_selector filter_selector'></div>
+            <div id='tag_list_filter_selector' class='list_filter_selector filter_selector'></div>
+            <div id='note_list_selector' class='list_filter_selector filter_selector'></div>
+        </div>
+        <div id='list_note_view_container' class='note_view_container'></div>
+    </div>
+</div>
+
+<!-- HTML CONSTRUCTIONS OF REUSABLE NODES -->
+<!-- These will never be seen. This is simply an area to construct nodes in raw html rather than dealing with doing so in javascript. From here, nodes can be accessed by their ID's, cloned, and renamed. -->
+<div id='constructs'>
+
+    <!-- Note View -->
+    <div id='note_view_construct' class='note_view'>
+        <div id='note_view_header_construct' class='note_view_header'>
+            <div id='note_view_title_construct' class='note_view_title'>Title</div>
+            <div id='note_view_counts_construct' class='note_view_counts'>n Likes, n Comments</div>
+            <div id='note_view_owner_construct' class='note_view_owner'>Owner</div>
+        </div>
+        <div id='note_view_description_construct' class='note_view_description'></div> <!-- What is this? -->
+        <div id='note_view_content_box_construct' class='note_view_content_box'></div>
+        <div id='note_view_comment_label_construct' class='note_view_comment_label'>Comments:</div>
+        <div id='note_view_comment_box_construct' class='note_view_comment_box'></div>
+    </div>
+    <div id='note_view_default' class='note_view'>
+        Click a note to display
+    </div>
+
+    <!-- Note Content Cell -->
+    <div id='note_content_cell_construct' class='note_content_cell'></div>
+    <!-- Note Comment Cell -->
+    <div id='note_comment_cell_construct' class='note_comment_cell'></div>
+    <!-- Note Comment Content Cell -->
+    <div id='note_comment_content_cell_construct' class='note_comment_content_cell'></div>
+
+    <!-- Contributor Map Filter Selector Cell -->
+    <div id='contributor_map_filter_selector_cell_construct' class='contributor_map_filter_selector_cell map_filter_selector_cell selector_cell'><span id='contributor_map_filter_selector_cell_message_construct' class='contributor_map_filter_selector_cell_message cell_message'>Contributor</span></div>
+    <div id='contributor_map_filter_selector_cell_default' class='contributor_map_filter_selector_cell map_filter_selector_cell default_selector_cell selector_cell'><span class='default_selector_cell_message cell_message'>(No contributors found)</span></div>
+    <div id='contributor_map_filter_selector_cell_helper' class='contributor_map_filter_selector_cell map_filter_selector_cell selector_cell button_cell'>
+        <div id='contributor_map_filter_selector_cell_helper_select_all' class='select_all_cell_button cell_button'>Select All</div>
+        <div id='contributor_map_filter_selector_cell_helper_select_none' class='deselect_all_cell_button cell_button'>Deselect All</div>
+    </div>
+    <!-- Tag Map Filter Selector Cell -->
+    <div id='tag_map_filter_selector_cell_construct' class='tag_map_filter_selector_cell map_filter_selector_cell selector_cell'><span id='tag_map_filter_selector_cell_message_construct' class='tag_map_filter_selector_cell_message cell_message'>Tag</span></div>
+    <div id='tag_map_filter_selector_cell_default' class='tag_map_filter_selector_cell map_filter_selector_cell default_selector_cell selector_cell'><span class='default_selector_cell_message cell_message'>(No tags found)</span></div>
+    <div id='tag_map_filter_selector_cell_helper' class='tag_map_filter_selector_cell map_filter_selector_cell selector_cell button_cell'>
+        <div id='tag_map_filter_selector_cell_helper_select_all' class='select_all_cell_button cell_button'>Select All</div>
+        <div id='tag_map_filter_selector_cell_helper_select_none' class='deselect_all_cell_button cell_button'>Deselect All</div>
+    </div>
+    <!-- Contributor List Filter Selector Cell -->
+    <div id='contributor_list_filter_selector_cell_construct' class='contributor_list_filter_selector_cell list_filter_selector_cell selector_cell'><span id='contributor_list_filter_selector_cell_message_construct' class='contributor_list_filter_selector_cell_message cell_message'>Contributor</span></div>
+    <div id='contributor_list_filter_selector_cell_default' class='contributor_list_filter_selector_cell list_filter_selector_cell default_selector_cell selector_cell'><span class='default_selector_cell_message cell_message'>(No contributors found)</span></div>
+    <div id='contributor_list_filter_selector_cell_helper' class='contributor_list_filter_selector_cell list_filter_selector_cell selector_cell button_cell'>
+        <div id='contributor_list_filter_selector_cell_helper_select_all' class='select_all_cell_button cell_button'>Select All</div>
+        <div id='contributor_list_filter_selector_cell_helper_select_none' class='deselect_all_cell_button cell_button'>Deselect All</div>
+    </div>
+    <!-- Tag List Filter Selector Cell -->
+    <div id='tag_list_filter_selector_cell_construct' class='tag_list_filter_selector_cell list_filter_selector_cell selector_cell'><span id='tag_list_filter_selector_cell_message_construct' class='tag_list_filter_selector_cell_message cell_message'>Tag</span></div>
+    <div id='tag_list_filter_selector_cell_default' class='tag_list_filter_selector_cell list_filter_selector_cell default_selector_cell selector_cell'><span class='default_selector_cell_message cell_message'>(No tags found)</span></div>
+    <div id='tag_list_filter_selector_cell_helper' class='tag_list_filter_selector_cell list_filter_selector_cell selector_cell button_cell'>
+        <div id='tag_list_filter_selector_cell_helper_select_all' class='select_all_cell_button cell_button'>Select All</div>
+        <div id='tag_list_filter_selector_cell_helper_select_none' class='deselect_all_cell_button cell_button'>Deselect All</div>
+    </div>
+    <!-- Note List Selector Cell -->
+    <div id='note_list_selector_cell_construct' class='note_list_selector_cell list_filter_selector_cell selector_cell'><span id='note_listselector_cell_message_construct' class='note_list_selector_cell_message cell_message'>Note</span></div>
+    <div id='note_list_selector_cell_default' class='note_list_selector_cell list_filter_selector_cell default_selector_cell selector_cell'><span class='default_selector_cell_message cell_message'>(No notes found)</span></div>
+
+</div>
+
+</body>
+</html>

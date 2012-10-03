@@ -1,0 +1,310 @@
+div
+{
+    /*background-color:rgba(0,0,0,0.1);*/
+    /*border:solid black 1px;*/
+}
+
+#message
+{
+    display:block;
+}
+
+#content
+{
+    display:none;
+    margin:0 auto;
+    width:900px;
+    font-family:HelveticaNeue-CondensedBold, Helvetica;
+}
+
+#constructs
+{
+    display:none;
+}
+
+#header_selector_box
+{
+    margin:5px auto;
+    height:80px;
+    width:900px;
+}
+
+.header_selector_row
+{
+    margin:0px auto;
+    margin-top:5px; /* just 'top' for even spacing between rows and between borders */
+    height:30px;
+    width:900px;
+}
+
+.header_selector_row_button
+{
+    float:left;
+    margin-left:4px; /* just 'left' for even spacing between buttons and between borders */
+    padding-top:4px; /* just 'top' to easily keep track of actual height */
+    height:22px;
+    border:2px solid black;
+    text-align:center;
+    vertical-align:middle;
+    background-color:#DDDDDD;
+}
+.header_selector_layout_row_button
+{
+    width:440px;
+}
+.header_selector_sort_row_button
+{
+    width:291px; /* Should be '291.3333...px' */
+}
+#header_selector_sort_tag
+{
+    width:290px; /* To make up for the .333... */
+}
+
+.layout
+{
+    display:none;
+    margin:4px auto;
+    width:892px;
+    height:500px;
+}
+
+#map_layout
+{
+    display:block; /* default */
+}
+
+.filter_selector_box
+{
+    float:left;
+    height:500px;
+}
+
+.filter_selector
+{
+    overflow-y:scroll;
+    overflow-x:hidden;
+    border:1px solid black;
+    background-color:#DDDDDD;
+}
+
+.selector_cell
+{
+    position:relative;
+    min-height:30px;
+    text-align:center;
+    background-color:#DDDDDD;
+}
+
+.default_selector_cell
+{
+    position:relative;
+    text-align:center;
+}
+
+.cell_message
+{
+    position:relative;
+    top:5px;
+}
+
+.note_cell_title
+{
+
+}
+
+.note_cell_author
+{
+    font-size:small;
+    color:#444444;
+}
+
+.default_selector_cell_message
+{
+    position:relative;
+    top:5px;
+}
+
+.button_cell
+{
+    background-color:transparent;
+}
+
+.cell_button
+{
+    margin:5px 15px;
+    padding:2px 5px;
+    border:2px solid black;
+    background-color:#DDDDDD;
+}
+
+.select_all_cell_button
+{
+    float:left;
+}
+
+.deselect_all_cell_button
+{
+    float:right;
+}
+
+#map_filter_selector_box
+{
+    width:250px;
+}
+
+.map_filter_selector
+{
+    height:243px;
+    width:248px;
+}
+
+.map_filter_selector_cell
+{
+    width:248px;
+}
+
+#contributor_map_filter_selector
+{
+    margin-bottom:10px; /* only bottom to remain flush with top of map */
+}
+
+.contributor_map_filter_selector_cell
+{
+
+}
+
+#tag_map_filter_selector
+{
+
+}
+
+.tag_map_filter_selector_cell
+{
+
+}
+
+#map
+{
+    float:left;
+    margin-left:10px; /* only left to remain flush with side of buttons */
+    width:632px;
+    height:500px;
+}
+
+#list_filter_selector_box
+{
+    float:left;
+    width:300px;
+}
+
+.list_filter_selector
+{
+    display:none;
+    height:243px;
+    width:298px;
+}
+
+.list_filter_selector_cell
+{
+    width:298px;
+}
+
+#contributor_list_filter_selector
+{
+    display:block; /* default */
+}
+
+.contributor_list_filter_selector_cell
+{
+
+}
+
+.tag_list_filter_selector
+{
+
+}
+
+.tag_list_filter_selector_cell
+{
+
+}
+
+#note_list_selector
+{
+    display:block; /* default */
+    margin-top:10px; /* only top to remain flush with top of map (this is the only selector sure to be displayed) */
+}
+
+.note_list_selector_cell
+{
+
+}
+
+.note_view_container
+{
+    width:580px;
+    border:1px solid black;
+    overflow-y:scroll;
+    overflow-x:hidden;
+}
+
+#map_note_view_container
+{
+    display:none;
+}
+
+#list_note_view_container
+{
+    float:left;
+    margin-left:10px; /* only left to remain flush with side of buttons */
+    height:500px;
+}
+
+.note_view
+{
+    padding:10px;
+    width:560px;
+    background-color:#FFFFFF;
+}
+
+.note_view_header
+{
+    margin-bottom:20px;
+    width:560px;
+}
+
+.note_view_title
+{
+    float:left;
+    width:0px;
+    white-space:nowrap;
+    overflow:visible;
+    font-size:xx-large;
+}
+
+.note_view_counts
+{
+    float:right;
+    font-size:small;
+    color:#444444;
+}
+
+.note_view_owner
+{
+    clear:both;
+    color:#444444;
+}
+
+.note_view_content_box
+{
+    margin-bottom:10px;
+    width:558px;
+    border:1px solid black;
+    overflow-x:scroll;
+}
+
+.note_content_cell
+{
+    margin-bottom:10px;
+}
