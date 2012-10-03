@@ -99,17 +99,32 @@ function finishLoadGame(responseText)
     </div>
     <div id='map_layout' class='layout'>
         <div id='map_filter_selector_box' class='filter_selector_box'>
-            <div id='contributor_map_filter_selector' class='map_filter_selector filter_selector'></div>
-            <div id='tag_map_filter_selector' class='map_filter_selector filter_selector'></div>
+            <div id='contributor_map_filter_selector_container' class='map_filter_selector_container filter_selector_container'>
+                <div class='filter_selector_container_header'>Contributors:</div>
+                <div id='contributor_map_filter_selector' class='map_filter_selector filter_selector'></div>
+            </div>
+            <div id='tag_map_filter_selector_container' class='map_filter_selector_container filter_selector_container'>
+                <div class='filter_selector_container_header'>Tags:</div>
+                <div id='tag_map_filter_selector' class='map_filter_selector filter_selector'></div>
+            </div>
         </div>
         <div id='map'></div>
         <div id='map_note_view_container' class='note_view_container'></div>
     </div>
     <div id='list_layout' class='layout'>
         <div id='list_filter_selector_box' class='filter_selector_box'>
-            <div id='contributor_list_filter_selector' class='list_filter_selector filter_selector'></div>
-            <div id='tag_list_filter_selector' class='list_filter_selector filter_selector'></div>
-            <div id='note_list_selector' class='list_filter_selector filter_selector'></div>
+            <div id='contributor_list_filter_selector_container' class='list_filter_selector_container filter_selector_container'>
+                <div class='filter_selector_container_header'>Contributors:</div>
+                <div id='contributor_list_filter_selector' class='list_filter_selector filter_selector'></div>
+            </div>
+            <div id='tag_list_filter_selector_container' class='list_filter_selector_container filter_selector_container'>
+                <div class='filter_selector_container_header'>Tags:</div>
+                <div id='tag_list_filter_selector' class='list_filter_selector filter_selector'></div>
+            </div>
+            <div id='note_list_selector_container' class='list_filter_selector_container filter_selector_container'>
+                <div class='filter_selector_container_header'>Notes:</div>
+                <div id='note_list_selector' class='list_filter_selector filter_selector'></div>
+            </div>
         </div>
         <div id='list_note_view_container' class='note_view_container'></div>
     </div>

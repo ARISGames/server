@@ -28,28 +28,31 @@ function Controller()
             case model.views.contributorSortButton:
                 model.views.tagSortButton.deselect();
                 model.views.popularitySortButton.deselect();
-                model.views.noteListSelector.style.height = '245px';
-                model.views.noteListSelector.style.margin = '10px 0px 0px 0px';
-                model.views.tagListFilterSelector.style.display = 'none';
-                model.views.contributorListFilterSelector.style.display = 'block';
+                model.views.noteListSelectorContainer.style.height = '245px';
+                model.views.noteListSelectorContainer.style.margin = '10px 0px 0px 0px';
+                model.views.noteListSelector.style.height = '225px';
+                model.views.tagListFilterSelectorContainer.style.display = 'none';
+                model.views.contributorListFilterSelectorContainer.style.display = 'block';
                 self.populateNotesByContributor();
                 break;
             case model.views.tagSortButton:
                 model.views.contributorSortButton.deselect();
                 model.views.popularitySortButton.deselect();
-                model.views.noteListSelector.style.height = '245px';
-                model.views.noteListSelector.style.margin = '10px 0px 0px 0px';
-                model.views.contributorListFilterSelector.style.display = 'none';
-                model.views.tagListFilterSelector.style.display = 'block';
+                model.views.noteListSelectorContainer.style.height = '245px';
+                model.views.noteListSelectorContainer.style.margin = '10px 0px 0px 0px';
+                model.views.noteListSelector.style.height = '225px';
+                model.views.contributorListFilterSelectorContainer.style.display = 'none';
+                model.views.tagListFilterSelectorContainer.style.display = 'block';
                 self.populateNotesByTag();
                 break;
             case model.views.popularitySortButton:
                 model.views.contributorSortButton.deselect();
                 model.views.tagSortButton.deselect();
-                model.views.noteListSelector.style.height = '500px';
-                model.views.noteListSelector.style.margin = '0px 0px 0px 0px';
-                model.views.contributorListFilterSelector.style.display = 'none';
-                model.views.tagListFilterSelector.style.display = 'none';
+                model.views.noteListSelectorContainer.style.height = '500px';
+                model.views.noteListSelectorContainer.style.margin = '0px 0px 0px 0px';
+                model.views.noteListSelector.style.height = '480px';
+                model.views.contributorListFilterSelectorContainer.style.display = 'none';
+                model.views.tagListFilterSelectorContainer.style.display = 'none';
                 self.populateNotesByPopularity();
                 break;
         }

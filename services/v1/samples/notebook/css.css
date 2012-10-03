@@ -80,6 +80,16 @@ div
     height:500px;
 }
 
+.filter_selector_container
+{
+}
+
+.filter_selector_container_header
+{
+    height:20px;
+    font-size:large;
+}
+
 .filter_selector
 {
     overflow-y:scroll;
@@ -155,7 +165,7 @@ div
 
 .map_filter_selector
 {
-    height:243px;
+    height:223px;
     width:248px;
 }
 
@@ -164,7 +174,7 @@ div
     width:248px;
 }
 
-#contributor_map_filter_selector
+#contributor_map_filter_selector_container
 {
     margin-bottom:10px; /* only bottom to remain flush with top of map */
 }
@@ -198,10 +208,15 @@ div
     width:300px;
 }
 
-.list_filter_selector
+.list_filter_selector_container
 {
     display:none;
-    height:243px;
+    width:298px;
+}
+
+.list_filter_selector
+{
+    height:223px;
     width:298px;
 }
 
@@ -210,9 +225,13 @@ div
     width:298px;
 }
 
-#contributor_list_filter_selector
+#contributor_list_filter_selector_container
 {
     display:block; /* default */
+}
+
+#contributor_list_filter_selector
+{
 }
 
 .contributor_list_filter_selector_cell
@@ -230,10 +249,14 @@ div
 
 }
 
-#note_list_selector
+#note_list_selector_container
 {
     display:block; /* default */
     margin-top:10px; /* only top to remain flush with top of map (this is the only selector sure to be displayed) */
+}
+
+#note_list_selector
+{
 }
 
 .note_list_selector_cell

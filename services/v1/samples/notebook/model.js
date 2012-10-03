@@ -17,7 +17,7 @@ function Model()
     {
         for(var i = 0; i < this.contributorNotes.length; i++)
         {
-            if(this.contributorNotes[i].username >= contributorNote.username)
+            if(this.contributorNotes[i].username.toLowerCase() >= contributorNote.username.toLowerCase())
             {
                 this.contributorNotes.splice(i, 0, contributorNote);
                 return;
@@ -32,7 +32,7 @@ function Model()
     {
         for(var i = 0; i < this.tagNotes.length; i++)
         {
-            if(this.tagNotes[i].tags.toString() >= tagNote.tags.toString())
+            if(this.tagNotes[i].tags.toString().toLowerCase() >= tagNote.tags.toString().toLowerCase())
             {
                 this.tagNotes.splice(i, 0, tagNote);
                 return;
@@ -109,12 +109,17 @@ function Model()
         this.mapLayout = document.getElementById('map_layout');
         this.listLayout = document.getElementById('list_layout');
 
-        //Side Panel Selectors
+        //Side Panel Selectors (& containers)
         this.contributorMapFilterSelector = document.getElementById('contributor_map_filter_selector');
+        this.contributorMapFilterSelectorContainer = document.getElementById('contributor_map_filter_selector_container');
         this.tagMapFilterSelector = document.getElementById('tag_map_filter_selector');
+        this.tagMapFilterSelectorContainer = document.getElementById('tag_map_filter_selector_container');
         this.contributorListFilterSelector = document.getElementById('contributor_list_filter_selector');
+        this.contributorListFilterSelectorContainer = document.getElementById('contributor_list_filter_selector_container');
         this.tagListFilterSelector = document.getElementById('tag_list_filter_selector');
+        this.tagListFilterSelectorContainer = document.getElementById('tag_list_filter_selector_container');
         this.noteListSelector = document.getElementById('note_list_selector');
+        this.noteListSelectorContainer = document.getElementById('note_list_selector_container');
         
         //Side Panel Cells
         //  Map
