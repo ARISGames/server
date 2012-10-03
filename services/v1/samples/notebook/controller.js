@@ -123,7 +123,12 @@ function Controller()
         {
             for(var j = 0; j < model.backpacks[i].notes.length; j++)
             {
-                model.backpacks[i].notes[j].tags.sort();
+                model.backpacks[i].notes[j].tags.sort(
+                    function(a, b) {
+                        if (a.tag.toLowerCase() < b.tag.toLowerCase()) return -1;
+                        if (a.tag.toLowerCase() > b.tag.toLowerCase()) return 1;
+                        return 0;
+                    });
                 model.backpacks[i].notes[j].popularity = 0;
 
                 model.addNote(model.backpacks[i].notes[j]);
@@ -133,7 +138,7 @@ function Controller()
 
                 model.addContributor(model.backpacks[i].notes[j].username);
                 if(model.backpacks[i].notes[j].tags.length == 0) 
-                    model.backpacks[i].notes[j].tags[0] = '(untagged)';
+                    model.backpacks[i].notes[j].tags[0] = {"tag":'(untagged)'}; //conform to tag object structure
                 for(var k = 0; k < model.backpacks[i].notes[j].tags.length; k++)
                     model.addTag(model.backpacks[i].notes[j].tags[k].tag);
             }

@@ -65,7 +65,7 @@ function Model()
         for(var i = 0; i < this.contributors.length; i++)
         {
             if(this.contributors[i] == contributor) return;
-            if(this.contributors[i] > contributor)
+            if(this.contributors[i].toLowerCase() > contributor.toLowerCase())
             {
                 this.contributors.splice(i, 0, contributor);
                 return;
@@ -83,7 +83,7 @@ function Model()
         for(var i = 0; i < this.tags.length; i++)
         {
             if(this.tags[i] == tag) return;
-            if(this.tags[i] > tag)
+            if(this.tags[i].toLowerCase() > tag.toLowerCase())
             {
                 this.tags.splice(i, 0, tag);
                 return;
