@@ -80,7 +80,10 @@ function Controller()
         for(var i = 0; i < model.tagMapCells.length; i++)
             model.tagMapCells[i].deselect();
     };
-    this.listContributorClicked = function(sender,selected) {};
+    this.listContributorClicked = function(sender,selected) 
+    {
+        self.populateNotesByContributor();
+    };
     this.selectAllListContributors = function()
     {
         for(var i = 0; i < model.contributorListCells.length; i++)
@@ -91,7 +94,10 @@ function Controller()
         for(var i = 0; i < model.contributorListCells.length; i++)
             model.contributorListCells[i].deselect();
     };
-    this.listTagClicked = function(sender,selected) {};
+    this.listTagClicked = function(sender,selected)
+    {
+        self.populateNotesByTag();
+    };
     this.selectAllListTags = function()
     {
         for(var i = 0; i < model.tagListCells.length; i++)
@@ -155,18 +161,22 @@ function Controller()
                     model.addTag(model.backpacks[i].notes[j].tags[k].tag);
             }
         }
+
         this.populateMapContributors();
+        this.selectAllMapContributors();
+
         this.populateListContributors();
+        this.selectAllListContributors();
+
         this.populateMapTags();
+        this.selectAllMapTags();
+
         this.populateListTags();
+        this.selectAllListTags();
+
         this.populateNotesByContributor();
         //this.populateNotesByTag();
         //this.populateNotesByPopularity();
-        
-        this.selectAllMapContributors();
-        this.selectAllMapTags();
-        this.selectAllListContributors();
-        this.selectAllListTags();
     };
 
     this.populateMapContributors = function()
@@ -238,6 +248,7 @@ function Controller()
         model.views.contributorNoteCells = [];
         for(var i = 0; i < model.contributorNotes.length; i++)
         {
+            if(!model.listContributorSelected(model.contributorNotes[i].username)) continue;
             tmpcell = new SingleSelectionCell(model.views.constructNoteListSelectorCell.cloneNode(true), i%2, this.noteSelected, model.contributorNotes[i]);
             tmpcell.html.firstChild.innerHTML = '<span class="note_cell_title">'+model.contributorNotes[i].title+' - </span><span class="note_cell_author">'+model.contributorNotes[i].username+'</span>';
             model.views.noteListSelector.appendChild(tmpcell.html);
@@ -253,6 +264,7 @@ function Controller()
         model.views.tagNoteCells = [];
         for(var i = 0; i < model.tagNotes.length; i++)
         {
+            if(!model.listTagsSelected(model.contributorNotes[i].tags)) continue;
             tmpcell = new SingleSelectionCell(model.views.constructNoteListSelectorCell.cloneNode(true), i%2, this.noteSelected, model.tagNotes[i]);
             tmpcell.html.firstChild.innerHTML = '<span class="note_cell_title">'+model.tagNotes[i].title+' - </span><span class="note_cell_author">'+model.tagNotes[i].username+'</span>';
             model.views.noteListSelector.appendChild(tmpcell.html);

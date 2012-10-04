@@ -73,6 +73,15 @@ function Model()
         }
         this.contributors[this.contributors.length] = contributor;
     }
+    this.listContributorSelected = function(contributor)
+    {
+        for(var i = 0; i < this.contributorListCells.length; i++)
+        {
+            if(this.contributorListCells[i].object == contributor)
+                return this.contributorListCells[i].selected;
+        }
+        return false;
+    }
 
     //List of all tags in any note in game ordered alphabetically 
     this.tags = [];
@@ -90,6 +99,19 @@ function Model()
             }
         }
         this.tags[this.tags.length] = tag;
+    }
+    this.listTagsSelected = function(tags)
+    {
+        //n^2! oh noes!
+        for(var i = 0; i < this.tagListCells.length; i++)
+        {
+            for(var j = 0; j < tags.length; j++)
+            {
+                if(this.tagListCells[i].object == tags[j].tag && this.tagListCells[i].selected)
+                    return true;
+            }
+        }
+        return false;
     }
 
     this.views = new function Views()

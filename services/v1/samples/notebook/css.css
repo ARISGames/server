@@ -331,6 +331,11 @@ div
     overflow:hidden;
 }
 
+.note_view_comment_label
+{
+    font-size:large;
+}
+
 .note_media
 {
     width:558px;

@@ -26,10 +26,10 @@ function ActionButton(html, callback)
     };
     this.deselect = function()
     {
-        self.callback(self);
         self.selected = false;
         if(self.hovered) self.html.style.backgroundColor = '#CCCCCC'
         else self.html.style.backgroundColor = '#DDDDDD';
+        self.callback(self);
     };
     this.hovered = false;
     this.selected = false;
@@ -147,9 +147,9 @@ function SelectionCell(html, odd, callback, object)
     };
     this.clicked = function()
     {
-        self.callback(self, !self.selected);
         if(self.selected)self.deselect();
         else self.select();
+        self.callback(self, !self.selected);
     }
 
     this.hovered = false;
@@ -293,7 +293,6 @@ function NoteView(html, object)
     {
         var commentHTML = document.getElementById('note_comment_cell_construct').cloneNode(true);
         commentHTML.setAttribute('id','');
-        alert(commentHTML.innerHTML);
         commentHTML.children[0].innerHTML = comment.username;
         commentHTML.appendChild(this.constructContentHTML({"type":"TEXT","text":comment.title}));
         for(var i = 0; i < comment.contents.length; i++)
