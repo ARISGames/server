@@ -47,7 +47,7 @@ function Model()
     {
         for(var i = 0; i < this.popularNotes.length; i++)
         {
-            if(this.popularNotes[i].popularity >= popularNote.popularity)
+            if(this.popularNotes[i].popularity <= popularNote.popularity)
             {
                 this.popularNotes.splice(i, 0, popularNote);
                 return;

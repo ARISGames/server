@@ -151,7 +151,7 @@ function Controller()
                 model.backpacks[i].notes[j].tagString = model.backpacks[i].notes[j].tagString.slice(0,-2); 
                     
                 //Calculate popularity
-                model.backpacks[i].notes[j].popularity = model.backpacks[i].notes[j].likes+model.backpacks[i].notes[j].comments.count;
+                model.backpacks[i].notes[j].popularity = model.backpacks[i].notes[j].likes+model.backpacks[i].notes[j].comments.length;
 
                 //Add to various note lists
                 model.addNote(model.backpacks[i].notes[j]);
