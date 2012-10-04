@@ -274,4 +274,26 @@ function Controller()
             model.views.popularNoteCells[model.views.popularNoteCells.length] = tmpcell;
         }
     }
+
+    this.displayNextNote = function(key)
+    {
+        if(model.views.mapLayoutButton.selected) ;
+        if(model.views.listLayoutButton.selected)
+        {
+            if(model.views.contributorSortButton.selected) this.displayNextNoteInList(key, model.views.contributorNoteCells);
+            if(model.views.tagSortButton.selected)  this.displayNextNoteInList(key, model.views.tagNoteCells);
+            if(model.views.popularitySortButton.selected) this.displayNextNoteInList(key, model.views.popularNoteCells);
+        }
+    }
+    this.displayNextNoteInList = function(key, list)
+    {
+        var index = -1;
+        for(var i = 0; i < list.length; i++) 
+            if(list[i].selected) { index = i; break; }
+        if(key == 'Up') index--;
+        else if(key == 'Down') index++;
+        if(index >= list.length) index = 0;
+        if(index < 0) index = list.length-1;
+        list[index].select();
+    }
 }

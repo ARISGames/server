@@ -256,7 +256,7 @@ function NoteView(html, object)
         this.html.children[0].children[1].innerHTML = this.object.likes+' likes, '+this.object.comments.length+' comments';
         this.html.children[0].children[2].innerHTML = this.object.username;
 
-        this.html.children[1].innerHTML = object.tagString;
+        this.html.children[1].innerHTML = 'Tags: '+object.tagString;
 
         //{"media_id":"115","type":"PHOTO","text":"","game_id":"2556","title":"September 11th 2012 02:08:50 PM","file_name":"aris9ff36f34bbc4575767e96ec005b22870.jpg","media_url":"http://dev.arisgames.org/server/gamedata/2556/aris9ff36f34bbc4575767e96ec005b22870.jpg"}
         for(var i = 0; i < this.object.contents.length; i++)

@@ -163,4 +163,6 @@ function Model()
         this.noteView = new NoteView(this.defaultNoteView, null);
         this.map = document.getElementById('map');
     };
+
+    document.addEventListener('keydown', function(e) { if(e.keyIdentifier == 'Up' || e.keyIdentifier == 'Down') controller.displayNextNote(e.keyIdentifier); e.stopPropagation(); e.preventDefault();}, false);
 }
