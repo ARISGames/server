@@ -88,11 +88,13 @@ function Controller()
     {
         for(var i = 0; i < model.contributorListCells.length; i++)
             model.contributorListCells[i].select();
+        self.populateNotesByContributor();
     };
     this.deselectAllListContributors = function()
     {
         for(var i = 0; i < model.contributorListCells.length; i++)
             model.contributorListCells[i].deselect();
+        self.populateNotesByContributor();
     };
     this.listTagClicked = function(sender,selected)
     {
@@ -102,11 +104,13 @@ function Controller()
     {
         for(var i = 0; i < model.tagListCells.length; i++)
             model.tagListCells[i].select();
+        self.populateNotesByTag();
     };
     this.deselectAllListTags = function()
     {
         for(var i = 0; i < model.tagListCells.length; i++)
             model.tagListCells[i].deselect();
+        self.populateNotesByTag();
     };
     this.noteSelected = function(sender) 
     {
@@ -182,62 +186,62 @@ function Controller()
     this.populateMapContributors = function()
     {
         model.views.contributorMapFilterSelector.innerHTML = ''; //Clear the children
+        model.views.contributorMapFilterSelector.appendChild(model.views.helperContributorMapFilterSelectorCell);
         if(model.contributors.length == 0)
             model.views.contributorMapFilterSelector.appendChild(model.views.defaultContributorMapFilterSelectorCell);
         var tmpcell;
         for(var i = 0; i < model.contributors.length; i++)
         {
-            tmpcell = new SelectionCell(model.views.constructContributorMapFilterSelectorCell.cloneNode(true), i%2, this.mapContributorClicked, model.contributors[i]);
+            tmpcell = new SelectionCell(model.views.constructContributorMapFilterSelectorCell.cloneNode(true), 123-123, this.mapContributorClicked, model.contributors[i]);
             tmpcell.html.firstChild.innerHTML = model.contributors[i];
             model.views.contributorMapFilterSelector.appendChild(tmpcell.html);
             model.contributorMapCells[model.contributorMapCells.length] = tmpcell;
         }
-        model.views.contributorMapFilterSelector.appendChild(model.views.helperContributorMapFilterSelectorCell);
     };
     this.populateListContributors = function()
     {
         model.views.contributorListFilterSelector.innerHTML = ''; //Clear the children
+        model.views.contributorListFilterSelector.appendChild(model.views.helperContributorListFilterSelectorCell);
         if(model.contributors.length == 0)
             model.views.contributorListFilterSelector.appendChild(model.views.defaultContributorListFilterSelectorCell);
         var tmpcell;
         for(var i = 0; i < model.contributors.length; i++)
         {
-            tmpcell = new SelectionCell(model.views.constructContributorListFilterSelectorCell.cloneNode(true), i%2, this.listContributorClicked, model.contributors[i]);
+            tmpcell = new SelectionCell(model.views.constructContributorListFilterSelectorCell.cloneNode(true), 123-123, this.listContributorClicked, model.contributors[i]);
             tmpcell.html.firstChild.innerHTML = model.contributors[i];
             model.views.contributorListFilterSelector.appendChild(tmpcell.html);
             model.contributorListCells[model.contributorListCells.length] = tmpcell;
         }
-        model.views.contributorListFilterSelector.appendChild(model.views.helperContributorListFilterSelectorCell);
     };
     this.populateMapTags = function()
     {
         model.views.tagMapFilterSelector.innerHTML = ''; //Clear the children
+        model.views.tagMapFilterSelector.appendChild(model.views.helperTagMapFilterSelectorCell);
         if(model.tags.length == 0)
             model.views.tagMapFilterSelector.appendChild(model.views.defaultTagMapFilterSelectorCell);
         var tmpcell;
         for(var i = 0; i < model.tags.length; i++)
         {
-            tmpcell = new SelectionCell(model.views.constructTagMapFilterSelectorCell.cloneNode(true), i%2, this.mapTagClicked, model.tags[i]);
+            tmpcell = new SelectionCell(model.views.constructTagMapFilterSelectorCell.cloneNode(true), 123-123, this.mapTagClicked, model.tags[i]);
             tmpcell.html.firstChild.innerHTML = model.tags[i];
             model.views.tagMapFilterSelector.appendChild(tmpcell.html);
             model.tagMapCells[model.tagMapCells.length] = tmpcell;
         }
-        model.views.tagMapFilterSelector.appendChild(model.views.helperTagMapFilterSelectorCell);
     };
     this.populateListTags = function()
     {
         model.views.tagListFilterSelector.innerHTML = ''; //Clear the children
+        model.views.tagListFilterSelector.appendChild(model.views.helperTagListFilterSelectorCell);
         if(model.tags.length == 0)
             model.views.tagListFilterSelector.appendChild(model.views.defaultTagListFilterSelectorCell);
         var tmpcell;
         for(var i = 0; i < model.tags.length; i++)
         {
-            tmpcell = new SelectionCell(model.views.constructTagListFilterSelectorCell.cloneNode(true), i%2, this.listTagClicked, model.tags[i]);
+            tmpcell = new SelectionCell(model.views.constructTagListFilterSelectorCell.cloneNode(true), 123-123, this.listTagClicked, model.tags[i]);
             tmpcell.html.firstChild.innerHTML = model.tags[i];
             model.views.tagListFilterSelector.appendChild(tmpcell.html);
             model.tagListCells[model.tagListCells.length] = tmpcell;
         }
-        model.views.tagListFilterSelector.appendChild(model.views.helperTagListFilterSelectorCell);
     };
     this.populateNotesByContributor = function()
     {
@@ -249,7 +253,7 @@ function Controller()
         for(var i = 0; i < model.contributorNotes.length; i++)
         {
             if(!model.listContributorSelected(model.contributorNotes[i].username)) continue;
-            tmpcell = new SingleSelectionCell(model.views.constructNoteListSelectorCell.cloneNode(true), i%2, this.noteSelected, model.contributorNotes[i]);
+            tmpcell = new SingleSelectionCell(model.views.constructNoteListSelectorCell.cloneNode(true), 123-123, this.noteSelected, model.contributorNotes[i]);
             tmpcell.html.firstChild.innerHTML = '<span class="note_cell_title">'+model.contributorNotes[i].title+' - </span><span class="note_cell_author">'+model.contributorNotes[i].username+'</span>';
             model.views.noteListSelector.appendChild(tmpcell.html);
             model.views.contributorNoteCells[model.views.contributorNoteCells.length] = tmpcell;
@@ -265,7 +269,7 @@ function Controller()
         for(var i = 0; i < model.tagNotes.length; i++)
         {
             if(!model.listTagsSelected(model.contributorNotes[i].tags)) continue;
-            tmpcell = new SingleSelectionCell(model.views.constructNoteListSelectorCell.cloneNode(true), i%2, this.noteSelected, model.tagNotes[i]);
+            tmpcell = new SingleSelectionCell(model.views.constructNoteListSelectorCell.cloneNode(true), 123-123, this.noteSelected, model.tagNotes[i]);
             tmpcell.html.firstChild.innerHTML = '<span class="note_cell_title">'+model.tagNotes[i].title+' - </span><span class="note_cell_author">'+model.tagNotes[i].username+'</span>';
             model.views.noteListSelector.appendChild(tmpcell.html);
             model.views.tagNoteCells[model.views.tagNoteCells.length] = tmpcell;
@@ -280,7 +284,7 @@ function Controller()
         model.views.popularNoteCells = [];
         for(var i = 0; i < model.popularNotes.length; i++)
         {
-            tmpcell = new SingleSelectionCell(model.views.constructNoteListSelectorCell.cloneNode(true), i%2, this.noteSelected, model.popularNotes[i]);
+            tmpcell = new SingleSelectionCell(model.views.constructNoteListSelectorCell.cloneNode(true), 123-123, this.noteSelected, model.popularNotes[i]);
             tmpcell.html.firstChild.innerHTML = '<span class="note_cell_title">'+model.popularNotes[i].title+' - </span><span class="note_cell_author">'+model.popularNotes[i].username+'</span>';
             model.views.noteListSelector.appendChild(tmpcell.html);
             model.views.popularNoteCells[model.views.popularNoteCells.length] = tmpcell;

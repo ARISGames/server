@@ -132,6 +132,7 @@ div
 .button_cell
 {
     background-color:transparent;
+    height:40px;
 }
 
 .cell_button
