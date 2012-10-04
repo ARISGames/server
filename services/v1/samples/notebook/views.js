@@ -258,27 +258,44 @@ function NoteView(html, object)
 
         this.html.children[1].innerHTML = 'Tags: '+object.tagString;
 
-        //{"media_id":"115","type":"PHOTO","text":"","game_id":"2556","title":"September 11th 2012 02:08:50 PM","file_name":"aris9ff36f34bbc4575767e96ec005b22870.jpg","media_url":"http://dev.arisgames.org/server/gamedata/2556/aris9ff36f34bbc4575767e96ec005b22870.jpg"}
+        //Content
         for(var i = 0; i < this.object.contents.length; i++)
+            this.html.children[2].appendChild(this.constructContentHTML(this.object.contents[i]));
+
+        alert(JSON.stringify(this.object.comments));
+        //Comments
+        for(var i = 0; i < this.object.comments.length; i++)
+            this.html.children[4].appendChild(this.constructCommentHTML(this.object.comments[i]));
+    };
+
+    this.constructContentHTML = function(content)
+    {
+        var contentHTML = document.getElementById('note_content_cell_construct').cloneNode(true);
+        switch(content.type)
         {
-            var content = document.getElementById('note_content_cell_construct').cloneNode(true);
-            switch(this.object.contents[i].type)
-            {
-                case 'TEXT':
-                    content.innerHTML = this.object.contents[i].text;
-                    break;
-                case 'PHOTO':
-                    content.innerHTML = '<img class="note_media" src="'+this.object.contents[i].media_url+'" />';
-                    break;
-                case 'AUDIO':
-                    content.innerHTML = this.object.contents[i].media_url;
-                    break;
-                case 'VIDEO':
-                    content.innerHTML = this.object.contents[i].media_url;
-                    break;
-            }
-            this.html.children[2].appendChild(content);
+            case 'TEXT':
+                contentHTML.innerHTML = content.text;
+                break;
+            case 'PHOTO':
+                contentHTML.innerHTML = '<img class="note_media" src="'+content.media_url+'" />';
+                break;
+            case 'AUDIO':
+                contentHTML.innerHTML = content.media_url;
+                break;
+            case 'VIDEO':
+                contentHTML.innerHTML = content.media_url;
+                break;
         }
+        return contentHTML;
+    };
+
+    this.constructCommentHTML = function(comment)
+    {
+        var commentHTML = document.getElementById('note_comment_cell_construct').cloneNode(true);
+        commentHTML.children[0].innerHTML = comment.username;
+        for(var i = 0; i < comment.contents.length; i++)
+            commentHTML.appendChild(this.constructContentHTML(comment.contents[i]));
+        return commentHTML;
     }
 
     this.constructHTML();
