@@ -293,7 +293,7 @@ function NoteView(html, object)
     {
         var commentHTML = document.getElementById('note_comment_cell_construct').cloneNode(true);
         commentHTML.children[0].innerHTML = comment.username;
-        commentHTML.appendChild(this.constructContentHTML({"type":"TEXT","text":comment.text}));
+        commentHTML.appendChild(this.constructContentHTML({"type":"TEXT","text":comment.title}));
         for(var i = 0; i < comment.contents.length; i++)
             commentHTML.appendChild(this.constructContentHTML(comment.contents[i]));
         return commentHTML;
