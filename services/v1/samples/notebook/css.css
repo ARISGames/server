@@ -267,6 +267,13 @@ div
     overflow-x:hidden;
 }
 
+#map
+{
+    height:498px;
+    width:630px;
+    border:1px solid black;
+}
+
 #map_note_view_container
 {
     display:none;
@@ -276,7 +283,7 @@ div
 {
     float:left;
     margin-left:10px; /* only left to remain flush with side of buttons */
-    height:500px;
+    height:498px;
 }
 
 .note_view

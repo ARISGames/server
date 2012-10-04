@@ -30,7 +30,7 @@ function Controller()
                 model.views.popularitySortButton.deselect();
                 model.views.noteListSelectorContainer.style.height = '245px';
                 model.views.noteListSelectorContainer.style.margin = '10px 0px 0px 0px';
-                model.views.noteListSelector.style.height = '225px';
+                model.views.noteListSelector.style.height = '223px';
                 model.views.tagListFilterSelectorContainer.style.display = 'none';
                 model.views.contributorListFilterSelectorContainer.style.display = 'block';
                 self.populateNotesByContributor();
@@ -40,7 +40,7 @@ function Controller()
                 model.views.popularitySortButton.deselect();
                 model.views.noteListSelectorContainer.style.height = '245px';
                 model.views.noteListSelectorContainer.style.margin = '10px 0px 0px 0px';
-                model.views.noteListSelector.style.height = '225px';
+                model.views.noteListSelector.style.height = '223px';
                 model.views.contributorListFilterSelectorContainer.style.display = 'none';
                 model.views.tagListFilterSelectorContainer.style.display = 'block';
                 self.populateNotesByTag();
@@ -50,7 +50,7 @@ function Controller()
                 model.views.tagSortButton.deselect();
                 model.views.noteListSelectorContainer.style.height = '500px';
                 model.views.noteListSelectorContainer.style.margin = '0px 0px 0px 0px';
-                model.views.noteListSelector.style.height = '480px';
+                model.views.noteListSelector.style.height = '478px';
                 model.views.contributorListFilterSelectorContainer.style.display = 'none';
                 model.views.tagListFilterSelectorContainer.style.display = 'none';
                 self.populateNotesByPopularity();
