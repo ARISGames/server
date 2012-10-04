@@ -262,7 +262,6 @@ function NoteView(html, object)
         for(var i = 0; i < this.object.contents.length; i++)
             this.html.children[2].appendChild(this.constructContentHTML(this.object.contents[i]));
 
-        alert(JSON.stringify(this.object.comments));
         //Comments
         for(var i = 0; i < this.object.comments.length; i++)
             this.html.children[4].appendChild(this.constructCommentHTML(this.object.comments[i]));
@@ -271,6 +270,7 @@ function NoteView(html, object)
     this.constructContentHTML = function(content)
     {
         var contentHTML = document.getElementById('note_content_cell_construct').cloneNode(true);
+        contentHTML.setAttribute('id','');
         switch(content.type)
         {
             case 'TEXT':
@@ -292,6 +292,8 @@ function NoteView(html, object)
     this.constructCommentHTML = function(comment)
     {
         var commentHTML = document.getElementById('note_comment_cell_construct').cloneNode(true);
+        commentHTML.setAttribute('id','');
+        alert(contentHTML.innerHTML);
         commentHTML.children[0].innerHTML = comment.username;
         commentHTML.appendChild(this.constructContentHTML({"type":"TEXT","text":comment.title}));
         for(var i = 0; i < comment.contents.length; i++)
