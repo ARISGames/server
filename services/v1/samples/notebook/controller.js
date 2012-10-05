@@ -66,11 +66,13 @@ function Controller()
     {
         for(var i = 0; i < model.contributorMapCells.length; i++)
             model.contributorMapCells[i].select();
+        self.populateMapNotes();
     };
     this.deselectAllMapContributors = function()
     {
         for(var i = 0; i < model.contributorMapCells.length; i++)
             model.contributorMapCells[i].deselect();
+        self.populateMapNotes();
     };
     this.mapTagClicked = function(sender,selected) 
     {
@@ -80,11 +82,13 @@ function Controller()
     {
         for(var i = 0; i < model.tagMapCells.length; i++)
             model.tagMapCells[i].select();
+        self.populateMapNotes();
     };
     this.deselectAllMapTags = function()
     {
         for(var i = 0; i < model.tagMapCells.length; i++)
             model.tagMapCells[i].deselect();
+        self.populateMapNotes();
     };
     this.listContributorClicked = function(sender,selected) 
     {
@@ -127,6 +131,7 @@ function Controller()
         model.views.listNoteViewContainer.innerHTML = '';
         if(model.views.mapLayoutButton.selected)
         {
+            model.views.mapNoteViewContainer.appendChild(model.views.mapNoteViewCloseButton.html);
             model.views.mapNoteViewContainer.appendChild(model.views.noteView.html);
             model.views.mapNoteViewContainer.style.display = 'block';
             setTimeout(function() { model.views.mapLayout.addEventListener('click', controller.hideMapNoteView, false); }, 100); //timeout to disallow imediate hiding

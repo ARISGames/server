@@ -281,8 +281,13 @@ div
     position:absolute;
     top:32px;
     left:290px;
-    height:428px;
-    width:560px;
+    max-height:428px;
+    background-color:white;
+}
+
+.map_note_view_close_button
+{
+    float:right;
 }
 
 #list_note_view_container
