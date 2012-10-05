@@ -292,7 +292,7 @@ function NoteView(html, object)
                 contentHTML.innerHTML = content.media_url;
                 break;
             case 'VIDEO':
-                contentHTML.innerHTML = content.media_url;
+                contentHTML.innerHTML = '<video class="note_media" controls="controls"><source src="'+content.media_url+'"><a href="'+content.media_url+'">video</a></video>';
                 break;
         }
         return contentHTML;
