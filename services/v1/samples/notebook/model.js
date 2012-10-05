@@ -10,7 +10,14 @@ function Model()
     {
         this.notes[this.notes.length] = note;
     }
-
+    //All notes (no order)
+    this.mapNotes = [];
+    this.mapMarkers = [];
+    this.addMapNote = function(mapNote)
+    {
+        mapNote.geoloc = new google.maps.LatLng(mapNote.lat, mapNote.lon);
+        this.mapNotes[this.mapNotes.length] = mapNote;
+    }
     //All notes ordered alphabetically by owner name
     this.contributorNotes = [];
     this.addContributorNote = function(contributorNote)
@@ -73,6 +80,15 @@ function Model()
         }
         this.contributors[this.contributors.length] = contributor;
     }
+    this.mapContributorSelected = function(contributor)
+    {
+        for(var i = 0; i < this.contributorMapCells.length; i++)
+        {
+            if(this.contributorMapCells[i].object == contributor)
+                return this.contributorMapCells[i].selected;
+        }
+        return false;
+    }
     this.listContributorSelected = function(contributor)
     {
         for(var i = 0; i < this.contributorListCells.length; i++)
@@ -99,6 +115,19 @@ function Model()
             }
         }
         this.tags[this.tags.length] = tag;
+    }
+    this.mapTagsSelected = function(tags)
+    {
+        //n^2! oh noes!
+        for(var i = 0; i < this.tagMapCells.length; i++)
+        {
+            for(var j = 0; j < tags.length; j++)
+            {
+                if(this.tagMapCells[i].object == tags[j].tag && this.tagMapCells[i].selected)
+                    return true;
+            }
+        }
+        return false;
     }
     this.listTagsSelected = function(tags)
     {
@@ -183,8 +212,14 @@ function Model()
         this.constructNoteView = document.getElementById('note_view_construct');
         this.defaultNoteView = document.getElementById('note_view_default');
         this.noteView = new NoteView(this.defaultNoteView, null);
+
+        //Map
         this.map = document.getElementById('map');
+        var centerLoc = new google.maps.LatLng(0, 0);
+        var myOptions = { zoom:4, center:centerLoc, mapTypeId:google.maps.MapTypeId.ROADMAP };
+        this.gmap = new google.maps.Map(this.map, myOptions);
+
     };
 
-    document.addEventListener('keydown', function(e) { if(e.keyIdentifier == 'Up' || e.keyIdentifier == 'Down') controller.displayNextNote(e.keyIdentifier); e.stopPropagation(); e.preventDefault();}, false);
+    document.addEventListener('keydown', function(e) { if(e.keyIdentifier == 'Up' || e.keyIdentifier == 'Down') { controller.displayNextNote(e.keyIdentifier); e.stopPropagation(); e.preventDefault(); } }, false);
 }

@@ -21,9 +21,6 @@ function pageLoad()
     //Initialize stuff
     controller = new Controller();
     model = new Model();
-    var centerLoc = new google.maps.LatLng(0, 0);
-    var myOptions = { zoom:4, center:centerLoc, mapTypeId:google.maps.MapTypeId.ROADMAP };
-    map = new google.maps.Map(document.getElementById("map"), myOptions);
     var gameId;
     var playerId;
     if(gameId = parseInt(parseURLParams(document.URL).gameId))

@@ -87,6 +87,15 @@ function SingleSelectionButton(html, callback)
     this.html.addEventListener('click', this.select, false);
 }
 
+function MapMarker(callback, object)
+{
+    var self = this; // <- I hate javascript.
+    this.callback = callback;
+    this.object = object;
+    this.marker = new google.maps.Marker({ position:this.object.geoloc, map:model.views.gmap, });
+    google.maps.event.addListener(this.marker, 'click', function(e) { self.callback(self); });
+}
+
 /* Sends (self, selected) to callback on click */
 function SelectionCell(html, odd, callback, object)
 {

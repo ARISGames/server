@@ -72,6 +72,7 @@ div
 #map_layout
 {
     display:block; /* default */
+    position:relative;
 }
 
 .filter_selector_box
@@ -277,6 +278,11 @@ div
 #map_note_view_container
 {
     display:none;
+    position:absolute;
+    top:32px;
+    left:290px;
+    height:428px;
+    width:560px;
 }
 
 #list_note_view_container
