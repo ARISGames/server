@@ -289,7 +289,7 @@ function NoteView(html, object)
                 contentHTML.innerHTML = '<img class="note_media" src="'+content.media_url+'" />';
                 break;
             case 'AUDIO':
-                contentHTML.innerHTML = content.media_url;
+                contentHTML.innerHTML = '<audio class="note_media" controls="controls"><source src="'+content.media_url+'"><a href="'+content.media_url+'">audio</a></audio>';
                 break;
             case 'VIDEO':
                 contentHTML.innerHTML = '<video class="note_media" controls="controls"><source src="'+content.media_url+'"><a href="'+content.media_url+'">video</a></video>';
