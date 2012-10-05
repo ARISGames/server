@@ -4,22 +4,22 @@ require_once("module.php");
 class Movables extends Module
 {
     public static function createMovableTable(){
-    
-    //Create 'movables' table
-                $query = "CREATE TABLE movables (
-                        movable_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-                                     game_id INT NOT NULL,
-                                     type ENUM('Node', 'Item', 'Npc', 'WebPage', 'AugBubble', 'PlayerNote') NOT NULL,
-                                     type_id INT NOT NULL,
-                                     algorithm_type ENUM('TOWARD_NEAREST_PLAYER', 'TOWARD_PLAYERS', 'STRAIGHT_LINE', 'CIRCLE', 'CUSTOM') NOT NULL DEFAULT 'TOWARD_NEAREST_PLAYER',
-                                     algorithm_detail_1 INT NOT NULL DEFAULT 0,
-                                     algorithm_detail_2 INT NOT NULL DEFAULT 0,
-                                     velocity INT NOT NULL DEFAULT 0,
-                                     move_stamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                                     active TINYINT(1) NOT NULL DEFAULT 1);";
-                mysql_query($query);
+
+        //Create 'movables' table
+        $query = "CREATE TABLE movables (
+            movable_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+                       game_id INT NOT NULL,
+                       type ENUM('Node', 'Item', 'Npc', 'WebPage', 'AugBubble', 'PlayerNote') NOT NULL,
+                       type_id INT NOT NULL,
+                       algorithm_type ENUM('TOWARD_NEAREST_PLAYER', 'TOWARD_PLAYERS', 'STRAIGHT_LINE', 'CIRCLE', 'CUSTOM') NOT NULL DEFAULT 'TOWARD_NEAREST_PLAYER',
+                       algorithm_detail_1 INT NOT NULL DEFAULT 0,
+                       algorithm_detail_2 INT NOT NULL DEFAULT 0,
+                       velocity INT NOT NULL DEFAULT 0,
+                       move_stamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                       active TINYINT(1) NOT NULL DEFAULT 1);";
+        mysql_query($query);
     }
- 
+
     public static function createMovable($gameId, $type, $typeId, $locationName, $algorithm_type, $algorithm_detail, $velocity, $moveStamp, $lat, $lon, $deleteWhenViewed, $errorRange, $forceView, $hidden, $allowQuickTravel, $wiggle, $showTitle = 0)
     {
         if($movableId = Movables::hasMovable($gameId, $type, $typeId))
