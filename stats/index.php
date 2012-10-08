@@ -297,19 +297,19 @@ function generatePlayerLocations()
   $interval = ' AND updated BETWEEN DATE_SUB(NOW(), INTERVAL 10 MINUTE) AND NOW()';
   $result = mysql_query($query.$interval);
   while ($row = mysql_fetch_object($result))
-    echo 'new google.maps.Marker({ position: new google.maps.LatLng(' . $row->latitude . ',' . $row->longitude . '), map: map, icon: \'http://arisgames.com/server/map_icons/player_alpha_100.png\' });' . "\n";
+    echo 'new google.maps.Marker({ position: new google.maps.LatLng(' . $row->latitude . ',' . $row->longitude . '), map: map, icon: \'http://arisgames.org/server/stats/map_icons/player_alpha_100.png\' });' . "\n";
 
 
   $interval = ' AND updated BETWEEN DATE_SUB(NOW(), INTERVAL 1 DAY) AND NOW()';
   $result = mysql_query($query.$interval);
   while ($row = mysql_fetch_object($result))
-    echo 'new google.maps.Marker({ position: new google.maps.LatLng(' . $row->latitude . ',' . $row->longitude . '), map: map, icon: \'http://arisgames.com/server/map_icons/player_alpha_66.png\' });' . "\n";
+    echo 'new google.maps.Marker({ position: new google.maps.LatLng(' . $row->latitude . ',' . $row->longitude . '), map: map, icon: \'http://arisgames.org/server/stats/map_icons/player_alpha_66.png\' });' . "\n";
 
 /*
   $interval = ' AND updated BETWEEN DATE_SUB(NOW(), INTERVAL 1 WEEK) AND NOW()';
   $result = mysql_query($query.$interval);
   while ($row = mysql_fetch_object($result))
-    echo 'new google.maps.Marker({ position: new google.maps.LatLng(' . $row->latitude . ',' . $row->longitude . '), map: map, icon: \'http://arisgames.com/server/map_icons/player_alpha_33.png\' });' . "\n";
+    echo 'new google.maps.Marker({ position: new google.maps.LatLng(' . $row->latitude . ',' . $row->longitude . '), map: map, icon: \'http://arisgames.org/server/stats/map_icons/player_alpha_33.png\' });' . "\n";
 */
 }
 
@@ -321,18 +321,18 @@ function generateGameLocations()
   $interval = ' AND games.created BETWEEN DATE_SUB(NOW(), INTERVAL 1 DAY) AND NOW() GROUP BY games.game_id';
   $result = mysql_query($query.$interval);
   while ($row = mysql_fetch_object($result))
-    echo 'new google.maps.Marker({ position: new google.maps.LatLng(' . $row->latitude . ',' . $row->longitude . '), map: map, icon: \'http://arisgames.com/server/map_icons/game_alpha_100.png\' });' . "\n";
+    echo 'new google.maps.Marker({ position: new google.maps.LatLng(' . $row->latitude . ',' . $row->longitude . '), map: map, icon: \'http://arisgames.org/server/stats/map_icons/game_alpha_100.png\' });' . "\n";
 
 
   $interval = ' AND games.created BETWEEN DATE_SUB(NOW(), INTERVAL 1 WEEK) AND NOW() GROUP BY games.game_id';
   $result = mysql_query($query.$interval);
   while ($row = mysql_fetch_object($result))
-    echo 'new google.maps.Marker({ position: new google.maps.LatLng(' . $row->latitude . ',' . $row->longitude . '), map: map, icon: \'http://arisgames.com/server/map_icons/game_alpha_66.png\' });' . "\n";
+    echo 'new google.maps.Marker({ position: new google.maps.LatLng(' . $row->latitude . ',' . $row->longitude . '), map: map, icon: \'http://arisgames.org/server/stats/map_icons/game_alpha_66.png\' });' . "\n";
 
   $interval = ' AND games.created BETWEEN DATE_SUB(NOW(), INTERVAL 1 MONTH) AND NOW() GROUP BY games.game_id';
   $result = mysql_query($query.$interval);
   while ($row = mysql_fetch_object($result))
-    echo 'new google.maps.Marker({ position: new google.maps.LatLng(' . $row->latitude . ',' . $row->longitude . '), map: map, icon: \'http://arisgames.com/server/map_icons/game_alpha_33.png\' });' . "\n";
+    echo 'new google.maps.Marker({ position: new google.maps.LatLng(' . $row->latitude . ',' . $row->longitude . '), map: map, icon: \'http://arisgames.org/server/stats/map_icons/game_alpha_33.png\' });' . "\n";
 
 }
 
@@ -431,7 +431,7 @@ ORDER BY count DESC
 	  
 	  if ($iconFileURL)
 	  {
-	    $iconURL = 'http://www.arisgames.com/server/gamedata/' . $gameid . '/' . $iconFileURL;
+	    $iconURL = 'http://www.arisgames.org/server/gamedata/' . $gameid . '/' . $iconFileURL;
 	  }
     else
     {      
