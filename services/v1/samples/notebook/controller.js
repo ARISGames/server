@@ -60,35 +60,35 @@ function Controller()
 
     this.mapContributorClicked = function(sender, selected) 
     {
-        self.populateMapNotes();
+        self.populateMapNotes(false);
     };
     this.selectAllMapContributors = function() 
     {
         for(var i = 0; i < model.contributorMapCells.length; i++)
             model.contributorMapCells[i].select();
-        self.populateMapNotes();
+        self.populateMapNotes(false);
     };
     this.deselectAllMapContributors = function()
     {
         for(var i = 0; i < model.contributorMapCells.length; i++)
             model.contributorMapCells[i].deselect();
-        self.populateMapNotes();
+        self.populateMapNotes(false);
     };
     this.mapTagClicked = function(sender,selected) 
     {
-        self.populateMapNotes();
+        self.populateMapNotes(false);
     };
     this.selectAllMapTags = function()
     {
         for(var i = 0; i < model.tagMapCells.length; i++)
             model.tagMapCells[i].select();
-        self.populateMapNotes();
+        self.populateMapNotes(false);
     };
     this.deselectAllMapTags = function()
     {
         for(var i = 0; i < model.tagMapCells.length; i++)
             model.tagMapCells[i].deselect();
-        self.populateMapNotes();
+        self.populateMapNotes(false);
     };
     this.listContributorClicked = function(sender,selected) 
     {
@@ -197,7 +197,7 @@ function Controller()
         this.populateListTags();
         this.selectAllListTags();
 
-        this.populateMapNotes();
+        this.populateMapNotes(true);
         this.populateNotesByContributor();
         //this.populateNotesByTag();
         //this.populateNotesByPopularity();
@@ -263,7 +263,7 @@ function Controller()
             model.tagListCells[model.tagListCells.length] = tmpcell;
         }
     };
-    this.populateMapNotes = function()
+    this.populateMapNotes = function(center)
     {
         for(var i = 0; i < model.mapMarkers.length; i++)
         {
@@ -277,6 +277,14 @@ function Controller()
             if(!model.mapTagsSelected(model.mapNotes[i].tags)) continue;
             tmpmarker = new MapMarker(this.noteSelected, model.mapNotes[i]);
             model.mapMarkers[model.mapMarkers.length] = tmpmarker;
+        }
+        
+        if(center)
+        {
+            var bounds = new google.maps.LatLngBounds();
+            for(var i = 0; i < model.mapMarkers.length; i++)
+                bounds.extend(model.mapMarkers[i].object.geoloc);
+            setTimeout(function(){ model.views.gmap.fitBounds(bounds); }, 100);
         }
     }
     this.populateNotesByContributor = function()
