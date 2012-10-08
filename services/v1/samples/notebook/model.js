@@ -217,9 +217,8 @@ function Model()
         //Map
         this.map = document.getElementById('map');
         var centerLoc = new google.maps.LatLng(0, 0);
-        var myOptions = { zoom:4, center:centerLoc, mapTypeId:google.maps.MapTypeId.ROADMAP };
+        var myOptions = { zoom:5, center:centerLoc, mapTypeId:google.maps.MapTypeId.ROADMAP };
         this.gmap = new google.maps.Map(this.map, myOptions);
-
     };
 
     document.addEventListener('keydown', function(e) { if(e.keyIdentifier == 'Up' || e.keyIdentifier == 'Down') { controller.displayNextNote(e.keyIdentifier); e.stopPropagation(); e.preventDefault(); } }, false);
