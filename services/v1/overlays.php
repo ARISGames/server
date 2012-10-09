@@ -141,7 +141,7 @@ class Overlays extends Module
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix && $intGameID != 0) return new returnData(1, NULL, "invalid game id");
 
-		if ($intGameID == 0) $query = "SELECT * FROM overlays, overlay_tiles, media WHERE game_id = 0 AND overlays.overlay_id = overlay_tiles.overlay_id AND overlay_tiles.media_id = media.media_id ORDER BY overlays.sort_index";
+		if ($intGameID == 0) $query = "SELECT * FROM overlays, overlay_tiles, media WHERE overlays.game_id = 0 AND overlays.overlay_id = overlay_tiles.overlay_id AND overlay_tiles.media_id = media.media_id ORDER BY overlays.sort_index";
 		else $query = "SELECT * FROM overlays, overlay_tiles, media WHERE (overlays.game_id = {$prefix}) AND overlays.overlay_id = overlay_tiles.overlay_id AND overlay_tiles.media_id = media.media_id ORDER BY overlays.sort_index";
 
 		//NetDebug::trace($query);
@@ -182,7 +182,7 @@ class Overlays extends Module
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix && $intGameID != 0) return new returnData(1, NULL, "invalid game id");
         
-		if ($intGameID == 0) $query = "SELECT * FROM overlays, overlay_tiles, media WHERE game_id = 0 AND overlays.overlay_id = overlay_tiles.overlay_id AND overlay_tiles.media_id = media.media_id ORDER BY overlays.sort_index";
+		if ($intGameID == 0) $query = "SELECT * FROM overlays, overlay_tiles, media WHERE overlays.game_id = 0 AND overlays.overlay_id = overlay_tiles.overlay_id AND overlay_tiles.media_id = media.media_id ORDER BY overlays.sort_index";
 		else $query = "SELECT * FROM overlays, overlay_tiles, media WHERE (overlays.game_id = {$prefix}) AND overlays.overlay_id = overlay_tiles.overlay_id AND overlay_tiles.media_id = media.media_id ORDER BY overlays.sort_index";
         
 		//NetDebug::trace($query);
