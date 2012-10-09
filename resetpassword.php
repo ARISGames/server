@@ -46,9 +46,13 @@
             echo "<table cellspacing='20'><tr><td>Username: </td><td>".$_POST['username']."</td>";
         }
         
-        echo "<tr><td>New Password:<br></td> <td><input name='newpassword' type='password' value='". $_POST['newpassword'] . "'>";
+        echo "<tr><td>New Password:<br></td> <td><input name='newpassword' type='password' value='";
+        echo isset($_POST['newpassword']) ? $_POST['newpassword'] : "";
+        echo "'>";
         if ($errorNewPassword) echo "<span class='red'>$errorTextNewPassword</span>";
-        echo "</td></tr><tr><td>Confirm New Password:<br></td> <td><input name='confirmpassword' type='password' value='". $_POST['confirmpassword'] . "'>";
+        echo "</td></tr><tr><td>Confirm New Password:<br></td> <td><input name='confirmpassword' type='password' value='";
+        echo isset($_POST['confirmpassword']) ? $_POST['confirmpassword'] : "";
+        echo "'>";
         if ($errorVerifyPassword) echo "<span class='red'>$errorTextVerifyPassword</span>";  // display error if needed
         echo "</td></tr><tr><td></td><td><input name='Submit' value='Submit' type='submit'><br></td></tr>";
         echo "</table>";
