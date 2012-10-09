@@ -312,7 +312,7 @@ function Controller()
         model.views.tagNoteCells = [];
         for(var i = 0; i < model.tagNotes.length; i++)
         {
-            if(!model.listTagsSelected(model.contributorNotes[i].tags)) continue;
+            if(!model.listTagsSelected(model.tagNotes[i].tags)) continue;
             tmpcell = new SingleSelectionCell(model.views.constructNoteListSelectorCell.cloneNode(true), 123-123, this.noteSelected, model.tagNotes[i]);
             tmpcell.html.firstChild.innerHTML = '<span class="note_cell_title">'+model.tagNotes[i].title+' - </span><span class="note_cell_author">'+model.tagNotes[i].username+'</span>';
             model.views.noteListSelector.appendChild(tmpcell.html);
