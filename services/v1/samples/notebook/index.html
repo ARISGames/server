@@ -30,6 +30,9 @@ function pageLoad()
     }
     else
         document.getElementById('message').innerHTML = "<form>Game Id:<input type='text' id='game_id_form'/><input type='button' value='Submit' onClick='submitForm();'/></form>";
+
+    if (navigator.appName == 'Microsoft Internet Explorer') 
+        alert('You might need to install quicktime to properly view some media.\n(http://www.apple.com/quicktime/download)');
 }
 
 function submitForm()
