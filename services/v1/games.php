@@ -495,7 +495,7 @@ class Games extends Module
 			`item_id` int(11) unsigned NOT NULL default '0',
 			`qty` int(11) NOT NULL default '0',
 			`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
-            `viewed` int(11) NOT NULL default '0',
+                        `viewed` tinyint(1) NOT NULL default '0',
 			PRIMARY KEY  (`id`),
 			UNIQUE KEY `unique` (`player_id`,`item_id`),
 			KEY `player_id` (`player_id`),
