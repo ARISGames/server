@@ -202,6 +202,15 @@ abstract class Module
     if ($qtyToGive < 1) return 0;
     else {
       Module::adjustQtyForPlayerItem($strGamePrefix, $intItemID, $intPlayerID, $qtyToGive);
+        
+        // check log if item has already been viewed.  If yes, set item to viewed in database
+        $query = "SELECT * FROM player_log WHERE game_id = {$strGamePrefix} AND player_id = {$intPlayerID} AND event_type = 'VIEW_ITEM' AND event_detail_1 = {$intItemID} AND deleted = 0;";
+        $result = mysql_query($query);
+        while(mysql_fetch_object($result)) {
+            $query2 = "UPDATE {$strGamePrefix}_player_items SET viewed = 1 WHERE player_id = {$intPlayerID} AND item_id = {$intItemID}";
+            @mysql_query($query2);
+            break;
+        }
       return $qtyToGive;
     }
   }
