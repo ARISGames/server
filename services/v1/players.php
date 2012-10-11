@@ -295,6 +295,17 @@ class Players extends Module
         if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
         Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_ITEM, $intItemID, $intLocationID);
+        
+        
+        $query = "UPDATE {$prefix}_player_items SET viewed = 1 WHERE player_id = {$intPlayerID} AND item_id = {$intItemID}";
+        
+        NetDebug::trace($query);
+        
+        @mysql_query($query);
+        
+        if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+        if (mysql_affected_rows()) return new returnData(0, TRUE);
+        else return new returnData(0, FALSE);
 
         return new returnData(0, TRUE);
     }

@@ -495,6 +495,7 @@ class Games extends Module
 			`item_id` int(11) unsigned NOT NULL default '0',
 			`qty` int(11) NOT NULL default '0',
 			`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
+            `viewed` int(11) NOT NULL default '0',
 			PRIMARY KEY  (`id`),
 			UNIQUE KEY `unique` (`player_id`,`item_id`),
 			KEY `player_id` (`player_id`),
@@ -737,6 +738,7 @@ class Games extends Module
 		$query = "ALTER TABLE games ADD COLUMN allow_trading TINYINT(1) NOT NULL DEFAULT 1;";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
+        
 
 		$query = "CREATE TABLE `overlays` {
 			
@@ -822,6 +824,10 @@ class Games extends Module
 		NetDebug::trace("$query" . ":" . mysql_error());  
 
 		$query = "ALTER TABLE ".$prefix."_items ADD COLUMN tradeable TINYINT(1) NOT NULL DEFAULT 1;";
+		mysql_query($query);
+		NetDebug::trace("$query" . ":" . mysql_error());
+        
+        $query = "ALTER TABLE ".$prefix."_player_items ADD COLUMN viewed TINYINT(1) NOT NULL DEFAULT 0;";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
 

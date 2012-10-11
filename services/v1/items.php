@@ -49,7 +49,7 @@ class Items extends Module
         if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 
-        $query = "SELECT {$prefix}_items.*, {$prefix}_player_items.qty 
+        $query = "SELECT {$prefix}_items.*, {$prefix}_player_items.qty, {$prefix}_player_items.viewed  
             FROM {$prefix}_items
             JOIN {$prefix}_player_items 
             ON {$prefix}_items.item_id = {$prefix}_player_items.item_id
