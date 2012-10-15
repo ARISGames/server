@@ -626,7 +626,7 @@ class Players extends Module
         $lastnameArray = $playerArrays['lastNames'];
         $emailArray = $playerArrays['emails'];
 
-        if(count($usernameArray) == 0 || count($usernameArray) != count($passwordArray))
+        if(count($usernameArray) == 0 || $usernameArray[0] == '' || count($usernameArray) != count($passwordArray))
             return new returnData(1, "", "Bad JSON or userNames and passwords arrays have different sizes");
 
         //Search for matching user names
@@ -634,6 +634,7 @@ class Players extends Module
         for($i = 0; $i < count($usernameArray); $i++)
             $query = $query."user_name = '{$usernameArray[$i]}' OR ";
         $query = substr($query, 0, strlen($query)-4).";";
+
         $result = mysql_query($query);
 
         $reterr = "username ";
@@ -675,6 +676,7 @@ class Players extends Module
      */
     function createPlayerAccountsFromObjectArray($playerArray)
     {
+        //return new returnData($playerArray);
         if(count($playerArray) == 0)
             return new returnData(1, "Bad JSON or Empty Array");
 

@@ -41,20 +41,16 @@
 	function pageLoad()
 	{
 		//Constructs 10 arbitrary players
-		var players = new Array();
+                var playerArrays = {};
+                playerArrays.userNames = new Array();
+                playerArrays.passwords = new Array();
 		for(var i = 0; i < 10; i++)
 		{
-			players[i] = new Object();
-			players[i].username = "Player"+i;
-			players[i].password = randomString(8);
-			/*Optional Parameters-
-			players[i].firstname = "Jim";
-			players[i].lastname = "Beam";
-			players[i].email = "jim@email.com";
-			*/
+			playerArrays.userNames[i] = "Player"+i;
+			playerArrays.passwords[i] = randomString(8);
 		}
 
-		sendRequest("players.createPlayerAccountsFromObjectArray", JSON.stringify(players))
+		sendRequest("players.createPlayerAccountsFromArrays", JSON.stringify(playerArrays))
 	}
 </script>
 </head>
