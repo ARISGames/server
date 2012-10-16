@@ -152,6 +152,7 @@ function Controller()
         model.backpacks = model.gameData.backpacks;
         for(var i = 0; i < model.backpacks.length; i++)
         {
+            if(model.backpacks = "Invalid Player ID") continue;
             for(var j = 0; j < model.backpacks[i].notes.length; j++)
             {
                 //Fix up note tags
