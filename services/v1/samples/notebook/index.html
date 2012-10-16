@@ -46,7 +46,7 @@ function submitForm()
 
 function startLoadGame(gameId, playerId)
 {
-    document.getElementById('message').innerHTML = "<img src='spinner.gif'></img>Waiting on Server...";
+    document.getElementById('message').innerHTML = "&nbsp; <img height='12px' src='spinner.gif'></img> Waiting on Server...";
     var bpRequestObject = new Object();
     bpRequestObject.gameId = gameId;
     if(playerId) bpRequestObject.playerArray = playerId;
