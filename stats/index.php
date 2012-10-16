@@ -294,7 +294,7 @@ function generatePlayerLocations()
             WHERE latitude <> 0
             AND longitude <> 0';
 
-  $interval = ' AND updated BETWEEN DATE_SUB(NOW(), INTERVAL 10 MINUTE) AND NOW()';
+  $interval = ' AND updated BETWEEN DATE_SUB(NOW(), INTERVAL 15 MINUTE) AND NOW()';
   $result = mysql_query($query.$interval);
   while ($row = mysql_fetch_object($result))
     echo 'new google.maps.Marker({ position: new google.maps.LatLng(' . $row->latitude . ',' . $row->longitude . '), map: map, icon: \'http://arisgames.org/server/stats/map_icons/player_alpha_100.png\' });' . "\n";
@@ -315,6 +315,7 @@ function generatePlayerLocations()
 
 function generateGameLocations()
 {
+    return; //<- UNCOMMENT TO SHOW GAME LOCATIONS AS WELL
   // do not include locations that are test locations (0,0)
   $query = "SELECT DISTINCT games.game_id, games.created, players.latitude, players.longitude FROM games LEFT JOIN player_log ON games.game_id = player_log.game_id LEFT JOIN players ON player_log.player_id = players.player_id WHERE players.latitude IS NOT NULL";
 
