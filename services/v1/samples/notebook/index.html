@@ -57,7 +57,6 @@ function startLoadGame(gameId, playerId)
 function finishLoadGame(responseText)
 {
     responseData=JSON.parse(responseText);
-    alert(responseText);
     if(responseData.returnCode == 1) //Error
     {
         document.getElementById('message').innerHTML = responseData.data;	
