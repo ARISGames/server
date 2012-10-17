@@ -531,6 +531,9 @@ class Players extends Module
     {
         $gameId = $bpReqObj['gameId'];
         $playerArray = $bpReqObj['playerArray'];
+        $getItems = (isset($bpReqObj['items']) ? $bpReqObj['items'] : true); //Default true
+        $getAttributes = (isset($bpReqObj['attributes']) ? $bpReqObj['attributes'] : true); //Default true
+        $getNotes = (isset($bpReqObj['notes']) ? $bpReqObj['notes'] : true); //Default true
 
         if(is_numeric($gameId))
             $gameId = intval($gameId);
@@ -543,17 +546,17 @@ class Players extends Module
         $game = Games::getDetailedGameInfo($gameId);
         if(is_null($playerArray))
         {
-            $game->backpacks =  Players::getAllPlayerDataBP($gameId);
+            $game->backpacks =  Players::getAllPlayerDataBP($gameId, $getItems, $getAttributes, $getNotes);
             return new returnData(0,$game);
         }
         else if(is_array($playerArray))
         {
-            $game->backpacks =  Players::getPlayerArrayDataBP($gameId, $playerArray);
+            $game->backpacks =  Players::getPlayerArrayDataBP($gameId, $playerArray, $getItems, $getAttributes, $getNotes);
             return new returnData(0,$game);
         }
         else if(is_numeric($playerArray))
         {
-            $game->backpacks = Players::getSinglePlayerDataBP($gameId, intval($playerArray));
+            $game->backpacks = Players::getSinglePlayerDataBP($gameId, intval($playerArray), false, $getItems, $getAttributes, $getNotes);
             return new returnData(0,$game,true);
         }
         else
@@ -562,24 +565,24 @@ class Players extends Module
         }
     }
 
-    private static function getAllPlayerDataBP($gameId)
+    private static function getAllPlayerDataBP($gameId, $getItems = true, $getAttributes = true, $getNotes = true)
     {
         $backPacks = array();
         $query = "SELECT DISTINCT player_id FROM player_log WHERE game_id='{$gameId}'";
         $result = mysql_query($query);
         while($player = mysql_fetch_object($result))
         {
-            $backPacks[] = Players::getSinglePlayerDataBP($gameId, $player->player_id);
+            $backPacks[] = Players::getSinglePlayerDataBP($gameId, $player->player_id, false, $getItems, $getAttributes, $getNotes);
         }
         return $backPacks;
     }
 
-    private static function getPlayerArrayDataBP($gameId, $playerArray)
+    private static function getPlayerArrayDataBP($gameId, $playerArray, $getItems = true, $getAttributes = true, $getNotes = true)
     {
         $backPacks = array();
         foreach($playerArray as $player)
         {
-            $backPacks[] = Players::getSinglePlayerDataBP($gameId, $player);
+            $backPacks[] = Players::getSinglePlayerDataBP($gameId, $player, false, $getItems, $getAttributes, $getNotes);
         }
         return $backPacks;
     }
@@ -587,7 +590,7 @@ class Players extends Module
     /*
      * Gets information for web backpack for any player/game pair
      */
-    private static function getSinglePlayerDataBP($gameId, $playerId, $individual=false)
+    private static function getSinglePlayerDataBP($gameId, $playerId, $individual=false, $getItems = true, $getAttributes = true, $getNotes = true)
     {
         $backpack = new stdClass();
 
@@ -600,13 +603,13 @@ class Players extends Module
         $backpack->owner->player_id = $playerId;
 
         /* ATTRIBUTES */
-        $backpack->attributes = Items::getDetailedPlayerAttributes($playerId, $gameId);
+        if($getAttributes) $backpack->attributes = Items::getDetailedPlayerAttributes($playerId, $gameId);
 
         /* OTHER ITEMS */
-        $backpack->items = Items::getDetailedPlayerItems($playerId, $gameId);
+        if($getItems) $backpack->items = Items::getDetailedPlayerItems($playerId, $gameId);
 
         /* NOTES */
-        $backpack->notes = Notes::getDetailedPlayerNotes($playerId, $gameId, $individual);
+        if($getNotes) $backpack->notes = Notes::getDetailedPlayerNotes($playerId, $gameId, $individual);
 
         return $backpack;
     }

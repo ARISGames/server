@@ -49,12 +49,15 @@ function startLoadGame(gameId, playerId)
     document.getElementById('message').innerHTML = "&nbsp; <img height='12px' src='spinner.gif'></img> Waiting on Server...";
     var bpRequestObject = new Object();
     bpRequestObject.gameId = gameId;
+    bpRequestObject.items = false;//Don't get items
+    bpRequestObject.attributes = false;//Don't get attributes
     if(playerId) bpRequestObject.playerArray = playerId;
     callService("players.getPlayerBackpacksFromArray", finishLoadGame, '', JSON.stringify(bpRequestObject));
 }
 function finishLoadGame(responseText)
 {
     responseData=JSON.parse(responseText);
+    alert(responseText);
     if(responseData.returnCode == 1) //Error
     {
         document.getElementById('message').innerHTML = responseData.data;	
