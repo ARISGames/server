@@ -58,21 +58,32 @@ class Players extends Module
      */
     public function loginPlayer($strUser,$strPassword)
     {
-
         $query = "SELECT * FROM players 
             WHERE user_name = '{$strUser}' and password = MD5('{$strPassword}') LIMIT 1";
-
         NetDebug::trace($query);
-
         $rs = @mysql_query($query);
         if (mysql_num_rows($rs) < 1) return new returnData(0, NULL, 'bad username or password');
-
         $player = @mysql_fetch_object($rs);
-
         Module::appendLog($intPlayerID, NULL, Module::kLOG_LOGIN);//Only place outside of Module's EVENT_PIPELINE that can append the Log
-
         return new returnData(0, intval($player->player_id));
     }
+
+
+	/*
+	* Should be the new way to log in. The above function doesn't return a robust, expandible, json package. It returns just an int.
+	* Because of this, the parsers using it try to parse an int directly from the return data, disallowing the attachment of more data.
+	*/
+	public function getLoginPlayerObject($strUser,$strPassword)
+	{
+        	$query = "SELECT player_id, user_name, display_name, media_id  FROM players 
+            	WHERE user_name = '{$strUser}' and password = MD5('{$strPassword}') LIMIT 1";
+        	NetDebug::trace($query);
+        	$rs = @mysql_query($query);
+        	if (mysql_num_rows($rs) < 1) return new returnData(0, NULL, 'bad username or password');
+        	$player = @mysql_fetch_object($rs);
+        	Module::appendLog($intPlayerID, NULL, Module::kLOG_LOGIN);//Only place outside of Module's EVENT_PIPELINE that can append the Log
+        	return new returnData(0, $player);
+	}
 
     /**
      * updates the player's last game
@@ -92,6 +103,31 @@ class Players extends Module
         if (mysql_affected_rows()) return new returnData(0, TRUE);
         else return new returnData(0, FALSE);
     }	
+
+function addPlayerPicFromFileName($playerId, $filename, $name)
+{
+	if(!$name) $name = $playerId."_player_pic";
+	$newMediaResultData = Media::createMedia("player", $name, $filename, 0);
+	$newMediaId = $newMediaResultData->data->media_id;
+	return Players::addPlayerPic($playerId, $newMediaId);
+}
+
+function addPlayerPic($playerId, $mediaId)
+{
+	$query = "UPDATE players SET media_id = {$mediaId} WHERE player_id = {$playerId}";
+	mysql_query($query);
+	return new returnData(0);
+}
+
+function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
+{
+	if($mediaId != 0)
+		$query = "UPDATE players SET display_name = '{$name}', media_id = {$mediaId} WHERE player_id = {$playerId}";
+	else
+		$query = "UPDATE players SET display_name = '{$name}' WHERE player_id = {$playerId}";
+	mysql_query($query);
+	return new returnData(0);
+}
 
     /**
      * getPlayers

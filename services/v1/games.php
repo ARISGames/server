@@ -868,6 +868,769 @@ class Games extends Module
 	 */	
 	public function deleteGame($intGameID)
 	{
+		$query = "SELECT * FROM games ORDER BY game_id";
+		$rs = mysql_query($query);
+		while ($game = mysql_fetch_object($rs))
+		{
+			$i = $game->game_id;
+			if($i != 159 && $i != 2625 && $i != 3795 && $i != 344 && $i != 4301 &&  $i != 4305 ){
+				NetDebug::trace("Delete Game: {$i}");
+				Games::oldDeleteGame($i);
+			}
+		}
+		return 0;
+	}
+
+	/**
+	 * Perform table migration
+	 * Used to migrate tables from tables starting with game_id prefixes to general tables
+	 * @returns returnCode = 0 on success
+	 */
+	public function migrateTables()
+	{
+		set_time_limit(100000000);
+
+	//	Test::killOrphansBeforeMigration();
+		Games::createNewTablesForMigration();
+		$query = "SELECT * FROM games ORDER BY game_id";
+		$rs = mysql_query($query);
+		while ($game = mysql_fetch_object($rs)) 
+		{
+			NetDebug::trace("Migrate Game: {$game->game_id}");
+			Module::serverErrorLog("Migrating Game ID: {$game->game_id}");
+			$newIdsArray = Games::migrateGame($game->game_id);
+			Games::updateXMLAfterMigration($newIdsArray, $game->game_id); 
+
+			//IMPORTANT RECOMMENT IN BELOW LINES
+			Games::oneTimeTableUpdate($newIdsArray, $game->game_id, $game->on_launch_node_id);
+			//Fetch the table names for this game
+			           $query = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='" . Config::dbSchema . "' AND TABLE_NAME LIKE '{$game->game_id}\_%'";
+			              NetDebug::trace($query);
+			              $result = mysql_query($query);
+			              if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
+
+			//Delete all tables for this game
+			                 while ($table = mysql_fetch_array($result)) {
+			                  $query = "DROP TABLE {$table['TABLE_NAME']}";
+			                 NetDebug::trace($query);
+			                 mysql_query($query);
+			                 if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
+			                 }
+		}
+		$query = "ALTER TABLE media CHANGE file_name file_path VARCHAR(255) NOT NULL;";
+		@mysql_query($query);
+
+		$query = "UPDATE media SET file_path = CONCAT(game_id,'/',file_path);";
+		@mysql_query($query);
+		
+		$query = "ALTER TABLE game_tab_data ADD COLUMN tab_detail_1 INT DEFAULT 0";
+          	@mysql_query($query);	
+
+		$query = "ALTER TABLE quests ADD COLUMN exit_to_tab ENUM('NONE', 'GPS','NEARBY','QUESTS','INVENTORY','PLAYER','QR','NOTE','STARTOVER','PICKGAME');";
+		@mysql_query($query);
+
+		$query = "ALTER TABLE media ADD COLUMN display_name VARCHAR(32) DEFAULT '';";
+		@mysql_query($query);
+
+		return 0;
+	}
+
+	/**
+	 * Create new tables for table migration
+	 * Used to migrate tables from tables starting with game_id prefixes to general tables
+	 */
+	public function createNewTablesForMigration()
+	{
+		//Create the SQL tables
+		$query = "CREATE TABLE items (
+			item_id int(11) unsigned NOT NULL auto_increment,
+				game_id INT NOT NULL,
+				name varchar(255) NOT NULL,
+				description text NOT NULL,
+				is_attribute ENUM(  '0',  '1' ) NOT NULL DEFAULT  '0',
+				icon_media_id int(10) unsigned NOT NULL default '0',
+				media_id int(10) unsigned NOT NULL default '0',
+				dropable enum('0','1') NOT NULL default '0',
+				destroyable enum('0','1') NOT NULL default '0',
+				max_qty_in_inventory INT NOT NULL DEFAULT  '-1' COMMENT  '-1 for infinite, 0 if it can''t be picked up',
+				creator_player_id int(10) unsigned NOT NULL default '0',
+				origin_latitude double NOT NULL default '0',
+				origin_longitude double NOT NULL default '0',
+				origin_timestamp timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
+				weight INT UNSIGNED NOT NULL DEFAULT  '0',
+				url TINYTEXT NOT NULL,
+				type ENUM(  'NORMAL',  'ATTRIB',  'URL', 'NOTE') NOT NULL DEFAULT  'NORMAL',
+				tradeable TINYINT(1) NOT NULL DEFAULT 1,
+				PRIMARY KEY  (item_id),
+				KEY game_id (game_id)
+					)ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(6, NULL, 'cannot create items table' . mysql_error());
+
+		$query = "CREATE TABLE player_state_changes (
+			id int(10) unsigned NOT NULL auto_increment,
+			   game_id INT NOT NULL,
+			   event_type enum('VIEW_ITEM', 'VIEW_NODE', 'VIEW_NPC', 'VIEW_WEBPAGE', 'VIEW_AUGBUBBLE', 'RECEIVE_WEBHOOK' ) NOT NULL,
+			   event_detail INT UNSIGNED NOT NULL,
+			   action enum('GIVE_ITEM','TAKE_ITEM') NOT NULL,
+			   action_detail int(10) unsigned NOT NULL,
+			   action_amount INT NOT NULL DEFAULT  '1',
+			   PRIMARY KEY  (id),
+			   KEY game_event_lookup (game_id, event_type, event_detail)
+				   )ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(6, NULL, 'cannot create player_state_changes table' . mysql_error());
+
+		$query = "CREATE TABLE requirements (
+			requirement_id int(11) NOT NULL auto_increment,
+				       game_id INT NOT NULL,
+				       content_type enum('Node','QuestDisplay','QuestComplete','Location','OutgoingWebHook','Spawnable') NOT NULL,
+				       content_id int(10) unsigned NOT NULL,
+				       requirement ENUM('PLAYER_HAS_ITEM','PLAYER_VIEWED_ITEM','PLAYER_VIEWED_NODE','PLAYER_VIEWED_NPC','PLAYER_VIEWED_WEBPAGE','PLAYER_VIEWED_AUGBUBBLE','PLAYER_HAS_UPLOADED_MEDIA_ITEM', 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE','PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO','PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO','PLAYER_HAS_COMPLETED_QUEST','PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK', 'PLAYER_HAS_NOTE', 'PLAYER_HAS_NOTE_WITH_TAG', 'PLAYER_HAS_NOTE_WITH_LIKES', 'PLAYER_HAS_NOTE_WITH_COMMENTS', 'PLAYER_HAS_GIVEN_NOTE_COMMENTS') NOT NULL,
+				       boolean_operator enum('AND','OR') NOT NULL DEFAULT 'AND',	
+				       not_operator ENUM(  'DO',  'NOT' ) NOT NULL DEFAULT 'DO',
+				       group_operator ENUM(  'SELF',  'GROUP' ) NOT NULL DEFAULT 'SELF',
+				       requirement_detail_1 VARCHAR(30) NULL,
+				       requirement_detail_2 VARCHAR(30) NULL,
+				       requirement_detail_3 VARCHAR(30) NULL,
+				       requirement_detail_4 VARCHAR(30) NULL,
+				       PRIMARY KEY  (requirement_id),
+				       KEY game_content_index (game_id, content_type, content_id)
+					       )ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(6, NULL, 'cannot create requirments table' . mysql_error());
+
+		$query = "CREATE TABLE locations (
+			location_id int(11) NOT NULL auto_increment,
+				    game_id INT NOT NULL,
+				    name varchar(255) NOT NULL,
+				    description tinytext NOT NULL,
+				    latitude double NOT NULL default '43.0746561',
+				    longitude double NOT NULL default '-89.384422',
+				    error double NOT NULL default '5',
+				    type enum('Node','Event','Item','Npc','WebPage','AugBubble', 'PlayerNote') NOT NULL DEFAULT 'Node',
+				    type_id int(11) NOT NULL,
+				    icon_media_id int(10) unsigned NOT NULL default '0',
+				    item_qty int(11) NOT NULL default '0' COMMENT  '-1 for infinite. Only effective for items',
+				    hidden enum('0','1') NOT NULL default '0',
+				    force_view enum('0','1') NOT NULL default '0',
+				    allow_quick_travel enum('0','1') NOT NULL default '0',
+				    wiggle TINYINT(1) NOT NULL default '0',
+				    show_title TINYINT(1) NOT NULL default '0',
+				    spawnstamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+				    PRIMARY KEY  (location_id),
+			            KEY game_latitude (game_id, latitude),
+                                    KEY game_longitude (game_id, longitude)
+					    )ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci";
+		NetDebug::trace($query);	
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(6, NULL, 'cannot create locations table: ' . mysql_error());
+
+		$query = "CREATE TABLE quests (
+			quest_id int(11) unsigned NOT NULL auto_increment,
+				 game_id INT NOT NULL,
+				 name tinytext NOT NULL,
+				 description text NOT NULL,
+				 text_when_complete tinytext NOT NULL COMMENT 'This is the txt that displays on the completed quests screen',
+				 icon_media_id int(10) unsigned NOT NULL default '0',
+				 sort_index int(10) unsigned NOT NULL default '0',
+				 PRIMARY KEY  (quest_id),
+             			 KEY game_id (game_id)
+					 )ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(6, NULL, 'cannot create quests table');
+
+		$query = "CREATE TABLE nodes (
+			node_id int(11) unsigned NOT NULL auto_increment,
+				game_id INT NOT NULL,
+				title varchar(255) NOT NULL,
+				text text NOT NULL,
+				opt1_text varchar(100) default NULL,
+				opt1_node_id int(11) unsigned NOT NULL default '0',
+				opt2_text varchar(100) default NULL,
+				opt2_node_id int(11) unsigned NOT NULL default '0',
+				opt3_text varchar(100) default NULL,
+				opt3_node_id int(11) unsigned NOT NULL default '0',
+				require_answer_incorrect_node_id int(11) unsigned NOT NULL default '0',
+				require_answer_string varchar(50) default NULL,
+				require_answer_correct_node_id int(10) unsigned NOT NULL default '0',
+				media_id int(10) unsigned NOT NULL default '0',
+				icon_media_id int(10) unsigned NOT NULL default '0',
+				PRIMARY KEY  (node_id),
+				KEY game_id (game_id)
+					)ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(6, NULL, 'cannot create nodes table');
+
+		$query = "CREATE TABLE npc_conversations (
+			conversation_id int(11) NOT NULL auto_increment,
+					npc_id int(10) unsigned NOT NULL default '0',
+					node_id int(10) unsigned NOT NULL default '0',
+					game_id INT NOT NULL,
+					text tinytext NOT NULL,
+					sort_index int(10) unsigned NOT NULL default '0',
+					PRIMARY KEY  (conversation_id),
+					KEY game_npc_node (game_id, npc_id, node_id),
+					KEY game_node (game_id, node_id)
+						)ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(6, NULL, 'cannot create conversations table');
+
+		$query = "CREATE TABLE npcs (
+			npc_id int(10) unsigned NOT NULL auto_increment,
+			       game_id INT NOT NULL,
+			       name varchar(255) NOT NULL default '',
+			       description TEXT NOT NULL,
+			       text TEXT NOT NULL,
+			       closing TEXT NOT NULL,
+			       media_id int(10) unsigned NOT NULL default '0',
+			       icon_media_id int(10) unsigned NOT NULL default '0',
+			       PRIMARY KEY  (npc_id),
+ 			       KEY game_id (game_id)
+				       )ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(6, NULL, 'cannot create npcs table');
+
+		$query = "CREATE TABLE player_items (
+			id int(11) NOT NULL auto_increment,
+			player_id int(11) unsigned NOT NULL default '0',
+			game_id INT NOT NULL,
+			item_id int(11) unsigned NOT NULL default '0',
+			qty int(11) NOT NULL default '0',
+			viewed tinyint(1) NOT NULL default '0',
+			timestamp timestamp NOT NULL default CURRENT_TIMESTAMP,
+			PRIMARY KEY  (id),
+			KEY game_player_item (game_id, player_id, item_id)
+				)ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(6, NULL, 'cannot create player_items table');
+
+		$query = "CREATE TABLE qrcodes (
+			qrcode_id int(11) NOT NULL auto_increment,
+				  game_id INT NOT NULL,
+				  link_type enum('Location') NOT NULL default 'Location',
+				  link_id int(11) NOT NULL,
+				  code varchar(255) NOT NULL,
+				  match_media_id INT( 10 ) UNSIGNED NOT NULL DEFAULT  '0',
+				  fail_text varchar(256) NOT NULL DEFAULT \"This code doesn't mean anything right now. You should come back later.\",
+				  PRIMARY KEY  (qrcode_id),
+ 			          KEY game_link_id (game_id, link_type, link_id)
+					  )ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(6, NULL, 'cannot create qrcodes table');							
+
+		$query = "CREATE TABLE folders (
+			folder_id int(10) unsigned NOT NULL auto_increment,
+				  game_id INT NOT NULL,
+				  name varchar(50) collate utf8_unicode_ci NOT NULL,
+				  parent_id int(11) NOT NULL default '0',
+				  previous_id int(11) NOT NULL default '0',
+				  is_open ENUM('0','1') NOT NULL DEFAULT  '0',
+				  PRIMARY KEY  (folder_id),
+				  KEY game_parent (game_id, parent_id),
+			    	  KEY game_previous (game_id, previous_id)
+					  ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(6, NULL, 'cannot create folders table');	
+
+		$query = "CREATE TABLE folder_contents (
+			object_content_id int(10) unsigned NOT NULL auto_increment,
+					  folder_id int(10) NOT NULL default '0',
+					  game_id INT NOT NULL,
+					  content_type enum('Node','Item','Npc','WebPage','AugBubble', 'PlayerNote') collate utf8_unicode_ci NOT NULL default 'Node',
+					  content_id int(10) unsigned NOT NULL default '0',
+					  previous_id int(10) unsigned NOT NULL default '0',
+					  PRIMARY KEY  (object_content_id),
+					  KEY game_content (game_id, content_type, content_id),
+            				  KEY game_folder (game_id, folder_id),
+				          KEY game_previous (game_id, previous_id)
+						  ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
+		@mysql_query($query);
+
+		mysql_query("ALTER TABLE aug_bubble_media ENGINE = InnoDB;");
+                mysql_query("ALTER TABLE aug_bubbles ENGINE = InnoDB;");
+                mysql_query("ALTER TABLE editors ENGINE = InnoDB;");
+                mysql_query("ALTER TABLE fountains ENGINE = InnoDB;");
+                mysql_query("ALTER TABLE game_comments ENGINE = InnoDB;");
+                mysql_query("ALTER TABLE game_editors ENGINE = InnoDB;");
+                mysql_query("ALTER TABLE game_tab_data ENGINE = InnoDB;");
+                mysql_query("ALTER TABLE game_tags ENGINE = InnoDB;");
+                mysql_query("ALTER TABLE games ENGINE = InnoDB;");
+                mysql_query("ALTER TABLE groups ENGINE = InnoDB;");
+                mysql_query("ALTER TABLE media ENGINE = InnoDB;");
+                mysql_query("ALTER TABLE note_content ENGINE = InnoDB;");
+                mysql_query("ALTER TABLE note_likes ENGINE = InnoDB;");
+                mysql_query("ALTER TABLE note_tags ENGINE = InnoDB;");
+                mysql_query("ALTER TABLE notes ENGINE = InnoDB;");
+                mysql_query("ALTER TABLE overlay_tiles ENGINE = InnoDB;");
+                mysql_query("ALTER TABLE overlays ENGINE = InnoDB;");
+                mysql_query("ALTER TABLE player_group ENGINE = InnoDB;");
+                mysql_query("ALTER TABLE player_log ENGINE = InnoDB;");
+                mysql_query("ALTER TABLE players ENGINE = InnoDB;");
+                mysql_query("ALTER TABLE spawnables ENGINE = InnoDB;");
+                mysql_query("ALTER TABLE web_hooks ENGINE = InnoDB;");
+                mysql_query("ALTER TABLE web_pages ENGINE = InnoDB;");
+
+		if (mysql_error()) return new returnData(6, NULL, 'cannot create folder contents table: ' . mysql_error());
+	}
+
+	public function deleteNewTables(){
+		$query = "DROP TABLE folder_contents, folders, items, locations, nodes, npc_conversations, npcs, player_items, player_state_changes, qrcodes, quests, requirements";
+		mysql_query($query);
+	}
+
+	/**
+	 * Migrate a game to new table set
+	 * @returns returnCode = 0 on success
+	 */	
+	public function migrateGame($intGameId)
+	{
+		$newItemIds = array();
+		$query = "SELECT * FROM {$intGameId}_items";
+		$result = mysql_query($query);
+		while($result &&  $row = mysql_fetch_object($result)){
+			$query = "INSERT INTO items (name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight, url, type) SELECT name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight, url, type FROM {$intGameId}_items WHERE item_id = {$row->item_id}";
+			mysql_query($query);
+			$newItemIds[$row->item_id] = mysql_insert_id();
+			$query = "UPDATE items SET game_id = '{$intGameId}' WHERE item_id = '{$newItemIds[$row->item_id]}'";
+			mysql_query($query);
+		}
+
+		$newNpcIds = array();
+		$query = "SELECT * FROM {$intGameId}_npcs";
+		$result = mysql_query($query);
+		while($result && $row = mysql_fetch_object($result)){
+			$query = "INSERT INTO npcs (name, description, text, closing, media_id, icon_media_id) SELECT name, description, text, closing, media_id, icon_media_id FROM {$intGameId}_npcs WHERE npc_id = {$row->npc_id}";
+			mysql_query($query);
+			$newNpcIds[$row->npc_id] = mysql_insert_id();
+			$query = "UPDATE npcs SET game_id = '{$intGameId}' WHERE npc_id = '{$newNpcIds[$row->npc_id]}'";
+			mysql_query($query);
+		}
+
+		$newNodeIds = array();
+		$query = "SELECT * FROM {$intGameId}_nodes";
+		$result = mysql_query($query);
+		while($result && $row = mysql_fetch_object($result)){
+			$query = "INSERT INTO nodes (title, text, opt1_text, opt1_node_id, opt2_text, opt2_node_id, opt3_text, opt3_node_id, require_answer_incorrect_node_id, require_answer_string, require_answer_correct_node_id, media_id, icon_media_id) SELECT title, text, opt1_text, opt1_node_id, opt2_text, opt2_node_id, opt3_text, opt3_node_id, require_answer_incorrect_node_id, require_answer_string, require_answer_correct_node_id, media_id, icon_media_id FROM {$intGameId}_nodes WHERE node_id = {$row->node_id}";
+			mysql_query($query);
+			$newNodeIds[$row->node_id] = mysql_insert_id();
+			$query = "UPDATE nodes SET game_id = '{$intGameId}' WHERE node_id = '{$newNodeIds[$row->node_id]}'";
+			mysql_query($query);
+		}
+
+		$newFolderContentIds = array();
+		$query = "SELECT * FROM {$intGameId}_folder_contents";
+		$result = mysql_query($query);
+		while($result && $row = mysql_fetch_object($result)){
+			$query = "INSERT INTO folder_contents (folder_id, content_type, content_id, previous_id) SELECT folder_id, content_type, content_id, previous_id FROM {$intGameId}_folder_contents WHERE object_content_id = {$row->object_content_id}";
+			mysql_query($query);
+			$newFolderContentIds[$row->object_content_id] = mysql_insert_id();
+			$query = "UPDATE folder_contents SET game_id = '{$intGameId}' WHERE object_content_id = '{$newFolderContentIds[$row->object_content_id]}'";
+			mysql_query($query);
+		}
+
+		$newFolderIds = array();
+		$query = "SELECT * FROM {$intGameId}_folders";
+		$result = mysql_query($query);
+		while($result && $row = mysql_fetch_object($result)){
+			$query = "INSERT INTO folders (name, parent_id, previous_id, is_open) SELECT name, parent_id, previous_id, is_open FROM {$intGameId}_folders WHERE folder_id = {$row->folder_id}";
+			mysql_query($query);
+			$newFolderIds[$row->folder_id] = mysql_insert_id();
+			$query = "UPDATE folders SET game_id = '{$intGameId}' WHERE folder_id = '{$newFolderIds[$row->folder_id]}'";
+			mysql_query($query);
+		}
+
+		$query = "SELECT * FROM folder_contents WHERE game_id = {$intGameId}";
+		$result = mysql_query($query);
+		while($result && $row = mysql_fetch_object($result)){
+			if($row->folder_id != 0)
+			{
+				$query = "UPDATE folder_contents SET folder_id = {$newFolderIds[$row->folder_id]} WHERE game_id = '{$intGameId}' AND object_content_id = {$row->object_content_id}";
+				mysql_query($query);
+			} 
+			if($row->content_type == "Node"){
+				$query = "UPDATE folder_contents SET content_id = {$newNodeIds[$row->content_id]} WHERE game_id = '{$intGameId}' AND object_content_id = {$row->object_content_id}";
+				mysql_query($query);
+			}
+			else if($row->content_type == "Item"){
+				$query = "UPDATE folder_contents SET content_id = {$newItemIds[$row->content_id]} WHERE game_id = '{$intGameId}' AND object_content_id = {$row->object_content_id}";
+				mysql_query($query);
+			}
+			else if($row->content_type == "Npc"){
+				$query = "UPDATE folder_contents SET content_id = {$newNpcIds[$row->content_id]} WHERE game_id = '{$intGameId}' AND object_content_id = {$row->object_content_id}";
+				mysql_query($query);
+			}
+		}
+
+		$query = "SELECT * FROM folders WHERE game_id = {$intGameId}";
+		$result = mysql_query($query);
+		while($row = mysql_fetch_object($result)) {
+			if($row->parent_id != 0 && is_numeric($newFolderIds[$row->parent_id])) {
+				$query = "UPDATE folders SET parent_id = {$newFolderIds[$row->parent_id]}  WHERE game_id = '{$intGameId}' AND folder_id = {$row->folder_id}";
+				mysql_query($query);
+			}
+		}
+
+		$newLocationIds = array();
+		$query = "SELECT * FROM {$intGameId}_locations";
+		$result = mysql_query($query);
+		while($result && $row = mysql_fetch_object($result)){
+			$query = "INSERT INTO locations (name, description, latitude, longitude, error, type, type_id, icon_media_id, item_qty, hidden, force_view, allow_quick_travel, wiggle, show_title) SELECT name, description, latitude, longitude, error, type, type_id, icon_media_id, item_qty, hidden, force_view, allow_quick_travel, wiggle, show_title FROM {$intGameId}_locations WHERE location_id = {$row-> location_id}";
+			mysql_query($query);
+			$newLocationIds[$row->location_id] = mysql_insert_id();
+			$query = "UPDATE locations SET game_id = '{$intGameId}' WHERE location_id = '{$newLocationIds[$row->location_id]}'";
+			mysql_query($query);
+			if($row->type == "Node"){
+				$query = "UPDATE locations SET type_id = {$newNodeIds[$row->type_id]} WHERE game_id = '{$intGameId}' AND location_id = {$newLocationIds[$row->location_id]}";
+				mysql_query($query);
+			}
+			else if($row->type == "Item"){
+				$query = "UPDATE locations SET type_id = {$newItemIds[$row->type_id]} WHERE game_id = '{$intGameId}' AND location_id = {$newLocationIds[$row->location_id]}";
+				mysql_query($query);
+			}
+			else if($row->type == "Npc"){
+				$query = "UPDATE locations SET type_id = {$newNpcIds[$row->type_id]} WHERE game_id = '{$intGameId}' AND location_id = {$newLocationIds[$row->location_id]}";
+				mysql_query($query);
+			}
+		}
+
+		$newNpcConversationIds = array();
+		$query = "SELECT * FROM {$intGameId}_npc_conversations";
+		$result = mysql_query($query);
+		while($result && $row = mysql_fetch_object($result)){
+			$query = "INSERT INTO npc_conversations (npc_id, node_id, text, sort_index) SELECT npc_id, node_id, text, sort_index FROM {$intGameId}_npc_conversations WHERE conversation_id = {$row->conversation_id}";
+			mysql_query($query);
+			$newNpcConversationIds[$row->conversation_id] = mysql_insert_id();
+			$query = "UPDATE npc_conversations SET game_id = '{$intGameId}' WHERE conversation_id = {$newNpcConversationIds[$row->conversation_id]}";
+			mysql_query($query);
+			$query = "UPDATE npc_conversations SET node_id = {$newNodeIds[$row->node_id]} WHERE game_id = '{$intGameId}' AND conversation_id = {$newNpcConversationIds[$row->conversation_id]}";
+			mysql_query($query);
+			$query = "UPDATE npc_conversations SET npc_id = {$newNpcIds[$row->npc_id]} WHERE game_id = '{$intGameId}' AND conversation_id = {$newNpcConversationIds[$row->conversation_id]}";
+			mysql_query($query);
+
+		} 
+
+		$newPlayerItemIds = array();
+		$query = "SELECT * FROM {$intGameId}_player_items";
+		$result = mysql_query($query);
+		while($result && $row = mysql_fetch_object($result)){
+			$query = "INSERT INTO player_items (player_id, item_id, qty, timestamp) SELECT player_id, item_id, qty, timestamp FROM {$intGameId}_player_items WHERE id = {$row->id}";
+			mysql_query($query);
+			$newPlayerItemIds[$row->id] = mysql_insert_id();
+			$query = "UPDATE player_items SET game_id = '{$intGameId}' WHERE id = {$newPlayerItemIds[$row->id]}";
+			mysql_query($query);
+			$query = "UPDATE player_items SET item_id = {$newItemIds[$row->item_id]} WHERE game_id = '{$intGameId}' AND id = {$newPlayerItemIds[$row->id]}";
+			mysql_query($query);
+		}
+
+		$newPlayerStateChangesIds = array();
+		$query = "SELECT * FROM {$intGameId}_player_state_changes";
+		$result = mysql_query($query);
+		while($result && $row = mysql_fetch_object($result)){
+			$query = "INSERT INTO player_state_changes (event_type, event_detail, action, action_detail, action_amount) SELECT event_type, event_detail, action, action_detail, action_amount FROM {$intGameId}_player_state_changes WHERE id = {$row->id}";
+			mysql_query($query);
+			$newPlayerStateChangesIds[$row->id] = mysql_insert_id();
+			$query = "UPDATE player_state_changes SET game_id = '{$intGameId}' WHERE id = {$newPlayerStateChangesIds[$row->id]}";
+			mysql_query($query);
+			$query = "UPDATE player_state_changes SET action_detail = {$newItemIds[$row->action_detail]} WHERE game_id = '{$intGameId}' AND id = {$newPlayerStateChangesIds[$row->id]}";
+			mysql_query($query);
+			if($row->event_type == "VIEW_ITEM"){
+				$query = "UPDATE player_state_changes SET event_detail = {$newItemIds[$row->event_detail]} WHERE game_id = '{$intGameId}' AND id = {$newPlayerStateChangesIds[$row->id]}";
+				mysql_query($query);
+			}
+			else if($row->event_type == "VIEW_NODE"){
+				$query = "UPDATE player_state_changes SET event_detail = {$newNodeIds[$row->event_detail]} WHERE game_id = '{$intGameId}' AND id = {$newPlayerStateChangesIds[$row->id]}";
+				mysql_query($query);
+			}
+			else if($row->event_type == "VIEW_NPC"){
+				$query = "UPDATE player_state_changes SET event_detail = {$newNpcIds[$row->event_detail]} WHERE game_id = '{$intGameId}' AND id = {$newPlayerStateChangesIds[$row->id]}";
+				mysql_query($query);
+			}
+		}
+
+		$newQrcodeIds = array();
+		$query = "SELECT * FROM {$intGameId}_qrcodes";
+		$result = mysql_query($query);
+		while($result && $row = mysql_fetch_object($result)){
+			$query = "INSERT INTO qrcodes (link_type, link_id, code, match_media_id) SELECT link_type, link_id, code, match_media_id FROM {$intGameId}_qrcodes WHERE qrcode_id = {$row->qrcode_id}";
+			mysql_query($query);
+			$newQrcodeIds[$row->qrcode_id] = mysql_insert_id();
+			$query = "UPDATE qrcodes SET game_id = '{$intGameId}' WHERE qrcode_id = {$newQrcodeIds[$row->qrcode_id]}";
+			mysql_query($query);
+			$query = "UPDATE qrcodes SET link_id = {$newLocationIds[$row->link_id]} WHERE game_id = '{$intGameId}' AND qrcode_id = {$newQrcodeIds[$row->qrcode_id]}";
+			mysql_query($query);
+		}
+
+		$newQuestIds = array();
+		$query = "SELECT * FROM {$intGameId}_quests";
+		$result = mysql_query($query);
+		while($result && $row = mysql_fetch_object($result)){
+			$query = "INSERT INTO quests (name, description, text_when_complete, icon_media_id, sort_index) SELECT name, description, text_when_complete, icon_media_id, sort_index FROM {$intGameId}_quests WHERE quest_id = {$row->quest_id}";
+			mysql_query($query);
+			$newQuestIds[$row->quest_id] = mysql_insert_id();
+			$query = "UPDATE quests SET game_id = '{$intGameId}' WHERE quest_id = {$newQuestIds[$row->quest_id]}";
+			mysql_query($query);
+		}
+
+		$newRequirementIds = array();
+		$query = "SELECT * FROM {$intGameId}_requirements";
+		$result = mysql_query($query);
+		while($result && $row = mysql_fetch_object($result)){
+			$query = "INSERT INTO requirements (content_type, content_id, requirement, not_operator, boolean_operator, requirement_detail_1, requirement_detail_2, requirement_detail_3, requirement_detail_4) SELECT content_type, content_id, requirement, not_operator, boolean_operator, requirement_detail_1, requirement_detail_2, requirement_detail_3, requirement_detail_4 FROM {$intGameId}_requirements WHERE requirement_id = {$row->requirement_id}";
+			mysql_query($query);
+			$newRequirementIds[$row->requirement_id] = mysql_insert_id();
+			$query = "UPDATE requirements SET game_id = '{$intGameId}' WHERE requirement_id = {$newRequirementIds[$row->requirement_id]}";
+			mysql_query($query);
+			if($row->content_type == "Node"){
+				$query = "UPDATE requirements SET content_id = {$newNodeIds[$row->content_id]} WHERE game_id = '{$intGameId}' AND requirement_id = {$newRequirementIds[$row->requirement_id]}";
+				mysql_query($query);
+			}
+			else if($row->content_type == "QuestDisplay" || $row->content_type == "QuestComplete"){
+				$query = "UPDATE requirements SET content_id = {$newQuestIds[$row->content_id]} WHERE game_id = '{$intGameId}' AND requirement_id = {$newRequirementIds[$row->requirement_id]}";
+				mysql_query($query);
+			}
+			else if($row->content_type == "Location"){
+				$query = "UPDATE requirements SET content_id = {$newLocationIds[$row->content_id]} WHERE game_id = '{$intGameId}' AND requirement_id = {$newRequirementIds[$row->requirement_id]}";
+				mysql_query($query);
+			}
+
+			if($row->requirement == "PLAYER_HAS_ITEM" || $row->requirement == "PLAYER_VIEWED_ITEM"){
+				$query = "UPDATE requirements SET requirement_detail_1 = {$newItemIds[$row->requirement_detail_1]} WHERE game_id = '{$intGameId}' AND requirement_id = {$newRequirementIds[$row->requirement_id]}";
+				mysql_query($query);
+			}
+			else if($row->requirement == "PLAYER_VIEWED_NODE"){
+				$query = "UPDATE requirements SET requirement_detail_1 = {$newNodeIds[$row->requirement_detail_1]} WHERE game_id = '{$intGameId}' AND requirement_id = {$newRequirementIds[$row->requirement_id]}";
+				mysql_query($query);
+			}
+			else if($row->requirement == "PLAYER_VIEWED_NPC"){
+				$query = "UPDATE requirements SET requirement_detail_1 = {$newNpcIds[$row->requirement_detail_1]} WHERE game_id = '{$intGameId}' AND requirement_id = {$newRequirementIds[$row->requirement_id]}";
+				mysql_query($query);
+			}
+			else if($row->requirement == "PLAYER_HAS_COMPLETED_QUEST"){
+				$query = "UPDATE requirements SET requirement_detail_1 = {$newQuestIds[$row->requirement_detail_1]} WHERE game_id = '{$intGameId}' AND requirement_id = {$newRequirementIds[$row->requirement_id]}";
+				mysql_query($query);
+			}
+		}
+
+		$newIdsArray = array($newFolderIds, $newFolderContentIds, $newItemIds, $newLocationIds, $newNodeIds, $newNpcConversationIds, $newNpcIds, $newPlayerItemIds, $newPlayerStateChangesIds, $newQrcodeIds, $newQuestIds, $newRequirementIds);
+		return $newIdsArray;
+	}
+
+	public function oneTimeTableUpdate($newIdsArray, $intGameId, $onLaunchNodeId)
+	{
+		$newNodeIds = $newIdsArray[4];
+		$newItemIds = $newIdsArray[2];
+		$newNpcIds = $newIdsArray[6];
+		$newLocationsIds = $newIdsArray[3];
+		$newQuestIds = $newIdsArray[10];
+
+		$query = "UPDATE games SET on_launch_node_id = {$newNodeIds[$onLaunchNodeId]} WHERE game_id = {$intGameId}";
+		mysql_query($query);
+
+		$query = "SELECT * FROM spawnables WHERE game_id = {$intGameId}";
+		$result = mysql_query($query);
+		while($result && $row = mysql_fetch_object($result)){
+			if($row->type == "Node"){
+				$query = "UPDATE spawnables SET type_id = {$newNodeIds[$row->type_id]} WHERE game_id = '{$intGameId}' AND spawnable_id = {$row->spawnable_id}";
+				mysql_query($query);
+			}
+			else if($row->type == "Item"){
+				$query = "UPDATE spawnables SET type_id = {$newItemIds[$row->type_id]} WHERE game_id = '{$intGameId}' AND spawnable_id = {$row->spawnable_id}";
+				mysql_query($query);
+			}
+			else if($row->type == "Npc"){
+				$query = "UPDATE spawnables SET type_id = {$newNpcIds[$row->type_id]} WHERE game_id = '{$intGameId}' AND spawnable_id = {$row->spawnable_id}";
+				mysql_query($query);
+			}
+		}
+
+		$query = "SELECT * FROM fountains WHERE game_id = {$intGameId}";
+		$result = mysql_query($query);
+		while($result && $row = mysql_fetch_object($result)){
+			if($row->type == "Location"){
+				$query = "UPDATE fountians SET location_id = {$newLocationIds[$row->location_id]} WHERE game_id = '{$intGameId}' AND fountain_id = {$row->fountain_id}";
+				mysql_query($query);
+			}
+		}
+
+		$query = "SELECT * FROM player_log WHERE game_id = {$intGameId}";
+		$result = mysql_query($query);
+		while($result && $row = mysql_fetch_object($result)){
+			if($row->content_type == "VIEW_NODE"){
+				$query = "UPDATE player_log SET event_detail_1 = {$newNodeIds[$row->event_detail_1]} WHERE game_id = '{$intGameId}' AND id = {$row->id}";
+				mysql_query($query);
+			}
+			else if($row->event_type == "PICKUP_ITEM" || $row->event_type == "DROP_ITEM"|| $row->event_type == "DESTROY_ITEM" || $row->event_type == "VIEW_ITEM"){
+				$query = "UPDATE player_log SET event_detail_1 = {$newItemIds[$row->event_detail_1]} WHERE game_id = '{$intGameId}' AND id = {$row->id}";
+				mysql_query($query);
+			}
+			else if($row->event_type == "VIEW_NPC"){
+				$query = "UPDATE player_log SET event_detail_1 = {$newNpcIds[$row->event_detail_1]} WHERE game_id = '{$intGameId}' AND id = {$row->id}";
+				mysql_query($query);
+			}
+			else if($row->event_type == "VIEW_QUESTS" || $row->event_type == "COMPLETE_QUEST"){
+				$query = "UPDATE player_log SET event_detail_1 = {$newQuestIds[$row->event_detail_1]} WHERE game_id = '{$intGameId}' AND id = {$row->id}";
+				mysql_query($query);
+			}
+		}
+	}
+
+	public function checkXMLBeforeMigration()    
+	{
+		set_time_limit(30);
+		$query = "SELECT * FROM games ORDER BY game_id";
+		$rs = mysql_query($query);
+		while ($rs &&  $game = mysql_fetch_object($rs)) 
+		{
+		$intGameId = $game->game_id;
+		//NOTE: substr removes <?xml version="1.0" ? //> from the beginning of the text
+		$query = "SELECT * FROM {$intGameId}_nodes";
+		$result = mysql_query($query);
+		while($result && $row = mysql_fetch_object($result)) {
+			if($row->text){
+				$inputString = $row->text;
+				if((strspn($inputString,"<>") > 0) && ((substr_count($inputString, "<npc>") > 0) || (substr_count($inputString, "<pc>") > 0) || (substr_count($inputString, "<dialog>") > 0)) && !(substr_count($inputString,"<p>") > 0) && !(substr_count($inputString,"<b>") > 0) && !(substr_count($inputString,"<i>") > 0) && !(substr_count($inputString,"<img") > 0) && !(substr_count($inputString,"<table>") > 0)){
+                     		@$output = simplexml_load_string($inputString);
+					if(!$output) Module::serverErrorLog("Problem with game {$intGameId} with node {$row->node_id}");
+                                }
+			}
+		}
+
+		$query = "SELECT * FROM {$prefix}_npcs";
+		$result = mysql_query($query);
+		while($result && $row = mysql_fetch_object($result)) {
+			if($row->text){
+				$inputString = $row->text;
+				if((strspn($inputString,"<>") > 0) && ((substr_count($inputString, "<npc>") > 0) || (substr_count($inputString, "<pc>") > 0) || (substr_count($inputString, "<dialog>") > 0)) && !(substr_count($inputString,"<p>") > 0) && !(substr_count($inputString,"<b>") > 0) && !(substr_count($inputString,"<i>") > 0) && !(substr_count($inputString,"<img") > 0) && !(substr_count($inputString,"<table>") > 0)){
+                     		@$output = simplexml_load_string($inputString);
+					if(!$output) Module::serverErrorLog("Problem with game {$intGameId} with npc {$row->npc_id}");
+                              }
+			}
+			if($row->closing){
+				$inputString = $row->closing;
+				if((strspn($inputString,"<>") > 0) && ((substr_count($inputString, "<npc>") > 0) || (substr_count($inputString, "<pc>") > 0) || (substr_count($inputString, "<dialog>") > 0)) && !(substr_count($inputString,"<p>") > 0) && !(substr_count($inputString,"<b>") > 0) && !(substr_count($inputString,"<i>") > 0) && !(substr_count($inputString,"<img") > 0) && !(substr_count($inputString,"<table>") > 0)){
+                     		@$output = simplexml_load_string($inputString);
+					if(!$output) Module::serverErrorLog("Problem with game {$intGameId} with npc {$row->npc_id}");
+                          }
+			}
+		}    
+             }
+	}
+
+	public function updateXMLAfterMigration($newIdsArray, $intGameId)    
+	{
+		//NOTE: substr removes <?xml version="1.0" ? //> from the beginning of the text
+		$query = "SELECT * FROM nodes WHERE game_id = {$intGameId}";
+		$result = mysql_query($query);
+		while($row = mysql_fetch_object($result)) {
+			if($row->text){
+				$inputString = $row->text;
+				if((strspn($inputString,"<>") > 0) && ((substr_count($inputString, "<npc>") > 0) || (substr_count($inputString, "<pc>") > 0) || (substr_count($inputString, "<dialog>") > 0)) && !(substr_count($inputString,"<p>") > 0) && !(substr_count($inputString,"<b>") > 0) && !(substr_count($inputString,"<i>") > 0) && !(substr_count($inputString,"<img") > 0) && !(substr_count($inputString,"<table>") > 0)){
+					$output = Games::replaceXMLIdsForMigration($inputString, $newIdsArray);
+                                 	if(!$output) Module::serverErrorLog("Problem with game {$intGameId} with node {$row->node_id}");
+					else{
+					$output = substr($output,22);
+					$updateQuery = "UPDATE nodes SET text = '".addslashes($output)."' WHERE node_id = {$row->node_id} AND game_id = {$intGameId}";
+					mysql_query($updateQuery);
+					}
+				}
+			}
+		}
+
+		$query = "SELECT * FROM npcs WHERE game_id = {$intGameId}";
+		$result = mysql_query($query);
+		while($row = mysql_fetch_object($result)) {
+			if($row->text){
+				$inputString = $row->text;
+				if((strspn($inputString,"<>") > 0) && ((substr_count($inputString, "<npc>") > 0) || (substr_count($inputString, "<pc>") > 0) || (substr_count($inputString, "<dialog>") > 0)) && !(substr_count($inputString,"<p>") > 0) && !(substr_count($inputString,"<b>") > 0) && !(substr_count($inputString,"<i>") > 0) && !(substr_count($inputString,"<img") > 0) && !(substr_count($inputString,"<table>") > 0)){ 
+					$output = Games::replaceXMLIdsForMigration($inputString, $newIdsArray);
+					if(!$output) Module::serverErrorLog("Problem with game {$intGameId} with npc {$row->npc_id}");
+					else{
+					$output = substr($output,22);
+					$updateQuery = "UPDATE npcs SET text = '".addslashes($output)."' WHERE npc_id = {$row->npc_id} AND game_id = {$intGameId}";
+					mysql_query($updateQuery);
+					}
+				}
+			}
+			if($row->closing){
+				$inputString = $row->closing;
+				if((strspn($inputString,"<>") > 0) && ((substr_count($inputString, "<npc>") > 0) || (substr_count($inputString, "<pc>") > 0) || (substr_count($inputString, "<dialog>") > 0)) && !(substr_count($inputString,"<p>") > 0) && !(substr_count($inputString,"<b>") > 0) && !(substr_count($inputString,"<i>") > 0) && !(substr_count($inputString,"<img") > 0) && !(substr_count($inputString,"<table>") > 0)){
+					$output = Games::replaceXMLIdsForMigration($inputString, $newIdsArray);
+					if(!$output) Module::serverErrorLog("Problem with game {$intGameId} with npc {$row->npc_id}");
+					else{
+					$output = substr($output,22);
+					$updateQuery = "UPDATE npcs SET closing = '".addslashes($output)."' WHERE npc_id = {$row->npc_id} AND game_id = {$intGameId}";
+					mysql_query($updateQuery);
+					}
+				}
+			}
+		}    
+	}
+
+	static function replaceXMLIdsForMigration($inputString, $newIdsArray)
+	{
+		$kTagExitToPlaque = "exitToPlaque";
+		$kTagExitToCharacter = "exitToCharacter";
+		$kTagExitToItem = "exitToItem";
+		$kTagPlaque = "plaque";
+		$kTagItem = "item";
+		$kTagId = "id";
+		//& sign will break xml parser, so this is necessary
+		$inputString = str_replace("&", "&#x26;", $inputString);
+
+		@$xml = simplexml_load_string($inputString);
+		if(!$xml) return false; 
+
+		foreach($xml->attributes() as $attributeTitle => $attributeValue)
+		{ 
+			if(strcmp($attributeTitle, $kTagExitToPlaque) == 0){
+				$xml[$attributeTitle] = Games::getNewId($attributeValue, $newIdsArray[4]);
+			}
+			else if(strcmp($attributeTitle, $kTagExitToCharacter) == 0){
+				$xml[$attributeTitle] = Games::getNewId($attributeValue, $newIdsArray[6]);
+			}
+			else if(strcmp($attributeTitle, $kTagExitToItem) == 0){
+				$xml[$attributeTitle] = Games::getNewId($attributeValue, $newIdsArray[2]);
+			}
+		}
+
+		foreach($xml->children() as $child)
+		{
+			foreach($child->attributes() as $attributeTitle => $attributeValue)
+			{ 
+				if(strcmp($attributeTitle, $kTagExitToPlaque) == 0){
+					$child[$attributeTitle] = Games::getNewId($attributeValue, $newIdsArray[4]);
+				}
+				else if(strcmp($attributeTitle, $kTagExitToCharacter) == 0){
+					$child[$attributeTitle] = Games::getNewId($attributeValue, $newIdsArray[6]);
+				}
+				else if(strcmp($attributeTitle, $kTagExitToItem) == 0){
+					$child[$attributeTitle] = Games::getNewId($attributeValue, $newIdsArray[2]);
+				}
+				else if(strcmp($child->getName(), $kTagPlaque) == 0 && strcmp($attributeTitle, $kTagId) == 0){
+					$child[$attributeTitle] = Games::getNewId($attributeValue, $newIdsArray[4]);
+				}
+				else if(strcmp($child->getName(), $kTagItem) == 0 && strcmp($attributeTitle, $kTagId) == 0){
+					$child[$attributeTitle] = Games::getNewId($attributeValue, $newIdsArray[2]);
+				}
+			}
+		}
+		$output = $xml->asXML();
+		$output = str_replace("&#x2019;", "'", $output);
+		$output = str_replace("&amp;", "&", $output);
+		$output = str_replace("&#x2014;", "-", $output);
+		$output = str_replace("&#x201C;", "\"", $output);
+		$output = str_replace("&#x201D;", "\"", $output);
+		$output = str_replace("&#xB0;", "°", $output);
+		$output = str_replace("&#xAE;", "®", $output);
+		$output = str_replace("&#x2122;", "™", $output);
+		$output = str_replace("&#xA9;", "©", $output);
+		return $output;
+	}
+
+	public function oldDeleteGame($intGameID)
+	{
 		$returnData = new returnData(0, NULL, NULL);
 
 		$prefix = Module::getPrefix($intGameID);
