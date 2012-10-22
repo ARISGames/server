@@ -88,7 +88,7 @@ class Quests extends Module
 	 * Create an Event
 	 * @returns the new eventID on success
 	 */
-	public function createQuest($intGameID, $strName, $strIncompleteDescription, $strCompleteDescription, $intIconMediaID, $index)
+	public function createQuest($intGameId, $strName, $strIncompleteDescription, $strCompleteDescription, $intIconMediaID, $index, $exitToTab = 'NONE')
 	{
 
 		$strName = addslashes($strName);	
@@ -98,9 +98,9 @@ class Quests extends Module
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		$query = "INSERT INTO {$prefix}_quests 
-			(name, description, text_when_complete, icon_media_id, sort_index)
-			VALUES ('{$strName}','{$strIncompleteDescription}','{$strCompleteDescription}','{$intIconMediaID}','{$index}')";
+		$query = "INSERT INTO quests 
+			(game_id, name, description, text_when_complete, icon_media_id, sort_index, exit_to_tab)
+			VALUES ('{$prefix}','{$strName}','{$strIncompleteDescription}','{$strCompleteDescription}','{$intIconMediaID}','{$index}','{$exitToTab}')";
 
 		NetDebug::trace("Running a query = $query");	
 
@@ -116,7 +116,7 @@ class Quests extends Module
 	 * Update a specific Event
 	 * @returns true if edit was done, false if no changes were made
 	 */
-	public function updateQuest($intGameID, $intQuestID, $strName, $strIncompleteDescription, $strCompleteDescription, $intIconMediaID, $index)
+	public function updateQuest($intGameId, $intQuestID, $strName, $strIncompleteDescription, $strCompleteDescription, $intIconMediaID, $index, $exitToTab = 'NONE')
 	{
 
 		$strName = addslashes($strName);	
@@ -133,7 +133,8 @@ class Quests extends Module
 			     text_when_complete = '{$strCompleteDescription}',
 			     icon_media_id = '{$intIconMediaID}',
 			     sort_index = '{$index}'
-				     WHERE quest_id = '{$intQuestID}'";
+			     exit_to_tab = '{$exitToTab}'
+				     WHERE game_id = {$prefix} AND quest_id = '{$intQuestID}'";
 
 		NetDebug::trace("Running a query = $query");	
 

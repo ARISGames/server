@@ -284,7 +284,8 @@ function Controller()
         {
             var bounds = new google.maps.LatLngBounds();
             for(var i = 0; i < model.mapMarkers.length; i++)
-                bounds.extend(model.mapMarkers[i].object.geoloc);
+                if(model.mapMarkers[i].object.geoloc.lat != 0 && model.mapMarkers[i].object.geoloc.lon != 0)
+                    bounds.extend(model.mapMarkers[i].object.geoloc);
             setTimeout(function(){ model.views.gmap.fitBounds(bounds); }, 100);
         }
     }

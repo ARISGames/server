@@ -333,7 +333,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
         Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_ITEM, $intItemID, $intLocationID);
         
         
-        $query = "UPDATE {$prefix}_player_items SET viewed = 1 WHERE player_id = {$intPlayerID} AND item_id = {$intItemID}";
+        $query = "UPDATE player_items SET viewed = 1 WHERE game_id = {$intGameID} AND player_id = {$intPlayerID} AND item_id = {$intItemID}";
         
         NetDebug::trace($query);
         

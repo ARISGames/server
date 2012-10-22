@@ -65,6 +65,7 @@ function finishLoadGame(responseText)
 
     model.gameJSONText = responseText;
     model.gameData = responseData.data;
+    alert(responseText);
 
     //Initialize a few views
     model.views.contributorMapFilterSelector.appendChild(model.views.defaultContributorMapFilterSelectorCell);

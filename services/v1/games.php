@@ -892,6 +892,9 @@ class Games extends Module
 
 	//	Test::killOrphansBeforeMigration();
 		Games::createNewTablesForMigration();
+                //1686
+                //1932
+                //2788
 		$query = "SELECT * FROM games ORDER BY game_id";
 		$rs = mysql_query($query);
 		while ($game = mysql_fetch_object($rs)) 
@@ -2159,8 +2162,12 @@ class Games extends Module
 		$query = "INSERT INTO {$newPrefix}_items (item_id, name, description, is_attribute, icon_media_id, media_id, dropable, tradeable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight, url, type) SELECT item_id, name, description, is_attribute, icon_media_id, media_id, dropable, tradeable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight, url, type FROM {$prefix}_items";
 		mysql_query($query);
 
-		$query = "INSERT INTO {$newPrefix}_locations (location_id, name, description, latitude, longitude, error, type, type_id, icon_media_id, item_qty, hidden, force_view, allow_quick_travel) SELECT location_id, name, description, latitude, longitude, error, type, type_id, icon_media_id, item_qty, hidden, force_view, allow_quick_travel FROM {$prefix}_locations";
-		mysql_query($query);
+		$query = "SELECT * FROM quests WHERE game_id = {$prefix}";
+		$result = mysql_query($query);
+		while($result && $row = mysql_fetch_object($result)){
+			$query = "INSERT INTO quests(game_id, name, description, text_when_complete, icon_media_id, exit_to_tab) VALUES ('{$newPrefix}', '{$row->name}', '{$row->description}', '{$row->text_when_complete}', '{$row->icon_media_id}', '{$row->boolean_operator}', '{$row->exit_to_tab}')";
+			mysql_query($query);
+			$newID = mysql_insert_id();
 
 		$query = "INSERT INTO {$newPrefix}_nodes (node_id, title, text, opt1_text, opt1_node_id, opt2_text, opt2_node_id, opt3_text, opt3_node_id, require_answer_incorrect_node_id, require_answer_string, require_answer_correct_node_id, media_id, icon_media_id) SELECT node_id, title, text, opt1_text, opt1_node_id, opt2_text, opt2_node_id, opt3_text, opt3_node_id, require_answer_incorrect_node_id, require_answer_string, require_answer_correct_node_id, media_id, icon_media_id FROM {$prefix}_nodes";
 		mysql_query($query);
