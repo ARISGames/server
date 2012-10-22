@@ -1,10 +1,8 @@
 <?php
 require_once("module.php");
 
-
 class Media extends Module
 {
-
 	const MEDIA_IMAGE = 'Image';
 	const MEDIA_ICON = 'Icon';
 	const MEDIA_VIDEO = 'Video';
@@ -12,7 +10,6 @@ class Media extends Module
 	protected $validImageAndIconTypes = array('jpg','png');
 	protected $validAudioTypes = array('mp3','m4a','caf');
 	protected $validVideoTypes = array('mp4','m4v','3gp','mov');
-
 
 	/**
 	 * Fetch all Media
@@ -26,9 +23,6 @@ class Media extends Module
 		if ($intGameID == 0) $query = "SELECT * FROM media WHERE game_id = 0";
 		else $query = "SELECT * FROM media WHERE game_id = {$prefix} or game_id = 0";
 
-		//NetDebug::trace($query);
-
-
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
@@ -40,21 +34,18 @@ class Media extends Module
 			$mediaItem = array();
 			$mediaItem['media_id'] = $mediaRow['media_id'];
 			$mediaItem['name'] = $mediaRow['name'];
-			$mediaItem['file_name'] = $mediaRow['file_name'];
-
-			$mediaItem['url_path'] = Config::gamedataWWWPath . "/{$mediaRow['game_id']}/" . Config::gameMediaSubdir;
+			$mediaItem['file_path'] = $mediaRow['file_path'];
+			$mediaItem['file_name'] = $mediaRow['file_path']; //this is for legacy reasons... Phil 10/12/2012
+			$mediaItem['url_path'] = Config::gamedataWWWPath . "/" . Config::gameMediaSubdir;
 
 			if ($mediaRow['is_icon'] == '1') $mediaItem['type'] = self::MEDIA_ICON;
-			else $mediaItem['type'] = $this->getMediaType($mediaRow['file_name']);
+			else $mediaItem['type'] = $this->getMediaType($mediaRow['file_path']);
 
 			if ($mediaRow['game_id'] == 0) $mediaItem['is_default'] = 1;
 			else $mediaItem['is_default'] = 0;
 
 			array_push($returnData->data, $mediaItem);
 		}
-
-		//NetDebug::trace($rsResult);
-
 		return $returnData;
 	}
 
@@ -64,38 +55,36 @@ class Media extends Module
 	 */
 	public function getMediaObject($intGameID, $intMediaID)
 	{
-		$prefix = Module::getPrefix($intGameID);
-		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+		if($intGameID == "player")
+			$prefix = 'null';
+		else
+		{
+			$prefix = Module::getPrefix($intGameID);
+			if (!$prefix) return new returnData(1, NULL, "invalid game id");
+		}
+	
 
-		$query = "SELECT * FROM media WHERE (game_id = {$prefix} OR game_id = 0) AND media_id = {$intMediaID} LIMIT 1";
+		$query = "SELECT * FROM media WHERE media_id = {$intMediaID} LIMIT 1";
 		//NetDebug::trace($query);
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		$mediaRow = mysql_fetch_object($rsResult);
-		if (!$mediaRow) {
-			//NetDebug::trace("No matching media id within the game, checking for a default");
-			$query = "SELECT * FROM media WHERE game_id = 0 AND media_id = {$intMediaID} LIMIT 1";
-			//NetDebug::trace($query);
-			$rsResult = @mysql_query($query);
-			if (mysql_error()) return new returnData(3, NULL, "SQL Error");	
-			$mediaRow = mysql_fetch_array($rsResult);
-			if (!$mediaRow) return new returnData(2, NULL, "No matching media for game");
-		}
+		if (!$mediaRow) return new returnData(2, NULL, "No matching media");
 
 		$mediaItem = new stdClass;
 		$mediaItem->media_id = $mediaRow->media_id;
 		$mediaItem->name = $mediaRow->name;
-		$mediaItem->file_name = $mediaRow->file_name;
+		$mediaItem->file_path = $mediaRow->file_path;
+		$mediaItem->file_name = $mediaRow->file_path; //this is for legacy reasons... Phil 10/12/2012
 
-		$mediaItem->url_path = Config::gamedataWWWPath . "/" .$mediaRow->game_id . "/" . Config::gameMediaSubdir;
+		$mediaItem->url_path = Config::gamedataWWWPath . "/" . Config::gameMediaSubdir;
 
 		if ($mediaRow->is_icon == '1') $mediaItem->type = self::MEDIA_ICON;
-		else $mediaItem->type = Media::getMediaType($mediaRow->file_name);
+		else $mediaItem->type = Media::getMediaType($mediaRow->file_path);
 
 		if ($mediaRow->game_id == 0) $mediaItem->is_default = 1;
 		else $mediaItem->is_default = 0;
-
 
 		return new returnData(0, $mediaItem);
 	}	
@@ -135,9 +124,13 @@ class Media extends Module
 	 */
 	public function createMedia($intGameID, $strName, $strFileName, $boolIsIcon)
 	{
-
-		$prefix = Module::getPrefix($intGameID);
-		if (!$prefix || $intGameID == 0) return new returnData(1, NULL, "invalid game id");
+		if($intGameID == 'player')
+			$prefix = '';
+		else
+		{
+			$prefix = Module::getPrefix($intGameID);
+			if (!$prefix || $intGameID == 0) return new returnData(1, NULL, "invalid game id");
+		}
 
 		$strName = addslashes($strName);
 
@@ -145,8 +138,8 @@ class Media extends Module
 			return new returnData(4, NULL, "Icons must have a valid Image file extension");
 
 		$query = "INSERT INTO media 
-			(media_id, game_id, name, file_name, is_icon)
-			VALUES ('".Module::findLowestIdFromTable('media','media_id')."','{$intGameID}','{$strName}', '{$strFileName}',{$boolIsIcon})";
+			(media_id, game_id, name, file_path, is_icon)
+			VALUES ('".Module::findLowestIdFromTable('media','media_id')."','{$prefix}','{$strName}', '".$intGameID."/".$strFileName."',{$boolIsIcon})";
 
 		NetDebug::trace("Running a query = $query");	
 
@@ -155,17 +148,16 @@ class Media extends Module
 
 		$media->media_id = mysql_insert_id();
 		$media->name = $strName;
-		$media->file_name = $strFileName;
+		$media->file_path = $intGameID."/".$strFileName;
+		$media->file_name = $intGameID."/".$strFileName; //this is for legacy reasons... Phil 10/12/2012
 		$media->is_icon = $boolIsIcon;
-		$media->url_path = Config::gamedataWWWPath . "/{$intGameID}/" . Config::gameMediaSubdir;
+		$media->url_path = Config::gamedataWWWPath . "/" . Config::gameMediaSubdir;
 
 		if ($media->is_icon == '1') $media->type = self::MEDIA_ICON;
-		else $media->type = Media::getMediaType($media->file_name);
+		else $media->type = Media::getMediaType($media->file_path);
 
 		return new returnData(0,$media);
 	}
-
-
 
 	/**
 	 * Update a specific Media
@@ -173,15 +165,20 @@ class Media extends Module
 	 */
 	public function renameMedia($intGameID, $intMediaID, $strName)
 	{
-		$prefix = Module::getPrefix($intGameID);
-		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+		if($intGameID == 'player')
+			$prefix = '';
+		else
+		{
+			$prefix = Module::getPrefix($intGameID);
+			if (!$prefix) return new returnData(1, NULL, "invalid game id");
+		}
 
 		$strName = addslashes($strName);
 
 		//Update this record
 		$query = "UPDATE media 
 			SET name = '{$strName}' 
-			WHERE media_id = '{$intMediaID}' and game_id = '{$intGameID}'";
+			WHERE media_id = '{$intMediaID}' and game_id = '{$prefix}'";
 
 		NetDebug::trace("updateNpc: Running a query = $query");	
 
@@ -201,7 +198,7 @@ class Media extends Module
 	{
 
 		$query = "SELECT * FROM media 
-			WHERE media_id = {$intMediaID} and game_id = {$intGameID}";
+			WHERE media_id = {$intMediaID}";
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:". mysql_error());
 
@@ -210,13 +207,13 @@ class Media extends Module
 
 		//Delete the Record
 		$query = "DELETE FROM media 
-			WHERE media_id = {$intMediaID} and game_id = {$intGameID}";
+			WHERE media_id = {$intMediaID}";
 
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
 
 		//Delete the file		
-		$fileToDelete = Config::gamedataFSPath . "/{$intGameID}/" . $mediaRow['file_name'];
+		$fileToDelete = Config::gamedataFSPath . "/" . $mediaRow['file_path'];
 		if (!@unlink($fileToDelete)) 
 			return new returnData(4, NULL, "Record Deleted but file was not: $fileToDelete");
 
@@ -260,6 +257,5 @@ class Media extends Module
 
 		return '';
 	}	
-
 }
 ?>

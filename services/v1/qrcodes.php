@@ -180,8 +180,8 @@ class QRCodes extends Module
 			FROM {$prefix}_qrcodes 
 			JOIN media 
 			ON ({$prefix}_qrcodes.match_media_id = media.media_id)
-			WHERE media.file_name = '{$fileName}.jpg'
-			OR media.file_name = '{$fileName}.png'
+			WHERE media.file_path = '{$fileName}.jpg'
+			OR media.file_path = '{$fileName}.png'
 			LIMIT 1";
 
 		NetDebug::trace('query: ' . $query);

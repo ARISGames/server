@@ -11,8 +11,8 @@ $conn = mysql_pconnect(Config::dbHost, Config::dbUser, Config::dbPass);
 mysql_select_db (Config::dbSchema);
 $prefix = $_REQUEST['gameId'];
 //$query = "SELECT {$prefix}_items.*, media.*, players.* FROM {$prefix}_items, media, players WHERE {$prefix}_items.media_id = media.media_id AND {$prefix}_items.creator_player_id = players.player_id";
-$query = "SELECT m.note_id, m.user_name, m.content_id, m.title, m.file_name, {$prefix}_locations.latitude, {$prefix}_locations.longitude FROM 
-(SELECT nc.note_id, nc.user_name, nc.content_id, nc.title, media.file_name FROM 
+$query = "SELECT m.note_id, m.user_name, m.content_id, m.title, m.file_path, game_locations.latitude, game_locations.longitude FROM 
+(SELECT nc.note_id, nc.user_name, nc.content_id, nc.title, media.file_path FROM 
  (SELECT n.note_id, n.user_name, note_content.content_id, note_content.title, note_content.media_id FROM 
   (SELECT notes.note_id, players.user_name FROM notes LEFT JOIN players ON notes.owner_id = players.player_id WHERE game_id='{$prefix}')
   AS n LEFT JOIN note_content ON n.note_id = note_content.note_id)
@@ -40,7 +40,7 @@ while ($nextRow)
 	$description[] = "<strong>Created By:</strong> {$nextRow['user_name']}<br/>";
 	do{
 		$row = $nextRow;
-		$mediaURL = Config::gamedataWWWPath . "/{$_REQUEST['gameId']}/{$row['file_name']}";
+		$mediaURL = Config::gamedataWWWPath . "/{$_REQUEST['gameId']}/{$row['file_path']}";
 
 		$mediaObject = new Media;
 		$type = $mediaObject->getMediaType($mediaURL);

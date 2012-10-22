@@ -7,6 +7,8 @@ class Test extends Module
 {
 	public function killOrphansBeforeMigration()
 	{ 
+		set_time_limit(100000);
+
 		//Create QR codes for locations without them
 		for($i = 0; $i < 4000; $i++)
 		{

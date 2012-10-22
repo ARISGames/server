@@ -220,6 +220,17 @@ abstract class Module
             @mysql_query($query2);
             break;
         }
+
+	//check log if item has already been viewed. If yes, set item to viewed in database
+	$query = "SELECT * FROM player_log WHERE game_id = {$intGameId} AND player_id = {$intPlayerID} AND event_type = 'VIEW_ITEM' AND event_detail_1 = {$intItemID} AND deleted = 0;";
+	$result = mysql_query($query);
+	while(mysql_fetch_object($result))
+	{
+		$query2 = "UPDATE player_items SET viewed = 1 WHERE game_id = {$intGameId} AND player_id = {$intPlayerID} AND item_id = {$intItemID}";
+		mysql_query($query2);
+		break;
+	}
+
       return $qtyToGive;
     }
   }

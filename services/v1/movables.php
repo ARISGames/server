@@ -4,7 +4,6 @@ require_once("module.php");
 class Movables extends Module
 {
     public static function createMovableTable(){
-
         //Create 'movables' table
         $query = "CREATE TABLE movables (
             movable_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,

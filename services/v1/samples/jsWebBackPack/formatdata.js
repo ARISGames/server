@@ -39,7 +39,6 @@ function formatPage(game)
     {
         //This next line is absolutely ridiculous and I have no idea why it works
         author = (game.authors[author]);
-
         add("<div class='gameauthor'>\n");
         add(author.name+"\n");
         add("</div>\n");//<- class gameauthor

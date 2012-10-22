@@ -99,9 +99,9 @@ class Locations extends Module
     private function generateDescriptors($mediaId, $gameId) {
         //Get the filename for the media
         if ($mediaId) {
-            $query = "SELECT file_name FROM media WHERE media_id = '{$mediaId}' LIMIT 1";
+            $query = "SELECT file_path FROM media WHERE media_id = '{$mediaId}' LIMIT 1";
             $result = @mysql_query($query);
-            $fileName = mysql_fetch_object($result)->file_name;	
+            $fileName = mysql_fetch_object($result)->file_path;	
             if (mysql_error()) NetDebug::trace("SQL Error: ". mysql_error());
 
             $gameMediaAndDescriptorsPath = Media::getMediaDirectory($gameId)->data;
@@ -145,12 +145,12 @@ class Locations extends Module
     }
 
     public function deleteImageMatchXML($mediaId, $gameId){
-        $query = "SELECT file_name FROM media WHERE media_id = '{$mediaId}' AND (game_id = '{$gameId}' OR game_id = '0')";
+        $query = "SELECT file_path FROM media WHERE media_id = '{$mediaId}' AND (game_id = '{$gameId}' OR game_id = '0')";
         $result = mysql_query($query);
 
         if($med = mysql_fetch_object($result)){
-            NetDebug::trace("../../gamedata/".$gameId."/".substr($med->file_name, 0, -4).".xml");
-            unlink("../../gamedata/".$gameId."/".substr($med->file_name, 0, -4).".xml");
+            NetDebug::trace("../../gamedata/".$gameId."/".substr($med->file_path, 0, -4).".xml");
+            unlink("../../gamedata/".$gameId."/".substr($med->file_path, 0, -4).".xml");
         }
     }
 

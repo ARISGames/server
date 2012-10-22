@@ -1,6 +1,6 @@
 <?php
 /*
- * This file assumes a $_FILES['file'] and a $_POST['gameID']
+ * This file assumes a $_FILES['file'] and a $_POST['path']
  * If called from the iPhone client, the file name is instead passed in $_REQUEST['fileName']
  * @returns the filename for the newly created file or an Error
  */ 
@@ -30,7 +30,8 @@ $media = new Media();
 //Check for Errors
 if ($_FILES['file']['error']) die ("file upload error");
 
-$gameMediaDirectory = $media->getMediaDirectory($_POST['gameID'])->data;
+if(isset($_POST['gameID']) ) $_POST['path'] = $_POST['gameID']; // for legacy use. - Phil 10/12/2012
+$gameMediaDirectory = $media->getMediaDirectory($_POST['path'])->data;
 
 $pathInfo = '';
 if (@$_REQUEST['fileName']) {

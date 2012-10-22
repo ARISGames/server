@@ -10,7 +10,6 @@
 <script type="text/javascript" src="jszip/jszip-inflate.js"></script>
 <script type="text/javascript">
         var gameJSON;
-        var jsonText;
 	function sendRequest(fn, params)
 	{
         	var xmlhttp;
@@ -83,20 +82,6 @@
 		else
 			alert("Please Enter a Valid Game ID");
 	}
-
-        function getImageData(img,type)
-        {
-            if(!canvas) canvas = document.createElement("canvas");
-            canvas.width = img.width;
-            canvas.height = img.height;
-            if(!ctx) ctx = canvas.getContext("2d");
-            ctx.drawImage(img,0,0);
-            cdata = canvas.toDataURL("image/"+type);
-            return cdata.replace(/^data:image\/(png|jpg);base64,/, "");
-        }
-        var canvas;
-        var ctx;
-        var cdata;
 
 </script>
 </head>

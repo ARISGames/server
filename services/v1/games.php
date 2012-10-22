@@ -151,9 +151,9 @@ class Games extends Module
 		return new returnData(0, $result, NULL);
 	}
 
-	public function saveTab($intGameId, $stringTabType, $intIndex)
+	public function saveTab($intGameId, $stringTabType, $intIndex, $tabDetail1 = 0)
 	{
-		$query = "UPDATE game_tab_data SET tab_index = '{$intIndex}' WHERE game_id = '{$intGameId}' AND tab = '{$stringTabType}'";
+		$query = "UPDATE game_tab_data SET tab_index = '{$intIndex}' AND tab_detail_1 = '{$tabDetail1}' WHERE game_id = '{$intGameId}' AND tab = '{$stringTabType}'";
 		mysql_query($query);
 		return new returnData(0);
 	}
@@ -232,11 +232,11 @@ class Games extends Module
 		//Icon
 		$icon_media_data = Media::getMediaObject($intGameId, $gameObj->icon_media_id);
 		$icon_media = $icon_media_data->data; 
-		$gameObj->icon_media_url = $icon_media->url_path . $icon_media->file_name;
+		$gameObj->icon_media_url = $icon_media->url_path . $icon_media->file_path;
 		//Media
 		$media_data = Media::getMediaObject($intGameId, $gameObj->media_id);
 		$media = $media_data->data; 
-		$gameObj->media_url = $media->url_path . $media->file_name;
+		$gameObj->media_url = $media->url_path . $media->file_path;
 
 		//Calculate the rating
 		$query = "SELECT AVG(rating) AS rating FROM game_comments WHERE game_id = {$intGameId}";
@@ -347,7 +347,6 @@ class Games extends Module
 		$query = "INSERT INTO game_editors (game_id,editor_id) VALUES ('{$newGameID}','{$intEditorID}')";
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(6, NULL, 'cannot create game_editors record');
-
 
 		//Create the SQL tables
 
@@ -731,7 +730,7 @@ class Games extends Module
 		if (mysql_error())  return new returnData(3, NULL, 'SQL error');
 
 		//add notebook-icon
-		$query = "INSERT INTO media (media_id,game_id,name,file_name,is_icon) VALUES (94,0,\"Default Note\",\"Notebook-icon.png\", 1);";
+		$query = "INSERT INTO media (media_id,game_id,name,file_path,is_icon) VALUES (94,0,\"Default Note\",\"Notebook-icon.png\", 1);";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
 
@@ -932,7 +931,7 @@ class Games extends Module
 		$query = "ALTER TABLE quests ADD COLUMN exit_to_tab ENUM('NONE', 'GPS','NEARBY','QUESTS','INVENTORY','PLAYER','QR','NOTE','STARTOVER','PICKGAME');";
 		@mysql_query($query);
 
-		$query = "ALTER TABLE media ADD COLUMN display_name VARCHAR(32) DEFAULT '';";
+		$query = "ALTER TABLE players ADD COLUMN display_name VARCHAR(32) DEFAULT '';";
 		@mysql_query($query);
 
 		return 0;
@@ -2039,7 +2038,6 @@ class Games extends Module
 	 * @param boolean Search all games or just the polished ones
 	 * @returns array of up to 10 gameId's that the player has most recently played
 	 */
-
 	public function getRecentGamesForPlayer($intPlayerId, $latitude, $longitude, $boolIncludeDevGames = 1){
 		$query = "SELECT p_log.*, games.ready_for_public FROM (SELECT player_id, game_id, timestamp FROM player_log WHERE player_id = {$intPlayerId} AND game_id != 0 ORDER BY timestamp DESC) as p_log LEFT JOIN games ON p_log.game_id = games.game_id ".($boolIncludeDevGames ? "" : "WHERE games.ready_for_public = 1 ")."GROUP BY game_id ORDER BY timestamp DESC LIMIT 10"; 
 		$result = mysql_query($query);
@@ -2073,9 +2071,9 @@ class Games extends Module
 		else if ($time == 1) $queryInterval = '7 DAY';
 		else if ($time == 2) $queryInterval = '1 MONTH';
 
-		if ($includeGamesinDevelopment) $query = "SELECT media.file_name as file_name, temp.game_id, temp.name, temp.description, temp.count FROM (SELECT games.game_id, games.name, games.description, games.icon_media_id, COUNT(DISTINCT player_id) AS count FROM games INNER JOIN player_log ON games.game_id = player_log.game_id WHERE player_log.timestamp BETWEEN DATE_SUB(NOW(), INTERVAL ".$queryInterval.") AND NOW() GROUP BY games.game_id HAVING count > 1) as temp LEFT JOIN media ON temp.icon_media_id = media.media_id GROUP BY game_id HAVING count > 1 ORDER BY count DESC LIMIT 20";
+		if ($includeGamesinDevelopment) $query = "SELECT media.file_path as file_path, temp.game_id, temp.name, temp.description, temp.count FROM (SELECT games.game_id, games.name, games.description, games.icon_media_id, COUNT(DISTINCT player_id) AS count FROM games INNER JOIN player_log ON games.game_id = player_log.game_id WHERE player_log.timestamp BETWEEN DATE_SUB(NOW(), INTERVAL ".$queryInterval.") AND NOW() GROUP BY games.game_id HAVING count > 1) as temp LEFT JOIN media ON temp.icon_media_id = media.media_id GROUP BY game_id HAVING count > 1 ORDER BY count DESC LIMIT 20";
 
-		else $query = "SELECT media.file_name as file_name, temp.game_id, temp.name, temp.description, temp.count FROM (SELECT games.game_id, games.name, games.description, games.icon_media_id, COUNT(DISTINCT player_id) AS count FROM games INNER JOIN player_log ON games.game_id = player_log.game_id WHERE ready_for_public = TRUE AND player_log.timestamp BETWEEN DATE_SUB(NOW(), INTERVAL ".$queryInterval.") AND NOW() GROUP BY games.game_id HAVING count > 1) as temp LEFT JOIN media ON temp.icon_media_id = media.media_id GROUP BY game_id HAVING count > 1 ORDER BY count DESC LIMIT 20";
+		else $query = "SELECT media.file_path as file_path, temp.game_id, temp.name, temp.description, temp.count FROM (SELECT games.game_id, games.name, games.description, games.icon_media_id, COUNT(DISTINCT player_id) AS count FROM games INNER JOIN player_log ON games.game_id = player_log.game_id WHERE ready_for_public = TRUE AND player_log.timestamp BETWEEN DATE_SUB(NOW(), INTERVAL ".$queryInterval.") AND NOW() GROUP BY games.game_id HAVING count > 1) as temp LEFT JOIN media ON temp.icon_media_id = media.media_id GROUP BY game_id HAVING count > 1 ORDER BY count DESC LIMIT 20";
 
 		$gamesRs = @mysql_query($query);
 		NetDebug::trace(mysql_error());
@@ -2156,8 +2154,12 @@ class Games extends Module
 		$query = "INSERT INTO {$newPrefix}_folders (folder_id, name, parent_id, previous_id, is_open) SELECT folder_id, name, parent_id, previous_id, is_open FROM {$prefix}_folders";
 		mysql_query($query);
 
-		$query = "INSERT INTO {$newPrefix}_folder_contents (object_content_id, folder_id, content_type, content_id, previous_id) SELECT object_content_id, folder_id, content_type, content_id, previous_id FROM {$prefix}_folder_contents";
-		mysql_query($query);
+		$query = "SELECT * FROM game_tab_data WHERE game_id = {$prefix}";
+		$result = mysql_query($query);
+		while($result && $row = mysql_fetch_object($result)){
+			$query = "INSERT INTO game_tab_data (game_id, tab, tab_index, tab_detail_1) VALUES ('{$newPrefix}', '{$row->tab}', '{$row->tab_index}', '{$row->tab_detail_1}')";
+			mysql_query($query);
+		}
 
 		$query = "INSERT INTO {$newPrefix}_items (item_id, name, description, is_attribute, icon_media_id, media_id, dropable, tradeable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight, url, type) SELECT item_id, name, description, is_attribute, icon_media_id, media_id, dropable, tradeable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight, url, type FROM {$prefix}_items";
 		mysql_query($query);
@@ -2294,12 +2296,12 @@ class Games extends Module
 		while($row = mysql_fetch_object($result)){
 			array_push($originalMediaId, $row->media_id);
 
-			$query = "INSERT INTO media (game_id, name, file_name, is_icon) VALUES ('{$newPrefix}', '{$row->name}', '{$row->file_name}', '{$row->is_icon}')";
+			$query = "INSERT INTO media (game_id, name, file_path, is_icon) VALUES ('{$newPrefix}', '{$row->name}', '{$row->file_path}', '{$row->is_icon}')";
 			mysql_query($query);
 			$newID = mysql_insert_id();
 			array_push($newMediaId, $newID);
 
-			if($row->file_name != "") copy(("../../gamedata/" . $prefix . "/" . $row->file_name),("../../gamedata/" . $newPrefix . "/" . $row->file_name));
+			if($row->file_path != "") copy(("../../gamedata/" . $prefix . "/" . $row->file_path),("../../gamedata/" . $newPrefix . "/" . $row->file_path));
 
 			$query = "UPDATE {$newPrefix}_items SET icon_media_id = {$newID} WHERE icon_media_id = $row->media_id";
 			mysql_query($query);
@@ -2475,7 +2477,7 @@ class Games extends Module
 
 	public static function getDetailedGameInfo($gameId)
 	{
-		$query = "SELECT games.*, pcm.name as pc_media_name, pcm.file_name as pc_media_url, m.name as media_name, m.file_name as media_url, im.name as icon_name, im.file_name as icon_url FROM games LEFT JOIN media as m ON games.media_id = m.media_id LEFT JOIN media as im ON games.icon_media_id = im.media_id LEFT JOIN media as pcm on games.pc_media_id = pcm.media_id WHERE games.game_id = '{$gameId}'";
+		$query = "SELECT games.*, pcm.name as pc_media_name, pcm.file_path as pc_media_url, m.name as media_name, m.file_path as media_url, im.name as icon_name, im.file_path as icon_url FROM games LEFT JOIN media as m ON games.media_id = m.media_id LEFT JOIN media as im ON games.icon_media_id = im.media_id LEFT JOIN media as pcm on games.pc_media_id = pcm.media_id WHERE games.game_id = '{$gameId}'";
 
 		$result = mysql_query($query);
 		$game = mysql_fetch_object($result);
