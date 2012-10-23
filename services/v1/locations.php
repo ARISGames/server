@@ -876,14 +876,11 @@ class Locations extends Module
             return new returnData(4, NULL, "invalid object type");
 
         //Delete the Locations and related QR Codes
-        $query = "DELETE {$prefix}_locations,{$prefix}_qrcodes 
-            FROM {$prefix}_locations LEFT OUTER JOIN {$prefix}_qrcodes
-            ON
-            {$prefix}_locations.location_id={$prefix}_qrcodes.link_id
-        WHERE 
-        {$prefix}_qrcodes.link_type='Location' AND 
-        {$prefix}_locations.type = '{$strObjectType}' AND
-        {$prefix}_locations.type_id = '{$intObjectId}'";
+        $query = "DELETE locations, qrcodes 
+        	FROM locations
+		LEFT JOIN qrcodes
+		ON locations.game_id = qrcodes.game_id AND locations.location_id = qrcodes.link_id
+		WHERE locations.type = '{$strObjectType}' AND locations.type_id = '{$intObjectId}' AND qrcodes.link_type = 'Location'";
 
         NetDebug::trace("Query: $query");		
 
@@ -892,13 +889,10 @@ class Locations extends Module
 
         if (mysql_error()) return new returnData(3, NULL, "SQL Error" . mysql_error());
 
-
-        if (mysql_affected_rows()) {
+        if (mysql_affected_rows())
             return new returnData(0, TRUE);
-        }
-        else {
+        else
             return new returnData(0, FALSE);
-        }	
     }	
 
 

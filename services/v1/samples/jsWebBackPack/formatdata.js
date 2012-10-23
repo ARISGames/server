@@ -52,7 +52,7 @@ function formatPage(game)
     add("</form>");//<- form dumpForm
     add("</div>\n");//<- class gamelinks
     add("</div>\n");//<- class pageheader
-
+    
     add("<div class='spacer headerspacer'></div>\n");
 
     if(game.backpacks && !game.backpacks.length) //game.backbacks is object, not array
@@ -61,7 +61,6 @@ function formatPage(game)
         var bps = new Array(game.backpacks);
         game.backpacks = bps;
     }
-
 
     var firstPlayer = true;
     //Run through for each player given
