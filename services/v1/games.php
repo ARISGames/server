@@ -2170,6 +2170,7 @@ class Games extends Module
 			$query = "INSERT INTO quests(game_id, name, description, text_when_complete, icon_media_id, exit_to_tab) VALUES ('{$newPrefix}', '{$row->name}', '{$row->description}', '{$row->text_when_complete}', '{$row->icon_media_id}', '{$row->boolean_operator}', '{$row->exit_to_tab}')";
 			mysql_query($query);
 			$newID = mysql_insert_id();
+                }
 
 		$query = "INSERT INTO {$newPrefix}_nodes (node_id, title, text, opt1_text, opt1_node_id, opt2_text, opt2_node_id, opt3_text, opt3_node_id, require_answer_incorrect_node_id, require_answer_string, require_answer_correct_node_id, media_id, icon_media_id) SELECT node_id, title, text, opt1_text, opt1_node_id, opt2_text, opt2_node_id, opt3_text, opt3_node_id, require_answer_incorrect_node_id, require_answer_string, require_answer_correct_node_id, media_id, icon_media_id FROM {$prefix}_nodes";
 		mysql_query($query);
