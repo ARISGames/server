@@ -1,0 +1,5 @@
+AddType audio/x-caf CAF audio caf
+AddType video/mp4 mp4 MP4
+
+php_value post_max_size 10M
+php_value upload_max_filesize 10M
