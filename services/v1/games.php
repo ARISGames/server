@@ -233,6 +233,7 @@ class Games extends Module
 		$icon_media_data = Media::getMediaObject($intGameId, $gameObj->icon_media_id);
 		$icon_media = $icon_media_data->data; 
 		$gameObj->icon_media_url = $icon_media->url_path . $icon_media->file_path;
+
 		//Media
 		$media_data = Media::getMediaObject($intGameId, $gameObj->media_id);
 		$media = $media_data->data; 
@@ -349,7 +350,6 @@ class Games extends Module
 		if (mysql_error()) return new returnData(6, NULL, 'cannot create game_editors record');
 
 		//Create the SQL tables
-
 		$query = "CREATE TABLE {$strShortName}_items (
 			item_id int(11) unsigned NOT NULL auto_increment,
 				name varchar(255) NOT NULL,
@@ -919,6 +919,7 @@ class Games extends Module
 			                 if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
 			                 }
 		}
+
 		$query = "ALTER TABLE media CHANGE file_name file_path VARCHAR(255) NOT NULL;";
 		@mysql_query($query);
 
@@ -2294,9 +2295,8 @@ class Games extends Module
 		$newMediaId = array();
 		$query = "SELECT * FROM media WHERE game_id = {$prefix}";
 		$result = mysql_query($query);
-		while($row = mysql_fetch_object($result)){
-			array_push($originalMediaId, $row->media_id);
 
+		while($result && $row = mysql_fetch_object($result)){
 			$query = "INSERT INTO media (game_id, name, file_path, is_icon) VALUES ('{$newPrefix}', '{$row->name}', '{$row->file_path}', '{$row->is_icon}')";
 			mysql_query($query);
 			$newID = mysql_insert_id();

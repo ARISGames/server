@@ -105,6 +105,17 @@ function formatPage(game)
                 else
                     firstSection=false;
 
+            //Output player header
+            add("<div class='player'>\n");
+            add("<div class='playerheader'>\n");
+            add("<div class='playericon'>\n");
+            add(format_img('profpic.png', '', 'index.html?mode=web&gameId='+game.game_id+'&playerId='+bp.owner.player_id, 'playericonimage'));
+            add("</div>\n");//<- class 'playericon'
+            add("<div class='playertext'>\n");
+            add("<div class='playername'>"+bp.owner.user_name+"</div>\n");
+            add("</div>\n");//<- class 'playertext'
+            add("</div>\n");//<- class 'playerheader'
+
                 firstContent = true;
                 add("<div class='sectionheader'>Attributes</div>\n");
                 for(attribute in bp.attributes)

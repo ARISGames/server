@@ -179,7 +179,7 @@ class QRCodes extends Module
 		$query = "SELECT {$prefix}_qrcodes.* 
 			FROM {$prefix}_qrcodes 
 			JOIN media 
-			ON ({$prefix}_qrcodes.match_media_id = media.media_id)
+			ON (game_qrcodes.match_media_id = media.media_id)
 			WHERE media.file_path = '{$fileName}.jpg'
 			OR media.file_path = '{$fileName}.png'
 			LIMIT 1";
