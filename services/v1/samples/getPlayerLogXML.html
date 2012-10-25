@@ -11,7 +11,7 @@
 		var endDate = "2012-01-25 15:00:00"; //<- This time represents January 25 at 3:00 PM
 
 		var method = "players.getPlayerLog";
-		var request = new XmlRpcRequest("http://arisgames.org/devserver/xmlrpc.php", method);
+		var request = new XmlRpcRequest("http://dev.arisgames.org/server/xmlrpc.php", method);
 		request.addParam(gameId);
 		request.addParam(startDate);
 		request.addParam(endDate);

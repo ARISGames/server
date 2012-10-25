@@ -1,0 +1,77 @@
+<html>
+<head>
+<script type="text/javascript" src='jszip.js'></script>
+<script type="text/javascript" src='jszip-deflate.js'></script>
+<script type="text/javascript">
+
+        function request(fn,params)
+        {
+        	var xmlhttp;
+        	xmlhttp=new XMLHttpRequest();
+        	xmlhttp.open("POST","http://dev.arisgames.org/server/json.php/v1."+fn,false);
+        	xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        	xmlhttp.send(params); //Synchronous call
+
+        	var response=JSON.parse(xmlhttp.responseText);
+
+                document.getElementById('playerLogs').innerHTML = xmlhttp.responseText;
+                var csv = '"ID","PLAYER_ID","GAME_ID","TIMESTAMP","EVENT_TYPE","EVENT_DETAIL_1","EVENT_DETAIL_2","EVENT_DETAIL_3","DELETED"\n';
+                var csvtable = "<table><tr><td><b>ID</b></td><td><b>PLAYER_ID</b></td><td><b>GAME_ID</b></td><td><b>TIMESTAMP</b></td><td><b>EVENT_TYPE</b></td><td><b>EVENT_DETAIL_1</b></td><td><b>EVENT_DETAIL_2</b></td><td><b>EVENT_DETAIL_3</b></td><td><b>DELETED</b></td></tr>";
+                for(var i = 0; i < response.data.length; i++)
+                {
+                    csv += response.data[i].id+",";
+                    csv += response.data[i].player_id+",";
+                    csv += response.data[i].game_id+",";
+                    csv += response.data[i].timestamp+",";
+                    csv += response.data[i].event_type+",";
+                    csv += response.data[i].event_detail_1+",";
+                    csv += response.data[i].event_detail_2+",";
+                    csv += response.data[i].event_detail_3+",";
+                    csv += response.data[i].deleted;
+                    csv += "\n";
+
+                    csvtable += "<tr>";
+                    csvtable += "<td>"+response.data[i].id+"</td>";
+                    csvtable += "<td>"+response.data[i].player_id+"</td>";
+                    csvtable += "<td>"+response.data[i].game_id+"</td>";
+                    csvtable += "<td>"+response.data[i].timestamp+"</td>";
+                    csvtable += "<td>"+response.data[i].event_type+"</td>";
+                    csvtable += "<td>"+response.data[i].event_detail_1+"</td>";
+                    csvtable += "<td>"+response.data[i].event_detail_2+"</td>";
+                    csvtable += "<td>"+response.data[i].event_detail_3+"</td>";
+                    csvtable += "<td>"+response.data[i].deleted+"</td>";
+                    csvtable += "</tr>";
+                }
+                csvtable += "</table>";
+
+                var zip = new JSZip();
+                zip.file("player_log.csv", csv);
+                var content = zip.generate();
+                location.href="data:application/zip;base64,"+content;
+
+                document.getElementById('playerLogs').innerHTML = csvtable;
+	}
+
+	function pageLoad()
+	{
+                var params = {};
+                params.gameId = 2556;
+                params.startDate = '2012-01-02 00:00:00';
+                params.endDate = '2013-01-25 15:00:00';
+                
+		request("players.getPlayerLog",JSON.stringify(params));
+	}
+</script>
+<style>
+    td
+    {
+        text-align:left;
+        padding-right:8px;
+        border:1px solid black;
+    }
+</style>
+</head>
+<body onload='pageLoad()'>
+<div id='playerLogs'> Waiting on Server </div>
+</body>
+</html>
