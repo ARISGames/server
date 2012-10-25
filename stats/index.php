@@ -104,8 +104,8 @@ function populateGraphs()
 
 // topTenArray and topTenButtons must be parallel arrays
 
-var topTenArray = ['topTenElementForDay', 'topTenElementForWeek', 'topTenElementForMonth'];
-var topTenButtons = ['topTenDayButton', 'topTenWeekButton', 'topTenMonthButton'];
+var topTenArray = ['topTenElementForDay', 'topTenElementForWeek', 'topTenElementForMonth', 'topTenElementForAllTime'];
+var topTenButtons = ['topTenDayButton', 'topTenWeekButton', 'topTenMonthButton', 'topTenAllTimeButton'];
 
 function enableTopTenItem(divId)
 {
@@ -240,6 +240,7 @@ function reverseLatLng(lat, lng)
     <button id="topTenDayButton" onclick="javascript:enableTopTenItem('topTenElementForDay')">day</button>
     <button id="topTenWeekButton" onclick="javascript:enableTopTenItem('topTenElementForWeek')">week</button>
     <button id="topTenMonthButton" onclick="javascript:enableTopTenItem('topTenElementForMonth')">month</button>
+    <button id="topTenAllTimeButton" onclick="javascript:enableTopTenItem('topTenElementForAllTime')">all time</button>
     <script type="text/javascript">
       document.getElementById("topTenWeekButton").style.backgroundColor = '#336699';
     </script> 
@@ -248,6 +249,7 @@ function reverseLatLng(lat, lng)
   <?php @generateTopGames(day); ?>
   <?php @generateTopGames(week); ?>
   <?php @generateTopGames(month); ?>
+  <?php @generateTopGames(alltime); ?>
   
 </div>
 
@@ -384,9 +386,14 @@ function generateTopGames($timeframe)
     $topTenDivName = 'topTenElementForMonth';
     $queryInterval = '1 MONTH';
   }
+  else if ($timeframe == 'alltime')
+  {
+    $topTenDivName = 'topTenElementForAllTime';
+    $queryInterval = '100 YEAR';
+  }
 
   $query = '
-SELECT media.file_name as file_name, temp.game_id, temp.name, temp.description, temp.count FROM
+SELECT media.file_path as file_path, temp.game_id, temp.name, temp.description, temp.count FROM
 (SELECT games.game_id, games.name, games.description, games.icon_media_id, COUNT(DISTINCT player_id) AS count
 FROM games
 INNER JOIN player_log ON games.game_id = player_log.game_id
@@ -399,6 +406,7 @@ HAVING count > 1
 ORDER BY count DESC
 ';
 
+  //echo "<!-- ".$query." -->";
   $result = mysql_query($query);
 
   $counter = 0;
@@ -417,7 +425,7 @@ ORDER BY count DESC
 	  $name = $game->name;
 	  $gameid = $game->game_id;
 	  $count = $game->count;
-	  $iconFileURL = $game->file_name;
+	  $iconFileURL = $game->file_path;
 	  $description = truncate_text($game->description, 215);   
     
       $query = "SELECT name FROM game_editors LEFT JOIN editors ON game_editors.editor_id = editors.editor_id WHERE game_editors.game_id = $gameid";
