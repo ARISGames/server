@@ -52,12 +52,12 @@
                 document.getElementById('playerLogs').innerHTML = csvtable;
 	}
 
-	function pageLoad()
+	function submit()
 	{
                 var params = {};
-                params.gameId = 2556;
-                params.startDate = '2012-01-02 00:00:00';
-                params.endDate = '2013-01-25 15:00:00';
+                params.gameId = document.getElementById('gameId').value;
+                params.startDate = document.getElementById('from').value;
+                params.endDate = document.getElementById('til').value;
                 
 		request("players.getPlayerLog",JSON.stringify(params));
 	}
@@ -71,7 +71,15 @@
     }
 </style>
 </head>
-<body onload='pageLoad()'>
-<div id='playerLogs'> Waiting on Server </div>
+<div id='playerLogs'>
+
+<table>
+<tr><td style='border:0px;'>GameId: </td><td style='border:0px;'><input id='gameId' type='text'></input></td></tr>
+<tr><td style='border:0px;'>From: </td><td style='border:0px;'><input id='from' type='text' value='0000-00-00 00:00:00' style='width:130px;'></input></td><td style='border:0px;'>(format:YYYY-MM-DD HH:MM:SS)</td></tr>
+<tr><td style='border:0px;'>Til: </td><td style='border:0px;'><input id='til' type='text' value='9999-12-31 23:59:59' style='width:130px;'></input></td><td style='border:0px;'>(format:YYYY-MM-DD HH:MM:SS)</td></tr>
+<tr><td style='border:0px;'></td><td style='border:0px;'><input type='button' onClick='submit()' value='Get CSV'></input></td></tr>
+</table>
+
+</div>
 </body>
 </html>
