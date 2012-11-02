@@ -232,9 +232,10 @@ class Test extends Module
 			$resultMain = mysql_query($query);
 			while($resultMain && $row = mysql_fetch_object($resultMain)){ 
 				$result = mysql_query("SELECT * FROM {$gid}_npcs WHERE npc_id = {$row->npc_id}");
-				if($result && mysql_num_rows($result) < 1) mysql_query("DELETE FROM {$gid}_npc_conversations WHERE conversation_id = {$row->conversation_id}"); 
-				$result = mysql_query("SELECT * FROM {$gid}_npcs WHERE npc_id = {$row->npc_id}");
-				if($result && mysql_num_rows($result) < 1) mysql_query("DELETE FROM {$gid}_npc_conversations WHERE conversation_id = {$row->conversation_id}"); 
+				if($result && mysql_num_rows($result) < 1) {
+					mysql_query("DELETE FROM {$gid}_npc_conversations WHERE conversation_id = {$row->conversation_id}"); 
+					mysql_query("DELETE FROM {$gid}_nodes WHERE node_id = {$row->node_id}"); 
+					}
 			}
 		}
 		return 5;
@@ -243,7 +244,7 @@ class Test extends Module
 	public function killOrphansAfterMigration()
 	{
 		//Create QR codes for locations without them
-		for($i = 0; $i < 4000; $i++)
+		for($i = 0; $i < 6000; $i++)
 		{
 			if(!Module::getPrefix($i)) continue;
 			$result = mysql_query("SELECT * FROM (SELECT * FROM locations WHERE game_id = {$i}) AS game_locations LEFT JOIN (SELECT * FROM qrcodes WHERE game_id = {$i}) AS game_qrcodes ON game_locations.location_id = game_qrcodes.link_id WHERE link_id IS NULL");
@@ -252,7 +253,7 @@ class Test extends Module
 		}
 
 		//Delete QR Codes who don't have locations
-		for($i = 0; $i < 4000; $i++)
+		for($i = 0; $i < 6000; $i++)
 		{
 			if(!Module::getPrefix($i)) continue;
 			$result = mysql_query("SELECT * FROM  (SELECT * FROM qrcodes WHERE game_id = {$i}) AS game_qrcodes LEFT JOIN (SELECT * FROM locations WHERE game_id = {$i}) AS game_locations ON game_qrcodes.link_id = game_locations.location_id WHERE location_id IS NULL");
@@ -261,7 +262,7 @@ class Test extends Module
 		}
 
 		//Delete locations who don't have objects
-		for($i = 0; $i < 4000; $i++)
+		for($i = 0; $i < 6000; $i++)
 		{
 			if(!Module::getPrefix($i)) continue;
 			//'Node','Event','Item','Npc','WebPage','AugBubble','PlayerNote'
@@ -286,7 +287,7 @@ class Test extends Module
 		}
 
 		//Deletes Spawnable data without an object
-		for($i = 0; $i < 4000; $i++)
+		for($i = 0; $i < 6000; $i++)
 		{
 			if(!Module::getPrefix($i)) continue;
 			//'Node','Event','Item','Npc','WebPage','AugBubble','PlayerNote'
@@ -428,9 +429,10 @@ class Test extends Module
 		$resultMain = mysql_query($query);
 		while($resultMain && $row = mysql_fetch_object($resultMain)){ 
 			$result = mysql_query("SELECT * FROM npcs WHERE npc_id = {$row->npc_id}");
-			if($result && mysql_num_rows($result) < 1) mysql_query("DELETE FROM npc_conversations WHERE conversation_id = {$row->conversation_id}"); 
-			$result = mysql_query("SELECT * FROM npcs WHERE npc_id = {$row->npc_id}");
-			if($result && mysql_num_rows($result) < 1) mysql_query("DELETE FROM npc_conversations WHERE conversation_id = {$row->conversation_id}"); 
+			if($result && mysql_num_rows($result) < 1) { 
+				mysql_query("DELETE FROM npc_conversations WHERE conversation_id = {$row->conversation_id}"); 
+			        mysql_query("DELETE FROM nodes WHERE node_id = {$row->node_id}"); 
+				}
 		}
 		return 7;
 	}

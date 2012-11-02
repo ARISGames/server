@@ -194,15 +194,21 @@ class Npcs extends Module
 		Requirements::deleteRequirementsForRequirementObject($intGameID, 'Npc', $intNpcID);
 		PlayerStateChanges::deletePlayerStateChangesThatRefrenceObject($intGameID, 'Npc', $intNpcID);
                 Nodes::deleteNodesReferencedByObject($intGameID, 'Npc', $intNpcID);
-                Nodes::deleteNodesReferencedByObject($intGameID, 'Npc', $intNpcID);
-                Nodes::deleteNodesReferencedByObject($intGameID, 'Npc', $intNpcID);
-
+		
 		$query = "DELETE FROM {$prefix}_npcs WHERE npc_id = {$intNpcID}";
 
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
-		if (mysql_affected_rows()) return new returnData(0);
+		$hasDeletedNPC = mysql_affected_rows();
+
+		$query = "DELETE FROM {$prefix}_npc_conversations WHERE npc_id = {$intNpcID}";
+
+		$rsResult = @mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+
+		
+		if ($hasDeletedNPC) return new returnData(0);
 		else return new returnData(2, 'invalid npc id');
 
 	}	
