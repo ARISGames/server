@@ -12,30 +12,30 @@ class Notes extends Module
     //Returns note_id
     function createNewNote($gameId, $playerId, $lat=0, $lon=0)
     {
-        $query = "INSERT INTO notes (game_id, owner_id, title) VALUES ('{$gameId}', '{$playerId}', 'New Note')";
-        @mysql_query($query);
-        if (mysql_error()) return new returnData(1, NULL, mysql_error());
-        $nId = mysql_insert_id();
-        EditorFoldersAndContent::saveContent($gameId, false, 0, 'PlayerNote', $nId, 0);
-        Module::processGameEvent($playerId, $gameId, Module::kLOG_GET_NOTE, $nId);
-        Players::dropNote($gameId, $playerId, $nId, $lat, $lon);
-        return new returnData(0, $nId);
+	$query = "INSERT INTO notes (game_id, owner_id, title) VALUES ('{$gameId}', '{$playerId}', 'New Note')";
+	@mysql_query($query);
+	if (mysql_error()) return new returnData(1, NULL, mysql_error());
+	$nId = mysql_insert_id();
+	EditorFoldersAndContent::saveContent($gameId, false, 0, 'PlayerNote', $nId, 0);
+	Module::processGameEvent($playerId, $gameId, Module::kLOG_GET_NOTE, $nId);
+	Players::dropNote($gameId, $playerId, $nId, $lat, $lon);
+	return new returnData(0, $nId);
     }
 
     function updateNote($noteId, $title, $publicToMap, $publicToNotebook, $sortIndex='0')
     {
-        $title = addslashes($title);
-        $query = "UPDATE notes SET title = '{$title}', public_to_map = '{$publicToMap}', public_to_notebook = '{$publicToNotebook}', sort_index='{$sortIndex}' WHERE note_id = '{$noteId}'";
-        @mysql_query($query);
-        if (mysql_error()) return new returnData(1, NULL, mysql_error());
+	$title = addslashes($title);
+	$query = "UPDATE notes SET title = '{$title}', public_to_map = '{$publicToMap}', public_to_notebook = '{$publicToNotebook}', sort_index='{$sortIndex}' WHERE note_id = '{$noteId}'";
+	@mysql_query($query);
+	if (mysql_error()) return new returnData(1, NULL, mysql_error());
 
-        $query = "SELECT * FROM notes WHERE note_id = '{$noteId}'";
-        $result = mysql_query($query);
-        $noteobj = mysql_fetch_object($result);
+	$query = "SELECT * FROM notes WHERE note_id = '{$noteId}'";
+	$result = mysql_query($query);
+	$noteobj = mysql_fetch_object($result);
 
-        $query = "UPDATE ".$noteobj->game_id."_locations SET name = '{$title}' WHERE type='PlayerNote' AND type_id = '{$noteId}'";
-        @mysql_query($query);
-        if (mysql_error()) return new returnData(1, NULL, mysql_error());
+	$query = "UPDATE locations SET name = '{$title}' WHERE game_id = {$noteobj->game_id} AND type='PlayerNote' AND type_id = '{$noteId}'";
+	@mysql_query($query);
+	if (mysql_error()) return new returnData(1, NULL, mysql_error());
 
         return new returnData(0);
     }
@@ -87,7 +87,6 @@ class Notes extends Module
         $query = "DELETE FROM note_content WHERE content_id = '{$contentId}'";
         @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
-
         return new returnData(0);
     }
 
@@ -139,7 +138,6 @@ class Notes extends Module
         {
             $notes[] = Notes::getFullNoteObject($note->note_id, $playerId);
         }
-
         return new returnData(0, $notes);
     }
 
@@ -262,7 +260,6 @@ class Notes extends Module
 
     function playerLiked($playerId, $noteId)
     {
-
         $query = "SELECT COUNT(*) as liked FROM note_likes WHERE player_id = '{$playerId}' AND note_id = '{$noteId}' LIMIT 1";
         $result = mysql_query($query);
         $liked = mysql_fetch_object($result);
@@ -271,7 +268,7 @@ class Notes extends Module
 
     function noteDropped($noteId, $gameId)
     {
-        $query = "SELECT * FROM ".$gameId."_locations WHERE type='PlayerNote' AND type_id='{$noteId}' LIMIT 1";
+	$query = "SELECT * FROM locations WHERE game_id = {$gameId} AND type='PlayerNote' AND type_id='{$noteId}' LIMIT 1";
         $result = mysql_query($query);
 
         if(mysql_num_rows($result) > 0)
@@ -282,7 +279,7 @@ class Notes extends Module
 
     function getNoteLocation($noteId, $gameId)
     {
-        $query = "SELECT * FROM ".$gameId."_locations WHERE type='PlayerNote' AND type_id='{$noteId}' LIMIT 1";
+	$query = "SELECT * FROM locations WHERE game_id = {$gameId} AND type='PlayerNote' AND type_id='{$noteId}' LIMIT 1";
         $result = mysql_query($query);
         $locObj = mysql_fetch_object($result);
         $retLoc = new stdClass();
@@ -306,37 +303,29 @@ class Notes extends Module
         $result = @mysql_query($query);
 
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
-
         while($commentNote = mysql_fetch_object($result))
             Notes::deleteNote($commentNote->note_id);
-
         //Delete Note locations
         Locations::deleteLocationsForObject($noteObj->game_id, "PlayerNote", $noteId);
-
         //Delete the folder record
         //EditorFolderContents::deleteContent($noteObj->game_id, "PlayerNote", $noteId); //This would cause an infinite loop becasue it deletes the note
-        $query = "DELETE FROM {$noteObj->game_id}_folder_contents WHERE content_type = 'PlayerNote' AND content_id = '{$noteId}'";
+	$query = "DELETE FROM folder_contents WHERE game_id = {$noteObj->game_id} AND content_type = 'PlayerNote' AND content_id = '{$noteId}'";
         mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
-
         //Delete the Note's Content
         $query = "DELETE FROM note_content WHERE note_id = '{$noteId}'";
         @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
-
         $query = "DELETE FROM note_tags WHERE note_id = '{$noteId}'";
         mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
-
         $query = "DELETE FROM note_likes WHERE note_id = '{$noteId}'";
         mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
-
         //Delete the Note itself
         $query = "DELETE FROM notes WHERE note_id = '{$noteId}'";
         @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error()); 
-
         return new returnData(0);
     }
 
@@ -384,7 +373,6 @@ class Notes extends Module
             mysql_query($query);
             $id->tag_id = mysql_insert_id();
         }
-
 
         //Apply tag to note
         $query = "INSERT INTO note_tags (note_id, tag_id) VALUES ('{$noteId}', '{$id->tag_id}')";
@@ -475,9 +463,6 @@ class Notes extends Module
         mysql_query($query);
         return new returnData(0);
     }
-
-
-
 
     //TEMPORARY FUNCTION LOCATION
     function createFossilNoteDatabaseForGame($gameId)
@@ -3581,13 +3566,6 @@ class Notes extends Module
 
         return new returnData(0);
     }
-
-
-
-
-
-
-
 
     // API FUNCTIONS \/ \/ \/
     public static function getFullNotesForGame($noteReqObj)

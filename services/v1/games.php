@@ -32,7 +32,6 @@ class Games extends Module
 		if (!$game) return new returnData(2, NULL, "invalid game id");
 
 		return new returnData(0, $game);
-
 	}
 
 	/**
@@ -51,7 +50,7 @@ class Games extends Module
 	public function getGamesForPlayerAtLocation($playerId, $latitude, $longitude, $maxDistance=99999999, $locational, $includeGamesinDevelopment)
 	{
 		if ($includeGamesinDevelopment) $query = "SELECT game_id FROM games WHERE is_locational = '{$locational}'";
-		else $query = "SELECT game_id FROM games WHERE is_locational = '{$locational}' AND ready_for_public = TRUE ";
+		else $query = "SELECT game_id FROM games WHERE is_locational = '{$locational}' AND ready_for_public = TRUE";
 
 		$gamesRs = @mysql_query($query);
 		NetDebug::trace(mysql_error());
@@ -90,13 +89,10 @@ class Games extends Module
 
 		$gameObj = new stdClass;
 		$gameObj = Games::getFullGameObject($intGameId, $intPlayerId, $boolGetLocationalInfo, $intSkipAtDistance, $latitude, $longitude);
-		if($gameObj != NULL){
-			NetDebug::trace("Select");
+
+		if($gameObj != NULL)
 			$games[] = $gameObj;
-		}
-
 		return new returnData(0, $games, NULL);
-
 	}	
 
 
@@ -177,7 +173,6 @@ class Games extends Module
 		$query = "SELECT * FROM games WHERE game_id = '{$intGameId}'";
 		$result = mysql_query($query);
 		$gameObj = mysql_fetch_object($result);
-
 		//Check if Game Has Been Played
 		$query = "SELECT * FROM player_log WHERE game_id = '{$intGameId}' AND player_id = '{$intPlayerId}' AND deleted = 0 LIMIT 1";
 		$result = mysql_query($query);
@@ -187,7 +182,6 @@ class Games extends Module
 		else{
 			$gameObj->has_been_played = false;
 		}
-
 		//Get Locational Stuff
 		if($boolGetLocationalInfo){
 			if($gameObj->is_locational == true){
@@ -203,7 +197,6 @@ class Games extends Module
 				$gameObj->distance = 0;
 			}
 		}
-
 		//Get Quest Stuff
 		//$questsReturnData = Quests::getQuestsForPlayer($intGameId, $intPlayerId);
 		//$gameObj->totalQuests = $questsReturnData->data->totalQuests;
@@ -220,7 +213,6 @@ class Games extends Module
 			$editorsString .= ', ' . $editor['name'];
 		}
 		$gameObj->editors = $editorsString;
-
 		//Get Num Players
 		$query = "SELECT * FROM players
 			WHERE last_game_id = {$intGameId}";
@@ -229,10 +221,12 @@ class Games extends Module
 
 		//Get the media URLs
 		//NetDebug::trace("Fetch Media for game_id='{$intGameId}' media_id='{$gameObj->icon_media_id}'");	
+
 		//Icon
 		$icon_media_data = Media::getMediaObject($intGameId, $gameObj->icon_media_id);
 		$icon_media = $icon_media_data->data; 
 		$gameObj->icon_media_url = $icon_media->url_path . $icon_media->file_path;
+
 
 		//Media
 		$media_data = Media::getMediaObject($intGameId, $gameObj->media_id);
@@ -266,10 +260,8 @@ class Games extends Module
 		//Calculate score
 		$gameObj->calculatedScore = ($gameObj->rating - 3) * $x;
 		$gameObj->numComments = $x;
-
 		return $gameObj;
 	}
-
 
 	/**
 	 * Fetch the games an editor may edit
@@ -285,24 +277,17 @@ class Games extends Module
 			NetDebug::trace("getGames: User is super admin, load all games");
 			$query = "SELECT * FROM games";
 			NetDebug::trace($query);
-
 		}
 		else {
 			NetDebug::trace("getGames: User is NOT a super admin");
-
 			$query = "SELECT g.* from games g, game_editors ge 
 				WHERE g.game_id = ge.game_id AND ge.editor_id = '$intEditorID'";
-
 			NetDebug::trace($query);
 		}
-
 		$rs = @mysql_query($query);
 		if (mysql_error())  return new returnData(3, NULL, 'SQL error');
-
 		return new returnData(0, $rs, NULL);		
-
 	}
-
 
 	/**
 	 * Create a new game
@@ -321,7 +306,6 @@ class Games extends Module
 		NetDebug::trace($query);
 		if (mysql_num_rows($result = mysql_query($query)) > 0) 
 			return new returnData(4, mysql_fetch_object($result)->game_id, 'duplicate name');
-
 
 		//Create the game record in SQL
 		$query = "INSERT INTO games (name, description, pc_media_id, icon_media_id, media_id,
@@ -343,204 +327,10 @@ class Games extends Module
 		@mysql_query($query);
 		if (mysql_error())  return new returnData(6, NULL, 'cannot update game record');
 
-
 		//Make the creator an editor of the game
 		$query = "INSERT INTO game_editors (game_id,editor_id) VALUES ('{$newGameID}','{$intEditorID}')";
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(6, NULL, 'cannot create game_editors record');
-
-		//Create the SQL tables
-		$query = "CREATE TABLE {$strShortName}_items (
-			item_id int(11) unsigned NOT NULL auto_increment,
-				name varchar(255) NOT NULL,
-				description text NOT NULL,
-				is_attribute ENUM(  '0',  '1' ) NOT NULL DEFAULT  '0',
-				icon_media_id int(10) unsigned NOT NULL default '0',
-				media_id int(10) unsigned NOT NULL default '0',
-				dropable enum('0','1') NOT NULL default '0',
-				destroyable enum('0','1') NOT NULL default '0',
-				max_qty_in_inventory INT NOT NULL DEFAULT  '-1' COMMENT  '-1 for infinite, 0 if it can''t be picked up',
-				creator_player_id int(10) unsigned NOT NULL default '0',
-				origin_latitude double NOT NULL default '0',
-				origin_longitude double NOT NULL default '0',
-				origin_timestamp timestamp NOT NULL default CURRENT_TIMESTAMP on update CURRENT_TIMESTAMP,
-				weight INT UNSIGNED NOT NULL DEFAULT  '0',
-				url TINYTEXT NOT NULL,
-				type ENUM(  'NORMAL',  'ATTRIB',  'URL', 'NOTE') CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL DEFAULT  'NORMAL',
-				tradeable TINYINT(1) NOT NULL DEFAULT 1,
-				PRIMARY KEY  (item_id)
-					)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
-		NetDebug::trace($query);
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(6, NULL, 'cannot create items table' . mysql_error());
-
-		$query = "CREATE TABLE {$strShortName}_player_state_changes (
-			id int(10) unsigned NOT NULL auto_increment,
-			   event_type enum('VIEW_ITEM', 'VIEW_NODE', 'VIEW_NPC', 'VIEW_WEBPAGE', 'VIEW_AUGBUBBLE', 'RECEIVE_WEBHOOK' ) NOT NULL,
-			   event_detail INT UNSIGNED NOT NULL,
-			   action enum('GIVE_ITEM','TAKE_ITEM') NOT NULL,
-			   action_detail int(10) unsigned NOT NULL,
-			   action_amount INT NOT NULL DEFAULT  '1',
-			   PRIMARY KEY  (id),
-			   KEY `action_amount` (`action_amount`),
-			   KEY `event_lookup` (`event_type`,`event_detail`)
-				   )ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(6, NULL, 'cannot create player_state_changes table' . mysql_error());
-
-
-
-		$query = "CREATE TABLE {$strShortName}_requirements (
-			requirement_id int(11) NOT NULL auto_increment,
-				       content_type enum('Node','QuestDisplay','QuestComplete','Location','OutgoingWebHook','Spawnable', 'CustomMap') NOT NULL,
-				       content_id int(10) unsigned NOT NULL,
-				       requirement ENUM('PLAYER_HAS_ITEM','PLAYER_VIEWED_ITEM','PLAYER_VIEWED_NODE','PLAYER_VIEWED_NPC','PLAYER_VIEWED_WEBPAGE','PLAYER_VIEWED_AUGBUBBLE','PLAYER_HAS_UPLOADED_MEDIA_ITEM', 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE','PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO','PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO','PLAYER_HAS_COMPLETED_QUEST','PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK', 'PLAYER_HAS_NOTE', 'PLAYER_HAS_NOTE_WITH_TAG', 'PLAYER_HAS_NOTE_WITH_LIKES', 'PLAYER_HAS_NOTE_WITH_COMMENTS', 'PLAYER_HAS_GIVEN_NOTE_COMMENTS') NOT NULL,
-				       boolean_operator enum('AND','OR') NOT NULL DEFAULT 'AND',	
-				       not_operator ENUM(  'DO',  'NOT' ) NOT NULL DEFAULT 'DO',
-				       group_operator ENUM(  'SELF',  'GROUP' ) NOT NULL DEFAULT 'SELF',
-				       requirement_detail_1 VARCHAR(30) NULL,
-				       requirement_detail_2 VARCHAR(30) NULL,
-				       requirement_detail_3 VARCHAR(30) NULL,
-				       requirement_detail_4 VARCHAR(30) NULL,
-				       PRIMARY KEY  (requirement_id),
-				       KEY `contentIndex` (  `content_type` ,  `content_id` )
-					       )ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(6, NULL, 'cannot create requirments table' . mysql_error());
-
-		$query = "CREATE TABLE {$strShortName}_locations (
-			location_id int(11) NOT NULL auto_increment,
-				    name varchar(255) NOT NULL,
-				    description tinytext NOT NULL,
-				    latitude double NOT NULL default '43.0746561',
-				    longitude double NOT NULL default '-89.384422',
-				    error double NOT NULL default '5',
-				    type enum('Node','Event','Item','Npc','WebPage','AugBubble', 'PlayerNote') NOT NULL DEFAULT 'Node',
-				    type_id int(11) NOT NULL,
-				    icon_media_id int(10) unsigned NOT NULL default '0',
-				    item_qty int(11) NOT NULL default '0' COMMENT  '-1 for infinite. Only effective for items',
-				    hidden enum('0','1') NOT NULL default '0',
-				    force_view enum('0','1') NOT NULL default '0',
-				    allow_quick_travel enum('0','1') NOT NULL default '0',
-				    wiggle TINYINT(1) NOT NULL default '0',
-				    show_title TINYINT(1) NOT NULL default '0',
-				    spawnstamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-				    PRIMARY KEY  (location_id)
-					    )ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
-		NetDebug::trace($query);	
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(6, NULL, 'cannot create locations table: ' . mysql_error());
-
-		$query = "CREATE TABLE {$strShortName}_quests (
-			quest_id int(11) unsigned NOT NULL auto_increment,
-				 name tinytext NOT NULL,
-				 description text NOT NULL,
-				 text_when_complete tinytext NOT NULL COMMENT 'This is the txt that displays on the completed quests screen',
-				 icon_media_id int(10) unsigned NOT NULL default '0',
-				 sort_index int(10) unsigned NOT NULL default '0',
-				 PRIMARY KEY  (quest_id)
-					 )ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(6, NULL, 'cannot create quests table');
-
-		$query = "CREATE TABLE {$strShortName}_nodes (
-			node_id int(11) unsigned NOT NULL auto_increment,
-				title varchar(255) NOT NULL,
-				text text NOT NULL,
-				opt1_text varchar(100) default NULL,
-				opt1_node_id int(11) unsigned NOT NULL default '0',
-				opt2_text varchar(100) default NULL,
-				opt2_node_id int(11) unsigned NOT NULL default '0',
-				opt3_text varchar(100) default NULL,
-				opt3_node_id int(11) unsigned NOT NULL default '0',
-				require_answer_incorrect_node_id int(11) unsigned NOT NULL default '0',
-				require_answer_string varchar(50) default NULL,
-				require_answer_correct_node_id int(10) unsigned NOT NULL default '0',
-				media_id int(10) unsigned NOT NULL default '0',
-				icon_media_id int(10) unsigned NOT NULL default '0',
-				PRIMARY KEY  (node_id)
-					)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(6, NULL, 'cannot create nodes table');
-
-		$query = "CREATE TABLE {$strShortName}_npc_conversations (
-			conversation_id int(11) NOT NULL auto_increment,
-					npc_id int(10) unsigned NOT NULL default '0',
-					node_id int(10) unsigned NOT NULL default '0',
-					text tinytext NOT NULL,
-					sort_index int(10) unsigned NOT NULL default '0',
-					PRIMARY KEY  (conversation_id)
-						)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(6, NULL, 'cannot create conversations table');
-
-		$query = "CREATE TABLE {$strShortName}_npcs (
-			npc_id int(10) unsigned NOT NULL auto_increment,
-			       name varchar(255) NOT NULL default '',
-			       description TEXT NOT NULL,
-			       text TEXT NOT NULL,
-			       closing TEXT NOT NULL,
-			       media_id int(10) unsigned NOT NULL default '0',
-			       icon_media_id int(10) unsigned NOT NULL default '0',
-			       PRIMARY KEY  (npc_id)
-				       )ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(6, NULL, 'cannot create npcs table');
-
-
-		$query = "CREATE TABLE {$strShortName}_player_items (
-			`id` int(11) NOT NULL auto_increment,
-			`player_id` int(11) unsigned NOT NULL default '0',
-			`item_id` int(11) unsigned NOT NULL default '0',
-			`qty` int(11) NOT NULL default '0',
-			`timestamp` timestamp NOT NULL default CURRENT_TIMESTAMP,
-                        `viewed` tinyint(1) NOT NULL default '0',
-			PRIMARY KEY  (`id`),
-			UNIQUE KEY `unique` (`player_id`,`item_id`),
-			KEY `player_id` (`player_id`),
-			KEY `item_id` (`item_id`),
-			KEY `qty` (`qty`)
-				)ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(6, NULL, 'cannot create player_items table');
-
-
-		$query = "CREATE TABLE {$strShortName}_qrcodes (
-			qrcode_id int(11) NOT NULL auto_increment,
-				  link_type enum('Location') NOT NULL default 'Location',
-				  link_id int(11) NOT NULL,
-				  code varchar(255) NOT NULL,
-				  match_media_id INT( 10 ) UNSIGNED NOT NULL DEFAULT  '0',
-				  fail_text varchar(256) NOT NULL DEFAULT \"This code doesn't mean anything right now. You should come back later.\",
-				  PRIMARY KEY  (qrcode_id),
-				  UNIQUE KEY `code` (`code`)
-					  )ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci AUTO_INCREMENT=1;";
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(6, NULL, 'cannot create qrcodes table');							
-
-		$query = "CREATE TABLE {$strShortName}_folders (
-			folder_id int(10) unsigned NOT NULL auto_increment,
-				  name varchar(50) collate utf8_unicode_ci NOT NULL,
-				  parent_id int(11) NOT NULL default '0',
-				  previous_id int(11) NOT NULL default '0',
-				  is_open ENUM('0','1') NOT NULL DEFAULT  '0',
-				  PRIMARY KEY  (folder_id)
-					  ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(6, NULL, 'cannot create folders table');	
-
-
-
-		$query = "CREATE TABLE {$strShortName}_folder_contents (
-			object_content_id int(10) unsigned NOT NULL auto_increment,
-					  folder_id int(10) NOT NULL default '0',
-					  content_type enum('Node','Item','Npc','WebPage','AugBubble', 'PlayerNote', 'CustomMap') collate utf8_unicode_ci NOT NULL default 'Node',
-					  content_id int(10) unsigned NOT NULL default '0',
-					  previous_id int(10) unsigned NOT NULL default '0',
-					  PRIMARY KEY  (object_content_id)
-						  ) ENGINE=MyISAM DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(6, NULL, 'cannot create folder contents table: ' . mysql_error());	
 
 		$query = "INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$strShortName}', 'QUESTS', '1')";
 		@mysql_query($query);
@@ -571,7 +361,6 @@ class Games extends Module
 
 	}
 
-
 	/**
 	 * Updates a game's information
 	 * @returns true if a record was updated, false otherwise
@@ -583,7 +372,6 @@ class Games extends Module
 	{
 		$strName = addslashes($strName);	
 		$strDescription = addslashes($strDescription);
-
 		$query = "UPDATE games 
 			SET 
 			name = '{$strName}',
@@ -610,14 +398,12 @@ class Games extends Module
 		else return new returnData(0, FALSE);		
 	}		
 
-
 	/**
 	 * Updates a game's Player Character Media
 	 * @returns true if a record was updated, false otherwise
 	 */	
 	public function setPCMediaID($intGameID, $intPCMediaID)
 	{
-
 		$query = "UPDATE games 
 			SET pc_media_id = '{$intPCMediaID}'
 			WHERE game_id = {$intGameID}";
@@ -627,7 +413,6 @@ class Games extends Module
 		if (mysql_affected_rows()) return new returnData(0, TRUE);
 		else return new returnData(0, FALSE);		
 	}			
-
 
 	/**
 	 * Updates all game databases using upgradeGameDatabase
@@ -738,9 +523,7 @@ class Games extends Module
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
         
-
-		$query = "CREATE TABLE `overlays` {
-			
+		$query = "CREATE TABLE `overlays` (
         `overlay_id` int(11) NOT NULL AUTO_INCREMENT,
         `game_id` int(11) DEFAULT NULL,
         `sort_order` int(11) DEFAULT NULL,
@@ -754,12 +537,11 @@ class Games extends Module
         `folder_name` varchar(200) DEFAULT NULL,
         `file_uploaded` int(11) DEFAULT NULL,
         PRIMARY KEY (`overlay_id`)
-        
-        }";
+        )";
 	mysql_query($query);
 	NetDebug::trace("$query" . ":" . mysql_error());
 
-	$query = "CREATE TABLE `overlay_tiles` {
+	$query = "CREATE TABLE `overlay_tiles` (
 		`overlay_id` int(11) DEFAULT NULL,
 		`media_id` int(11) DEFAULT NULL,
 		`zoom` int(11) DEFAULT NULL,
@@ -767,7 +549,7 @@ class Games extends Module
 		`x_max` int(11) DEFAULT NULL,
 		`y` int(11) DEFAULT NULL,
 		`y_max` int(11) DEFAULT NULL
-	}";
+	)";
 	mysql_query($query);
 	NetDebug::trace("$query" . ":" . mysql_error());
 
@@ -784,53 +566,11 @@ class Games extends Module
 	mysql_query($query);
 	NetDebug::trace("$query" . ":" . mysql_error());
 
-	while ($game = mysql_fetch_object($rs)) 
-	{
-		NetDebug::trace("Upgrade Game: {$game->game_id}");
-		$upgradeResult = Games::upgradeGameDatabase($game->game_id);
-	}
+	$query = "ALTER TABLE requirements CHANGE content_type content_type ENUM('Node', 'QuestDisplay', 'QuestComplete', 'Location', 'OutgoingWebHook', 'Spawnable', 'CustomMap');";
+	mysql_query($query);
+	NetDebug::trace("$query" . ":" . mysql_error());
 
 	return new returnData(0);
-	}
-
-
-
-	/**
-	 * Updates a game's database to the most current version
-	 */	
-	public function upgradeGameDatabase($intGameID)
-	{	
-		set_time_limit(30);
-
-		Module::serverErrorLog("Upgrade Game $intGameID");
-
-		$prefix = Module::getPrefix($intGameID);                
-
-		$query = "ALTER TABLE ".$prefix."_locations ADD COLUMN spawnstamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP";
-		mysql_query($query);
-		NetDebug::trace("$query" . ":" . mysql_error());  
-
-		$query = "ALTER TABLE ".$prefix."_locations ADD COLUMN wiggle TINYINT(1) NOT NULL DEFAULT 0";
-		mysql_query($query);
-		NetDebug::trace("$query" . ":" . mysql_error()); 
-		//add show_title
-		$query = "ALTER TABLE ".$prefix."_locations ADD column show_title tinyint(1) NOT NULL DEFAULT 1;";
-		mysql_query($query);
-		NetDebug::trace("$query" . ":" . mysql_error()); 
-
-		$query = "ALTER TABLE ".$prefix."_requirements CHANGE content_type content_type ENUM('Node','QuestDisplay','QuestComplete','Location','OutgoingWebHook','Spawnable', 'CustomMap')";
-		mysql_query($query);
-		NetDebug::trace("$query" . ":" . mysql_error());  
-
-		$query = "ALTER TABLE ".$prefix."_items ADD COLUMN tradeable TINYINT(1) NOT NULL DEFAULT 1;";
-		mysql_query($query);
-		NetDebug::trace("$query" . ":" . mysql_error());
-        
-        $query = "ALTER TABLE ".$prefix."_player_items ADD COLUMN viewed TINYINT(1) NOT NULL DEFAULT 0;";
-		mysql_query($query);
-		NetDebug::trace("$query" . ":" . mysql_error());
-
-		/* MAKE SURE TO REFLECT ANY CHANGES IN HERE IN createGame AS WELL!!!!! */
 	}
 
 	/**
@@ -919,7 +659,6 @@ class Games extends Module
 			                 if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
 			                 }
 		}
-
 		$query = "ALTER TABLE media CHANGE file_name file_path VARCHAR(255) NOT NULL;";
 		@mysql_query($query);
 
@@ -1689,6 +1428,7 @@ class Games extends Module
 		NetDebug::trace($query);
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
+
 		//And AugBubble Media
 		$query = "DELETE FROM aug_bubble_media WHERE game_id = '{$intGameID}'";
 		NetDebug::trace($query);
@@ -1723,6 +1463,7 @@ class Games extends Module
 		NetDebug::trace($query);
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
+
 		//Delete Note Media
 		$query = "DELETE FROM note_content WHERE game_id = '{$intGameID}'";
 		NetDebug::trace($query);
@@ -1810,7 +1551,6 @@ class Games extends Module
 
 	}
 
-
 	/**
 	 * Retrieve all editors
 	 *
@@ -1824,7 +1564,6 @@ class Games extends Module
 		return new returnData(0, $rsResult);
 	}
 
-
 	/**
 	 * Retrieve editors of a specifc game
 	 *
@@ -1837,7 +1576,6 @@ class Games extends Module
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 		return new returnData(0, $rsResult);
 	}
-
 
 	/**
 	 * Add an editor to a game
@@ -1883,7 +1621,6 @@ class Games extends Module
 		else return new returnData(0, FALSE);
 	}
 
-
 	/**
 	 * Saves a user comment on a game from client
 	 * @param integer $intPlayerId The player identifier
@@ -1892,7 +1629,6 @@ class Games extends Module
 	 * @param String $comment The user's comment
 	 * @return void
 	 */
-
 	public function saveComment($intPlayerId, $intGameId, $intRating, $comment) {
                 if($comment == 'Comment') $comment = "";
 		$query = "SELECT * FROM game_comments WHERE game_id = '{$intGameId}' AND player_id = '{$intPlayerId}'";
@@ -1902,7 +1638,6 @@ class Games extends Module
 		mysql_query($query);
 
                 if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
-
                 $query = "SELECT editors.email FROM (SELECT * FROM game_editors WHERE game_id = ".$intGameId.") AS ge LEFT JOIN editors ON ge.editor_id = editors.editor_id";
                 $result = mysql_query($query);
                 if(mysql_num_rows($result) > 0)
@@ -1918,7 +1653,6 @@ class Games extends Module
 		return new returnData(0);
 	}
 
-
 	/**
 	 * Gets a lightweight game list to populate map on client- ONLY RETURNS GAMES MARKED 'is_locational'
 	 * @param float User's current latitude
@@ -1926,14 +1660,12 @@ class Games extends Module
 	 * @param 1:Include games in development 0:restrict list to polished games
 	 * @returns gameId, rating, and lat/lon location.
 	 */
-
 	public function getGamesWithLocations($latitude, $longitude, $boolIncludeDevGames = 0) {
 		$games = array();
 
 		if($boolIncludeDevGames) $query = "SELECT game_id, name FROM games WHERE is_locational = 1";
 		else $query = "SELECT game_id, name FROM games WHERE ready_for_public = 1 AND is_locational = 1";
 		$idResult = mysql_query($query);
-
 
 		while($gameId = mysql_fetch_assoc($idResult)){
 			$game = new stdClass;
@@ -1942,7 +1674,6 @@ class Games extends Module
 
 			$query = "SELECT AVG(rating) AS rating FROM game_comments WHERE game_id = {$gameId['game_id']}";
 			$ratingResult = mysql_query($query);
-
 
 			$rating = mysql_fetch_assoc($ratingResult);
 			if($rating['rating'] != NULL){
@@ -1969,7 +1700,6 @@ class Games extends Module
 		return new returnData(0, $games);
 	}
 
-
 	/**
 	 * Gets a game's nearest location to user
 	 * @param integer $latitude User's current latitude
@@ -1977,14 +1707,13 @@ class Games extends Module
 	 * @param integer $gameId Game to find nearest location of
 	 * @returns nearestLocation distance, latitude, and longitude
 	 */
-
 	protected function getNearestLocationOfGameToUser($latitude, $longitude, $gameId){
 		$query = "SELECT latitude, longitude,((ACOS(SIN($latitude * PI() / 180) * SIN(latitude * PI() / 180) + 
 			COS($latitude * PI() / 180) * COS(latitude * PI() / 180) * 
 			COS(($longitude - longitude) * PI() / 180)) * 180 / PI()) * 60 * 1.1515) * 1609.344
 			AS `distance`
-			FROM {$gameId}_locations
-			WHERE type != 'Item' OR (item_qty > 0 OR item_qty = -1)
+			FROM locations
+			WHERE game_id = {$gameId} AND (type != 'Item' OR item_qty > 0)
 			ORDER BY distance ASC";
 
 		if (!$nearestLocationRs = mysql_query($query)) {
@@ -2005,7 +1734,6 @@ class Games extends Module
 	 * @param boolean Search all games or just the polished ones
 	 * @returns array of gameId's who's corresponding games contain the search string
 	 */
-
 	public function getGamesContainingText($intPlayerId, $latitude, $longitude, $textToFind, $boolIncludeDevGames = 1, $page = 0){
 		$textToFind = addSlashes($textToFind);
 		$textToFind = urldecode($textToFind);
@@ -2030,7 +1758,6 @@ class Games extends Module
 		return new returnData(0, $games);
 	}
 
-
 	/**
 	 * Gets a player's 10 most recently played games
 	 * @param integer The player to look for
@@ -2042,7 +1769,7 @@ class Games extends Module
 	public function getRecentGamesForPlayer($intPlayerId, $latitude, $longitude, $boolIncludeDevGames = 1){
 		$query = "SELECT p_log.*, games.ready_for_public FROM (SELECT player_id, game_id, timestamp FROM player_log WHERE player_id = {$intPlayerId} AND game_id != 0 ORDER BY timestamp DESC) as p_log LEFT JOIN games ON p_log.game_id = games.game_id ".($boolIncludeDevGames ? "" : "WHERE games.ready_for_public = 1 ")."GROUP BY game_id ORDER BY timestamp DESC LIMIT 10"; 
 		$result = mysql_query($query);
-
+		$x = 0;
 		$games = array();
 		while($game = mysql_fetch_object($result))
 		{

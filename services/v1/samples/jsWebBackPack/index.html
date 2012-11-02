@@ -10,6 +10,8 @@
 <script type="text/javascript" src="jszip/jszip-inflate.js"></script>
 <script type="text/javascript">
         var gameJSON;
+        var jsonText;
+
 	function sendRequest(fn, params)
 	{
         	var xmlhttp;
@@ -82,6 +84,117 @@
 		else
 			alert("Please Enter a Valid Game ID");
 	}
+
+        function dump()
+        {
+            var zip = new JSZip();
+            zip.file("jsondata.txt", jsonText);
+            var players = zip.folder("players");
+            for(var i = 0; i < gameJSON.backpacks.length; i++)
+            {
+                var player = players.folder(gameJSON.backpacks[i].owner.user_name);
+                for(var j = 0; j < gameJSON.backpacks[i].notes.length; j++)
+                {
+                    var nTitle = gameJSON.backpacks[i].notes[j].title;
+                    var tags = "";
+                    for(var k = 0; k < gameJSON.backpacks[i].notes[j].tags.length; k++)
+                    {
+                        tags += gameJSON.backpacks[i].notes[j].tags[k].tag+", ";
+                    }
+                    if(tags != "")
+                    {
+                        tags = tags.substr(0, tags.length-2);
+                        tags = " ("+tags+")";
+                    }
+                    nTitle+=tags+" "+gameJSON.backpacks[i].notes[j].note_id;
+                    var note = player.folder(nTitle);
+                    for(var k = 0; k < gameJSON.backpacks[i].notes[j].contents.length; k++)
+                    {
+                        var content = gameJSON.backpacks[i].notes[j].contents[k];
+                        switch(content.type)
+                        {
+                            case "TEXT":
+                                note.file(content.title+".txt", content.text);
+                                break;
+                            case "PHOTO":
+                                note.file(content.title+content.media_url.substr(content.media_url.length-4, 4), getImageData(content.img,content.media_url.substr(content.media_url.length-4, 4)), {base64: true});
+                                break;
+                            case "AUDIO":
+                                note.file(content.title+content.media_url.substr(content.media_url.length-4, 4), content.media_url, {base64: true});
+                                break;
+                            case "VIDEO":
+                                note.file(content.title+content.media_url.substr(content.media_url.length-4, 4), content.media_url, {base64: true});
+                                break;
+                        }
+                    }
+                    var comments = note.folder("comments");
+                    for(var k = 0; k < gameJSON.backpacks[i].notes[j].comments.length; k++)
+                    {
+                        var c = gameJSON.backpacks[i].notes[j].comments[k];
+                        var comment = comments.folder(c.username+" "+c.note_id);
+                        comment.file("text.txt", c.title);
+                        for(var l = 0; l < c.contents.length; l++)
+                        {
+                            var cc = c.contents[l];
+                            if(cc.type == "PHOTO")
+                            {
+                                comment.file(cc.title+cc.media_url.substr(cc.media_url.length-4, 4), getImageData(cc.img,cc.media_url.substr(cc.media_url.length-4, 4)), {base64: true});
+                            }
+                        }
+                    }
+                }
+            }
+            var content = zip.generate();
+            location.href = "data:application/zip;base64," + content;
+        }
+
+        function preloadDumpMedia(game)
+        {
+            for(var i = 0; i < game.backpacks.length; i++)
+            {
+                var backpack = game.backpacks[i];
+                for(var j = 0; j < backpack.notes.length; j++)
+                {
+                    var note = backpack.notes[j];
+                    for(var k = 0; k < note.contents.length; k++)
+                    {
+                        var content = note.contents[k];
+                        if(content.type == "PHOTO")
+                        {
+                            content.img = new Image();
+                            content.img.src = ""+content.media_url;
+                        }
+                    }
+                    for(var k = 0; k < note.comments.length; k++)
+                    {
+                        var comment = note.comments[k];
+                        for(var l = 0; l < comment.contents.length; l++)
+                        {
+                            var ccontent = comment.contents[l];
+                            if(ccontent.type == "PHOTO")
+                            {
+                                ccontent.img = new Image();
+                                ccontent.img.src = ""+content.media_url;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        function getImageData(img,type)
+        {
+            if(!canvas) canvas = document.createElement("canvas");
+            canvas.width = img.width;
+            canvas.height = img.height;
+            if(!ctx) ctx = canvas.getContext("2d");
+            ctx.drawImage(img,0,0);
+            cdata = canvas.toDataURL("image/"+type);
+            return cdata.replace(/^data:image\/(png|jpg);base64,/, "");
+        }
+        var canvas;
+        var ctx;
+        var cdata;
 
 </script>
 </head>

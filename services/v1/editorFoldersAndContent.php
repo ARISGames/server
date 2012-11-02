@@ -10,7 +10,6 @@ require_once("augbubbles.php");
 require_once("notes.php");
 require_once("overlays.php");
 
-
 class EditorFoldersAndContent extends Module
 {
 
@@ -240,8 +239,9 @@ class EditorFoldersAndContent extends Module
 				     previous_id = '{$intSortOrder}',
 				     is_open = '{$boolIsOpen}'
 					     WHERE 
-					     folder_id = {$intFolderID}
-			";
+					     folder_id = {$intFolderID} AND
+					     game_id = '{$intGameId}'
+					     ";
 
 			NetDebug::trace($query);
 			@mysql_query($query);
@@ -280,7 +280,8 @@ class EditorFoldersAndContent extends Module
 					  content_id = '{$intContentID}',
 					  previous_id = '{$intSortOrder}'
 						  WHERE 
-						  object_content_id = {$intObjectContentID}
+						  object_content_id = {$intObjectContentID} AND
+						  game_id = {$intGameId}
 			";
 
 			NetDebug::trace($query);

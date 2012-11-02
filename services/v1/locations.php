@@ -167,12 +167,10 @@ class Locations extends Module
         $prefix = Module::getPrefix($intGameID);
         if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-        $query = "SELECT {$prefix}_locations.*, f.active AS is_fountain FROM {$prefix}_locations LEFT JOIN (SELECT active FROM fountains WHERE game_id = $prefix) AS f ON {$prefix}_locations.location_id = f.location_id";
-
-        $query = "SELECT {$prefix}_locations.*,{$prefix}_qrcodes.qrcode_id,{$prefix}_qrcodes.code,{$prefix}_qrcodes.match_media_id, {$prefix}_qrcodes.fail_text, f.active AS is_fountain
-            FROM {$prefix}_locations 
-            LEFT JOIN {$prefix}_qrcodes
-            ON {$prefix}_locations.location_id = {$prefix}_qrcodes.link_id LEFT JOIN
+        $query = "SELECT game_locations.*,game_qrcodes.qrcode_id,game_qrcodes.code,game_qrcodes.match_media_id, game_qrcodes.fail_text, f.active AS is_fountain
+            FROM (SELECT * FROM locations WHERE game_id = {$prefix}) AS game_locations
+            LEFT JOIN (SELECT * FROM qrcodes WHERE game_id = {$prefix}) AS game_qrcodes
+            ON game_locations.location_id = game_qrcodes.link_id LEFT JOIN
             (SELECT location_id, active FROM fountains WHERE game_id = $prefix) AS f
             ON {$prefix}_locations.location_id = f.location_id";
         NetDebug::trace($query);	
@@ -463,9 +461,10 @@ class Locations extends Module
             //Destroy spawnables
             if($spawnable->time_to_live != -1)
             {
-                $query = "DELETE  ".$intGameID."_locations, ".$intGameID."_qrcodes FROM ".$intGameID."_locations LEFT JOIN ".$intGameID."_qrcodes ON ".$intGameID."_locations.location_id = ".$intGameID."_qrcodes.link_id 
-                WHERE type = '".$spawnable->type."' AND type_id = ".$spawnable->type_id." AND 
-                ((spawnstamp < NOW() - INTERVAL ".$spawnable->time_to_live." SECOND) OR (type = 'Item' AND item_qty = 0))";
+                $query = "DELETE game_locations, game_qrcodes 
+			FROM (SELECT * FROM locations WHERE game_id = {$prefix}) AS game_locations 
+			LEFT_JOIN (SELECT * FROM qrcodes WHERE game_id = {$prefix}) AS game_qrcodes ON game_locations.location_id = game_qrcodes.link_id 
+			WHERE type = '".$spawnable->type."' AND type_id = ".$spawnable->type_id." AND ((spawnstamp < NOW() - INTERVAL ".$spawnable->time_to_live." SECOND) OR (type = 'Item' AND item_qty = 0))";
                 mysql_query($query);
             }
 

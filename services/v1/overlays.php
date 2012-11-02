@@ -143,7 +143,6 @@ class Overlays extends Module
 
 		if ($intGameID == 0) $query = "SELECT * FROM overlays, overlay_tiles, media WHERE overlays.game_id = 0 AND overlays.overlay_id = overlay_tiles.overlay_id AND overlay_tiles.media_id = media.media_id ORDER BY overlays.sort_index";
 		else $query = "SELECT * FROM overlays, overlay_tiles, media WHERE (overlays.game_id = {$prefix}) AND overlays.overlay_id = overlay_tiles.overlay_id AND overlay_tiles.media_id = media.media_id ORDER BY overlays.sort_index";
-
 		//NetDebug::trace($query);
 
 
@@ -358,7 +357,6 @@ class Overlays extends Module
                 $intOverlayID = $intOverlayID + 1;
             }
         }
-        
         return $fullOldDirAndFileName . "->" . $fullNewDirAndFileName;
     }	
 

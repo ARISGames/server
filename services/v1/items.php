@@ -164,15 +164,15 @@ class Items extends Module
         $prefix = Module::getPrefix($gameId);
         if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-        $query = "INSERT INTO {$prefix}_items 
-            (name, description, icon_media_id, media_id, dropable, destroyable, tradeable, is_attribute, max_qty_in_inventory, weight, url, type)
-            VALUES ('{$name}', 
+        $query = "INSERT INTO items 
+            (game_id, name, description, icon_media_id, media_id, dropable, destroyable, tradeable, is_attribute, max_qty_in_inventory, weight, url, type)
+            VALUES ('{$gameId}',
+                    '{$name}', 
                     '{$description}',
                     '{$iconMediaId}', 
                     '{$mediaId}', 
                     '{$droppable}',
                     '{$destroyable}',
-                    '{$tradeable}',
                     '{$attribute}',
                     '{$maxQuantityInPlayerInventory}',
                     '{$weight}',
