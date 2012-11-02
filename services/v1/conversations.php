@@ -21,12 +21,32 @@ class Conversations extends Module
 		$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
+                /*
+                //OLD QUERY
 		$query = "SELECT {$prefix}_npc_conversations.*,
-			{$prefix}_npc_conversations.text AS conversation_text,{$prefix}_nodes.*
-		FROM {$prefix}_npc_conversations JOIN {$prefix}_nodes
-			ON {$prefix}_npc_conversations.node_id = {$prefix}_nodes.node_id
-			WHERE {$prefix}_npc_conversations.npc_id = {$npcId} ORDER BY sort_index";					
-			$rsResult = @mysql_query($query);
+                                 {$prefix}_npc_conversations.text AS conversation_text, 
+                                 {$prefix}_nodes.*
+		                 FROM 
+                                 {$prefix}_npc_conversations 
+                                 JOIN 
+                                 {$prefix}_nodes
+			         ON 
+                                 {$prefix}_npc_conversations.node_id = {$prefix}_nodes.node_id
+			         WHERE 
+                                 {$prefix}_npc_conversations.npc_id = {$npcId} 
+                                 ORDER BY sort_index";					
+                */
+
+                $query = "SELECT game_npc_conversations.*, game_nodes.* 
+                FROM 
+                (SELECT npc_conversations.*, npc_conversations.text AS conversation_text FROM npc_conversations WHERE game_id = {$prefix} AND npc_id = {$npcId}) AS game_npc_conversations 
+                JOIN 
+                (SELECT * FROM nodes WHERE game_id = {$prefix}) AS game_nodes 
+                ON 
+                game_npc_conversations.node_id = game_nodes.node_id 
+                ORDER BY sort_index";
+
+		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
 		return new returnData(0, $rsResult);	
 	}
@@ -35,16 +55,16 @@ class Conversations extends Module
 		$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		$query = "SELECT * FROM {$prefix}_npc_conversations WHERE npc_id = '{$npcId}' AND (conversation_id = '{$a}' OR conversation_id = '{$b}')";
+		$query = "SELECT * FROM npc_conversations WHERE game_id = {$prefix} AND npc_id = '{$npcId}' AND (conversation_id = '{$a}' OR conversation_id = '{$b}')";
 		$result = mysql_query($query);
 		$convos = array();
 		while($convo = mysql_fetch_object($result)){
 			$convos[$convo->conversation_id] = $convo;
 		}
 
-		$query = "UPDATE {$prefix}_npc_conversations SET sort_index = '{$convos[$a]->sort_index}' WHERE conversation_id = '{$b}'";
+		$query = "UPDATE npc_conversations SET sort_index = '{$convos[$a]->sort_index}' WHERE game_id = '{$prefix}' AND conversation_id = '{$b}'";
 		mysql_query($query);
-		$query = "UPDATE {$prefix}_npc_conversations SET sort_index = '{$convos[$b]->sort_index}' WHERE conversation_id = '{$a}'";
+		$query = "UPDATE npc_conversations SET sort_index = '{$convos[$b]->sort_index}' WHERE game_id = '{$prefix}' AND conversation_id = '{$a}'";
 		mysql_query($query);
 
 		return new returnData(0);
@@ -74,6 +94,7 @@ class Conversations extends Module
 
 		$query = "INSERT INTO nodes (game_id, text)
 			VALUES ('{$prefix}','{$nodeText}')";
+
 		NetDebug::trace("createNode: Running a query = $query");	
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);	
@@ -81,8 +102,8 @@ class Conversations extends Module
 		$newNodeId = mysql_insert_id();
 
 
-		$query = "INSERT INTO {$prefix}_npc_conversations (npc_id, node_id, text, sort_index)
-			VALUES ('{$npcId}','{$newNodeId}','{$conversationText}','{$index}')";
+		$query = "INSERT INTO npc_conversations (npc_id, game_id, node_id, text, sort_index)
+			VALUES ('{$npcId}','{$prefix}','{$newNodeId}','{$conversationText}','{$index}')";
 		NetDebug::trace("createConversation: Running a query = $query");	
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);	
@@ -116,7 +137,7 @@ class Conversations extends Module
 		$nodeText = addslashes($nodeText);
 		$prefix = Module::getPrefix($gameId);
 
-		$query = "SELECT node_id FROM {$prefix}_npc_conversations WHERE conversation_id = {$conversationId} LIMIT 1";
+		$query = "SELECT node_id FROM npc_conversations WHERE game_id = '{$prefix}' AND conversation_id = {$conversationId} LIMIT 1";
 		NetDebug::trace("Running a query = $query");	
 		$nodeIdRs = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);			
@@ -127,13 +148,13 @@ class Conversations extends Module
                 $nodeText = str_replace("“", "\"", $nodeText);
                 $nodeText = str_replace("”", "\"", $nodeText);
 
-		$query = "UPDATE {$prefix}_nodes SET text = '{$nodeText}', title = '{$conversationText}' WHERE node_id = {$nodeId}";
+		$query = "UPDATE nodes SET text = '{$nodeText}', title = '{$conversationText}' WHERE game_id = '{$prefix}' AND node_id = {$nodeId}";
 		NetDebug::trace("Running a query = $query");	
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);	
 
 
-		$query = "UPDATE {$prefix}_npc_conversations SET text = '{$conversationText}', sort_index = '{$index}' WHERE conversation_id = {$conversationId}";
+		$query = "UPDATE npc_conversations SET text = '{$conversationText}', sort_index = '{$index}' WHERE game_id = '{$prefix}' AND conversation_id = {$conversationId}";
 		NetDebug::trace("Running a query = $query");	
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);	
@@ -160,7 +181,7 @@ class Conversations extends Module
 		$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		$query = "SELECT node_id FROM {$prefix}_npc_conversations WHERE conversation_id = {$conversationId} LIMIT 1";
+		$query = "SELECT node_id FROM npc_conversations WHERE game_id = '{$prefix}' AND conversation_id = {$conversationId} LIMIT 1";
 		NetDebug::trace("Running a query = $query");	
 		$nodeIdRs = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);			
@@ -170,7 +191,7 @@ class Conversations extends Module
 
 		Nodes::deleteNode($gameId, $nodeId);
 
-		$query = "DELETE FROM {$prefix}_npc_conversations WHERE conversation_id = {$conversationId}";
+		$query = "DELETE FROM npc_conversations WHERE game_id = '{$prefix}' AND conversation_id = {$conversationId}";
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 

@@ -138,6 +138,7 @@ class Overlays extends Module
 	 */
 	public function getOverlays($intGameID)
 	{
+		/*
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix && $intGameID != 0) return new returnData(1, NULL, "invalid game id");
 
@@ -148,9 +149,9 @@ class Overlays extends Module
 
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
-
+		*/
 		$returnData = new returnData(0, array());
-
+		/*
 		//For each overlay, get tiles and associated info
 		while ($overlayRow = mysql_fetch_array($rsResult)) {
 
@@ -169,8 +170,9 @@ class Overlays extends Module
 		}
 
 		//NetDebug::trace($rsResult);
-
+		*/
 		return $returnData;
+		
 	}
 
     /**

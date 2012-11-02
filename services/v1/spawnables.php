@@ -74,13 +74,13 @@ class Spawnables extends Module
     {
         switch ($type) {
             case 'Item':
-                $query = "SELECT name as title FROM {$gameId}_items WHERE item_id = {$typeId} LIMIT 1";
+                $query = "SELECT name as title FROM items WHERE game_id = {$gameId} AND item_id = {$typeId} LIMIT 1";
                 break;
             case 'Node':
-                $query = "SELECT title FROM {$gameId}_nodes WHERE node_id = {$typeId} LIMIT 1";
+                $query = "SELECT title FROM nodes WHERE game_id = {$gameId} AND node_id = {$typeId} LIMIT 1";
                 break;
             case 'Npc':
-                $query = "SELECT name as title FROM {$gameId}_npcs WHERE npc_id = {$typeId} LIMIT 1";
+                $query = "SELECT name as title FROM npcs WHERE game_id = {$gameId} AND npc_id = {$typeId} LIMIT 1";
                 break;
             case 'WebPage':
                 $query = "SELECT name as title FROM web_pages WHERE web_page_id = {$typeId} LIMIT 1";

@@ -12,12 +12,12 @@ mysql_select_db (Config::dbSchema);
 $prefix = $_REQUEST['gameId'];
 //$query = "SELECT {$prefix}_items.*, media.*, players.* FROM {$prefix}_items, media, players WHERE {$prefix}_items.media_id = media.media_id AND {$prefix}_items.creator_player_id = players.player_id";
 $query = "SELECT m.note_id, m.user_name, m.content_id, m.title, m.file_path, game_locations.latitude, game_locations.longitude FROM 
-(SELECT nc.note_id, nc.user_name, nc.content_id, nc.title, media.file_path FROM 
- (SELECT n.note_id, n.user_name, note_content.content_id, note_content.title, note_content.media_id FROM 
-  (SELECT notes.note_id, players.user_name FROM notes LEFT JOIN players ON notes.owner_id = players.player_id WHERE game_id='{$prefix}')
-  AS n LEFT JOIN note_content ON n.note_id = note_content.note_id)
- AS nc LEFT JOIN media ON nc.media_id = media.media_id)
-AS m LEFT JOIN {$prefix}_locations ON m.note_id = {$prefix}_locations.type_id ORDER BY note_id ASC";
+        (SELECT nc.note_id, nc.user_name, nc.content_id, nc.title, media.file_path FROM 
+        (SELECT n.note_id, n.user_name, note_content.content_id, note_content.title, note_content.media_id FROM 
+        (SELECT notes.note_id, players.user_name FROM notes LEFT JOIN players ON notes.owner_id = players.player_id WHERE game_id='{$prefix}')
+        AS n LEFT JOIN note_content ON n.note_id = note_content.note_id)
+        AS nc LEFT JOIN media ON nc.media_id = media.media_id)
+        AS m LEFT JOIN (SELECT * FROM locations WHERE game_id + {$prefix}) AS game_locations ON m.note_id = game_locations.type_id ORDER BY note_id ASC";
 $result = @mysql_query($query);
 
 if (mysql_error()) die ("<html><body>ERROR: Bad gameId- $query</body></html>");

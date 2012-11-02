@@ -217,7 +217,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
         $prefix = Module::getPrefix($intGameID);
         if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-        $query = "DELETE FROM {$prefix}_player_items WHERE player_id = '{$intPlayerID}'";		
+        $query = "DELETE FROM player_items WHERE player_id = '{$intPlayerID}' AND game_id = {$prefix}";		
         NetDebug::trace($query);
         @mysql_query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -240,9 +240,9 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
             if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
             while ($item = @mysql_fetch_object($itemsRs)) {			
-                $query = "DELETE FROM {$prefix}_locations
-                    WHERE {$prefix}_locations.type = 'Item' 
-                    AND {$prefix}_locations.type_id = '{$item->item_id}'";
+                $query = "DELETE FROM locations
+                    WHERE game_id = {$prefix} AND locations.type = 'Item' 
+                    AND locations.type_id = '{$item->item_id}'";
                 NetDebug::trace("Delete Location Query: $query");		
                 @mysql_query($query);
                 NetDebug::trace(mysql_error());		
@@ -388,7 +388,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
         $prefix = Module::getPrefix($intGameID);
         if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-        $query = "SELECT item_qty from {$prefix}_locations WHERE location_id = $intLocationID";
+        $query = "SELECT item_qty from locations WHERE game_id = {$prefix} AND location_id = $intLocationID";
         $result = mysql_query($query);
         $loc = mysql_fetch_object($result);
 

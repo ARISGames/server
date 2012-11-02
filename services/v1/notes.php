@@ -295,6 +295,12 @@ class Notes extends Module
         if($noteId == 0) return new returnData(0);
 
         $query = "SELECT * FROM notes WHERE note_id = '{$noteId}' LIMIT 1";
+      
+    $query = "DELETE FROM note_tags WHERE note_id = '{$noteId}'";
+    mysql_query($query);
+      
+    $query = "DELETE FROM note_likes WHERE note_id = '{$noteId}'";
+    mysql_query($query);
 
         $result = @mysql_query($query);
         $noteObj = mysql_fetch_object($result);

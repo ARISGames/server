@@ -17,8 +17,8 @@ class Requirements extends Module
 
 		if (!$this->isValidObjectType($gameId, $objectType)) return new returnData(4, NULL, "Invalid object type");
 
-		$query = "SELECT * FROM {$prefix}_requirements
-			WHERE content_type = '{$objectType}' and content_id = '{$objectId}'";
+		$query = "SELECT * FROM requirements
+			WHERE game_id = {$prefix} AND content_type = '{$objectType}' and content_id = '{$objectId}'";
 		NetDebug::trace($query);
 
 
@@ -37,7 +37,7 @@ class Requirements extends Module
 		$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		$query = "SELECT * FROM {$prefix}_requirements WHERE requirement_id = {$requirementId} LIMIT 1";
+		$query = "SELECT * FROM requirements WHERE game_id = {$prefix} AND requirement_id = {$requirementId} LIMIT 1";
 
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -79,10 +79,10 @@ class Requirements extends Module
 		if (($requirementType == "PLAYER_HAS_ITEM") && $requirementDetail2 < 1) 
 			$requirementDetail2 = 1;
 
-		$query = "INSERT INTO {$prefix}_requirements 
-			(content_type, content_id, requirement, 
+		$query = "INSERT INTO requirements 
+			(game_id, content_type, content_id, requirement, 
 			 requirement_detail_1,requirement_detail_2,requirement_detail_3,requirement_detail_4,boolean_operator,not_operator)
-			VALUES ('{$objectType}','{$objectId}','{$requirementType}',
+			VALUES ('{$prefix}','{$objectType}','{$objectId}','{$requirementType}',
 					'{$requirementDetail1}', '{$requirementDetail2}', '{$requirementDetail3}', '{$requirementDetail4}', '{$booleanOperator}','{$notOperator}')";
 
 		NetDebug::trace("Running a query = $query");	
@@ -128,7 +128,7 @@ class Requirements extends Module
 
 
 
-		$query = "UPDATE {$prefix}_requirements 
+		$query = "UPDATE requirements 
 			SET 
 			content_type = '{$objectType}',
 				     content_id = '{$objectId}',
@@ -139,7 +139,7 @@ class Requirements extends Module
 				     requirement_detail_4 = '{$requirementDetail4}',
 				     boolean_operator = '{$booleanOperator}',
 				     not_operator = '{$notOperator}'
-					     WHERE requirement_id = '{$requirementId}'";
+					     WHERE game_id = {$prefix} AND requirement_id = '{$requirementId}'";
 
 		NetDebug::trace("Running a query = $query");	
 
@@ -160,7 +160,7 @@ class Requirements extends Module
 		$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		$query = "DELETE FROM {$prefix}_requirements WHERE requirement_id = {$requirementId}";
+		$query = "DELETE FROM requirements WHERE game_id = {$prefix} AND requirement_id = {$requirementId}";
 
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -210,8 +210,8 @@ class Requirements extends Module
 		}
 
 		//Delete the Locations and related QR Codes
-		$query = "DELETE FROM {$prefix}_requirements
-			WHERE ({$requirementString}) AND requirement_detail_1 = '{$objectId}'";
+		$query = "DELETE FROM requirements
+			WHERE game_id = {$prefix} AND ({$requirementString}) AND requirement_detail_1 = '{$objectId}'";
 
 		@mysql_query($query);
 
@@ -260,7 +260,7 @@ class Requirements extends Module
 		$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return FALSE;
 
-		$query = "SHOW COLUMNS FROM {$prefix}_requirements LIKE 'content_type'";
+		$query = "SHOW COLUMNS FROM requirements LIKE 'content_type'";
 		NetDebug::trace($query);
 
 		$result = @mysql_query( $query );
@@ -279,7 +279,7 @@ class Requirements extends Module
 		$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return FALSE;
 
-		$query = "SHOW COLUMNS FROM {$prefix}_requirements LIKE 'requirement'";
+		$query = "SHOW COLUMNS FROM requirements LIKE 'requirement'";
 		$result = mysql_query( $query );
 		$row = mysql_fetch_array( $result , MYSQL_NUM );
 		$regex = "/'(.*?)'/";
@@ -308,8 +308,5 @@ class Requirements extends Module
 
 		return in_array($requirementType, $validTypes);
 	}	
-
-
-
 
 }

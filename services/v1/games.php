@@ -2,6 +2,7 @@
 require_once("module.php");
 require_once("media.php");
 require_once("quests.php");
+require_once("test.php");
 
 class Games extends Module
 {	
@@ -46,7 +47,6 @@ class Games extends Module
 	 * @returns a returnData object containing an array of games
 	 * @see returnData
 	 */
-
 	public function getGamesForPlayerAtLocation($playerId, $latitude, $longitude, $maxDistance=99999999, $locational, $includeGamesinDevelopment)
 	{
 		if ($includeGamesinDevelopment) $query = "SELECT game_id FROM games WHERE is_locational = '{$locational}'";
@@ -56,7 +56,6 @@ class Games extends Module
 		NetDebug::trace(mysql_error());
 
 		$games = array();
-
 		while ($game = @mysql_fetch_object($gamesRs)) {
 			$gameObj = new stdClass;
 			$gameObj = Games::getFullGameObject($game->game_id, $playerId, 1, $maxDistance, $latitude, $longitude);
@@ -67,9 +66,7 @@ class Games extends Module
 			//else NetDebug::trace("Skip");
 		}
 		return new returnData(0, $games, NULL);
-
 	}		
-
 
 	/**
 	 * Returns:
@@ -82,7 +79,6 @@ class Games extends Module
 	 * @param float Not necessary if 'boolGetLocationalInfo' = 0
 	 * @returns a whole bunch of stuff. Returns NULL if $boolGetLocationalInfo is set (1) and game is at a distance further than $intSkipAtDistance.
 	 */
-
 	public function getOneGame($intGameId, $intPlayerId, $boolGetLocationalInfo = 0, $intSkipAtDistance = 99999999, $latitude = 0, $longitude = 0)
 	{
 		$games = array();
@@ -94,7 +90,6 @@ class Games extends Module
 			$games[] = $gameObj;
 		return new returnData(0, $games, NULL);
 	}	
-
 
 	/**
 	 * Returns:
@@ -168,7 +163,6 @@ class Games extends Module
 	 * @param float Not necessary if 'boolGetLocationalInfo' = 0
 	 * @returns a whole bunch of stuff. Returns NULL if $boolGetLocationalInfo is set (1) and game is at a distance further than $intSkipAtDistance.
 	 */
-
 	public function getFullGameObject($intGameId, $intPlayerId, $boolGetLocationalInfo = 0, $intSkipAtDistance = 99999999, $latitude = 0, $longitude = 0){
 		$query = "SELECT * FROM games WHERE game_id = '{$intGameId}'";
 		$result = mysql_query($query);
@@ -213,6 +207,7 @@ class Games extends Module
 			$editorsString .= ', ' . $editor['name'];
 		}
 		$gameObj->editors = $editorsString;
+                
 		//Get Num Players
 		$query = "SELECT * FROM players
 			WHERE last_game_id = {$intGameId}";
@@ -226,7 +221,6 @@ class Games extends Module
 		$icon_media_data = Media::getMediaObject($intGameId, $gameObj->icon_media_id);
 		$icon_media = $icon_media_data->data; 
 		$gameObj->icon_media_url = $icon_media->url_path . $icon_media->file_path;
-
 
 		//Media
 		$media_data = Media::getMediaObject($intGameId, $gameObj->media_id);
@@ -357,8 +351,6 @@ class Games extends Module
 		mkdir($newGameDirectory,0777);
 
 		return new returnData(0, $newGameID, NULL);
-
-
 	}
 
 	/**
@@ -482,7 +474,6 @@ class Games extends Module
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());  
 
-		//add stuff to spawnables
 		$query = "ALTER TABLE game_tab_data CHANGE tab tab ENUM('GPS','NEARBY','QUESTS','INVENTORY','PLAYER','QR','NOTE','STARTOVER','PICKGAME') NOT NULL;";
 		mysql_query($query);
 		NetDebug::trace("$query" . ":" . mysql_error());
@@ -524,53 +515,53 @@ class Games extends Module
 		NetDebug::trace("$query" . ":" . mysql_error());
         
 		$query = "CREATE TABLE `overlays` (
-        `overlay_id` int(11) NOT NULL AUTO_INCREMENT,
-        `game_id` int(11) DEFAULT NULL,
-        `sort_order` int(11) DEFAULT NULL,
-        `alpha` decimal(3,2) DEFAULT NULL,
-        `num_tiles` int(11) DEFAULT NULL,
-        `game_overlay_id` int(11) DEFAULT NULL,
-        `name` varchar(100) DEFAULT NULL,
-        `description` varchar(500) DEFAULT NULL,
-        `icon_media_id` int(11) DEFAULT NULL,
-        `sort_index` int(11) DEFAULT NULL,
-        `folder_name` varchar(200) DEFAULT NULL,
-        `file_uploaded` int(11) DEFAULT NULL,
-        PRIMARY KEY (`overlay_id`)
-        )";
-	mysql_query($query);
-	NetDebug::trace("$query" . ":" . mysql_error());
+                        `overlay_id` int(11) NOT NULL AUTO_INCREMENT,
+                        `game_id` int(11) DEFAULT NULL,
+                        `sort_order` int(11) DEFAULT NULL,
+                        `alpha` decimal(3,2) DEFAULT NULL,
+                        `num_tiles` int(11) DEFAULT NULL,
+                        `game_overlay_id` int(11) DEFAULT NULL,
+                        `name` varchar(100) DEFAULT NULL,
+                        `description` varchar(500) DEFAULT NULL,
+                        `icon_media_id` int(11) DEFAULT NULL,
+                        `sort_index` int(11) DEFAULT NULL,
+                        `folder_name` varchar(200) DEFAULT NULL,
+                        `file_uploaded` int(11) DEFAULT NULL,
+                        PRIMARY KEY (`overlay_id`)
+                        )";
+	        mysql_query($query);
+	        NetDebug::trace("$query" . ":" . mysql_error());
 
-	$query = "CREATE TABLE `overlay_tiles` (
-		`overlay_id` int(11) DEFAULT NULL,
-		`media_id` int(11) DEFAULT NULL,
-		`zoom` int(11) DEFAULT NULL,
-		`x` int(11) DEFAULT NULL,
-		`x_max` int(11) DEFAULT NULL,
-		`y` int(11) DEFAULT NULL,
-		`y_max` int(11) DEFAULT NULL
-	)";
-	mysql_query($query);
-	NetDebug::trace("$query" . ":" . mysql_error());
+	        $query = "CREATE TABLE `overlay_tiles` (
+		        `overlay_id` int(11) DEFAULT NULL,
+		        `media_id` int(11) DEFAULT NULL,
+		        `zoom` int(11) DEFAULT NULL,
+		        `x` int(11) DEFAULT NULL,
+		        `x_max` int(11) DEFAULT NULL,
+		        `y` int(11) DEFAULT NULL,
+		        `y_max` int(11) DEFAULT NULL
+	                )";
+	        mysql_query($query);
+	        NetDebug::trace("$query" . ":" . mysql_error());
 
-	$query = "CREATE TABLE fountains
-		(fountain_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
-		 game_id INT NOT NULL, 
-		 type ENUM('Location', 'Spawnable') NOT NULL, 
-		 location_id INT NOT NULL, 
-		 spawn_probability double NOT NULL DEFAULT 50, 
-		 spawn_rate INT NOT NULL DEFAULT 10, 
-		 max_amount INT NOT NULL DEFAULT 10, 
-		 last_spawned TIMESTAMP NOT NULL,
-		 active TINYINT(1) NOT NULL DEFAULT 1);";
-	mysql_query($query);
-	NetDebug::trace("$query" . ":" . mysql_error());
+	        $query = "CREATE TABLE fountains
+		        (fountain_id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, 
+		        game_id INT NOT NULL, 
+		        type ENUM('Location', 'Spawnable') NOT NULL, 
+		        location_id INT NOT NULL, 
+		        spawn_probability double NOT NULL DEFAULT 50, 
+		        spawn_rate INT NOT NULL DEFAULT 10, 
+		        max_amount INT NOT NULL DEFAULT 10, 
+		        last_spawned TIMESTAMP NOT NULL,
+		        active TINYINT(1) NOT NULL DEFAULT 1);";
+	        mysql_query($query);
+	        NetDebug::trace("$query" . ":" . mysql_error());
 
-	$query = "ALTER TABLE requirements CHANGE content_type content_type ENUM('Node', 'QuestDisplay', 'QuestComplete', 'Location', 'OutgoingWebHook', 'Spawnable', 'CustomMap');";
-	mysql_query($query);
-	NetDebug::trace("$query" . ":" . mysql_error());
+	        $query = "ALTER TABLE requirements CHANGE content_type content_type ENUM('Node', 'QuestDisplay', 'QuestComplete', 'Location', 'OutgoingWebHook', 'Spawnable', 'CustomMap');";
+	        mysql_query($query);
+	        NetDebug::trace("$query" . ":" . mysql_error());
 
-	return new returnData(0);
+	    return new returnData(0);
 	}
 
 	/**
@@ -631,6 +622,7 @@ class Games extends Module
 
 	//	Test::killOrphansBeforeMigration();
 		Games::createNewTablesForMigration();
+                // The following migration game_ids failed on dev:
                 //1686
                 //1932
                 //2788
@@ -850,44 +842,44 @@ class Games extends Module
 
 		$query = "CREATE TABLE qrcodes (
 			qrcode_id int(11) NOT NULL auto_increment,
-				  game_id INT NOT NULL,
-				  link_type enum('Location') NOT NULL default 'Location',
-				  link_id int(11) NOT NULL,
-				  code varchar(255) NOT NULL,
-				  match_media_id INT( 10 ) UNSIGNED NOT NULL DEFAULT  '0',
-				  fail_text varchar(256) NOT NULL DEFAULT \"This code doesn't mean anything right now. You should come back later.\",
-				  PRIMARY KEY  (qrcode_id),
- 			          KEY game_link_id (game_id, link_type, link_id)
-					  )ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
+			game_id INT NOT NULL,
+			link_type enum('Location') NOT NULL default 'Location',
+			link_id int(11) NOT NULL,
+			code varchar(255) NOT NULL,
+			match_media_id INT( 10 ) UNSIGNED NOT NULL DEFAULT  '0',
+			fail_text varchar(256) NOT NULL DEFAULT \"This code doesn't mean anything right now. You should come back later.\",
+			PRIMARY KEY  (qrcode_id),
+ 			KEY game_link_id (game_id, link_type, link_id)
+				)ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(6, NULL, 'cannot create qrcodes table');							
 
 		$query = "CREATE TABLE folders (
 			folder_id int(10) unsigned NOT NULL auto_increment,
-				  game_id INT NOT NULL,
-				  name varchar(50) collate utf8_unicode_ci NOT NULL,
-				  parent_id int(11) NOT NULL default '0',
-				  previous_id int(11) NOT NULL default '0',
-				  is_open ENUM('0','1') NOT NULL DEFAULT  '0',
-				  PRIMARY KEY  (folder_id),
-				  KEY game_parent (game_id, parent_id),
-			    	  KEY game_previous (game_id, previous_id)
-					  ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
+			game_id INT NOT NULL,
+			name varchar(50) collate utf8_unicode_ci NOT NULL,
+			parent_id int(11) NOT NULL default '0',
+			previous_id int(11) NOT NULL default '0',
+			is_open ENUM('0','1') NOT NULL DEFAULT  '0',
+			PRIMARY KEY  (folder_id),
+			KEY game_parent (game_id, parent_id),
+			KEY game_previous (game_id, previous_id)
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(6, NULL, 'cannot create folders table');	
 
 		$query = "CREATE TABLE folder_contents (
 			object_content_id int(10) unsigned NOT NULL auto_increment,
-					  folder_id int(10) NOT NULL default '0',
-					  game_id INT NOT NULL,
-					  content_type enum('Node','Item','Npc','WebPage','AugBubble', 'PlayerNote') collate utf8_unicode_ci NOT NULL default 'Node',
-					  content_id int(10) unsigned NOT NULL default '0',
-					  previous_id int(10) unsigned NOT NULL default '0',
-					  PRIMARY KEY  (object_content_id),
-					  KEY game_content (game_id, content_type, content_id),
-            				  KEY game_folder (game_id, folder_id),
-				          KEY game_previous (game_id, previous_id)
-						  ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
+		        folder_id int(10) NOT NULL default '0',
+			game_id INT NOT NULL,
+			content_type enum('Node','Item','Npc','WebPage','AugBubble', 'PlayerNote') collate utf8_unicode_ci NOT NULL default 'Node',
+			content_id int(10) unsigned NOT NULL default '0',
+			previous_id int(10) unsigned NOT NULL default '0',
+			PRIMARY KEY  (object_content_id),
+			KEY game_content (game_id, content_type, content_id),
+            		KEY game_folder (game_id, folder_id),
+			KEY game_previous (game_id, previous_id)
+				) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;";
 		@mysql_query($query);
 
 		mysql_query("ALTER TABLE aug_bubble_media ENGINE = InnoDB;");
@@ -1509,18 +1501,15 @@ class Games extends Module
 			$tables .= ' ';
 		}
 
-
 		$createSQLCommand = Config::mysqlBinPath ."/mysqldump -u " . Config::dbUser . " --password=" . Config::dbPass . " " . Config::dbSchema . " $tables > ". Config::gamedataFSPath . "/Backups/{$tmpDir}/{$sqlFile}";
 		//echo "<p>Running: $createSQLCommand </p>";
 		exec($createSQLCommand, $output, $return);
 		if ($return) return new returnData(6, NULL, "cannot create SQL, check mysql bin path in config");
 
-
 		$copyCommand = "cp -R ". Config::gamedataFSPath . "/{$prefix} ". Config::gamedataFSPath . "/backups/{$tmpDir}/{$prefix}";
 		//echo "<p>Running: $copyCommand </p>";
 		exec($copyCommand, $output, $return);
 		if ($return) return new returnData(5, NULL, "cannot copy game dir to backup dir, check file permissions");
-
 
 		//Zip up the whole directory
 		$zipFile = "{$prefix}_backup_" . date('Y_m_d') . ".tar";
@@ -1538,8 +1527,6 @@ class Games extends Module
 		return new returnData(0, Config::gamedataWWWPath . "/backups/{$zipFile}");		
 	}	
 
-
-
 	/**
 	 * Restore a game from a file
 	 * Not yet implemented
@@ -1548,7 +1535,6 @@ class Games extends Module
 	public function restoreGame($file)
 	{
 		return new returnData(4, NULL, "restore Game Not Implemented on Server");
-
 	}
 
 	/**
@@ -1724,7 +1710,6 @@ class Games extends Module
 		return $nearestLocation;
 	}
 
-
 	/**
 	 * Gets a set of games that contain the input string
 	 * @param integer Player Id
@@ -1825,7 +1810,6 @@ class Games extends Module
 	 *
 	 */
 	public function duplicateGame($intGameID, $intEditorID = 0) {
-
 		Module::serverErrorLog("Duplicating Game ID:".$intGameID);
 		$prefix = Module::getPrefix($intGameID);
 
@@ -2066,10 +2050,6 @@ class Games extends Module
 
 		}
 
-
-        
-
-
 		//NOTE: substr removes <?xml version="1.0" ? //> from the beginning of the text
 		$query = "SELECT * FROM {$newPrefix}_nodes";
 		$result = mysql_query($query);
@@ -2150,7 +2130,6 @@ class Games extends Module
 			}
 		}
 
-
 		foreach($xml->children() as $child)
 		{
 			foreach($child->attributes() as $attributeTitle => $attributeValue)
@@ -2213,7 +2192,6 @@ class Games extends Module
 
 		if($game->media_url) $game->media_url = Media::getMediaDirectoryURL($gameId)->data . '/' . $game->media_url;
 		if($game->icon_url) $game->icon_url = Media::getMediaDirectoryURL($gameId)->data . '/' . $game->icon_url;
-
 
 		$query = "SELECT editors.name FROM game_editors JOIN editors ON editors.editor_id = game_editors.editor_id WHERE game_editors.game_id = '{$gameId}'";
 		$result = mysql_query($query);

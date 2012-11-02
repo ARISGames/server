@@ -12,14 +12,14 @@ class QRCodes extends Module
 	 * Fetch all Events
 	 * @returns the events
 	 */
-	public function getQRCodes($intGameID)
+	public function getQRCodes($intGameId)
 	{
 
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = $this->getPrefix($intGameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 
-		$query = "SELECT * FROM {$prefix}_qrcodes";
+		$query = "SELECT * FROM qrcodes WHERE game_id = {$prefix}";
 		NetDebug::trace($query);
 
 
@@ -33,13 +33,13 @@ class QRCodes extends Module
 	 * Fetch a specific event
 	 * @returns a single event
 	 */
-	public function getQRCode($intGameID, $intQRCodeID)
+	public function getQRCode($intGameId, $intQRCodeID)
 	{
 
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = $this->getPrefix($intGameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		$query = "SELECT * FROM {$prefix}_qrcodes WHERE qrcode_id = {$intQRCodeID} LIMIT 1";
+		$query = "SELECT * FROM qrcodes WHERE game_id = {$prefix} AND qrcode_id = {$intQRCodeID} LIMIT 1";
 
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -55,12 +55,12 @@ class QRCodes extends Module
 	 * Download QR Code Package
 	 * @returns the URL of the file to download
 	 */
-	public function getQRCodePackageURL($intGameID)
+	public function getQRCodePackageURL($intGameId)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = $this->getPrefix($intGameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		$query = "SELECT * FROM {$prefix}_qrcodes";
+		$query = "SELECT * FROM qrcodes WHERE game_id = {$prefix}";
 
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -87,23 +87,23 @@ class QRCodes extends Module
 					$fileNameType = "Location";
 					$fileNameId = $qrCode->link_id;
 
-					$locationReturnData = Locations::getLocation($intGameID, $qrCode->link_id);
+					$locationReturnData = Locations::getLocation($intGameId, $qrCode->link_id);
 					$location = $locationReturnData->data;				
 					NetDebug::trace("Location Found. Type:" . $location->type .". Look up the Object" );
 					switch ($location->type) {
 						case 'Npc': 
 							NetDebug::trace("It is an NPC");
-							$object = Npcs::getNpc($intGameID, $location->type_id);
+							$object = Npcs::getNpc($intGameId, $location->type_id);
 							$fileNameName = $object->data->name;
 							break;
 						case 'Node': 
 							NetDebug::trace("It is an NPC");
-							$object = Nodes::getNode($intGameID, $location->type_id);
+							$object = Nodes::getNode($intGameId, $location->type_id);
 							$fileNameName = $object->data->title;
 							break;
 						case 'Item':
 							NetDebug::trace("It is an Item");
-							$object = Items::getItem($intGameID, $location->type_id);
+							$object = Items::getItem($intGameId, $location->type_id);
 							$fileNameName = $object->data->name;
 							break;	
 					}
@@ -176,8 +176,8 @@ class QRCodes extends Module
 		$prefix = $this->getPrefix($intGameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		$query = "SELECT {$prefix}_qrcodes.* 
-			FROM {$prefix}_qrcodes 
+		$query = "SELECT game_qrcodes.* 
+			FROM (SELECT * FROM qrcodes WHERE game_id = {$prefix}) AS game_qrcodes 
 			JOIN media 
 			ON (game_qrcodes.match_media_id = media.media_id)
 			WHERE media.file_path = '{$fileName}.jpg'
@@ -232,13 +232,13 @@ class QRCodes extends Module
 	 * Fetch a QRCode object
 	 * @returns a 0 with a <NearbyObjectProtocol> Object, 2 for an invalid code, 4 for reqs not met or 5 for a data error
 	 */
-	public function getQRCodeNearbyObjectForPlayer($intGameID, $strCode, $intPlayerID)
+	public function getQRCodeNearbyObjectForPlayer($intGameId, $strCode, $intPlayerID)
 	{
 		$strCode = urldecode($strCode);	
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = $this->getPrefix($intGameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		$query = "SELECT * FROM {$prefix}_qrcodes WHERE code = '{$strCode}'";
+		$query = "SELECT * FROM qrcodes WHERE game_id = {$prefix} AND code = '{$strCode}'";
 
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error: ". mysql_error());
@@ -248,18 +248,18 @@ class QRCodes extends Module
 		while($qrcode = @mysql_fetch_object($rsResult)){
 			//Check for a valid QR Code
 			if (!$qrcode) { 
-				Module::appendLog($intPlayerID, $intGameID, Module::kLOG_ENTER_QRCODE, $strCode, 'INVALID');
+				Module::appendLog($intPlayerID, $intGameId, Module::kLOG_ENTER_QRCODE, $strCode, 'INVALID');
 				$rData = new returnData(0, NULL, "invalid QRCode code");
 			}
 
 			//Check the requirements of the QR Code's link object
 			else if (!$this->objectMeetsRequirements ($prefix, $intPlayerID, $qrcode->link_type, $qrcode->link_id)) {
-				Module::appendLog($intPlayerID, $intGameID, Module::kLOG_ENTER_QRCODE, $strCode, 'REQS_OR_QTY_NOT_MET');
+				Module::appendLog($intPlayerID, $intGameId, Module::kLOG_ENTER_QRCODE, $strCode, 'REQS_OR_QTY_NOT_MET');
 				$rData = new returnData(0, $qrcode->fail_text, "QRCode requirements not met");
 			}
 
 			else{
-				Module::appendLog($intPlayerID, $intGameID, Module::kLOG_ENTER_QRCODE, $strCode, 'SUCCESSFUL');
+				Module::appendLog($intPlayerID, $intGameId, Module::kLOG_ENTER_QRCODE, $strCode, 'SUCCESSFUL');
 
 				$rData = new returnData(0, $qrcode);
 
@@ -269,7 +269,7 @@ class QRCodes extends Module
 				switch ($qrcode->link_type) {
 					case 'Location':
 						NetDebug::trace("It is Location " . $qrcode->link_id);
-						$rData->data->object = Locations::getLocation($intGameID, $qrcode->link_id)->data;
+						$rData->data->object = Locations::getLocation($intGameId, $qrcode->link_id)->data;
 						if (!$rData->data->object) return new returnData(5, NULL, "bad link in qr code, no matching location found");
 						return $rData;
 						break;
@@ -283,22 +283,18 @@ class QRCodes extends Module
 
 	}	
 
-
-
-
-
 	/**
 	 * Create a QR Code
 	 * If no code is provided, a random 4 digit number will be generated
 	 * @returns the new QR Code ID on success.
 	 */
-	public function createQRCode($intGameID, $strLinkType, $intLinkID, $strCode = '', $imageMatchId='0', $errorText="This code doesn't mean anything right now. You should come back later.")
+	public function createQRCode($intGameId, $strLinkType, $intLinkID, $strCode = '', $imageMatchId='0', $errorText="This code doesn't mean anything right now. You should come back later.")
 	{
 		$errorText = addslashes($errorText);
-		$prefix = Module::getPrefix($intGameID);
+		$prefix = Module::getPrefix($intGameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		if (!QRCodes::isValidObjectType($intGameID, $strLinkType)) return new returnData(4, NULL, "Invalid link type");
+		if (!QRCodes::isValidObjectType($intGameId, $strLinkType)) return new returnData(4, NULL, "Invalid link type");
 
 		//generate a random code if one is not provided
 		if (strlen($strCode) < 1) {
@@ -308,9 +304,9 @@ class QRCodes extends Module
 			NetDebug::trace("New Code was Created: " . $strCode);	
 		}
 
-		$query = "INSERT INTO {$prefix}_qrcodes 
-			(link_type, link_id, code, match_media_id, fail_text)
-			VALUES ('{$strLinkType}','{$intLinkID}','{$strCode}','{$imageMatchId}', '{$errorText}')";
+		$query = "INSERT INTO qrcodes 
+			(game_id, link_type, link_id, code, match_media_id, fail_text)
+			VALUES ('{$prefix}','{$strLinkType}','{$intLinkID}','{$strCode}','{$imageMatchId}', '{$errorText}')";
 
 		NetDebug::trace("Running a query = $query");	
 
@@ -326,24 +322,24 @@ class QRCodes extends Module
 	 * Update a QR Code
 	 * @returns true if edit was done, false if no changes were made
 	 */
-	public function updateQRCode($intGameID, $intQRCodeID, $strLinkType, $intLinkID, $strCode, $imageMatchId, $errorText="")
+	public function updateQRCode($intGameId, $intQRCodeID, $strLinkType, $intLinkID, $strCode, $imageMatchId, $errorText="")
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = $this->getPrefix($intGameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$strCode = addslashes($strCode);
 		$errorText = addslashes($errorText);
 
-		if (!$this->isValidObjectType($intGameID, $strLinkType)) return new returnData(4, NULL, "Invalid link type");
+		if (!$this->isValidObjectType($intGameId, $strLinkType)) return new returnData(4, NULL, "Invalid link type");
 
-		$query = "UPDATE {$prefix}_qrcodes
+		$query = "UPDATE qrcodes
 			SET 
 			link_type = '{$strLinkType}',
 				  link_id = '{$intLinkID}',
 				  code = '{$strCode}',
 				  match_media_id = '{$imageMatchId}',
 				  fail_text = '{$errorText}'
-					  WHERE qrcode_id = '{$intQRCodeID}'";
+					  WHERE game_id = {$prefix} AND qrcode_id = '{$intQRCodeID}'";
 
 		NetDebug::trace("Running a query = $query");	
 
@@ -361,12 +357,12 @@ class QRCodes extends Module
 	 * Delete a QR Code
 	 * @returns true if delete was done, false if no changes were made
 	 */
-	public function deleteQRCode($intGameID, $intQRCodeID)
+	public function deleteQRCode($intGameId, $intQRCodeID)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = $this->getPrefix($intGameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");		
 
-		$query = "DELETE FROM {$prefix}_qrcodes WHERE qrcode_id = {$intQRCodeID}";
+		$query = "DELETE FROM qrcodes WHERE game_id = {$prefix} AND qrcode_id = {$intQRCodeID}";
 
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -383,13 +379,13 @@ class QRCodes extends Module
 	 * Delete all QR Codes that link to a specified object
 	 * @returns true if delete was done, false if no changes were made
 	 */
-	public function deleteQRCodeCodesForLink($intGameID, $strLinkType, $intLinkID)
+	public function deleteQRCodeCodesForLink($intGameId, $strLinkType, $intLinkID)
 	{
-		$prefix = $this->getPrefix($intGameID);
+		$prefix = $this->getPrefix($intGameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");		
 
-		$query = "DELETE FROM {$prefix}_qrcodes WHERE 
-			link_type = '{$strLinkType}' AND link_id = '{$intLinkID}'";
+		$query = "DELETE FROM qrcodes WHERE game_id = {$prefix} AND
+                link_type = '{$strLinkType}' AND link_id = '{$intLinkID}'";
 
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -406,8 +402,8 @@ class QRCodes extends Module
 	 * Fetch the valid content types from the requirements table
 	 * @returns an array of strings
 	 */
-	public function contentTypeOptions($intGameID){	
-		$options = $this->lookupContentTypeOptionsFromSQL($intGameID);
+	public function contentTypeOptions($intGameId){	
+		$options = $this->lookupContentTypeOptionsFromSQL($intGameId);
 		if (!$options) return new returnData(1, NULL, "invalid game id");
 		return new returnData(0, $options);
 	}	
@@ -417,12 +413,12 @@ class QRCodes extends Module
 	 * Fetch the valid content types from the requirements table
 	 * @returns an array of strings
 	 */
-	private function lookupContentTypeOptionsFromSQL($intGameID){
-		$prefix = Module::getPrefix($intGameID);
+	private function lookupContentTypeOptionsFromSQL($intGameId){
+		$prefix = Module::getPrefix($intGameId);
 		if (!$prefix) return FALSE;
 
-		$query = "SHOW COLUMNS FROM {$prefix}_qrcodes LIKE 'link_type'";
-		NetDebug::trace($query);
+		$query = "SHOW COLUMNS FROM qrcodes LIKE 'link_type'";
+//		NetDebug::trace($query);
 
 		$result = @mysql_query( $query );
 		$row = @mysql_fetch_array( $result , MYSQL_NUM );
@@ -438,13 +434,9 @@ class QRCodes extends Module
 	 * Check if a content type is valid
 	 * @returns TRUE if valid
 	 */
-	private function isValidObjectType($intGameID, $strObjectType) {
-		$validTypes = QRCodes::lookupContentTypeOptionsFromSQL($intGameID);
+	private function isValidObjectType($intGameId, $strObjectType) {
+		$validTypes = QRCodes::lookupContentTypeOptionsFromSQL($intGameId);
 		return in_array($strObjectType, $validTypes);
 	}
-
-
-
-
 
 }

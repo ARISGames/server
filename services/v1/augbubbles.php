@@ -8,8 +8,6 @@ require_once("editorFoldersAndContent.php");
 
 class AugBubbles extends Module
 {
-
-
 	/**
 	 * Gets the augbubbles within a game
 	 * @param integer $gameID The game identifier

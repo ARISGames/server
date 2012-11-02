@@ -17,8 +17,8 @@ class PlayerStateChanges extends Module
 
 		if (!$this->isValidEventType($intGameID, $strEventType)) return new returnData(4, NULL, "Invalid event type");
 
-		$query = "SELECT * FROM {$prefix}_player_state_changes
-			WHERE event_type = '{$strEventType}' and event_detail = '{$strEventDetail}'";
+		$query = "SELECT * FROM player_state_changes
+			WHERE game_id = {$prefix} AND event_type = '{$strEventType}' and event_detail = '{$strEventDetail}'";
 		NetDebug::trace($query);
 
 
@@ -37,7 +37,7 @@ class PlayerStateChanges extends Module
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		$query = "SELECT * FROM {$prefix}_player_state_changes WHERE id = {$intPlayerStateChangeID} LIMIT 1";
+		$query = "SELECT * FROM player_state_changes WHERE game_id = {$prefix} AND id = {$intPlayerStateChangeID} LIMIT 1";
 
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -65,9 +65,9 @@ class PlayerStateChanges extends Module
 		if (!$this->isValidActionType($intGameID, $strActionType)) return new returnData(5, NULL, "Invalid action type");
 
 
-		$query = "INSERT INTO {$prefix}_player_state_changes 
-			(event_type, event_detail, action, action_detail, action_amount)
-			VALUES ('{$strEventType}','{$intEventDetail}','{$strActionType}','{$strActionDetail}','{$intActionAmount}')";
+		$query = "INSERT INTO player_state_changes 
+			(game_id, event_type, event_detail, action, action_detail, action_amount)
+			VALUES ('{$prefix}','{$strEventType}','{$intEventDetail}','{$strActionType}','{$strActionDetail}','{$intActionAmount}')";
 
 		NetDebug::trace("Running a query = $query");	
 
@@ -97,14 +97,14 @@ class PlayerStateChanges extends Module
 
 
 
-		$query = "UPDATE {$prefix}_player_state_changes 
+		$query = "UPDATE player_state_changes 
 			SET 
 			event_type = '{$strEventType}',
 				   event_detail = '{$intEventDetail}',
 				   action = '{$strActionType}',
 				   action_detail = '{$strActionDetail}',
 				   action_amount = '{$intActionAmount}'
-					   WHERE id = '{$intPlayerStateChangeID}'";
+					   WHERE game_id = '{$prefix}' AND id = '{$intPlayerStateChangeID}'";
 
 		NetDebug::trace("Running a query = $query");	
 
@@ -127,7 +127,7 @@ class PlayerStateChanges extends Module
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		$query = "DELETE FROM {$prefix}_player_state_changes WHERE id = {$intPlayerStateChangeID}";
+		$query = "DELETE FROM player_state_changes WHERE game_id = {$prefix} AND id = {$intPlayerStateChangeID}";
 
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -165,7 +165,7 @@ class PlayerStateChanges extends Module
 		}
 
 		//Delete the Locations and related QR Codes
-		$query = "DELETE FROM {$prefix}_player_state_changes WHERE {$whereClause}";
+		$query = "DELETE FROM player_state_changes WHERE game_id = {$prefix} AND {$whereClause}";
 
 		@mysql_query($query);
 
@@ -213,7 +213,7 @@ class PlayerStateChanges extends Module
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return FALSE;
 
-		$query = "SHOW COLUMNS FROM {$prefix}_player_state_changes LIKE 'event_type'";
+		$query = "SHOW COLUMNS FROM player_state_changes LIKE 'event_type";
 		NetDebug::trace($query);
 
 		$result = @mysql_query( $query );
@@ -232,7 +232,7 @@ class PlayerStateChanges extends Module
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return FALSE;
 
-		$query = "SHOW COLUMNS FROM {$prefix}_player_state_changes LIKE 'action'";
+		$query = "SHOW COLUMNS FROM player_state_changes LIKE 'action'";
 		$result = mysql_query( $query );
 		$row = mysql_fetch_array( $result , MYSQL_NUM );
 		$regex = "/'(.*?)'/";

@@ -24,7 +24,7 @@ class Items extends Module
         if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 
-        $query = "SELECT * FROM {$prefix}_items";
+        $query = "SELECT * FROM items WHERE game_id = '{$prefix}'";
         NetDebug::trace($query);
 
         $rsResult = @mysql_query($query);
@@ -74,7 +74,7 @@ class Items extends Module
         if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 
-        $query = "SELECT qty FROM {$prefix}_player_items WHERE player_id = $playerId AND item_id = $itemId";
+        $query = "SELECT qty FROM player_items WHERE player_id = $playerId AND item_id = $itemId AND game_id = '{$prefix}'";
 
         $rsResult = @mysql_query($query);
         if (!$rsResult) return new returnData(0, NULL);
@@ -99,12 +99,7 @@ class Items extends Module
         $prefix = Module::getPrefix($gameId);
         if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-
-        $query = "SELECT {$prefix}_items.*, {$prefix}_player_items.qty 
-            FROM {$prefix}_items
-            JOIN {$prefix}_player_items 
-            ON {$prefix}_items.item_id = {$prefix}_player_items.item_id
-            WHERE {$prefix}_items.is_attribute = '1' AND player_id = $playerId";
+        $query = "SELECT game_items.*, game_player_items.qty FROM (SELECT * FROM items WHERE game_id = {$gameId} AND is_attribute = '1') AS game_items JOIN (SELECT * FROM player_items WHERE game_id = {$gameId} AND player_id = $playerId) AS game_player_items ON game_items.item_id = game_player_items.item_id";
         NetDebug::trace($query);
 
         $rsResult = @mysql_query($query);
@@ -129,7 +124,7 @@ class Items extends Module
         $prefix = Module::getPrefix($gameId);
         if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-        $query = "SELECT * FROM {$prefix}_items WHERE item_id = {$itemId} LIMIT 1";
+        $query = "SELECT * FROM items WHERE item_id = {$itemId} AND game_id = '{$prefix}' LIMIT 1";
 
         $rsResult = @mysql_query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -173,6 +168,7 @@ class Items extends Module
                     '{$mediaId}', 
                     '{$droppable}',
                     '{$destroyable}',
+                    '{$tradeable}',
                     '{$attribute}',
                     '{$maxQuantityInPlayerInventory}',
                     '{$weight}',
@@ -213,8 +209,8 @@ class Items extends Module
 
         if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-        $query = "UPDATE {$prefix}_items 
-            SET name = '{$name}', 
+        $query = "UPDATE items 
+                SET name = '{$name}', 
                 description = '{$description}', 
                 icon_media_id = '{$iconMediaId}',
                 media_id = '{$mediaId}', 
@@ -226,7 +222,7 @@ class Items extends Module
                 weight = '{$weight}',
                 url = '{$url}',
                 type = '{$type}'
-                    WHERE item_id = '{$itemId}'";
+                WHERE item_id = '{$itemId}' AND game_id = '{$prefix}'";
 
         NetDebug::trace("updateNpc: Running a query = $query");	
 
@@ -262,7 +258,7 @@ class Items extends Module
         PlayerStateChanges::deletePlayerStateChangesThatRefrenceObject($gameId, 'Item', $itemId);
         Module::removeItemFromAllPlayerInventories($prefix, $itemId );
 
-        $query = "DELETE FROM {$prefix}_items WHERE item_id = {$itemId}";
+        $query = "DELETE FROM items WHERE item_id = {$itemId} AND game_id = '{$prefix}'";
 
         $rsResult = @mysql_query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");

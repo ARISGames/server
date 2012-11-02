@@ -126,14 +126,14 @@ class WebHooks extends Module
 			return new returnData(2, NULL, 'invalid event id');
 		}
 
-		$query = "DELETE FROM {$prefix}_requirements WHERE content_type = 'OutgoingWebHook' AND content_id = '{$intWebHookID}'";
+		$query = "DELETE FROM requirements WHERE game_id = {$prefix} AND content_type = 'OutgoingWebHook' AND content_id = '{$intWebHookID}'";
 
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "{$query} SQL Error");
 
 
 
-		$query = "DELETE FROM {$prefix}_requirements WHERE requirement = 'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK' AND requirement_detail_1 = '{$intWebHookID}'";
+		$query = "DELETE FROM requirements WHERE game_id = {$prefix} AND requirement = 'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK' AND requirement_detail_1 = '{$intWebHookID}'";
 
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "{$query} SQL Error");
