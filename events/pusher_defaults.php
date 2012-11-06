@@ -1,4 +1,6 @@
 <?php
+$send_url = 'send.php';
+
 $public_default_auth = '';
 $public_default_channel = 'public-default-channel';
 $public_default_event = 'default-event';

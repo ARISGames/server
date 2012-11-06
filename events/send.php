@@ -11,6 +11,6 @@ $data = isset($_REQUEST['data']) ? $_REQUEST['data'] : $default_data;
 
 $pusher = new Pusher(Config::pusher_key, Config::pusher_secret, Config::pusher_app_id, true);
 $pusher->trigger($channel, $event, $data);
-echo "Sent Channel: '$channel', Event: '$event', Data: '$data'";
+echo "Channel: '$channel', Event: '$event', Data: '$data'";
 
 ?>
