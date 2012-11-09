@@ -666,6 +666,9 @@ class Games extends Module
 		$query = "ALTER TABLE players ADD COLUMN display_name VARCHAR(32) DEFAULT '';";
 		@mysql_query($query);
 
+		$query = "ALTER TABLE players ADD COLUMN group_name VARCHAR(32) DEFAULT '';";
+		@mysql_query($query);
+
 		return 0;
 	}
 

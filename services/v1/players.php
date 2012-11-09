@@ -11,7 +11,7 @@ class Players extends Module
      * Create a new Player
      * @returns player id
      */
-    public function createPlayer($strNewUserName, $strPassword, $strFirstName, $strLastName, $strEmail)
+    public function createPlayer($strNewUserName, $strPassword, $strFirstName, $strLastName, $strEmail, $strGroup = '')
     {
 
         $strNewUserName = addslashes($strNewUserName);	
@@ -27,9 +27,9 @@ class Players extends Module
         }
 
         $query = "INSERT INTO players (user_name, password, 
-            first_name, last_name, email, created) 
+            first_name, last_name, email, created, group_name) 
             VALUES ('{$strNewUserName}', MD5('$strPassword'),
-                    '{$strFirstName}','{$strLastName}','{$strEmail}', NOW())";
+                    '{$strFirstName}','{$strLastName}','{$strEmail}', NOW(), '{$strGroup}')";
 
         mysql_query($query);
         if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
@@ -84,6 +84,35 @@ class Players extends Module
         	Module::appendLog($intPlayerID, NULL, Module::kLOG_LOGIN);//Only place outside of Module's EVENT_PIPELINE that can append the Log
         	return new returnData(0, $player);
 	}
+
+        /* stolen from http://www.lateralcode.com/creating-a-random-string-with-php/ */
+        public function rand_string( $length ) 
+        {
+            $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";  
+
+            $size = strlen( $chars );
+            for( $i = 0; $i < $length; $i++ ) {
+                $str .= $chars[ rand( 0, $size - 1 ) ];
+            }
+
+            return $str;
+        }
+
+        public function createPlayerAndGetLoginPlayerObject($strGroup)
+        {
+            $newPlayer->returnCode = 1;
+            $userName;
+            while($newPlayer->returnCode == 1)
+            {
+                $userName = $strGroup."_".Players::rand_string(5);
+                $newPlayer = Players::createPlayer($userName, $strGroup, $strGroup."-player", '', '', $strGroup);
+            }
+
+            if($newPlayer)
+	        return Players::getLoginPlayerObject($userName,$strGroup);
+
+            return new returnData(1, NULL, 'error...');
+        }
 
     /**
      * updates the player's last game
