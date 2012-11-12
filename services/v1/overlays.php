@@ -94,7 +94,7 @@ class Overlays extends Module
         
    
         
-      		 $query = "DELETE FROM {$prefix}_requirements WHERE content_type = 'CustomMap' AND content_id = '{$intOverlayID}'";
+      		 $query = "DELETE FROM requirements WHERE content_type = 'CustomMap' AND content_id = '{$intOverlayID}' AND game_id = {$intGameID}";
 		
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "{$query} SQL Error");

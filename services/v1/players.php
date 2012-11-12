@@ -263,7 +263,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
         if ($game->delete_player_locations_on_reset) {
             NetDebug::trace("Deleting all player created items");
 
-            $query = "SELECT item_id FROM {$prefix}_items WHERE creator_player_id = {$intPlayerID}";	
+            $query = "SELECT item_id FROM items WHERE game_id = {$prefix} AND creator_player_id = {$intPlayerID}";	
             NetDebug::trace($query);
             $itemsRs = @mysql_query($query);
             if (mysql_error()) return new returnData(3, NULL, "SQL Error");
