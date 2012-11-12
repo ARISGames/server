@@ -195,14 +195,14 @@ class Npcs extends Module
 		PlayerStateChanges::deletePlayerStateChangesThatRefrenceObject($intGameId, 'Npc', $intNpcID);
                 Nodes::deleteNodesReferencedByObject($intGameID, 'Npc', $intNpcID);
 		
-		$query = "DELETE FROM npcs WHERE npc_id = {$intNpcID}";
+		$query = "DELETE FROM npcs WHERE npc_id = {$intNpcID} AND game_id = {$intGameId}";
 
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		$hasDeletedNPC = mysql_affected_rows();
 
-		$query = "DELETE FROM {$prefix}_npc_conversations WHERE npc_id = {$intNpcID}";
+		$query = "DELETE FROM npc_conversations WHERE npc_id = {$intNpcID} AND game_id = {$intGameId}";
 
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
