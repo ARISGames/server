@@ -1,0 +1,35 @@
+<html>
+<head>
+<script type="text/javascript">
+	function sendRequest(fn, params)
+	{
+        	var xmlhttp;
+        	xmlhttp=new XMLHttpRequest();
+        	xmlhttp.open("POST","http://dev.arisgames.org/server/json.php/v1."+fn,false);
+        	xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        	xmlhttp.send(params); //Synchronous call
+
+		alert(xmlhttp.responseText);
+        	var response=JSON.parse(xmlhttp.responseText);
+		if(response.returnCode == 1) //Error
+		{
+			document.getElementById('playerIDs').innerHTML = response.data;	
+		}
+		else
+		{
+			document.getElementById('playerIDs').innerHTML = "Success!- <br />"+response.data;	
+		}
+	}
+
+	function pageLoad()
+	{
+		var playerIdsReqObj = new Object();
+		playerIdsReqObj.group_name = '2556-philgroup';
+		sendRequest("players.getPlayerIdsForGroup", JSON.stringify(playerIdsReqObj));
+	}
+</script>
+</head>
+<body onload='pageLoad()'>
+<div id='playerIDs'> Waiting on Server </div>
+</body>
+</html>
