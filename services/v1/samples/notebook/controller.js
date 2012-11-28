@@ -362,6 +362,7 @@ function Controller()
     this.hideMapNoteView = function()
     {
         model.views.mapNoteViewContainer.style.display = 'none';
+        model.views.mapNoteViewContainer.innerHTML = '';
         model.views.mapLayout.removeEventListener('click', controller.hideMapNoteView, false);
     }
 }

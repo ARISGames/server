@@ -659,12 +659,20 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
         $backpack = new stdClass();
 
         //Get owner information
-        $query = "SELECT user_name FROM players WHERE player_id = '{$playerId}'";
+        $query = "SELECT user_name, display_name, group_name, media_id FROM players WHERE player_id = '{$playerId}'";
         $result = mysql_query($query);
         $name = mysql_fetch_object($result);
         if(!$name) return "Invalid Player ID";
-        $backpack->owner=$name;
+        $backpack->owner = new stdObj();
+        $backpack->owner->user_name = $name->user_name;
+        $backpack->owner->display_name = $name->display_name;
+        $backpack->owner->group_name = $name->group_name;
         $backpack->owner->player_id = $playerId;
+	$playerpic = Media::getMediaObject('player', $name->media_id);
+        if($playerpic)
+            $backpack->owner->player_pic_url = $playerpic->url_path;
+        else
+            $backpack->owner->player_pic_url = 'http://www.findadefaultimagetoputhere.com';
 
         /* ATTRIBUTES */
         if($getAttributes) $backpack->attributes = Items::getDetailedPlayerAttributes($playerId, $gameId);
@@ -782,6 +790,20 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
         if (mysql_error()) 	return new returnData(1, "","Error Verifying Records");
 
         return new returnData(0,$result);
+    }
+
+    function getPlayerIdsForGroup($groupReqObj)
+    {
+        if(!$groupReqObj['group_name'])
+            return new returnData(1,$groupReqObj,"Expecting JSON encoded string of form {'group_name':'my_group_name'}.");
+
+        $query = "SELECT player_id FROM players WHERE group_name = '{$groupReqObj['group_name']}';";
+        $playersSQLObj = mysql_query($query);
+        $playersArray = array();
+        while($playerId = mysql_fetch_object($playersSQLObj))
+            $playersArray[] = $playerId->player_id;
+
+        return new returnData(0,$playersArray);
     }
 
     function getPlayerLog($logReqObj)

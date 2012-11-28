@@ -208,6 +208,7 @@ function Model()
 
         //Content
         this.mapNoteViewContainer = document.getElementById('map_note_view_container');
+        this.mapNoteViewContainer.addEventListener('click', function(e) { e.stopPropagation(); });
         this.mapNoteViewCloseButton = new ActionButton(document.getElementById('map_note_view_close_button'), controller.hideMapNoteView);
         this.listNoteViewContainer = document.getElementById('list_note_view_container');
         this.constructNoteView = document.getElementById('note_view_construct');
