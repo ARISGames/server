@@ -137,7 +137,7 @@ function formatPage(game)
                     {
                         add("<div class='attrib attribute_attrib attribute_icon'>\n");
                         add(format_img(attribute.icon_url, attribute.icon_name, attribute.media_url, 'thumbnail'));
-                        add("</div>\n"); //<- class 'attribute_icon_file_name'
+                        add("</div>\n"); //<- class 'attribute_icon_file_path'
                     }
 
 
@@ -278,7 +278,7 @@ function formatPage(game)
                         add("<div class='attrib note_attrib note_icon'>\n");
                         add(format_img('profpic.png', '', 'index.html?mode=web&gameId='+game.game_id+'&playerId='+note.owner_id, 'playernoteiconimage'));
                         add("<br />"+note.username+"\n");
-                        add("</div>\n"); //<- class 'note_icon_file_name'
+                        add("</div>\n"); //<- class 'note_icon_file_path'
                     }
 
                     add("</div>\n");//<- class 'left'
@@ -385,7 +385,7 @@ function formatPage(game)
                                 add("<div class='attrib comment_attrib comment_icon'>\n");
                                 add(format_img('profpic.png', '', 'index.html?mode=web&gameId='+game.game_id+'&playerId='+comment.owner_id, 'playercommenticonimage'));
                                 add("<br />"+comment.username+"\n");
-                                add("</div>\n"); //<- class 'comment_icon_file_name'
+                                add("</div>\n"); //<- class 'comment_icon_file_path'
                             }
 
                             add("</div>\n");//<- class 'left'
@@ -423,19 +423,19 @@ function formatPage(game)
                                     if(commentcontent.type == "PHOTO")
                                     {
                                         add("<div class='attrib commentcontent_attrib commentcontent_media'>\n");
-                                        add("<a href='../../../../gamedata/"+commentcontent.game_id+"/"+commentcontent.file_name+"'><img class='thumbnail' src='../../../../gamedata/"+commentcontent.game_id+"/"+commentcontent.file_name+"' /></a>\n");
+                                        add("<a href='../../../../gamedata/"+commentcontent.file_path+"'><img class='thumbnail' src='../../../../gamedata/"+commentcontent.file_path+"' /></a>\n");
                                         add("</div>\n");//<- class 'commentcontent_media'
                                     }	
                                     if(commentcontent.type == "AUDIO")
                                     {
                                         add("<div class='attrib commentcontent_attrib commentcontent_media'>\n");
-                                        add("<a href='../../../../gamedata/"+commentcontent.game_id+"/"+commentcontent.file_name+"'><img class='thumbnail' src='defaultAudioIcon.png' /></a>\n");
+                                        add("<a href='../../../../gamedata/"+commentcontent.file_path+"'><img class='thumbnail' src='defaultAudioIcon.png' /></a>\n");
                                         add("</div>\n");//<- class 'commentcontent_media'
                                     }	
                                     if(commentcontent.type == "VIDEO")
                                     {
                                         add("<div class='attrib commentcontent_attrib commentcontent_media'>\n");
-                                        add("<a href='../../../../gamedata/"+commentcontent.game_id+"/"+commentcontent.file_name+"'><img class='thumbnail' src='defaultVideoIcon.png' /></a>\n");
+                                        add("<a href='../../../../gamedata/"+commentcontent.file_path+"'><img class='thumbnail' src='defaultVideoIcon.png' /></a>\n");
                                         add("</div>\n");//<- class 'commentcontent_media'
                                     }	
                                     add("</div>\n");//<- class 'left'

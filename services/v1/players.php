@@ -663,7 +663,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
         $result = mysql_query($query);
         $name = mysql_fetch_object($result);
         if(!$name) return "Invalid Player ID";
-        $backpack->owner = new stdObj();
+        $backpack->owner = new stdClass();
         $backpack->owner->user_name = $name->user_name;
         $backpack->owner->display_name = $name->display_name;
         $backpack->owner->group_name = $name->group_name;
@@ -794,10 +794,12 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
 
     function getPlayerIdsForGroup($groupReqObj)
     {
-        if(!$groupReqObj['group_name'])
-            return new returnData(1,$groupReqObj,"Expecting JSON encoded string of form {'group_name':'my_group_name'}.");
+        //if(!$groupReqObj['group_name'])
+            //return new returnData(1,$groupReqObj,"Expecting JSON encoded string of form {'group_name':'my_group_name'}.");
 
-        $query = "SELECT player_id FROM players WHERE group_name = '{$groupReqObj['group_name']}';";
+        //$query = "SELECT player_id FROM players WHERE group_name = '{$groupReqObj['group_name']}';";
+        $query = "SELECT player_id FROM players WHERE group_name = '$groupReqObj';";
+
         $playersSQLObj = mysql_query($query);
         $playersArray = array();
         while($playerId = mysql_fetch_object($playersSQLObj))

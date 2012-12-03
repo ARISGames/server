@@ -312,8 +312,8 @@ class Items extends Module
         $result = mysql_query($query);
         $contents = array();
         while($content = mysql_fetch_object($result)) {
-            if($content->media_url) $content->media_url = Media::getMediaDirectoryURL($content->media_game_id)->data . '/' . $content->media_url;
-            if($content->icon_url) $content->icon_url = Media::getMediaDirectoryURL($content->icon_game_id)->data . '/' . $content->icon_url;
+            if($content->media_url) $content->media_url = Config::gamedataWWWPath . '/' . $content->media_url;
+            if($content->icon_url) $content->icon_url = Config::gamedataWWWPath . '/' . $content->icon_url;
             $contents[] = $content;
         }
         return $contents;
@@ -327,8 +327,8 @@ class Items extends Module
         $result = mysql_query($query);
         $contents = array();
         while($content = mysql_fetch_object($result)){
-            if($content->media_url) $content->media_url = Media::getMediaDirectoryURL($content->media_game_id)->data . '/' . $content->media_url;
-            if($content->icon_url) $content->icon_url = Media::getMediaDirectoryURL($content->icon_game_id)->data . '/' . $content->icon_url;
+            if($content->media_url) $content->media_url = Config::gamedataWWWPath . '/' . $content->media_url;
+            if($content->icon_url) $content->icon_url = Config::gamedataWWWPath . '/' . $content->icon_url;
             $contents[] = $content;
         }
 

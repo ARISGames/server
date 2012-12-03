@@ -3657,7 +3657,7 @@ class Notes extends Module
 		$contents = array();
 		while($content = mysql_fetch_object($result))
 		{
-			$content->media_url = Media::getMediaDirectoryURL($content->game_id)->data . '/' . $content->file_path;
+			$content->media_url = Config::gamedataWWWPath . '/' . $content->file_path;
 			$contents[] = $content;
 		}
         return $contents;

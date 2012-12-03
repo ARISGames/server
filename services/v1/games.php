@@ -2442,8 +2442,8 @@ class Games extends Module
 		$game = mysql_fetch_object($result);
 		if(!$game) return "Invalid Game ID";
 
-		if($game->media_url) $game->media_url = Media::getMediaDirectoryURL($gameId)->data . '/' . $game->media_url;
-		if($game->icon_url) $game->icon_url = Media::getMediaDirectoryURL($gameId)->data . '/' . $game->icon_url;
+		if($game->media_url) $game->media_url = Config::gamedataWWWPath . '/' . $game->media_url;
+		if($game->icon_url) $game->icon_url = Config::gamedataWWWPath . '/' . $game->icon_url;
 
 		$query = "SELECT editors.name FROM game_editors JOIN editors ON editors.editor_id = game_editors.editor_id WHERE game_editors.game_id = '{$gameId}'";
 		$result = mysql_query($query);
