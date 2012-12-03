@@ -23,6 +23,7 @@ function format_img(src, alt, href, classes)
 
 function formatPage(game)
 {
+    alert(JSON.stringify(game));
     add("<div class='page'>\n");
 
     //Set header of page
@@ -81,10 +82,16 @@ function formatPage(game)
             add("<div class='player'>\n");
             add("<div class='playerheader'>\n");
             add("<div class='playericon'>\n");
-            add(format_img('profpic.png', '', 'index.html?mode=web&gameId='+game.game_id+'&playerId='+bp.owner.player_id, 'playericonimage'));
+            if(bp.owner.player_pic_url && bp.owner.player_pic_url != "")
+                add(format_img(bp.owner.player_pic_url, '', 'index.html?mode=web&gameId='+game.game_id+'&playerId='+bp.owner.player_id, 'playericonimage'));
+            else
+                add(format_img('profpic.png', '', 'index.html?mode=web&gameId='+game.game_id+'&playerId='+bp.owner.player_id, 'playericonimage'));
             add("</div>\n");//<- class 'playericon'
             add("<div class='playertext'>\n");
-            add("<div class='playername'>"+bp.owner.user_name+"</div>\n");
+            if(bp.owner.display_name && bp.owner.display_name != "")
+                add("<div class='playername'>"+bp.owner.display_name+"</div>\n");
+            else
+                add("<div class='playername'>"+bp.owner.user_name+"</div>\n");
             add("</div>\n");//<- class 'playertext'
             add("</div>\n");//<- class 'playerheader'
 
