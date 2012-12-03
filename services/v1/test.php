@@ -10,7 +10,7 @@ class Test extends Module
 		set_time_limit(100000);
 
 		//Create QR codes for locations without them
-		for($i = 0; $i < 4000; $i++)
+		for($i = 0; $i < 6000; $i++)
 		{
 			if(!Module::getPrefix($i)) continue;
 			$result = mysql_query("SELECT * FROM ".$i."_locations LEFT JOIN ".$i."_qrcodes ON ".$i."_locations.location_id = ".$i."_qrcodes.link_id WHERE link_id IS NULL");
@@ -19,7 +19,7 @@ class Test extends Module
 		}
 
 		//Delete QR Codes who don't have locations
-		for($i = 0; $i < 4000; $i++)
+		for($i = 0; $i < 6000; $i++)
 		{
 			if(!Module::getPrefix($i)) continue;
 			$result = mysql_query("SELECT * FROM ".$i."_qrcodes LEFT JOIN ".$i."_locations ON ".$i."_qrcodes.link_id = ".$i."_locations.location_id WHERE location_id IS NULL");
@@ -28,7 +28,7 @@ class Test extends Module
 		}
 
 		//Delete locations who don't have objects
-		for($i = 0; $i < 4000; $i++)
+		for($i = 0; $i < 6000; $i++)
 		{
 			if(!Module::getPrefix($i)) continue;
 			//'Node','Event','Item','Npc','WebPage','AugBubble','PlayerNote'
@@ -52,7 +52,7 @@ class Test extends Module
 				mysql_query("DELETE FROM ".$i."_locations WHERE location_id = ".$table->location_id);
 		}
 		//Deletes Spawnable data without an object
-		for($i = 0; $i < 4000; $i++)
+		for($i = 0; $i < 6000; $i++)
 		{
 			if(!Module::getPrefix($i)) continue;
 			//'Node','Event','Item','Npc','WebPage','AugBubble','PlayerNote'

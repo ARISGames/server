@@ -2,7 +2,7 @@
 require_once("module.php");
 require_once("qrcodes.php");
 
-class Test extends Module
+class Test2 extends Module
 {
     public function killOrphans()
     {

@@ -1,0 +1,81 @@
+  -Running 'createPlayer'...
+	Duplicate name- deleting and re-calling...
+	Created Player(13163)
+  Test 'createPlayer' Succeeded (No Description)
+  -Running 'createEditor'...
+	Duplicate name- deleting and re-calling...
+	Created Editor(3508)
+  Test 'createEditor' Succeeded (No Description)
+  -Running 'createGame'...
+	Duplicate name- deleting and re-calling...
+	Created Game(5442)
+  Test 'createGame' Succeeded (No Description)
+  -Running 'createNpc'...
+	Created Npc(12163)
+  Test 'createNpc' Succeeded (No Description)
+  -Running 'createItem'...
+	Created Item(17994)
+  Test 'createItem' Succeeded (No Description)
+  -Running 'createWebpage'...
+	Created Webpage(1171)
+  Test 'createWebpage' Succeeded (No Description)
+  -Running 'createPlaque'...
+	Created Plaque(32488)
+  Test 'createPlaque' Succeeded (No Description)
+  -Running 'createAugbubble'...
+	Created Augbubble(565)
+  Test 'createAugbubble' Succeeded (No Description)
+  -Running 'createNpcLocations'...
+	Created Npc(12163) Location(32603)
+  Test 'createNpcLocations' Succeeded (No Description)
+  -Running 'createItemLocations'...
+	Created Item(17994) Location(32604)
+  Test 'createItemLocations' Succeeded (No Description)
+  -Running 'createWebpageLocations'...
+	Created Webpage(1171) Location(32605)
+  Test 'createWebpageLocations' Succeeded (No Description)
+  -Running 'createPlaqueLocations'...
+	Created Plaque(32488) Location(32606)
+  Test 'createPlaqueLocations' Succeeded (No Description)
+  -Running 'createAugbubbleLocations'...
+	Created Augbubble(565) Location(32607)
+  Test 'createAugbubbleLocations' Succeeded (No Description)
+  -Running 'createQuests'...
+	Created Quest(7037)
+  Test 'createQuests' Succeeded (No Description)
+  -Running 'getLocationsBeforeReqs'...
+	Found Location: Id-32603 Type-Npc TypeId-12163
+	Found Location: Id-32604 Type-Item TypeId-17994
+	Found Location: Id-32605 Type-WebPage TypeId-1171
+	Found Location: Id-32606 Type-Node TypeId-32488
+	Found Location: Id-32607 Type-AugBubble TypeId-565
+  Test 'getLocationsBeforeReqs' Succeeded (No Description)
+  -Running 'getQuestsBeforeReqs'...
+	Found Active Quest(7037)
+  Test 'getQuestsBeforeReqs' Succeeded (No Description)
+  -Running 'setRequirementsForLocs'...
+	Adding Requirement to Location: Id-32604
+	Success(67187)
+	Adding Requirement to Location: Id-32603
+	Success(67188)
+	Adding Requirement to Location: Id-32606
+	Success(67189)
+	Adding Requirement to Location: Id-32605
+	Success(67190)
+	Adding Requirement to Location: Id-32607
+	Success(67191)
+  Test 'setRequirementsForLocs' Succeeded (No Description)
+  -Running 'setRequirementsForQuests'...
+	Adding Requirement to Quest: Id-7037
+	Success(67192)
+  Test 'setRequirementsForQuests' Succeeded (No Description)
+  -Running 'getLocationsAfterReqs'...
+  Test 'getLocationsAfterReqs' Succeeded (No Description)
+  -Running 'getQuestsAfterReqs'...
+	Found Active Quest(7037)
+  Test 'getQuestsAfterReqs' Succeeded (No Description)
+
+  Results:(2012-12-03 02:08:59)
+  Tests Run- 20/20
+  Tests Passed- 20/20
+  Tests Failed- 0/20
