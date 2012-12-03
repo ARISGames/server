@@ -794,10 +794,12 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
 
     function getPlayerIdsForGroup($groupReqObj)
     {
-        if(!$groupReqObj['group_name'])
-            return new returnData(1,$groupReqObj,"Expecting JSON encoded string of form {'group_name':'my_group_name'}.");
+        //if(!$groupReqObj['group_name'])
+            //return new returnData(1,$groupReqObj,"Expecting JSON encoded string of form {'group_name':'my_group_name'}.");
 
-        $query = "SELECT player_id FROM players WHERE group_name = '{$groupReqObj['group_name']}';";
+        //$query = "SELECT player_id FROM players WHERE group_name = '{$groupReqObj['group_name']}';";
+        $query = "SELECT player_id FROM players WHERE group_name = '$groupReqObj';";
+
         $playersSQLObj = mysql_query($query);
         $playersArray = array();
         while($playerId = mysql_fetch_object($playersSQLObj))
