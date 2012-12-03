@@ -663,7 +663,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
         $result = mysql_query($query);
         $name = mysql_fetch_object($result);
         if(!$name) return "Invalid Player ID";
-        $backpack->owner = new stdObj();
+        $backpack->owner = new stdClass();
         $backpack->owner->user_name = $name->user_name;
         $backpack->owner->display_name = $name->display_name;
         $backpack->owner->group_name = $name->group_name;
