@@ -440,7 +440,7 @@ ORDER BY count DESC
 	  
 	  if ($iconFileURL)
 	  {
-	    $iconURL = 'http://www.arisgames.org/server/gamedata/' . $gameid . '/' . $iconFileURL;
+	    $iconURL = 'http://www.arisgames.org/server/gamedata/' . $iconFileURL;
 	  }
     else
     {      
