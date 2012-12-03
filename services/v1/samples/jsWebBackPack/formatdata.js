@@ -23,7 +23,6 @@ function format_img(src, alt, href, classes)
 
 function formatPage(game)
 {
-    alert(JSON.stringify(game));
     add("<div class='page'>\n");
 
     //Set header of page
