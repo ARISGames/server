@@ -599,17 +599,179 @@ class Games extends Module
 	 */	
 	public function deleteGame($intGameID)
 	{
-		$query = "SELECT * FROM games ORDER BY game_id";
-		$rs = mysql_query($query);
-		while ($game = mysql_fetch_object($rs))
-		{
-			$i = $game->game_id;
-			if($i != 159 && $i != 2625 && $i != 3795 && $i != 344 && $i != 4301 &&  $i != 4305 ){
-				NetDebug::trace("Delete Game: {$i}");
-				Games::oldDeleteGame($i);
-			}
-		}
-		return 0;
+		$returnData = new returnData(0, NULL, NULL);
+
+		$prefix = Module::getPrefix($intGameID);
+		if (!$prefix || $intGameID == 0) return new returnData(1, NULL, "game does not exist");
+
+		//Delete the files
+		$command = 'rm -rf '. Config::gamedataFSPath . "/{$prefix}";
+		NetDebug::trace("deleteFiles command: $command");		
+
+		exec($command, $output, $return);
+		if ($return) return new returnData(4, NULL, "unable to delete game directory");
+
+		//Delete the editor_games record
+		$query = "DELETE FROM game_editors WHERE game_id IN (SELECT game_id FROM games WHERE prefix = '{$prefix}_')";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
+
+		//Delete any media records
+		$query = "DELETE FROM media WHERE game_id = '{$intGameID}'";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
+
+		//Delete the game record
+		$query = "DELETE FROM games WHERE prefix = '{$prefix}_'";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
+
+		//Delete Web Pages
+		$query = "DELETE FROM web_pages WHERE game_id = '{$intGameID}'";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
+
+		//Delete Aug Bubbles
+		$query = "DELETE FROM aug_bubbles WHERE game_id = '{$intGameID}'";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
+
+		//And AugBubble Media
+		$query = "DELETE FROM aug_bubble_media WHERE game_id = '{$intGameID}'";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
+
+		//Delete Overlays
+		$query = "DELETE FROM overlays WHERE game_id = '{$intGameID}'";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
+		//And Overlay_tiles
+		$query = "DELETE FROM overlay_tiles WHERE game_id = '{$intGameID}'";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
+
+		//Delete WebHooks
+		$query = "DELETE FROM web_hooks WHERE game_id = '{$intGameID}'";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
+
+		//Delete Tab Bar information
+		$query = "DELETE FROM game_tab_data WHERE game_id = '{$intGameID}'";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
+
+		//Delete Note stuff
+		$query = "DELETE FROM notes WHERE game_id = '{$intGameID}'";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
+
+		//Delete Note Media
+		$query = "DELETE FROM note_content WHERE game_id = '{$intGameID}'";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
+
+		//Delete NPCs
+		$query = "DELETE FROM npcs WHERE game_id = '{$intGameID}'";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
+		return new returnData(0);	
+
+		//Delete Folder Contents
+		$query = "DELETE FROM folder_contents WHERE game_id = '{$intGameID}'";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
+
+		//Delete Folders
+		$query = "DELETE FROM folders WHERE game_id = '{$intGameID}'";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
+		return new returnData(0);	
+
+		//Delete Items
+		$query = "DELETE FROM items WHERE game_id = '{$intGameID}'";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
+		return new returnData(0);	
+		return new returnData(0);	
+
+		//Delete Locations
+		$query = "DELETE FROM locations WHERE game_id = '{$intGameID}'";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
+		return new returnData(0);	
+
+		//Delete Nodes
+		$query = "DELETE FROM nodes WHERE game_id = '{$intGameID}'";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
+		return new returnData(0);
+
+		//Delete NPC Conversations
+		$query = "DELETE FROM npc_conversations WHERE game_id = '{$intGameID}'";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
+		return new returnData(0);	
+
+		//Delete NPC Greetings
+		$query = "DELETE FROM npc_greetings WHERE game_id = '{$intGameID}'";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
+		return new returnData(0);	
+
+		//Delete Player Items
+		$query = "DELETE FROM player_items WHERE game_id = '{$intGameID}'";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
+		return new returnData(0);	
+
+		//Delete Player State Changes
+		$query = "DELETE FROM player_state_changes WHERE game_id = '{$intGameID}'";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
+		return new returnData(0);	
+
+		//Delete QR Codes
+		$query = "DELETE FROM qrcodes WHERE game_id = '{$intGameID}'";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
+		return new returnData(0);	
+
+		//Delete Quests
+		$query = "DELETE FROM quests WHERE game_id = '{$intGameID}'";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
+		return new returnData(0);	
+
+		//Delete Requirements
+		$query = "DELETE FROM requirements WHERE game_id = '{$intGameID}'";
+		NetDebug::trace($query);
+		@mysql_query($query);
+		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
+		return new returnData(0);	
 	}
 
 	/**
@@ -619,7 +781,7 @@ class Games extends Module
 	 */
 	public function migrateTables()
 	{
-		set_time_limit(100000000);
+		set_time_limit(1000000000000);
 
 	//	Test::killOrphansBeforeMigration();
 		Games::createNewTablesForMigration();
@@ -1366,108 +1528,6 @@ class Games extends Module
 		$output = str_replace("&#xA9;", "©", $output);
 		return $output;
 	}
-
-	public function oldDeleteGame($intGameID)
-	{
-		$returnData = new returnData(0, NULL, NULL);
-
-		$prefix = Module::getPrefix($intGameID);
-		if (!$prefix) return new returnData(1, NULL, "game does not exist");
-
-		//Delete the files
-		$command = 'rm -rf '. Config::gamedataFSPath . "/{$prefix}";
-		NetDebug::trace("deleteFiles command: $command");		
-
-		exec($command, $output, $return);
-		if ($return) return new returnData(4, NULL, "unable to delete game directory");
-
-		//Delete the editor_games record
-		$query = "DELETE FROM game_editors WHERE game_id IN (SELECT game_id FROM games WHERE prefix = '{$prefix}_')";
-		NetDebug::trace($query);
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
-
-		//Fetch the table names for this game
-		$query = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA='" . Config::dbSchema . "' AND TABLE_NAME LIKE '{$prefix}\_%'";
-		NetDebug::trace($query);
-		$result = mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
-
-		//Delete any media records
-		$query = "DELETE FROM media WHERE game_id = '{$intGameID}'";
-		NetDebug::trace($query);
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
-
-		//Delete all tables for this game
-		while ($table = mysql_fetch_array($result)) {
-			$query = "DROP TABLE {$table['TABLE_NAME']}";
-			NetDebug::trace($query);
-			mysql_query($query);
-			if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
-		}
-
-		//Delete the game record
-		$query = "DELETE FROM games WHERE prefix = '{$prefix}_'";
-		NetDebug::trace($query);
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
-
-		//Delete Web Pages
-		$query = "DELETE FROM web_pages WHERE game_id = '{$intGameID}'";
-		NetDebug::trace($query);
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
-
-		//Delete Aug Bubbles
-		$query = "DELETE FROM aug_bubbles WHERE game_id = '{$intGameID}'";
-		NetDebug::trace($query);
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
-
-		//And AugBubble Media
-		$query = "DELETE FROM aug_bubble_media WHERE game_id = '{$intGameID}'";
-		NetDebug::trace($query);
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
-
-		//Delete Overlays
-		$query = "DELETE FROM overlays WHERE game_id = '{$intGameID}'";
-		NetDebug::trace($query);
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
-		//And Overlay_tiles
-		$query = "DELETE FROM overlay_tiles WHERE game_id = '{$intGameID}'";
-		NetDebug::trace($query);
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
-
-		//Delete WebHooks
-		$query = "DELETE FROM web_hooks WHERE game_id = '{$intGameID}'";
-		NetDebug::trace($query);
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
-
-		//Delete Tab Bar information
-		$query = "DELETE FROM game_tab_data WHERE game_id = '{$intGameID}'";
-		NetDebug::trace($query);
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
-
-		//Delete Note stuff
-		$query = "DELETE FROM notes WHERE game_id = '{$intGameID}'";
-		NetDebug::trace($query);
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
-
-		//Delete Note Media
-		$query = "DELETE FROM note_content WHERE game_id = '{$intGameID}'";
-		NetDebug::trace($query);
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
-
-		return new returnData(0);	
-	}	
 
 	/**
 	 * Creates a game archive package
