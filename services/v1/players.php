@@ -672,7 +672,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
         if($playerpic)
             $backpack->owner->player_pic_url = $playerpic->url_path;
         else
-            $backpack->owner->player_pic_url = 'http://www.findadefaultimagetoputhere.com';
+            $backpack->owner->player_pic_url = null;
 
         /* ATTRIBUTES */
         if($getAttributes) $backpack->attributes = Items::getDetailedPlayerAttributes($playerId, $gameId);

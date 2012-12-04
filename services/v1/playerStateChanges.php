@@ -213,7 +213,7 @@ class PlayerStateChanges extends Module
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix) return FALSE;
 
-		$query = "SHOW COLUMNS FROM player_state_changes LIKE 'event_type";
+		$query = "SHOW COLUMNS FROM player_state_changes LIKE 'event_type'";
 		NetDebug::trace($query);
 
 		$result = @mysql_query( $query );
