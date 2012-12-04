@@ -2241,7 +2241,7 @@ class Games extends Module
 			$newID = mysql_insert_id();
 			$newMediaIds[($row->media_id)] = $newID;
 
-			if($row->file_path != "") copy(("../../gamedata/" . $row->file_path),("../../gamedata/" . $row->file_path));
+			if($row->file_path != "" && substr($row->file_path,-1) != "/") copy(("../../gamedata/" . $row->file_path),("../../gamedata/" . $row->file_path));
 
 			$query = "UPDATE items SET icon_media_id = {$newID} WHERE icon_media_id = $row->media_id AND game_id = '{$newPrefix}'";
 			mysql_query($query);

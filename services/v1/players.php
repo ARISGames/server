@@ -668,9 +668,9 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
         $backpack->owner->display_name = $name->display_name;
         $backpack->owner->group_name = $name->group_name;
         $backpack->owner->player_id = $playerId;
-	$playerpic = Media::getMediaObject('player', $name->media_id);
+	$playerpic = Media::getMediaObject('player', $name->media_id)->data;
         if($playerpic)
-            $backpack->owner->player_pic_url = $playerpic->url_path;
+            $backpack->owner->player_pic_url = $playerpic->url_path.$playerpic->file_path;
         else
             $backpack->owner->player_pic_url = null;
 
