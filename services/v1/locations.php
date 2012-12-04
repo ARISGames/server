@@ -391,7 +391,7 @@ class Locations extends Module
                 //Special case for calculating max on a per_player basis with a set spawn location
                 if($spawnable->location_bound_type == 'LOCATION')
                 {
-                    $query = "SELECT DISTINCT player_id FROM (SELECT player_id FROM player_log WHERE game_id = 2625 AND deleted = 0 AND timestamp >= NOW() - INTERVAL 20 MINUTE)SELECT DISTINCT player_id FROM player_log WHERE game_id = {$prefix}  AND deleted = 0 AND timestamp >= NOW() - INTERVAL 20 MINUTE) AS player_ids";
+                    $query = "SELECT DISTINCT player_id FROM player_log WHERE game_id = {$prefix}  AND deleted = 0 AND timestamp >= NOW() - INTERVAL 20 MINUTE";
                     $result = mysql_query($query);
                     $spawnable->amount *= mysql_num_rows($result);
                 }
