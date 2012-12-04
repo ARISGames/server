@@ -2043,7 +2043,7 @@ class Games extends Module
 		$query = "SELECT * FROM npc_conversations WHERE game_id = {$prefix}";
 		$result = mysql_query($query);
 		while($result && $row = mysql_fetch_object($result)){
-			$query = "INSERT INTO npc_conversations (game_id npc_id, node_id, text, sort_index) VALUES ('{$newPrefix}', '{$row->npc_id}', '{$row->node_id}', '{$row->text}', '{$row->sort_index}')";
+			$query = "INSERT INTO npc_conversations (game_id, npc_id, node_id, text, sort_index) VALUES ('{$newPrefix}', '{$row->npc_id}', '{$row->node_id}', '{$row->text}', '{$row->sort_index}')";
 			mysql_query($query);
 		}
 
