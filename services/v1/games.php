@@ -2019,7 +2019,7 @@ class Games extends Module
 			mysql_query($query);
 			$newID = mysql_insert_id();
 
-			$query = "UPDATE fountains location_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Spawnable' AND location_id = {$row->spawnable_id}";
+			$query = "UPDATE fountains SET location_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Spawnable' AND location_id = {$row->spawnable_id}";
 			mysql_query($query);
 		}
 
@@ -2030,13 +2030,13 @@ class Games extends Module
 			mysql_query($query);
 			$newID = mysql_insert_id();
 
-			$query = "UPDATE fountains location_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Location' AND location_id = {$row->location_id}";
+			$query = "UPDATE fountains SET location_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Location' AND location_id = {$row->location_id}";
 			mysql_query($query);
 
-			$query = "UPDATE qrcodes link_id = {$newID} WHERE game_id = '{$newPrefix}' AND link_type = 'Location' AND link_id = {$row->link_id}";
+			$query = "UPDATE qrcodes SET link_id = {$newID} WHERE game_id = '{$newPrefix}' AND link_type = 'Location' AND link_id = {$row->link_id}";
 			mysql_query($query);
 
-			$query = "UPDATE requirements content_id = {$newID} WHERE game_id = '{$newPrefix}' AND content_type = 'Location' AND content_id = {$row->location_id}";
+			$query = "UPDATE requirements SET content_id = {$newID} WHERE game_id = '{$newPrefix}' AND content_type = 'Location' AND content_id = {$row->location_id}";
 			mysql_query($query);
 		}
 
@@ -2064,25 +2064,25 @@ class Games extends Module
 			$newID = mysql_insert_id();
 			$newNpcIds[($row->npc_id)] = $newID;
 
-			$query = "UPDATE npc_conversations npc_id = {$newID} WHERE game_id = '{$newPrefix}' AND npc_id = {$row->npc_id}";
+			$query = "UPDATE npc_conversations SET npc_id = {$newID} WHERE game_id = '{$newPrefix}' AND npc_id = {$row->npc_id}";
 			mysql_query($query);
 
-			$query = "UPDATE folder_contents content_id = {$newID} WHERE game_id = '{$newPrefix}' AND content_type = 'Npc' AND content_id = {$row->npc_id}";
+			$query = "UPDATE folder_contents SET content_id = {$newID} WHERE game_id = '{$newPrefix}' AND content_type = 'Npc' AND content_id = {$row->npc_id}";
 			mysql_query($query);
 
-			$query = "UPDATE locations type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Npc' AND type_id = {$row->npc_id}";
+			$query = "UPDATE locations SET type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Npc' AND type_id = {$row->npc_id}";
 			mysql_query($query);
 
-			$query = "UPDATE player_state_changes event_detail = {$newID} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_NPC' AND event_detail = {$row->npc_id}";
+			$query = "UPDATE player_state_changes SET event_detail = {$newID} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_NPC' AND event_detail = {$row->npc_id}";
 			mysql_query($query);
 
-			$query = "UPDATE requirements requirement_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND requirement = 'PLAYER_VIEWED_NPC' AND requirement_detail_1 = {$row->npc_id}";
+			$query = "UPDATE requirements SET requirement_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND requirement = 'PLAYER_VIEWED_NPC' AND requirement_detail_1 = {$row->npc_id}";
 			mysql_query($query);
 
-			$query = "UPDATE player_log event_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_NPC' AND event_detail_1 = {$row->npc_id}";
+			$query = "UPDATE player_log SET event_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_NPC' AND event_detail_1 = {$row->npc_id}";
 			mysql_query($query);
 
-			$query = "UPDATE spawnables type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Npc' AND type_id = {$row->npc_id}";
+			$query = "UPDATE spawnables SET type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Npc' AND type_id = {$row->npc_id}";
 			mysql_query($query);
 		}
 
@@ -2095,28 +2095,28 @@ class Games extends Module
 			$newID = mysql_insert_id();
 			$newNodeIds[($row->node_id)] = $newID;
 
-			$query = "UPDATE folder_contents content_id = {$newID} WHERE game_id = '{$newPrefix}' AND content_type = 'Node' AND content_id = {$row->node_id}";
+			$query = "UPDATE folder_contents SET content_id = {$newID} WHERE game_id = '{$newPrefix}' AND content_type = 'Node' AND content_id = {$row->node_id}";
 			mysql_query($query);
 
-			$query = "UPDATE locations type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Node' AND type_id = {$row->node_id}";
+			$query = "UPDATE locations SET type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Node' AND type_id = {$row->node_id}";
 			mysql_query($query);
 
-			$query = "UPDATE npc_conversations node_id = {$newID} WHERE game_id = '{$newPrefix}' AND node_id = {$row->node_id}";
+			$query = "UPDATE npc_conversations SET node_id = {$newID} WHERE game_id = '{$newPrefix}' AND node_id = {$row->node_id}";
 			mysql_query($query);
 
-			$query = "UPDATE player_state_changes event_detail = {$newID} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_NODE' AND event_detail = {$row->node_id}";
+			$query = "UPDATE player_state_changes SET event_detail = {$newID} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_NODE' AND event_detail = {$row->node_id}";
 			mysql_query($query);
 
-			$query = "UPDATE requirements content_id = {$newID} WHERE game_id = '{$newPrefix}' AND content_type = 'Node' AND content_id = {$row->node_id}";
+			$query = "UPDATE requirements SET content_id = {$newID} WHERE game_id = '{$newPrefix}' AND content_type = 'Node' AND content_id = {$row->node_id}";
 			mysql_query($query);
 
-			$query = "UPDATE requirements requirement_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND requirement = 'PLAYER_VIEWED_NODE' AND requirement_detail_1 = {$row->node_id}";
+			$query = "UPDATE requirements SET requirement_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND requirement = 'PLAYER_VIEWED_NODE' AND requirement_detail_1 = {$row->node_id}";
 			mysql_query($query);
 
-			$query = "UPDATE player_log event_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_NODE' AND event_detail_1 = {$row->node_id}";
+			$query = "UPDATE player_log SET event_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_NODE' AND event_detail_1 = {$row->node_id}";
 			mysql_query($query);
 
-			$query = "UPDATE spawnables type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Node' AND type_id = {$row->node_id}";
+			$query = "UPDATE spawnables SET type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Node' AND type_id = {$row->node_id}";
 			mysql_query($query);
 		}
 
@@ -2129,25 +2129,25 @@ class Games extends Module
 			$newID = mysql_insert_id();
 			$newItemIds[($row->item_id)] = $newID;
 
-			$query = "UPDATE folder_contents content_id = {$newID} WHERE game_id = '{$newPrefix}' AND content_type = 'Item' AND content_id = {$row->item_id}";
+			$query = "UPDATE folder_contents SET content_id = {$newID} WHERE game_id = '{$newPrefix}' AND content_type = 'Item' AND content_id = {$row->item_id}";
 			mysql_query($query);
 
-			$query = "UPDATE locations type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Item' AND type_id = {$row->item_id}";
+			$query = "UPDATE locations SET type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Item' AND type_id = {$row->item_id}";
 			mysql_query($query);
 
-			$query = "UPDATE player_state_changes event_detail = {$newID} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_ITEM' AND event_detail = {$row->item_id}";
+			$query = "UPDATE player_state_changes SET event_detail = {$newID} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_ITEM' AND event_detail = {$row->item_id}";
 			mysql_query($query);
 
-			$query = "UPDATE player_state_changes action_detail = {$newID} WHERE game_id = '{$newPrefix}' AND action_detail = {$row->item_id}";
+			$query = "UPDATE player_state_changes SET action_detail = {$newID} WHERE game_id = '{$newPrefix}' AND action_detail = {$row->item_id}";
 			mysql_query($query);
 
-			$query = "UPDATE requirements requirement_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND (requirement = 'PLAYER_HAS_ITEM' OR requirement = 'PLAYER_VIEWED_ITEM') AND requirement_detail_1 = {$row->item_id}";
+			$query = "UPDATE requirements SET requirement_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND (requirement = 'PLAYER_HAS_ITEM' OR requirement = 'PLAYER_VIEWED_ITEM') AND requirement_detail_1 = {$row->item_id}";
 			mysql_query($query);
 
-			$query = "UPDATE player_log event_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND (event_type = 'PICKUP_ITEM' OR event_type = 'DROP_ITEM' OR event_type = 'DESTROY_ITEM' OR event_type = 'VIEW_ITEM') AND event_detail_1 = {$row->item_id}";
+			$query = "UPDATE player_log SET event_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND (event_type = 'PICKUP_ITEM' OR event_type = 'DROP_ITEM' OR event_type = 'DESTROY_ITEM' OR event_type = 'VIEW_ITEM') AND event_detail_1 = {$row->item_id}";
 			mysql_query($query);
 
-			$query = "UPDATE spawnables type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Item' AND type_id = {$row->item_id}";
+			$query = "UPDATE spawnables SET type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Item' AND type_id = {$row->item_id}";
 			mysql_query($query);
 		}
 
