@@ -296,7 +296,7 @@ class Games extends Module
 		$strDescription = addslashes($strDescription);
 
 		//Check if a game with this name has already been created
-		$query = "SELECT * FROM games WHERE name = '{$strFullName}'";
+		$query = "SELECT * FROM games WHERE name = '".addSlashes($strFullName)."'";
 		NetDebug::trace($query);
 		if (mysql_num_rows($result = mysql_query($query)) > 0) 
 			return new returnData(4, mysql_fetch_object($result)->game_id, 'duplicate name');
@@ -306,7 +306,7 @@ class Games extends Module
 			is_locational, ready_for_public,
 			allow_share_note_to_map, allow_share_note_to_book, allow_player_tags, allow_note_comments, allow_note_likes,
 			on_launch_node_id, game_complete_node_id, inventory_weight_cap, created, allow_trading)
-				VALUES ('{$strFullName}','{$strDescription}','{$intPCMediaID}','{$intIconMediaID}', '{$intMediaID}',
+				VALUES ('".addSlashes($strFullName)."','".addSlashes($strDescription)."','{$intPCMediaID}','{$intIconMediaID}', '{$intMediaID}',
 						'{$boolIsLocational}', '{$boolReadyForPublic}', 
 						'{$boolShareToMap}', '{$boolShareToBook}', '{$playerCreateTag}', '{$playerCreateComments}','{$playerLikeNotes}',
 						'{$intIntroNodeId}','{$intCompleteNodeId}','{$intInventoryCap}', NOW(), '{$boolAllowTrading}')";
@@ -1949,7 +1949,7 @@ class Games extends Module
 		$query = "SELECT * FROM quests WHERE game_id = {$prefix}";
 		$result = mysql_query($query);
 		while($result && $row = mysql_fetch_object($result)){
-			$query = "INSERT INTO quests(game_id, name, description, text_when_complete, icon_media_id, exit_to_tab) VALUES ('{$newPrefix}', '{$row->name}', '{$row->description}', '{$row->text_when_complete}', '{$row->icon_media_id}', '{$row->boolean_operator}', '{$row->exit_to_tab}')";
+			$query = "INSERT INTO quests(game_id, name, description, text_when_complete, icon_media_id, exit_to_tab) VALUES ('{$newPrefix}', '".addSlashes($row->name)."', '".addSlashes($row->description)."', '".addSlashes($row->text_when_complete)."', '{$row->icon_media_id}', '{$row->boolean_operator}', '{$row->exit_to_tab}')";
 			mysql_query($query);
 			$newID = mysql_insert_id();
 
@@ -1967,7 +1967,7 @@ class Games extends Module
 		$query = "SELECT * FROM folders WHERE game_id = {$prefix}";
 		$result = mysql_query($query);
 		while($result && $row = mysql_fetch_object($result)){
-			$query = "INSERT INTO folders (game_id, name, parent_id, previous_id, is_open) VALUES ('{$newPrefix}', '{$row->name}', '{$row->parent_id}', '{$row->previous_id}', '{$row->is_open}')";
+			$query = "INSERT INTO folders (game_id, name, parent_id, previous_id, is_open) VALUES ('{$newPrefix}', '".addSlashes($row->name)."', '{$row->parent_id}', '{$row->previous_id}', '{$row->is_open}')";
 			mysql_query($query);
 			$newFolderIds[($row->folder_id)] = mysql_insert_id();
 		}
@@ -2019,31 +2019,31 @@ class Games extends Module
 			mysql_query($query);
 			$newID = mysql_insert_id();
 
-			$query = "UPDATE fountains location_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Spawnable' AND location_id = {$row->spawnable_id}";
+			$query = "UPDATE fountains SET location_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Spawnable' AND location_id = {$row->spawnable_id}";
 			mysql_query($query);
 		}
 
 		$query = "SELECT * FROM locations WHERE game_id = {$prefix}";
 		$result = mysql_query($query);
 		while($result && $row = mysql_fetch_object($result)){
-			$query = "INSERT INTO locations (game_id, name, description, latitude, longitude, error, type, type_id, icon_media_id, item_qty, hidden, force_view, allow_quick_travel) VALUES ('{$newPrefix}', '{$row->name}', '{$row->description}', '{$row->latitude}', '{$row->longitude}', '{$row->error}', '{$row->type}', '{$row->type_id}', '{$row->icon_media_id}', '{$row->item_qty}', '{$row->hidden}', '{$row->force_view}', '{$row->allow_quick_travel}')";
+			$query = "INSERT INTO locations (game_id, name, description, latitude, longitude, error, type, type_id, icon_media_id, item_qty, hidden, force_view, allow_quick_travel) VALUES ('{$newPrefix}', '".addSlashes($row->name)."', '".addSlashes($row->description)."', '{$row->latitude}', '{$row->longitude}', '{$row->error}', '{$row->type}', '{$row->type_id}', '{$row->icon_media_id}', '{$row->item_qty}', '{$row->hidden}', '{$row->force_view}', '{$row->allow_quick_travel}')";
 			mysql_query($query);
 			$newID = mysql_insert_id();
 
-			$query = "UPDATE fountains location_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Location' AND location_id = {$row->location_id}";
+			$query = "UPDATE fountains SET location_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Location' AND location_id = {$row->location_id}";
 			mysql_query($query);
 
-			$query = "UPDATE qrcodes link_id = {$newID} WHERE game_id = '{$newPrefix}' AND link_type = 'Location' AND link_id = {$row->link_id}";
+			$query = "UPDATE qrcodes SET link_id = {$newID} WHERE game_id = '{$newPrefix}' AND link_type = 'Location' AND link_id = {$row->link_id}";
 			mysql_query($query);
 
-			$query = "UPDATE requirements content_id = {$newID} WHERE game_id = '{$newPrefix}' AND content_type = 'Location' AND content_id = {$row->location_id}";
+			$query = "UPDATE requirements SET content_id = {$newID} WHERE game_id = '{$newPrefix}' AND content_type = 'Location' AND content_id = {$row->location_id}";
 			mysql_query($query);
 		}
 
 		$query = "SELECT * FROM npc_conversations WHERE game_id = {$prefix}";
 		$result = mysql_query($query);
 		while($result && $row = mysql_fetch_object($result)){
-			$query = "INSERT INTO npc_conversations (game_id npc_id, node_id, text, sort_index) VALUES ('{$newPrefix}', '{$row->npc_id}', '{$row->node_id}', '{$row->text}', '{$row->sort_index}')";
+			$query = "INSERT INTO npc_conversations (game_id, npc_id, node_id, text, sort_index) VALUES ('{$newPrefix}', '{$row->npc_id}', '{$row->node_id}', '".addSlashes($row->text)."', '{$row->sort_index}')";
 			mysql_query($query);
 		}
 
@@ -2059,30 +2059,30 @@ class Games extends Module
 		$result = mysql_query($query);
 		while($result && $row = mysql_fetch_object($result)){
 
-			$query = "INSERT INTO npcs (game_id, name, description, text, closing, media_id, icon_media_id) VALUES ('{$newPrefix}', '{$row->name}', '{$row->description}', '{$row->text}', '{$row->closing}', '{$row->media_id}', '{$row->icon_media_id}')";
+			$query = "INSERT INTO npcs (game_id, name, description, text, closing, media_id, icon_media_id) VALUES ('{$newPrefix}', '".addSlashes($row->name)."', '".addSlashes($row->description)."', '".addSlashes($row->text)."', '".addSlashes($row->closing)."', '{$row->media_id}', '{$row->icon_media_id}')";
 			mysql_query($query);
 			$newID = mysql_insert_id();
 			$newNpcIds[($row->npc_id)] = $newID;
 
-			$query = "UPDATE npc_conversations npc_id = {$newID} WHERE game_id = '{$newPrefix}' AND npc_id = {$row->npc_id}";
+			$query = "UPDATE npc_conversations SET npc_id = {$newID} WHERE game_id = '{$newPrefix}' AND npc_id = {$row->npc_id}";
 			mysql_query($query);
 
-			$query = "UPDATE folder_contents content_id = {$newID} WHERE game_id = '{$newPrefix}' AND content_type = 'Npc' AND content_id = {$row->npc_id}";
+			$query = "UPDATE folder_contents SET content_id = {$newID} WHERE game_id = '{$newPrefix}' AND content_type = 'Npc' AND content_id = {$row->npc_id}";
 			mysql_query($query);
 
-			$query = "UPDATE locations type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Npc' AND type_id = {$row->npc_id}";
+			$query = "UPDATE locations SET type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Npc' AND type_id = {$row->npc_id}";
 			mysql_query($query);
 
-			$query = "UPDATE player_state_changes event_detail = {$newID} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_NPC' AND event_detail = {$row->npc_id}";
+			$query = "UPDATE player_state_changes SET event_detail = {$newID} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_NPC' AND event_detail = {$row->npc_id}";
 			mysql_query($query);
 
-			$query = "UPDATE requirements requirement_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND requirement = 'PLAYER_VIEWED_NPC' AND requirement_detail_1 = {$row->npc_id}";
+			$query = "UPDATE requirements SET requirement_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND requirement = 'PLAYER_VIEWED_NPC' AND requirement_detail_1 = {$row->npc_id}";
 			mysql_query($query);
 
-			$query = "UPDATE player_log event_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_NPC' AND event_detail_1 = {$row->npc_id}";
+			$query = "UPDATE player_log SET event_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_NPC' AND event_detail_1 = {$row->npc_id}";
 			mysql_query($query);
 
-			$query = "UPDATE spawnables type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Npc' AND type_id = {$row->npc_id}";
+			$query = "UPDATE spawnables SET type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Npc' AND type_id = {$row->npc_id}";
 			mysql_query($query);
 		}
 
@@ -2090,33 +2090,33 @@ class Games extends Module
 		$query = "SELECT * FROM nodes WHERE game_id = {$prefix}";
 		$result = mysql_query($query);
 		while($result && $row = mysql_fetch_object($result)){
-			$query = "INSERT INTO nodes (game_id, title, text, opt1_text, opt1_node_id, opt2_text, opt2_node_id, opt3_text, opt3_node_id, require_answer_incorrect_node_id, require_answer_string, require_answer_correct_node_id, media_id, icon_media_id) VALUES ('{$newPrefix}', '{$row->title}', '{$row->text}', '{$row->opt1_text}', '{$row->opt1_node_id}', '{$row->opt2_text}', '{$row->opt2_node_id}', '{$row->opt3_text}', '{$row->opt3_node_id}', '{$row->require_answer_incorrect_node_id}', '{$row->require_answer_string}', '{$row->require_answer_correct_node_id}', '{$row->media_id}', '{$row->icon_media_id}')";
+			$query = "INSERT INTO nodes (game_id, title, text, opt1_text, opt1_node_id, opt2_text, opt2_node_id, opt3_text, opt3_node_id, require_answer_incorrect_node_id, require_answer_string, require_answer_correct_node_id, media_id, icon_media_id) VALUES ('{$newPrefix}', '".addSlashes($row->title)."', '".addSlashes($row->text)."', '{$row->opt1_text}', '{$row->opt1_node_id}', '{$row->opt2_text}', '{$row->opt2_node_id}', '{$row->opt3_text}', '{$row->opt3_node_id}', '{$row->require_answer_incorrect_node_id}', '{$row->require_answer_string}', '{$row->require_answer_correct_node_id}', '{$row->media_id}', '{$row->icon_media_id}')";
 			mysql_query($query);
 			$newID = mysql_insert_id();
 			$newNodeIds[($row->node_id)] = $newID;
 
-			$query = "UPDATE folder_contents content_id = {$newID} WHERE game_id = '{$newPrefix}' AND content_type = 'Node' AND content_id = {$row->node_id}";
+			$query = "UPDATE folder_contents SET content_id = {$newID} WHERE game_id = '{$newPrefix}' AND content_type = 'Node' AND content_id = {$row->node_id}";
 			mysql_query($query);
 
-			$query = "UPDATE locations type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Node' AND type_id = {$row->node_id}";
+			$query = "UPDATE locations SET type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Node' AND type_id = {$row->node_id}";
 			mysql_query($query);
 
-			$query = "UPDATE npc_conversations node_id = {$newID} WHERE game_id = '{$newPrefix}' AND node_id = {$row->node_id}";
+			$query = "UPDATE npc_conversations SET node_id = {$newID} WHERE game_id = '{$newPrefix}' AND node_id = {$row->node_id}";
 			mysql_query($query);
 
-			$query = "UPDATE player_state_changes event_detail = {$newID} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_NODE' AND event_detail = {$row->node_id}";
+			$query = "UPDATE player_state_changes SET event_detail = {$newID} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_NODE' AND event_detail = {$row->node_id}";
 			mysql_query($query);
 
-			$query = "UPDATE requirements content_id = {$newID} WHERE game_id = '{$newPrefix}' AND content_type = 'Node' AND content_id = {$row->node_id}";
+			$query = "UPDATE requirements SET content_id = {$newID} WHERE game_id = '{$newPrefix}' AND content_type = 'Node' AND content_id = {$row->node_id}";
 			mysql_query($query);
 
-			$query = "UPDATE requirements requirement_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND requirement = 'PLAYER_VIEWED_NODE' AND requirement_detail_1 = {$row->node_id}";
+			$query = "UPDATE requirements SET requirement_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND requirement = 'PLAYER_VIEWED_NODE' AND requirement_detail_1 = {$row->node_id}";
 			mysql_query($query);
 
-			$query = "UPDATE player_log event_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_NODE' AND event_detail_1 = {$row->node_id}";
+			$query = "UPDATE player_log SET event_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_NODE' AND event_detail_1 = {$row->node_id}";
 			mysql_query($query);
 
-			$query = "UPDATE spawnables type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Node' AND type_id = {$row->node_id}";
+			$query = "UPDATE spawnables SET type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Node' AND type_id = {$row->node_id}";
 			mysql_query($query);
 		}
 
@@ -2124,30 +2124,30 @@ class Games extends Module
 		$query = "SELECT * FROM items WHERE game_id = {$prefix}";
 		$result = mysql_query($query);
 		while($result && $row = mysql_fetch_object($result)){
-			$query = "INSERT INTO items (game_id, name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight, url, type) VALUES ('{$newPrefix}', '{$row->name}', '{$row->description}', '{$row->is_attribute}', '{$row->icon_media_id}', '{$row->media_id}', '{$row->dropable}', '{$row->destroyable}', '{$row->max_qty_in_inventory}', '{$row->creator_player_id}', '{$row->origin_latitude}', '{$row->origin_longitude}', '{$row->origin_timestamp}', '{$row->weight}', '{$row->url}', '{$row->type}')";
+			$query = "INSERT INTO items (game_id, name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight, url, type) VALUES ('{$newPrefix}', '".addSlashes($row->name)."', '".addSlashes($row->description)."', '{$row->is_attribute}', '{$row->icon_media_id}', '{$row->media_id}', '{$row->dropable}', '{$row->destroyable}', '{$row->max_qty_in_inventory}', '{$row->creator_player_id}', '{$row->origin_latitude}', '{$row->origin_longitude}', '{$row->origin_timestamp}', '{$row->weight}', '{$row->url}', '{$row->type}')";
 			mysql_query($query);
 			$newID = mysql_insert_id();
 			$newItemIds[($row->item_id)] = $newID;
 
-			$query = "UPDATE folder_contents content_id = {$newID} WHERE game_id = '{$newPrefix}' AND content_type = 'Item' AND content_id = {$row->item_id}";
+			$query = "UPDATE folder_contents SET content_id = {$newID} WHERE game_id = '{$newPrefix}' AND content_type = 'Item' AND content_id = {$row->item_id}";
 			mysql_query($query);
 
-			$query = "UPDATE locations type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Item' AND type_id = {$row->item_id}";
+			$query = "UPDATE locations SET type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Item' AND type_id = {$row->item_id}";
 			mysql_query($query);
 
-			$query = "UPDATE player_state_changes event_detail = {$newID} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_ITEM' AND event_detail = {$row->item_id}";
+			$query = "UPDATE player_state_changes SET event_detail = {$newID} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_ITEM' AND event_detail = {$row->item_id}";
 			mysql_query($query);
 
-			$query = "UPDATE player_state_changes action_detail = {$newID} WHERE game_id = '{$newPrefix}' AND action_detail = {$row->item_id}";
+			$query = "UPDATE player_state_changes SET action_detail = {$newID} WHERE game_id = '{$newPrefix}' AND action_detail = {$row->item_id}";
 			mysql_query($query);
 
-			$query = "UPDATE requirements requirement_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND (requirement = 'PLAYER_HAS_ITEM' OR requirement = 'PLAYER_VIEWED_ITEM') AND requirement_detail_1 = {$row->item_id}";
+			$query = "UPDATE requirements SET requirement_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND (requirement = 'PLAYER_HAS_ITEM' OR requirement = 'PLAYER_VIEWED_ITEM') AND requirement_detail_1 = {$row->item_id}";
 			mysql_query($query);
 
-			$query = "UPDATE player_log event_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND (event_type = 'PICKUP_ITEM' OR event_type = 'DROP_ITEM' OR event_type = 'DESTROY_ITEM' OR event_type = 'VIEW_ITEM') AND event_detail_1 = {$row->item_id}";
+			$query = "UPDATE player_log SET event_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND (event_type = 'PICKUP_ITEM' OR event_type = 'DROP_ITEM' OR event_type = 'DESTROY_ITEM' OR event_type = 'VIEW_ITEM') AND event_detail_1 = {$row->item_id}";
 			mysql_query($query);
 
-			$query = "UPDATE spawnables type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Item' AND type_id = {$row->item_id}";
+			$query = "UPDATE spawnables SET type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Item' AND type_id = {$row->item_id}";
 			mysql_query($query);
 		}
 
@@ -2162,7 +2162,7 @@ class Games extends Module
 		$query = "SELECT * FROM aug_bubbles WHERE game_id = {$prefix}";
 		$result = mysql_query($query);
 		while($result && $row = mysql_fetch_object($result)){
-			$query = "INSERT INTO aug_bubbles (game_id, name, description, icon_media_id) VALUES ('{$newPrefix}', '{$row->name}', '{$row->description}', '{$row->icon_media_id}')";
+			$query = "INSERT INTO aug_bubbles (game_id, name, description, icon_media_id) VALUES ('{$newPrefix}', '".addSlashes($row->name)."', '".addSlashes($row->description)."', '{$row->icon_media_id}')).";
 			mysql_query($query);
 			$newID = mysql_insert_id();
 			$newAugBubbleIds[($row->aug_bubble_id)] = $newID;
@@ -2181,7 +2181,7 @@ class Games extends Module
 		$query = "SELECT * FROM web_pages WHERE game_id = {$prefix}";
 		$result = mysql_query($query);
 		while($result && $row = mysql_fetch_object($result)){
-			$query = "INSERT INTO web_pages (game_id, name, url, icon_media_id) VALUES ('{$newPrefix}', '{$row->name}', '{$row->url}', '{$row->icon_media_id}')";
+			$query = "INSERT INTO web_pages (game_id, name, url, icon_media_id) VALUES ('{$newPrefix}', '".addSlashes($row->name)."', '{$row->url}', '{$row->icon_media_id}')";
 			mysql_query($query);
 			$newID = mysql_insert_id();
 			$newWebPageIds[($row->web_page_id)] = $newID;
@@ -2197,7 +2197,7 @@ class Games extends Module
 		$query = "SELECT * FROM web_hooks WHERE game_id = {$prefix}";
 		$result = mysql_query($query);
 		while($result && $row = mysql_fetch_object($result)){
-			$query = "INSERT INTO web_hooks (game_id, name, url, incoming) VALUES ('{$newPrefix}', '{$row->name}', '".addSlashes($row->url)."', '{$row->incoming}')";
+			$query = "INSERT INTO web_hooks (game_id, name, url, incoming) VALUES ('{$newPrefix}', '".addSlashes($row->name)."', '".addSlashes($row->url)."', '{$row->incoming}')";
 			mysql_query($query);
 			$newID = mysql_insert_id();
 
@@ -2236,7 +2236,7 @@ class Games extends Module
 		$query = "SELECT * FROM media WHERE game_id = {$prefix}";
 		$result = mysql_query($query);
 		while($result && $row = mysql_fetch_object($result)){
-			$query = "INSERT INTO media (game_id, name, file_path, is_icon) VALUES ('{$newPrefix}', '{$row->name}', '{$row->file_path}', '{$row->is_icon}')";
+			$query = "INSERT INTO media (game_id, name, file_path, is_icon) VALUES ('{$newPrefix}', '".addSlashes($row->name)."', '{$row->file_path}', '{$row->is_icon}')";
 			mysql_query($query);
 			$newID = mysql_insert_id();
 			$newMediaIds[($row->media_id)] = $newID;
