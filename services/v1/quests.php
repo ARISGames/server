@@ -132,7 +132,7 @@ class Quests extends Module
 		        description = '{$strIncompleteDescription}',
 		        text_when_complete = '{$strCompleteDescription}',
 		        icon_media_id = '{$intIconMediaID}',
-		        sort_index = '{$index}'
+		        sort_index = '{$index}',
 		        exit_to_tab = '{$exitToTab}'
 			WHERE game_id = {$prefix} AND quest_id = '{$intQuestID}'";
 
