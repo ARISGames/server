@@ -22,6 +22,14 @@
             return date.getHours()+":"+date.getMinutes()+":"+date.getSeconds();
         }
 
+        function getValueForRadio(radioname)
+        {
+            var radios = document.getElementsByName(radioname);
+            for (var i = 0, length = radios.length; i < length; i++)
+                if (radios[i].checked) return radios[i].value;
+            return '';
+        }
+
     </script>
     <script type="text/javascript">
 
@@ -94,6 +102,14 @@
                 case 'presence':
                     channel = '<?php echo $presence_default_channel; ?>';
                     event = '<?php echo $presence_default_event; ?>';
+                    data = document.getElementById(room+'_senddata').value;
+                    break;
+                case 'game':
+                case 'group':
+                case 'player':
+                case 'webpage':
+                    channel = 'private-'+document.getElementById(room+'_sendchannel').value+'-'+room+'-channel';
+                    event = getValueForRadio(room+'_sendevent');
                     data = document.getElementById(room+'_senddata').value;
                     break;
                 case 'custom':
@@ -191,6 +207,66 @@
 	<input type="button" value="Send" onClick="message('presence');"></input>
 
 	<div id="presence_messages" class='message_area'>
+	    <div>Waiting...</div>
+	</div>
+    </div>
+
+    <div class='channel'>
+	<div class='channeltitle'>GAME</div>
+        *can't receive*
+        <table>
+            <tr><td>Game ID: </td> <td><input type="text" id="game_sendchannel"></input></td></tr>
+            <tr><td>Event: </td> <td><input type="radio" name="game_sendevent" value="alert" checked="checked"></input>Alert</td></tr>
+            <tr><td>Data: </td> <td><input type="text" id="game_senddata"></input></td></tr>
+        </table>
+	<input type="button" value="Send" onClick="message('game');"></input>
+
+	<div id="game_messages" class='message_area'>
+	    <div>Waiting...</div>
+	</div>
+    </div>
+
+    <div class='channel'>
+	<div class='channeltitle'>PLAYER</div>
+        *can't receive*
+        <table>
+            <tr><td>Player ID: </td> <td><input type="text" id="player_sendchannel"></input></td></tr>
+            <tr><td>Event: </td> <td><input type="radio" name="player_sendevent" value="alert" checked="checked"></input>Alert</td></tr>
+            <tr><td>Data: </td> <td><input type="text" id="player_senddata"></input></td></tr>
+        </table>
+	<input type="button" value="Send" onClick="message('player');"></input>
+
+	<div id="player_messages" class='message_area'>
+	    <div>Waiting...</div>
+	</div>
+    </div>
+
+    <div class='channel'>
+	<div class='channeltitle'>GROUP</div>
+        *can't receive*
+        <table>
+            <tr><td>Group ID: </td> <td><input type="text" id="group_sendchannel"></input></td></tr>
+            <tr><td>Event: </td> <td><input type="radio" name="group_sendevent" value="alert" checked="checked"></input>Alert</td></tr>
+            <tr><td>Data: </td> <td><input type="text" id="group_senddata"></input></td></tr>
+        </table>
+	<input type="button" value="Send" onClick="message('group');"></input>
+
+	<div id="group_messages" class='message_area'>
+	    <div>Waiting...</div>
+	</div>
+    </div>
+
+    <div class='channel'>
+	<div class='channeltitle'>WEBPAGE</div>
+        *can't receive*
+        <table>
+            <tr><td>Webpage ID: </td> <td><input type="text" id="webpage_sendchannel"></input></td></tr>
+            <tr><td>Event: </td> <td><input type="radio" name="webpage_sendevent" value="alert" checked="checked"></input>Alert</td></tr>
+            <tr><td>Data: </td> <td><input type="text" id="webpage_senddata"></input></td></tr>
+        </table>
+	<input type="button" value="Send" onClick="message('webpage');"></input>
+
+	<div id="webpage_messages" class='message_area'>
 	    <div>Waiting...</div>
 	</div>
     </div>

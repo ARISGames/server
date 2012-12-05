@@ -2033,7 +2033,7 @@ class Games extends Module
 			$query = "UPDATE fountains SET location_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Location' AND location_id = {$row->location_id}";
 			mysql_query($query);
 
-			$query = "UPDATE qrcodes SET link_id = {$newID} WHERE game_id = '{$newPrefix}' AND link_type = 'Location' AND link_id = {$row->link_id}";
+			$query = "UPDATE qrcodes SET link_id = {$newID} WHERE game_id = '{$newPrefix}' AND link_type = 'Location' AND link_id = {$row->location_id}";
 			mysql_query($query);
 
 			$query = "UPDATE requirements SET content_id = {$newID} WHERE game_id = '{$newPrefix}' AND content_type = 'Location' AND content_id = {$row->location_id}";
@@ -2236,12 +2236,13 @@ class Games extends Module
 		$query = "SELECT * FROM media WHERE game_id = {$prefix}";
 		$result = mysql_query($query);
 		while($result && $row = mysql_fetch_object($result)){
-			$query = "INSERT INTO media (game_id, name, file_path, is_icon) VALUES ('{$newPrefix}', '".addSlashes($row->name)."', '{$row->file_path}', '{$row->is_icon}')";
+                        $newMediaFilePath = $newPrefix.substr($row->file_path,strpos($row->file_path,'/'));
+			$query = "INSERT INTO media (game_id, name, file_path, is_icon) VALUES ('{$newPrefix}', '".addSlashes($row->name)."', '{$newMediaFilePath}', '{$row->is_icon}')";
 			mysql_query($query);
 			$newID = mysql_insert_id();
 			$newMediaIds[($row->media_id)] = $newID;
 
-			if($row->file_path != "" && substr($row->file_path,-1) != "/") copy(("../../gamedata/" . $row->file_path),("../../gamedata/" . $row->file_path));
+			if($row->file_path != "" && substr($row->file_path,-1) != "/" && file_exists("../../gamedata/" . $row->file_path)) copy(("../../gamedata/" . $row->file_path),("../../gamedata/" . $newMediaFilePath));
 
 			$query = "UPDATE items SET icon_media_id = {$newID} WHERE icon_media_id = $row->media_id AND game_id = '{$newPrefix}'";
 			mysql_query($query);
