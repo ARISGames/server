@@ -924,7 +924,7 @@ abstract class Module
       $result = mysql_query($query);
       if(($obj = mysql_fetch_object($result)) && $obj->delete_when_viewed == 1 && $obj->active == 1) 
       {
-        $query = "DELETE locations, qrcodes FROM locations LEFT JOIN qrcodes ON locations.location_id = qrcodes.link_id WHERE location_id = $eventDetail2 AND game_id = '{$gameId}'";
+        $query = "DELETE locations, qrcodes FROM locations LEFT JOIN qrcodes ON locations.location_id = qrcodes.link_id WHERE location_id = $eventDetail2 AND locations.game_id = '{$gameId}'";
         mysql_query($query);
       }
     }
