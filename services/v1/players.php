@@ -138,7 +138,9 @@ function addPlayerPicFromFileName($playerId, $filename, $name)
 	if(!$name) $name = $playerId."_player_pic";
 	$newMediaResultData = Media::createMedia("player", $name, $filename, 0);
 	$newMediaId = $newMediaResultData->data->media_id;
-	return Players::addPlayerPic($playerId, $newMediaId);
+        Players::addPlayerPic($playerId, $newMediaId);
+        $returnObj->media_id = $newMediaId;
+        return new returnData(0,$returnObj);
 }
 
 function addPlayerPic($playerId, $mediaId)
@@ -195,34 +197,8 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
     {
         $timeLimitInMinutes = 20;
 
-        /*
-           Unoptimized becasue an index cant be used for the timestamp
-
-           $query = "SELECT players.player_id, players.user_name, 
-           players.latitude, players.longitude, 
-           player_log.timestamp 
-           FROM players, player_log
-           WHERE 
-           players.player_id = player_log.player_id AND
-           players.last_game_id = '{$intGameID}' AND
-           players.player_id != '{$intPlayerID}' AND
-           UNIX_TIMESTAMP( NOW( ) ) - UNIX_TIMESTAMP( player_log.timestamp ) <= ( $timeLimitInMinutes * 60 )
-           GROUP BY player_id
-           ";
-         */
-
-        $query = "SELECT players.player_id, players.user_name, 
-            players.latitude, players.longitude, player_log.timestamp
-            FROM players
-            LEFT JOIN player_log ON players.player_id = player_log.player_id
-            WHERE players.show_on_map = '1' AND players.last_game_id =  '{$intGameID}' AND 
-            players.player_id != '{$intPlayerID}' AND
-            player_log.timestamp > DATE_SUB( NOW( ) , INTERVAL $timeLimitInMinutes MINUTE ) 
-            GROUP BY player_id";
-
-
+	$query = "SELECT p.player_id, p.user_name, p.latitude, p.longitude, pl.timestamp FROM (SELECT * FROM players WHERE players.show_on_map = '1' AND players.last_game_id = '{$intGameID}' AND players.player_id != '{$intPlayerID}') as p JOIN (SELECT * FROM player_log WHERE player_log.game_id = '{$intGameID}' AND player_log.timestamp > DATE_SUB( NOW(), INTERVAL $timeLimitInMinutes MINUTE )) as pl ON p.player_id = pl.player_id WHERE (p.latitude != 0 OR p.longitude != 0) GROUP BY p.player_id;";
         NetDebug::trace($query);
-
 
         $rs = @mysql_query($query);
         NetDebug::trace(mysql_error());

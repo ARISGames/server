@@ -21,22 +21,6 @@ class Conversations extends Module
 		$prefix = Module::getPrefix($gameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-                /*
-                //OLD QUERY
-		$query = "SELECT {$prefix}_npc_conversations.*,
-                                 {$prefix}_npc_conversations.text AS conversation_text, 
-                                 {$prefix}_nodes.*
-		                 FROM 
-                                 {$prefix}_npc_conversations 
-                                 JOIN 
-                                 {$prefix}_nodes
-			         ON 
-                                 {$prefix}_npc_conversations.node_id = {$prefix}_nodes.node_id
-			         WHERE 
-                                 {$prefix}_npc_conversations.npc_id = {$npcId} 
-                                 ORDER BY sort_index";					
-                */
-
                 $query = "SELECT game_npc_conversations.*, game_nodes.* 
                 FROM 
                 (SELECT npc_conversations.*, npc_conversations.text AS conversation_text FROM npc_conversations WHERE game_id = {$prefix} AND npc_id = {$npcId}) AS game_npc_conversations 
