@@ -138,7 +138,9 @@ function addPlayerPicFromFileName($playerId, $filename, $name)
 	if(!$name) $name = $playerId."_player_pic";
 	$newMediaResultData = Media::createMedia("player", $name, $filename, 0);
 	$newMediaId = $newMediaResultData->data->media_id;
-	return Players::addPlayerPic($playerId, $newMediaId);
+        Players::addPlayerPic($playerId, $newMediaId);
+        $returnObj->media_id = $newMediaId;
+        return new returnData(0,$returnObj);
 }
 
 function addPlayerPic($playerId, $mediaId)
