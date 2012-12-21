@@ -46,7 +46,7 @@ function formatPage(game)
     add("</div>\n");//<- class gameauthors
     add("</div>\n");//<- class 'gametext'
     add("<div class='gamelinks'>\n");
-    add("<a href='#' onClick='window.open(\"\", \"Dump\"); document.getElementById(\"dumpForm\").submit();'>Dump?</a>");
+    add("<a href='#' onClick='window.open(\"\", \"Dump\"); document.getElementById(\"dumpForm\").submit();'>Download Content</a>");
     add("<form style='display:none;' id='dumpForm' method='POST' target='Dump' action='../../dump.php?gameId="+game.game_id+"'>");
     add("<input id='dumpFormInput' type='text' name='game'></input>");
     add("</form>");//<- form dumpForm
