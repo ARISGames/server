@@ -6,7 +6,6 @@ require_once("test.php");
 
 class Games extends Module
 {	
-
 	/**
 	 * Fetch all games
 	 * @returns Object Recordset for each Game.
@@ -407,11 +406,19 @@ class Games extends Module
 	}			
 
 	/**
-	 * Updates all game databases using upgradeGameDatabase
+	 * Upgrades the database schema
+         * NOTE- 
+         *  There isn't really a formal versioning system in place for this.
+         *  Be cautious about running this; check current schema before to ensure things don't get weird.
+         *  Also, in editing this function, try to be as clean and verbose as possible.
 	 */	
-	public function upgradeGameDatabases($startingGameIndex = 0) 
+	public function upgradeDatabase() 
 	{		
-	    NetDebug::trace("Upgrading Game Databases:\n");
+            $version = 1;  //Arbitrary version. Increment on edit. Should be able to grep the log to see what last run upgrade was. (Unreliable)
+	    Module::serverErrorLog("Upgrading database. Version ".$version);
+
+            /* Version 1 Upgrades */
+            $query = "";
 
 	    return new returnData(0);
 	}

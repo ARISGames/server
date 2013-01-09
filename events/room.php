@@ -67,6 +67,7 @@
 	//SEND
 	function sendRequest(room, channel, event, data)
         {
+            console.log(room+" "+channel+" "+event+" "+data);
             var xmlhttp;
             xmlhttp=new XMLHttpRequest();
             xmlhttp.onreadystatechange = function(){ 
@@ -80,6 +81,7 @@
             xmlhttp.open("POST","http://dev.arisgames.org/server/events/send.php",true);
             xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
             xmlhttp.send('channel='+channel+'&event='+event+'&data='+data);
+            console.log('channel='+channel+'&event='+event+'&data='+data);
         }
 
         function message(room)
