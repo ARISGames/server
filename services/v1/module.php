@@ -37,6 +37,7 @@ abstract class Module
 
   //constants for gameID_requirements table enums
   const kREQ_PLAYER_HAS_ITEM = 'PLAYER_HAS_ITEM';
+  const kREQ_PLAYER_HAS_TAGGED_ITEM = 'PLAYER_HAS_TAGGED_ITEM';
   const kREQ_PLAYER_VIEWED_ITEM = 'PLAYER_VIEWED_ITEM';
   const kREQ_PLAYER_VIEWED_NODE = 'PLAYER_VIEWED_NODE';
   const kREQ_PLAYER_VIEWED_NPC = 'PLAYER_VIEWED_NPC';
@@ -514,7 +515,14 @@ abstract class Module
     if ($qty >= $minItemQuantity) return TRUE;
     else return false;
   }		
-
+  
+  protected function playerHasTaggedItem($gameID, $playerID, $tagID, $minItemQuantity) {
+    if (!$minItemQuantity) $minItemQuantity = 1;
+    //NetDebug::trace("checking if player $playerID has atleast $minItemQuantity of item $itemID in inventory");		
+    $qty = Module::itemTagQtyInPlayerInventory($gameID, $playerID, $tagID);
+    if ($qty >= $minItemQuantity) return TRUE;
+    else return false;
+  }		
 
   /**
    * Checks the quantity a player has of an item in their inventory
@@ -541,6 +549,18 @@ abstract class Module
     else {
       return 0;
     }
+  }	    
+
+  protected function itemTagQtyInPlayerInventory($gameId, $playerId, $tagId) {
+    $prefix = Module::getPrefix($gameId);
+    if (!$prefix) return FALSE;
+
+    $query = "SELECT object_id FROM object_tags WHERE tag_id = '{$tagId}' AND object_type = 'ITEM'";
+    $result = mysql_query($query);
+    $qty = 0;
+    while($obj = mysql_fetch_object($result))
+        $qty+=Module::itemQtyInPlayerInventory($gameId, $playerId, $obj->object_id);
+    return $qty;
   }	    
 
   /** 
@@ -734,6 +754,10 @@ abstract class Module
           //Inventory related	
         case Module::kREQ_PLAYER_HAS_ITEM:
           $requirementMet = Module::playerHasItem($strPrefix, $intPlayerID, 
+              $requirement['requirement_detail_1'], $requirement['requirement_detail_2']);
+          break;
+        case Module::kREQ_PLAYER_HAS_TAGGED_ITEM:
+          $requirementMet = Module::playerHasTaggedItem($strPrefix, $intPlayerID,
               $requirement['requirement_detail_1'], $requirement['requirement_detail_2']);
           break;
           //Data Collection
