@@ -143,7 +143,7 @@ class Games extends Module
 
 	public function saveTab($intGameId, $stringTabType, $intIndex, $tabDetail1 = 0)
 	{
-		$query = "UPDATE game_tab_data SET tab_index = '{$intIndex}' AND tab_detail_1 = '{$tabDetail1}' WHERE game_id = '{$intGameId}' AND tab = '{$stringTabType}'";
+		$query = "UPDATE game_tab_data SET tab_index = '{$intIndex}', tab_detail_1 = '{$tabDetail1}' WHERE game_id = '{$intGameId}' AND tab = '{$stringTabType}'";
 		mysql_query($query);
 		return new returnData(0);
 	}
