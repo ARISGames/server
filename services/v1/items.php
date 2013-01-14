@@ -293,6 +293,23 @@ class Items extends Module
         return new returnData(0);
     }
 
+    public static function getTag($gameId, $tagId)
+    {
+        $query = "SELECT tag as name, tag_id FROM game_object_tags WHERE game_id = '{$gameId}' AND tag_id = '{$tagId}'";
+        $result = mysql_query($query);
+        $t = mysql_fetch_object($result);
+        return new returnData(0, $t);
+    }
+
+    public static function getTags($gameId)
+    {
+        $query = "SELECT tag as name, tag_id FROM game_object_tags WHERE game_id = '{$gameId}'";
+        $result = mysql_query($query);
+        $ts = array();
+        while($t = mysql_fetch_object($result))
+            $ts[] = $t;
+        return new returnData(0, $ts);
+    }
 
 
 
