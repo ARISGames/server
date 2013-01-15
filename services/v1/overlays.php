@@ -338,7 +338,7 @@ class Overlays extends Module
                                         $fullNewDirAndFileName = $sGameDir . $fullFileName;
                                         $fullOldDirAndFileName = $sOverlayDir. "/" . $intOverlayID . "/" . $dirZoomName . "/" . $dirXName . "/" . $fileYName;
                                         $filePath = $intGameID . "/" . $fullFileName;
-                                        $query3 = "INSERT INTO media SET game_id = {$intGameID}, name = '{$fullFileName}', file_path = '{filePath}'";
+                                        $query3 = "INSERT INTO media SET game_id = {$intGameID}, name = '{$fullFileName}', file_path = '{$filePath}'";
                                         $rsResult3 = @mysql_query($query3);
                                         if (mysql_error()) return new returnData(3, NULL, "SQL Error inserting Media: ". $query3);   
                                         
@@ -410,7 +410,7 @@ class Overlays extends Module
                                         $fullNewDirAndFileName = $sGameDir . $fullFileName;
                                         $fullOldDirAndFileName = $sOverlayDir. "/" . $dirMain1Name . "/"  . $dirZoomName . "/" . $dirXName . "/" . $fileYName;
                                         $filePath = $intGameID . "/" . $fullFileName;
-                                        $query3 = "INSERT INTO media SET game_id = {$intGameID}, name = '{$fullFileName}', file_path = '{filePath}'";
+                                        $query3 = "INSERT INTO media SET game_id = {$intGameID}, name = '{$fullFileName}', file_path = '{$filePath}'";
                                         $rsResult3 = @mysql_query($query3);
                                         if (mysql_error()) return new returnData(3, NULL, "SQL Error inserting Media: ". $query3);   
                                         
