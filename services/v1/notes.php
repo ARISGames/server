@@ -116,6 +116,14 @@ class Notes extends Module
 
         return new returnData(0, $commentId);
     }
+    
+    function setNoteComplete($noteId)
+    {
+        $query = "UPDATE notes SET complete = '1' WHERE note_id = '{$noteId}'";
+        $result = @mysql_query($query);
+        if (mysql_error()) return new returnData(1, NULL, mysql_error());
+        return new returnData(0, NULL);
+    }
 
     function updateComment($noteId, $title)
     {
