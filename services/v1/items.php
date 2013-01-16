@@ -311,7 +311,46 @@ class Items extends Module
         return new returnData(0, $ts);
     }
 
+    public static function getItemTags($itemId)
+    {
+        $query = "SELECT game_object_tags.tag as name, game_object_tags.tag_id FROM game_object_tags RIGHT JOIN object_tags ON game_object_tags.tag_id = object_tags.tag_id WHERE object_tags.object_type = 'ITEM' AND object_tags.object_id = '{$itemId}'";
+        Module::serverErrorLog($query);
+        $result = mysql_query($query);
+        $ts = array();
+        while($t = mysql_fetch_object($result))
+            $ts[] = $t;
+        return new returnData(0, $ts);
+    }
 
+    public static function addItemTag($gameId, $tag)
+    {
+        $query = "INSERT INTO game_object_tags (game_id, tag) VALUES ('{$gameId}', '{$tag}');";
+        mysql_query($query);
+        return new returnData(0, mysql_insert_id());
+    }
+
+    public static function deleteTag($gameId, $tagId)
+    {
+        $query = "DELETE FROM object_tags WHERE tag_id = '{$tagId}'";
+        mysql_query($query);
+        $query = "DELETE FROM game_object_tags WHERE tag_id = '{$tagId}'";
+        mysql_query($query);
+        return new returnData(0);
+    }
+
+    public static function tagItem($gameId, $itemId, $tagId)
+    {
+        $query = "INSERT INTO object_tags (object_type, object_id, tag_id) VALUES ('ITEM', '{$itemId}', '{$tagId}');";
+        mysql_query($query);
+        return new returnData(0);
+    }
+
+    public static function untagItem($gameId, $itemId, $tagId)
+    {
+        $query = "DELETE FROM object_tags WHERE object_type = 'ITEM' AND object_id = '{$itemId}' AND tag_id = '{$tagId}';";
+        mysql_query($query);
+        return new returnData(0);
+    }
 
 
 
