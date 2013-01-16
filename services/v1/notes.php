@@ -21,6 +21,18 @@ class Notes extends Module
 	Players::dropNote($gameId, $playerId, $nId, $lat, $lon);
 	return new returnData(0, $nId);
     }
+    
+    function createNewNoteStartIncomplete($gameId, $playerId, $lat=0, $lon=0)
+    {
+        $query = "INSERT INTO notes (game_id, owner_id, title, incomplete) VALUES ('{$gameId}', '{$playerId}', 'New Note', '1')";
+        @mysql_query($query);
+        if (mysql_error()) return new returnData(1, NULL, mysql_error());
+        $nId = mysql_insert_id();
+        EditorFoldersAndContent::saveContent($gameId, false, 0, 'PlayerNote', $nId, 0);
+        Module::processGameEvent($playerId, $gameId, Module::kLOG_GET_NOTE, $nId);
+        Players::dropNote($gameId, $playerId, $nId, $lat, $lon);
+        return new returnData(0, $nId);
+    }
 
     function updateNote($noteId, $title, $publicToMap, $publicToNotebook, $sortIndex='0')
     {
@@ -119,7 +131,7 @@ class Notes extends Module
     
     function setNoteComplete($noteId)
     {
-        $query = "UPDATE notes SET complete = '1' WHERE note_id = '{$noteId}'";
+        $query = "UPDATE notes SET incomplete = '0' WHERE note_id = '{$noteId}'";
         $result = @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         return new returnData(0, NULL);
