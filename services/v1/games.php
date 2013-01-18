@@ -289,7 +289,7 @@ class Games extends Module
 	public function createGame($intEditorID, $strFullName, $strDescription, $intPCMediaID, $intIconMediaID, $intMediaID,
 			$boolIsLocational, $boolReadyForPublic, 
 			$boolShareToMap, $boolShareToBook, $playerCreateTag, $playerCreateComments, $playerLikeNotes,
-			$intIntroNodeId, $intCompleteNodeId, $intInventoryCap, $boolAllowTrading = true)
+			$intIntroNodeId, $intCompleteNodeId, $intInventoryCap, $boolAllowTrading = true, $boolShowPlayerOnMap = true)
 	{
 		$strFullName = addslashes($strFullName);	
 		$strDescription = addslashes($strDescription);
@@ -304,11 +304,11 @@ class Games extends Module
 		$query = "INSERT INTO games (name, description, pc_media_id, icon_media_id, media_id,
 			is_locational, ready_for_public,
 			allow_share_note_to_map, allow_share_note_to_book, allow_player_tags, allow_note_comments, allow_note_likes,
-			on_launch_node_id, game_complete_node_id, inventory_weight_cap, created, allow_trading)
+			on_launch_node_id, game_complete_node_id, inventory_weight_cap, created, allow_trading, show_player_location)
 				VALUES ('".addSlashes($strFullName)."','".addSlashes($strDescription)."','{$intPCMediaID}','{$intIconMediaID}', '{$intMediaID}',
 						'{$boolIsLocational}', '{$boolReadyForPublic}', 
 						'{$boolShareToMap}', '{$boolShareToBook}', '{$playerCreateTag}', '{$playerCreateComments}','{$playerLikeNotes}',
-						'{$intIntroNodeId}','{$intCompleteNodeId}','{$intInventoryCap}', NOW(), '{$boolAllowTrading}')";
+						'{$intIntroNodeId}','{$intCompleteNodeId}','{$intInventoryCap}', NOW(), '{$boolAllowTrading}', '{$boolShowPlayerOnMap}')";
 		@mysql_query($query);
 		if (mysql_error())  return new returnData(6, NULL, "cannot create game record using SQL: $query");
 		$newGameID = mysql_insert_id();
@@ -359,7 +359,7 @@ class Games extends Module
 	public function updateGame($intGameID, $strName, $strDescription, $intPCMediaID, $intIconMediaID, $intMediaID,
 			$boolIsLocational, $boolReadyForPublic,
 			$boolShareToMap, $boolShareToBook, $playerCreateTag, $playerCreateComments, $playerLikeNotes,
-			$intIntroNodeId, $intCompleteNodeId, $intInventoryCap, $boolAllowTrading = true)
+			$intIntroNodeId, $intCompleteNodeId, $intInventoryCap, $boolAllowTrading = true, $boolShowPlayerOnMap = true)
 	{
 		$strName = addslashes($strName);	
 		$strDescription = addslashes($strDescription);
@@ -380,7 +380,8 @@ class Games extends Module
 			     on_launch_node_id = '{$intIntroNodeId}',
 			     game_complete_node_id = '{$intCompleteNodeId}',
 			     inventory_weight_cap = '{$intInventoryCap}',
-                             allow_trading = '{$boolAllowTrading}'
+                             allow_trading = '{$boolAllowTrading}',
+                             show_player_location = '{$boolShowPlayerOnMap}'
 				     WHERE game_id = {$intGameID}";
 		mysql_query($query);
 		if (mysql_error()) return new returnData(3, false, "SQL Error: " . mysql_error());
