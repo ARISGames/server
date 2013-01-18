@@ -37,9 +37,9 @@ class Players extends Module
         return new returnData(0, mysql_insert_id());
     }
 
-    public function removePlayerFromGroup($intPlayerId)
+    public function movePlayerToGroup($intPlayerId, $strGroup)
     {
-        $query = "UPDATE players SET group_name = '' WHERE player_id = '{$intPlayerId}'";
+        $query = "UPDATE players SET group_name = '{$strGroup}' WHERE player_id = '{$intPlayerId}'";
         mysql_query($query);
         return new returnData(0);
     }
