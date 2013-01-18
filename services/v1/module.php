@@ -622,7 +622,7 @@ abstract class Module
     $prefix = Module::getPrefix($intGameID);
     if (!$prefix) return FALSE;
 
-    $query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerID}' AND parent_note_id = 0";
+    $query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerID}' AND parent_note_id = 0 AND incomplete = '0'";
     NetDebug::trace($query);
     $result = @mysql_query($query);
     NetDebug::trace(mysql_num_rows($result));
@@ -635,7 +635,7 @@ abstract class Module
     $prefix = Module::getPrefix($intGameID);
     if (!$prefix) return FALSE;
 
-    $query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerID}' AND parent_note_id = 0";
+    $query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerID}' AND parent_note_id = 0 AND incomplete = '0'";
     NetDebug::trace($query);
     $result = @mysql_query($query);
     NetDebug::trace(mysql_num_rows($result));
@@ -656,7 +656,7 @@ abstract class Module
     $prefix = Module::getPrefix($intGameID);
     if (!$prefix) return FALSE;
 
-    $query = "SELECT note_id FROM notes WHERE game_id = '{$intGameID}' AND owner_id = '{$intPlayerID}'";
+    $query = "SELECT note_id FROM notes WHERE game_id = '{$intGameID}' AND owner_id = '{$intPlayerID}' AND incomplete = '0'";
     NetDebug::trace($query);
     $result = @mysql_query($query);
     while($note_id = mysql_fetch_object($result))
@@ -674,7 +674,7 @@ abstract class Module
     $prefix = Module::getPrefix($intGameID);
     if (!$prefix) return FALSE;
 
-    $query = "SELECT note_id FROM notes WHERE game_id = '{$intGameID}' AND owner_id = '{$intPlayerID}'";
+    $query = "SELECT note_id FROM notes WHERE game_id = '{$intGameID}' AND owner_id = '{$intPlayerID}' AND incomplete = '0'";
     NetDebug::trace($query);
     $result = @mysql_query($query);
     while($note_id = mysql_fetch_object($result))

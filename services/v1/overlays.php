@@ -337,7 +337,8 @@ class Overlays extends Module
                                         $fullFileName = $intOverlayID . "_" . $dirZoomName . "_" . $dirXName . "_" . $fileYName . "_" . time();
                                         $fullNewDirAndFileName = $sGameDir . $fullFileName;
                                         $fullOldDirAndFileName = $sOverlayDir. "/" . $intOverlayID . "/" . $dirZoomName . "/" . $dirXName . "/" . $fileYName;
-                                        $query3 = "INSERT INTO media SET game_id = {$intGameID}, name = '{$fullFileName}', file_path = '{$fullFileName}'";
+                                        $filePath = $intGameID . "/" . $fullFileName;
+                                        $query3 = "INSERT INTO media SET game_id = {$intGameID}, name = '{$fullFileName}', file_path = '{$filePath}'";
                                         $rsResult3 = @mysql_query($query3);
                                         if (mysql_error()) return new returnData(3, NULL, "SQL Error inserting Media: ". $query3);   
                                         
@@ -408,7 +409,8 @@ class Overlays extends Module
                                         $fullFileName = $overlayId . "_" . $dirZoomName . "_" . $dirXName . "_" . $fileYName;
                                         $fullNewDirAndFileName = $sGameDir . $fullFileName;
                                         $fullOldDirAndFileName = $sOverlayDir. "/" . $dirMain1Name . "/"  . $dirZoomName . "/" . $dirXName . "/" . $fileYName;
-                                        $query3 = "INSERT INTO media SET game_id = {$intGameID}, name = '{$fullFileName}', file_path = '{$fullFileName}'";
+                                        $filePath = $intGameID . "/" . $fullFileName;
+                                        $query3 = "INSERT INTO media SET game_id = {$intGameID}, name = '{$fullFileName}', file_path = '{$filePath}'";
                                         $rsResult3 = @mysql_query($query3);
                                         if (mysql_error()) return new returnData(3, NULL, "SQL Error inserting Media: ". $query3);   
                                         
