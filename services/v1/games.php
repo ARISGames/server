@@ -289,7 +289,7 @@ class Games extends Module
 	public function createGame($intEditorID, $strFullName, $strDescription, $intPCMediaID, $intIconMediaID, $intMediaID,
 			$boolIsLocational, $boolReadyForPublic, 
 			$boolShareToMap, $boolShareToBook, $playerCreateTag, $playerCreateComments, $playerLikeNotes,
-			$intIntroNodeId, $intCompleteNodeId, $intInventoryCap, $boolAllowTrading = true, $boolShowPlayerOnMap = true)
+			$intIntroNodeId, $intCompleteNodeId, $intInventoryCap, $boolAllowTrading = true, $boolShowPlayerOnMap = true, $strMapType = 'STREET')
 	{
 		$strFullName = addslashes($strFullName);	
 		$strDescription = addslashes($strDescription);
@@ -304,11 +304,11 @@ class Games extends Module
 		$query = "INSERT INTO games (name, description, pc_media_id, icon_media_id, media_id,
 			is_locational, ready_for_public,
 			allow_share_note_to_map, allow_share_note_to_book, allow_player_tags, allow_note_comments, allow_note_likes,
-			on_launch_node_id, game_complete_node_id, inventory_weight_cap, created, allow_trading, show_player_location)
+			on_launch_node_id, game_complete_node_id, inventory_weight_cap, created, allow_trading, show_player_location, map_type)
 				VALUES ('".addSlashes($strFullName)."','".addSlashes($strDescription)."','{$intPCMediaID}','{$intIconMediaID}', '{$intMediaID}',
 						'{$boolIsLocational}', '{$boolReadyForPublic}', 
 						'{$boolShareToMap}', '{$boolShareToBook}', '{$playerCreateTag}', '{$playerCreateComments}','{$playerLikeNotes}',
-						'{$intIntroNodeId}','{$intCompleteNodeId}','{$intInventoryCap}', NOW(), '{$boolAllowTrading}', '{$boolShowPlayerOnMap}')";
+						'{$intIntroNodeId}','{$intCompleteNodeId}','{$intInventoryCap}', NOW(), '{$boolAllowTrading}', '{$boolShowPlayerOnMap}', '{$strMapType}')";
 		@mysql_query($query);
 		if (mysql_error())  return new returnData(6, NULL, "cannot create game record using SQL: $query");
 		$newGameID = mysql_insert_id();
@@ -359,7 +359,7 @@ class Games extends Module
 	public function updateGame($intGameID, $strName, $strDescription, $intPCMediaID, $intIconMediaID, $intMediaID,
 			$boolIsLocational, $boolReadyForPublic,
 			$boolShareToMap, $boolShareToBook, $playerCreateTag, $playerCreateComments, $playerLikeNotes,
-			$intIntroNodeId, $intCompleteNodeId, $intInventoryCap, $boolAllowTrading = true, $boolShowPlayerOnMap = true)
+			$intIntroNodeId, $intCompleteNodeId, $intInventoryCap, $boolAllowTrading = true, $boolShowPlayerOnMap = true, $strMapType = 'STREET')
 	{
 		$strName = addslashes($strName);	
 		$strDescription = addslashes($strDescription);
@@ -381,7 +381,8 @@ class Games extends Module
 			     game_complete_node_id = '{$intCompleteNodeId}',
 			     inventory_weight_cap = '{$intInventoryCap}',
                              allow_trading = '{$boolAllowTrading}',
-                             show_player_location = '{$boolShowPlayerOnMap}'
+                             show_player_location = '{$boolShowPlayerOnMap}',
+                             map_type = '{$strMapType}'
 				     WHERE game_id = {$intGameID}";
 		mysql_query($query);
 		if (mysql_error()) return new returnData(3, false, "SQL Error: " . mysql_error());
@@ -1054,7 +1055,7 @@ class Games extends Module
 		$query = "SELECT * FROM quests WHERE game_id = {$prefix}";
 		$result = mysql_query($query);
 		while($result && $row = mysql_fetch_object($result)){
-			$query = "INSERT INTO quests(game_id, name, description, text_when_complete, icon_media_id, exit_to_tab) VALUES ('{$newPrefix}', '".addSlashes($row->name)."', '".addSlashes($row->description)."', '".addSlashes($row->text_when_complete)."', '{$row->icon_media_id}', '{$row->boolean_operator}', '{$row->exit_to_tab}')";
+			$query = "INSERT INTO quests (game_id, name, description, text_when_complete, icon_media_id, exit_to_tab) VALUES ('{$newPrefix}', '".addSlashes($row->name)."', '".addSlashes($row->description)."', '".addSlashes($row->text_when_complete)."', '{$row->icon_media_id}', '{$row->boolean_operator}', '{$row->exit_to_tab}')";
 			mysql_query($query);
 			$newID = mysql_insert_id();
 

@@ -88,7 +88,7 @@ class Quests extends Module
 	 * Create an Event
 	 * @returns the new eventID on success
 	 */
-	public function createQuest($intGameId, $strName, $strIncompleteDescription, $strCompleteDescription, $boolFullScreenNotification, $intActiveMediaId, $intCompleteMediaId, $intActiveIconMediaId, $intCompleteIconMediaID, $exitToTab = 'NONE', $index)
+	public function createQuest($intGameId, $strName, $strIncompleteDescription, $strCompleteDescription, $boolFullScreenNotification, $intActiveMediaId = 0, $intCompleteMediaId = 0, $intActiveIconMediaId = 0, $intCompleteIconMediaID = 0, $exitToTab = 'NONE', $index = 0)
 	{
 
 		$strName = addslashes($strName);	
@@ -116,7 +116,7 @@ class Quests extends Module
 	 * Update a specific Event
 	 * @returns true if edit was done, false if no changes were made
 	 */
-	public function updateQuest($intGameId, $intQuestID, $strName, $strIncompleteDescription, $strCompleteDescription, $boolFullScreenNotification, $intActiveMediaId, $intCompleteMediaId, $intActiveIconMediaId, $intCompleteIconMediaID, $exitToTab = 'NONE', $index)
+	public function updateQuest($intGameId, $intQuestID, $strName, $strIncompleteDescription, $strCompleteDescription, $boolFullScreenNotification, $intActiveMediaId = 0, $intCompleteMediaId = 0, $intActiveIconMediaId = 0, $intCompleteIconMediaID = 0, $exitToTab = 'NONE', $index = 0)
 	{
 		$strName = addslashes($strName);	
 		$strIncompleteDescription = addslashes($strIncompleteDescription);	
