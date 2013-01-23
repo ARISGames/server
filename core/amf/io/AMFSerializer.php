@@ -14,7 +14,7 @@
 
 define("MAX_STORED_OBJECTS", 1024);
 
-include_once(AMFPHP_BASE . "amf/io/AMFBaseSerializer.php");
+require_once(AMFPHP_BASE . "amf/io/AMFBaseSerializer.php");
 
 class AMFSerializer extends AMFBaseSerializer {
 

@@ -204,6 +204,10 @@ class Locations extends Module
         $rsLocations = @mysql_query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error" . mysql_error());
 
+        $query = "SELECT full_quick_travel FROM games WHERE game_id = '{$intGameId}'";
+        $fqtresult = mysql_query($query);
+        $fullQuickTravel = (mysql_fetch_object($fqtresult)->full_quick_travel == 1) ? true : false;
+
         while ($location = mysql_fetch_object($rsLocations)) {
             //If location and object it links to meet requirments, add it to the array
             NetDebug::trace('Location ' . $location->location_id . ' Found. Checking Reqs');	
@@ -311,6 +315,8 @@ class Locations extends Module
             }
 
             $location->delete_when_viewed = 0;
+
+            if($fullQuickTravel) $location->allow_quick_travel = true;
 
             //Add it
             $arrayLocations[] = $location;
