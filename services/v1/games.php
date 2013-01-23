@@ -141,9 +141,9 @@ class Games extends Module
 		return new returnData(0, $result, NULL);
 	}
 
-	public function saveTab($intGameId, $stringTabType, $intIndex, $tabDetail1 = 0)
+	public function saveTab($intGameId, $stringTabType, $intIndex)
 	{
-		$query = "UPDATE game_tab_data SET tab_index = '{$intIndex}', tab_detail_1 = '{$tabDetail1}' WHERE game_id = '{$intGameId}' AND tab = '{$stringTabType}'";
+		$query = "UPDATE game_tab_data SET tab_index = '{$intIndex}' WHERE game_id = '{$intGameId}' AND tab = '{$stringTabType}'";
 		mysql_query($query);
 		return new returnData(0);
 	}
@@ -1055,9 +1055,13 @@ class Games extends Module
 		$query = "SELECT * FROM quests WHERE game_id = {$prefix}";
 		$result = mysql_query($query);
 		while($result && $row = mysql_fetch_object($result)){
-			$query = "INSERT INTO quests (game_id, name, description, text_when_complete, icon_media_id, exit_to_tab) VALUES ('{$newPrefix}', '".addSlashes($row->name)."', '".addSlashes($row->description)."', '".addSlashes($row->text_when_complete)."', '{$row->icon_media_id}', '{$row->boolean_operator}', '{$row->exit_to_tab}')";
+			$query = "INSERT INTO quests (game_id, name, description, text_when_complete, sort_index, exit_to_tab, active_media_id, complete_media_id, active_icon_media_id, complete_icon_media_id) VALUES ('{$newPrefix}', '".addSlashes($row->name)."', '".addSlashes($row->description)."', '".addSlashes($row->text_when_complete)."', '{$row->sort_index}', '{$row->exit_to_tab}', '{$row->active_media_id}', '{$row->complete_media_id}', '{$row->active_icon_media_id}', '{$row->complete_icon_media_id}')";
+
 			mysql_query($query);
 			$newID = mysql_insert_id();
+
+                        Module::serverErrorLog("Reached insert into quests and produced id: ".$newID);
+               	        Module::serverErrorLog($query);
 
 			$query = "UPDATE requirements SET requirement_detail_1 = {$newID} WHERE ('{$row->requirement}' = 'PLAYER_HAS_COMPLETED_QUEST') AND game_id = '{$newPrefix}' AND requirement_detail_1 = '{$row->quest_id}'";
 			mysql_query($query);
@@ -1366,7 +1370,13 @@ class Games extends Module
 			mysql_query($query);
 			$query = "UPDATE qrcodes SET match_media_id = {$newID} WHERE match_media_id = $row->media_id AND game_id = '{$newPrefix}'";
 			mysql_query($query);
-			$query = "UPDATE quests SET icon_media_id = {$newID} WHERE icon_media_id = $row->media_id AND game_id = '{$newPrefix}'";
+			$query = "UPDATE quests SET active_icon_media_id = {$newID} WHERE active_icon_media_id = $row->media_id AND game_id = '{$newPrefix}'";
+			mysql_query($query);
+			$query = "UPDATE quests SET complete_icon_media_id = {$newID} WHERE complete_icon_media_id = $row->media_id AND game_id = '{$newPrefix}'";
+			mysql_query($query);
+			$query = "UPDATE quests SET active_media_id = {$newID} WHERE active_media_id = $row->media_id AND game_id = '{$newPrefix}'";
+			mysql_query($query);
+			$query = "UPDATE quests SET complete_media_id = {$newID} WHERE complete_media_id = $row->media_id AND game_id = '{$newPrefix}'";
 			mysql_query($query);
 			$query = "UPDATE aug_bubbles SET icon_media_id = {$newID} WHERE icon_media_id = $row->media_id AND game_id = {$newPrefix}";
 			mysql_query($query);
