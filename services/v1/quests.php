@@ -99,8 +99,8 @@ class Quests extends Module
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$query = "INSERT INTO quests 
-			(game_id, name, description, text_when_complete, sort_index, exit_to_tab)
-			VALUES ('{$prefix}','{$strName}','{$strIncompleteDescription}','{$strCompleteDescription}','{$index}','{$exitToTab}')";
+			(game_id, name, description, text_when_complete, sort_index, exit_to_tab, full_screen_notify)
+			VALUES ('{$prefix}','{$strName}','{$strIncompleteDescription}','{$strCompleteDescription}','{$index}','{$exitToTab}','{$boolFullScreenNotification}')";
 
 		NetDebug::trace("Running a query = $query");	
 
@@ -131,7 +131,8 @@ class Quests extends Module
 		        description = '{$strIncompleteDescription}',
 		        text_when_complete = '{$strCompleteDescription}',
 		        sort_index = '{$index}',
-		        exit_to_tab = '{$exitToTab}'
+		        exit_to_tab = '{$exitToTab}',
+                        full_screen_notify = '{$boolFullScreenNotification}'
 			WHERE game_id = {$prefix} AND quest_id = '{$intQuestID}'";
 
 		NetDebug::trace("Running a query = $query");	
