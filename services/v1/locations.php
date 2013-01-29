@@ -473,6 +473,7 @@ class Locations extends Module
             $tmpPlayerObject = new stdClass();
 
             $tmpPlayerObject->name = $player->user_name;
+            if($player->display_name) $tmpPlayerObject->name = $player->display_name;
             $tmpPlayerObject->latitude = $player->latitude;
             $tmpPlayerObject->longitude = $player->longitude;
             $tmpPlayerObject->type_id = $player->player_id;
