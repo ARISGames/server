@@ -185,7 +185,7 @@ class Notes extends Module
 
     function getFullNoteObject($noteId, $playerId=0)
     {
-        $query = "SELECT * FROM notes WHERE note_id = '{$noteId}'";
+        $query = "SELECT * FROM notes WHERE note_id = '{$noteId}' AND incomplete = '0'";
         $result = @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         if($note = mysql_fetch_object($result))
