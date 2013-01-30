@@ -33,6 +33,7 @@ class Media extends Module
 
 			$mediaItem = array();
 			$mediaItem['media_id'] = $mediaRow['media_id'];
+			$mediaItem['game_id'] = $mediaRow['game_id'];
 			$mediaItem['name'] = $mediaRow['name'];
 			$mediaItem['file_path'] = $mediaRow['file_path'];
 			$mediaItem['file_name'] = $mediaRow['file_path']; //this is for legacy reasons... Phil 10/12/2012
