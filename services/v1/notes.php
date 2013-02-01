@@ -128,7 +128,25 @@ class Notes extends Module
 
         return new returnData(0, $commentId);
     }
-    
+   
+    function addCommentToNoteStartIncomplete($gameId, $playerId, $noteId, $title="New Comment")
+    {
+        $query = "SELECT owner_id FROM notes WHERE game_id = '{$gameId}' AND note_id = '{$noteId}'";
+        $result = @mysql_query($query);
+        if (mysql_error()) return new returnData(1, NULL, mysql_error());
+        $questownerobj = mysql_fetch_object($result);
+        $questowner = $questownerobj->owner_id;
+
+        Module::processGameEvent($playerId, $gameId, Module::kLOG_GIVE_NOTE_COMMENT, $noteId);
+
+        $query = "INSERT INTO notes (game_id, owner_id, parent_note_id, title, incomplete) VALUES ('{$gameId}', '{$playerId}', '{$noteId}', '{$title}', '1')";
+        $result = @mysql_query($query);
+        if (mysql_error()) return new returnData(1, NULL, mysql_error());
+        $commentId = mysql_insert_id();
+
+        return new returnData(0, $commentId);
+    }
+ 
     function setNoteComplete($noteId)
     {
         $query = "UPDATE notes SET incomplete = '0' WHERE note_id = '{$noteId}'";
@@ -140,7 +158,7 @@ class Notes extends Module
     function updateComment($noteId, $title)
     {
         $title = addslashes($title);
-        $query = "UPDATE notes SET title= '{$title}' WHERE note_id = '{$noteId}'";
+        $query = "UPDATE notes SET title= '{$title}', incomplete = '0' WHERE note_id = '{$noteId}'";
         $result = @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         return new returnData(0, $newAve);	
@@ -185,7 +203,7 @@ class Notes extends Module
 
     function getFullNoteObject($noteId, $playerId=0)
     {
-        $query = "SELECT * FROM notes WHERE note_id = '{$noteId}' AND incomplete = '0'";
+        $query = "SELECT * FROM notes WHERE note_id = '{$noteId}'";
         $result = @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         if($note = mysql_fetch_object($result))
@@ -232,7 +250,7 @@ class Notes extends Module
 
     function getNoteComments($noteId, $playerId)
     {
-        $query = "SELECT note_id FROM notes WHERE parent_note_id = '{$noteId}'";
+        $query = "SELECT note_id FROM notes WHERE incomplete = '0' AND parent_note_id = '{$noteId}'";
         $result = @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
 

@@ -586,7 +586,7 @@ abstract class Module
       player_log.player_id = '{$intPlayerID}' AND
       player_log.game_id = '{$intGameID}' AND
       player_log.event_type = '". $mediaType ."' AND
-      player_log.event_detail_1 = items.item_id AND
+      player_log.event_detail_1 = game_items.item_id AND
       player_log.deleted = 0 AND
 
       (((acos(sin(({$dblLatitude}*pi()/180)) * sin((origin_latitude*pi()/180))+cos(({$dblLatitude}*pi()/180)) * 

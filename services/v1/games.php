@@ -165,6 +165,7 @@ class Games extends Module
 	public function getFullGameObject($intGameId, $intPlayerId, $boolGetLocationalInfo = 0, $intSkipAtDistance = 99999999, $latitude = 0, $longitude = 0){
 		$query = "SELECT * FROM games WHERE game_id = '{$intGameId}'";
 		$result = mysql_query($query);
+		if(mysql_num_rows($result) <= 0) return NULL;
 		$gameObj = mysql_fetch_object($result);
 		//Check if Game Has Been Played
 		$query = "SELECT * FROM player_log WHERE game_id = '{$intGameId}' AND player_id = '{$intPlayerId}' AND deleted = 0 LIMIT 1";
