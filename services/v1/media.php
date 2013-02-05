@@ -20,8 +20,8 @@ class Media extends Module
 		$prefix = Module::getPrefix($intGameID);
 		if (!$prefix && $intGameID != 0) return new returnData(1, NULL, "invalid game id");
 
-		if ($intGameID == 0) $query = "SELECT * FROM media WHERE game_id = 0";
-		else $query = "SELECT * FROM media WHERE game_id = {$prefix} or game_id = 0";
+		if ($intGameID == 0) $query = "SELECT * FROM media WHERE game_id = 0 AND SUBSTRING(file_path,1,1) != 'p'";
+		else $query = "SELECT * FROM media WHERE game_id = {$prefix} OR (game_id = 0 AND SUBSTRING(file_path,1,1) != 'p')";
 
 		$rsResult = @mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
