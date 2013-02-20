@@ -461,6 +461,8 @@ class Games extends Module
 	 */	
 	public function deleteGame($intGameID)
 	{
+		Module::serverErrorLog("Deleting Game Id: {$intGameID}");
+
 		$returnData = new returnData(0, NULL, NULL);
 
 		$prefix = Module::getPrefix($intGameID);
@@ -510,15 +512,19 @@ class Games extends Module
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
 
 		//Delete Overlays
-		$query = "DELETE FROM overlays WHERE game_id = '{$intGameID}'";
+		$query = "SELECT * FROM overlays WHERE game_id = '{$intGameID}'";
+		$result = mysql_query($query);
+		while($result && $row = mysql_fetch_object($result)){
+		$query = "DELETE FROM overlay_tiles WHERE overlay_id = '{$row->overlay_id}'";
 		NetDebug::trace($query);
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
-		//And Overlay_tiles
-		$query = "DELETE FROM overlay_tiles WHERE game_id = '{$intGameID}'";
+
+		$query = "DELETE FROM overlays WHERE overlay_id = '{$row->overlay_id}'";
 		NetDebug::trace($query);
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
+                }
 
 		//Delete WebHooks
 		$query = "DELETE FROM web_hooks WHERE game_id = '{$intGameID}'";
@@ -1061,9 +1067,6 @@ class Games extends Module
 
 			mysql_query($query);
 			$newID = mysql_insert_id();
-
-                        Module::serverErrorLog("Reached insert into quests and produced id: ".$newID);
-               	        Module::serverErrorLog($query);
 
 			$query = "UPDATE requirements SET requirement_detail_1 = {$newID} WHERE ('{$row->requirement}' = 'PLAYER_HAS_COMPLETED_QUEST') AND game_id = '{$newPrefix}' AND requirement_detail_1 = '{$row->quest_id}'";
 			mysql_query($query);
