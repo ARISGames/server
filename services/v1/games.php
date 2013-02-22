@@ -290,7 +290,7 @@ class Games extends Module
 	public function createGame($intEditorID, $strFullName, $strDescription, $intPCMediaID, $intIconMediaID, $intMediaID,
 			$boolIsLocational, $boolReadyForPublic, 
 			$boolShareToMap, $boolShareToBook, $playerCreateTag, $playerCreateComments, $playerLikeNotes,
-			$intIntroNodeId, $intCompleteNodeId, $intInventoryCap, $boolAllowTrading = true, $boolShowPlayerOnMap = true, $strMapType = 'STREET', $allLocQuickTravel = 'false')
+			$intIntroNodeId, $intCompleteNodeId, $intInventoryCap, $boolAllowTrading = true, $boolShowPlayerOnMap = true, $strMapType = 'STREET', $allLocQuickTravel = 'false', $usePlayerPic = 0)
 	{
 		$strFullName = addslashes($strFullName);	
 		$strDescription = addslashes($strDescription);
@@ -305,11 +305,11 @@ class Games extends Module
 		$query = "INSERT INTO games (name, description, pc_media_id, icon_media_id, media_id,
 			is_locational, ready_for_public,
 			allow_share_note_to_map, allow_share_note_to_book, allow_player_tags, allow_note_comments, allow_note_likes,
-			on_launch_node_id, game_complete_node_id, inventory_weight_cap, created, allow_trading, show_player_location, map_type, full_quick_travel)
+			on_launch_node_id, game_complete_node_id, inventory_weight_cap, created, allow_trading, show_player_location, use_player_pic, map_type, full_quick_travel)
 				VALUES ('".addSlashes($strFullName)."','".addSlashes($strDescription)."','{$intPCMediaID}','{$intIconMediaID}', '{$intMediaID}',
 						'{$boolIsLocational}', '{$boolReadyForPublic}', 
 						'{$boolShareToMap}', '{$boolShareToBook}', '{$playerCreateTag}', '{$playerCreateComments}','{$playerLikeNotes}',
-						'{$intIntroNodeId}','{$intCompleteNodeId}','{$intInventoryCap}', NOW(), '{$boolAllowTrading}', '{$boolShowPlayerOnMap}', '{$strMapType}', '{$allLocQuickTravel}')";
+						'{$intIntroNodeId}','{$intCompleteNodeId}','{$intInventoryCap}', NOW(), '{$boolAllowTrading}', '{$boolShowPlayerOnMap}', '{$usePlayerPic}', '{$strMapType}', '{$allLocQuickTravel}')";
 		@mysql_query($query);
 		if (mysql_error())  return new returnData(6, NULL, "cannot create game record using SQL: $query");
 		$newGameID = mysql_insert_id();
@@ -355,12 +355,13 @@ class Games extends Module
 
 	/**
 	 * Updates a game's information
+	 * NOT IMPLEMENTED: usePlayerPic is not used in this function
 	 * @returns true if a record was updated, false otherwise
 	 */	
 	public function updateGame($intGameID, $strName, $strDescription, $intPCMediaID, $intIconMediaID, $intMediaID,
 			$boolIsLocational, $boolReadyForPublic,
 			$boolShareToMap, $boolShareToBook, $playerCreateTag, $playerCreateComments, $playerLikeNotes,
-			$intIntroNodeId, $intCompleteNodeId, $intInventoryCap, $boolAllowTrading = true, $boolShowPlayerOnMap = true, $strMapType = 'STREET', $allLocQuickTravel = 'false')
+			$intIntroNodeId, $intCompleteNodeId, $intInventoryCap, $boolAllowTrading = true, $boolShowPlayerOnMap = true, $strMapType = 'STREET', $allLocQuickTravel = 'false', $usePlayerPic = 0)
 	{
 		$strName = addslashes($strName);	
 		$strDescription = addslashes($strDescription);
@@ -1020,7 +1021,7 @@ class Games extends Module
 					$game->pc_media_id, $game->icon_media_id, $game->media_id,
 					$game->is_locational, $game->ready_for_public, 
 					$game->allow_share_note_to_map, $game->allow_share_note_to_book, $game->allow_player_tags, $game->allow_player_comments, $game->allow_note_likes,
-					$game->on_launch_node_id, $game->game_complete_node_id, $game->inventory_weight_cap, $game->allow_trading);
+					$game->on_launch_node_id, $game->game_complete_node_id, $game->inventory_weight_cap, $game->allow_trading, $game->show_player_location, $game->map_type, $game->full_quick_travel, $game->use_player_pic);
 		}
 		else
 		{
@@ -1032,7 +1033,7 @@ class Games extends Module
 					$game->pc_media_id, $game->icon_media_id, $game->media_id,
 					$game->is_locational, $game->ready_for_public, 
 					$game->allow_share_note_to_map, $game->allow_share_note_to_book, $game->allow_player_tags, $game->allow_player_comments, $game->allow_note_likes,
-					$game->on_launch_node_id, $game->game_complete_node_id, $game->inventory_weight_cap, $game->allow_trading);
+					$game->on_launch_node_id, $game->game_complete_node_id, $game->inventory_weight_cap, $game->allow_trading, $game->show_player_location, $game->map_type, $game->full_quick_travel, $game->use_player_pic);
 
 			while($editors = mysql_fetch_object($rs)){
 				Games::addEditorToGame($editors->editor_id, $newGameId->data);
