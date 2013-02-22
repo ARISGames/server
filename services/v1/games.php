@@ -461,6 +461,8 @@ class Games extends Module
 	 */	
 	public function deleteGame($intGameID)
 	{
+		Module::serverErrorLog("Deleting Game Id: {$intGameID}");
+
 		$returnData = new returnData(0, NULL, NULL);
 
 		$prefix = Module::getPrefix($intGameID);
@@ -510,15 +512,19 @@ class Games extends Module
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
 
 		//Delete Overlays
-		$query = "DELETE FROM overlays WHERE game_id = '{$intGameID}'";
+		$query = "SELECT * FROM overlays WHERE game_id = '{$intGameID}'";
+		$result = mysql_query($query);
+		while($result && $row = mysql_fetch_object($result)){
+		$query = "DELETE FROM overlay_tiles WHERE overlay_id = '{$row->overlay_id}'";
 		NetDebug::trace($query);
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
-		//And Overlay_tiles
-		$query = "DELETE FROM overlay_tiles WHERE game_id = '{$intGameID}'";
+
+		$query = "DELETE FROM overlays WHERE overlay_id = '{$row->overlay_id}'";
 		NetDebug::trace($query);
 		@mysql_query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
+                }
 
 		//Delete WebHooks
 		$query = "DELETE FROM web_hooks WHERE game_id = '{$intGameID}'";
@@ -1062,9 +1068,6 @@ class Games extends Module
 			mysql_query($query);
 			$newID = mysql_insert_id();
 
-                        Module::serverErrorLog("Reached insert into quests and produced id: ".$newID);
-               	        Module::serverErrorLog($query);
-
 			$query = "UPDATE requirements SET requirement_detail_1 = {$newID} WHERE ('{$row->requirement}' = 'PLAYER_HAS_COMPLETED_QUEST') AND game_id = '{$newPrefix}' AND requirement_detail_1 = '{$row->quest_id}'";
 			mysql_query($query);
 
@@ -1398,39 +1401,41 @@ class Games extends Module
 		}
 
 		//NOTE: substr removes <?xml version="1.0" ? //> from the beginning of the text
-		$query = "SELECT * FROM nodes WHERE game_id = {$newPrefix}";
+		$query = "SELECT node_id FROM npc_conversations WHERE game_id = {$newPrefix}";
 		$result = mysql_query($query);
-		while($row = mysql_fetch_object($result)) {
-			if($row->text){
-				$inputString = $row->text;
-				if((strspn($inputString,"<>") > 0) && ((substr_count($inputString, "<npc>") > 0) || (substr_count($inputString, "<pc>") > 0) || (substr_count($inputString, "<dialog>") > 0)) && !(substr_count($inputString,"<p>") > 0) && !(substr_count($inputString,"<b>") > 0) && !(substr_count($inputString,"<i>") > 0) && !(substr_count($inputString,"<img") > 0) && !(substr_count($inputString,"<table>") > 0)){
-					$output = Games::replaceXMLIds($inputString, $newNpcIds, $newNodeIds, $newItemIds, $newAugBubbleIds, $newWebPageIds, $newMediaIds);
-					$output = substr($output,22);
-					$updateQuery = "UPDATE nodes SET text = '".addslashes($output)."' WHERE node_id = {$row->node_id} AND game_id = {$newPrefix}";
-					mysql_query($updateQuery);
+		while($result && ($npcConvo = mysql_fetch_object($result))) {
+		$query = "SELECT node_id, text FROM nodes WHERE node_id = {$npcConvo->node_id}";
+		$resultNode = mysql_query($query);
+			if($result && ($node = mysql_fetch_object($resultNode))){
+				$inputString = $node->text;
+				$output = Games::replaceXMLIds($inputString, $newNpcIds, $newNodeIds, $newItemIds, $newAugBubbleIds, $newWebPageIds, $newMediaIds);
+				if($output){
+				$output = substr($output,22);
+				$updateQuery = "UPDATE nodes SET text = '".addslashes($output)."' WHERE node_id = {$node->node_id} AND game_id = {$newPrefix}";
+				mysql_query($updateQuery);
 				}
 			}
 		}
 
 		$query = "SELECT * FROM npcs WHERE game_id = {$newPrefix}";
 		$result = mysql_query($query);
-		while($row = mysql_fetch_object($result)) {
+		while($result && ($row = mysql_fetch_object($result))) {
 			if($row->text){
 				$inputString = $row->text;
-				if((strspn($inputString,"<>") > 0) && ((substr_count($inputString, "<npc>") > 0) || (substr_count($inputString, "<pc>") > 0) || (substr_count($inputString, "<dialog>") > 0)) && !(substr_count($inputString,"<p>") > 0) && !(substr_count($inputString,"<b>") > 0) && !(substr_count($inputString,"<i>") > 0) && !(substr_count($inputString,"<img") > 0) && !(substr_count($inputString,"<table>") > 0)){
-					$output = Games::replaceXMLIds($inputString, $newNpcIds, $newNodeIds, $newItemIds, $newAugBubbleIds, $newWebPageIds, $newMediaIds);
-					$output = substr($output,22);
-					$updateQuery = "UPDATE npcs SET text = '".addslashes($output)."' WHERE npc_id = {$row->npc_id} AND game_id = {$newPrefix}";
-					mysql_query($updateQuery);
+				$output = Games::replaceXMLIds($inputString, $newNpcIds, $newNodeIds, $newItemIds, $newAugBubbleIds, $newWebPageIds, $newMediaIds);
+				if($output){
+				$output = substr($output,22);
+				$updateQuery = "UPDATE npcs SET text = '".addslashes($output)."' WHERE npc_id = {$row->npc_id} AND game_id = {$newPrefix}";
+				mysql_query($updateQuery);
 				}
 			}
 			if($row->closing){
 				$inputString = $row->closing;
-				if((strspn($inputString,"<>") > 0) && ((substr_count($inputString, "<npc>") > 0) || (substr_count($inputString, "<pc>") > 0) || (substr_count($inputString, "<dialog>") > 0)) && !(substr_count($inputString,"<p>") > 0) && !(substr_count($inputString,"<b>") > 0) && !(substr_count($inputString,"<i>") > 0) && !(substr_count($inputString,"<img") > 0) && !(substr_count($inputString,"<table>") > 0)){
-					$output = Games::replaceXMLIds($inputString, $newNpcIds, $newNodeIds, $newItemIds, $newAugBubbleIds, $newWebPageIds, $newMediaIds);
-					$output = substr($output,22);
-					$updateQuery = "UPDATE npcs SET closing = '".addslashes($output)."' WHERE npc_id = {$row->npc_id} AND game_id = {$newPrefix}";
-					mysql_query($updateQuery);
+				$output = Games::replaceXMLIds($inputString, $newNpcIds, $newNodeIds, $newItemIds, $newAugBubbleIds, $newWebPageIds, $newMediaIds);
+				if($output){
+				$output = substr($output,22);
+				$updateQuery = "UPDATE npcs SET closing = '".addslashes($output)."' WHERE npc_id = {$row->npc_id} AND game_id = {$newPrefix}";
+				mysql_query($updateQuery);
 				}
 			}
 		}
@@ -1456,7 +1461,11 @@ class Games extends Module
 		//& sign will break xml parser, so this is necessary
 		$inputString = str_replace("&", "&#x26;", $inputString);
 
+		libxml_use_internal_errors(true);
 		$xml = simplexml_load_string($inputString);
+		libxml_clear_errors();
+		libxml_use_internal_errors(false);
+		if($xml){
 
 		foreach($xml->attributes() as $attributeTitle => $attributeValue)
 		{ 
@@ -1538,6 +1547,8 @@ class Games extends Module
 		$output = str_replace("&#x2122;", "™", $output);
 		$output = str_replace("&#xA9;", "©", $output);
 		return $output;
+		}
+		return false;
 	}
 
 	static function getNewId($id, $newIdList)

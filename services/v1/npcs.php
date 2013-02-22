@@ -193,7 +193,7 @@ class Npcs extends Module
 		Locations::deleteLocationsForObject($intGameId, 'Npc', $intNpcID);
 		Requirements::deleteRequirementsForRequirementObject($intGameId, 'Npc', $intNpcID);
 		PlayerStateChanges::deletePlayerStateChangesThatRefrenceObject($intGameId, 'Npc', $intNpcID);
-                Nodes::deleteNodesReferencedByObject($intGameID, 'Npc', $intNpcID);
+                Nodes::deleteNodesReferencedByObject($intGameId, 'Npc', $intNpcID);
 		
 		$query = "DELETE FROM npcs WHERE npc_id = {$intNpcID} AND game_id = {$intGameId}";
 

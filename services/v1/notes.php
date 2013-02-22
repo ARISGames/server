@@ -121,7 +121,7 @@ class Notes extends Module
 
         Module::processGameEvent($playerId, $gameId, Module::kLOG_GIVE_NOTE_COMMENT, $noteId);
 
-        $query = "INSERT INTO notes (game_id, owner_id, parent_note_id, title) VALUES ('{$gameId}', '{$playerId}', '{$noteId}', '{$title}')";
+        $query = "INSERT INTO notes (game_id, owner_id, parent_note_id, title, incomplete) VALUES ('{$gameId}', '{$playerId}', '{$noteId}', '{$title}', '1')";
         $result = @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         $commentId = mysql_insert_id();
@@ -129,7 +129,7 @@ class Notes extends Module
         return new returnData(0, $commentId);
     }
    
-    function addCommentToNoteStartIncomplete($gameId, $playerId, $noteId, $title="New Comment")
+    function addCommentToNoteStartIncomplete($gameId, $playerId, $noteId, $title="New Comment") //Depracated, may appear in some phones, remove 3 montsh from 2/6/13
     {
         $query = "SELECT owner_id FROM notes WHERE game_id = '{$gameId}' AND note_id = '{$noteId}'";
         $result = @mysql_query($query);
