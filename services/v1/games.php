@@ -1088,6 +1088,15 @@ class Games extends Module
 			$newFolderIds[($row->folder_id)] = mysql_insert_id();
 		}
 
+		$query = "SELECT * FROM folders WHERE game_id = {$newPrefix}";
+		$result = mysql_query($query);
+		while($result && $row = mysql_fetch_object($result)){
+			if($row->folder_id != 0){
+			$query = "UPDATE folders SET parent_id = {$newFolderIds[($row->parent_id)]} WHERE game_id = '{$newPrefix}' AND folder_id = {$row->folder_id}";
+			mysql_query($query);
+			}
+		}
+
 		$query = "SELECT * FROM folder_contents WHERE game_id = {$prefix}";
 		$result = mysql_query($query);
 		while($result && $row = mysql_fetch_object($result)){
@@ -1095,7 +1104,7 @@ class Games extends Module
 			mysql_query($query);
 
 			if($row->folder_id != 0){
-				$query = "UPDATE folder_contents SET folder_id = {$newFolderIds[($row->folder_id)]} WHERE game_id = '{$newPrefix}' AND folder_id = {$row->folder_id}";
+				$query = "UPDATE folder_contents SET folder_id = {$newFolderIds[($row->folder_id)]} WHERE game_id = '{$newPrefix}' AND object_content_id = {$row->object_content_id}";
 				mysql_query($query); 
 			}
 		}
