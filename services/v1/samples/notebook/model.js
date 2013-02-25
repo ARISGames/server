@@ -143,6 +143,34 @@ function Model()
         return false;
     }
 
+	this.numberOfNotesForTag = function(tag)
+    {
+		var notesForTag = 0;
+		for(var i = 0; i < this.notes.length; i++)
+        {
+			for (var j = 0; j < this.notes[i].tags.length; j++) 
+			{		
+				if (this.notes[i].tags[j].tag.toLowerCase() == tag.toLowerCase())
+					notesForTag ++;
+			}
+		}
+        return notesForTag;
+    }
+	
+	
+	this.numberOfNotesForContributor = function(contributor)
+    {
+		var notesForContributor = 0;
+		for(var i = 0; i < this.notes.length; i++)
+        {
+			if (this.notes[i].username.toLowerCase() == contributor.toLowerCase())
+				notesForContributor ++;
+		}
+        return notesForContributor;
+    }
+
+
+
     this.views = new function Views()
     {
         //Layout/Sort Button Containers

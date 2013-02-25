@@ -103,7 +103,8 @@ div
 {
     position:relative;
     min-height:30px;
-    text-align:center;
+    text-align:left;
+    padding-left: 10px;
     background-color:#DDDDDD;
 }
 
@@ -156,7 +157,7 @@ div
 
 #map_filter_selector_box
 {
-    width:250px;
+    width:29%;
 }
 
 .map_filter_selector
@@ -194,9 +195,11 @@ div
 {
     float:left;
     margin-left:10px; /* only left to remain flush with side of buttons */
-    width:632px;
-    height:500px;
+    height:100%;
+    width:69%;
+    border:1px solid black;
 }
+
 
 #list_filter_selector_box
 {
@@ -268,12 +271,6 @@ div
     overflow-x:hidden;
 }
 
-#map
-{
-    height:498px;
-    width:630px;
-    border:1px solid black;
-}
 
 #map_note_view_container
 {

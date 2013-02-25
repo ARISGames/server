@@ -214,7 +214,7 @@ function Controller()
         for(var i = 0; i < model.contributors.length; i++)
         {
             tmpcell = new SelectionCell(model.views.constructContributorMapFilterSelectorCell.cloneNode(true), 123-123, this.mapContributorClicked, model.contributors[i]);
-            tmpcell.html.firstChild.innerHTML = model.contributors[i];
+            tmpcell.html.firstChild.innerHTML = model.contributors[i] + "   (" + model.numberOfNotesForContributor(model.contributors[i]) + " notes)";
             model.views.contributorMapFilterSelector.appendChild(tmpcell.html);
             model.contributorMapCells[model.contributorMapCells.length] = tmpcell;
         }
@@ -229,7 +229,7 @@ function Controller()
         for(var i = 0; i < model.contributors.length; i++)
         {
             tmpcell = new SelectionCell(model.views.constructContributorListFilterSelectorCell.cloneNode(true), 123-123, this.listContributorClicked, model.contributors[i]);
-            tmpcell.html.firstChild.innerHTML = model.contributors[i];
+            tmpcell.html.firstChild.innerHTML = model.contributors[i] + "   (" + model.numberOfNotesForContributor(model.contributors[i]) + " notes)";
             model.views.contributorListFilterSelector.appendChild(tmpcell.html);
             model.contributorListCells[model.contributorListCells.length] = tmpcell;
         }
@@ -244,7 +244,7 @@ function Controller()
         for(var i = 0; i < model.tags.length; i++)
         {
             tmpcell = new SelectionCell(model.views.constructTagMapFilterSelectorCell.cloneNode(true), 123-123, this.mapTagClicked, model.tags[i]);
-            tmpcell.html.firstChild.innerHTML = model.tags[i];
+            tmpcell.html.firstChild.innerHTML = model.tags[i] + "   (" + model.numberOfNotesForTag(model.tags[i]) + " notes)";
             model.views.tagMapFilterSelector.appendChild(tmpcell.html);
             model.tagMapCells[model.tagMapCells.length] = tmpcell;
         }
@@ -259,7 +259,8 @@ function Controller()
         for(var i = 0; i < model.tags.length; i++)
         {
             tmpcell = new SelectionCell(model.views.constructTagListFilterSelectorCell.cloneNode(true), 123-123, this.listTagClicked, model.tags[i]);
-            tmpcell.html.firstChild.innerHTML = model.tags[i];
+			
+            tmpcell.html.firstChild.innerHTML = model.tags[i] + "   (" + model.numberOfNotesForTag(model.tags[i]) + " notes)";
             model.views.tagListFilterSelector.appendChild(tmpcell.html);
             model.tagListCells[model.tagListCells.length] = tmpcell;
         }
@@ -300,7 +301,7 @@ function Controller()
         {
             if(!model.listContributorSelected(model.contributorNotes[i].username)) continue;
             tmpcell = new SingleSelectionCell(model.views.constructNoteListSelectorCell.cloneNode(true), 123-123, this.noteSelected, model.contributorNotes[i]);
-            tmpcell.html.firstChild.innerHTML = '<span class="note_cell_title">'+model.contributorNotes[i].title+' - </span><span class="note_cell_author">'+model.contributorNotes[i].username+'</span>';
+            tmpcell.html.firstChild.innerHTML = '<span class="note_cell_title">'+model.contributorNotes[i].title+' - </span><span class="note_cell_author">'+model.contributorNotes[i].username + this.getIconForNote(model.contributorNotes[i]) + '  </span>';
             model.views.noteListSelector.appendChild(tmpcell.html);
             model.views.contributorNoteCells[model.views.contributorNoteCells.length] = tmpcell;
         }
@@ -316,7 +317,7 @@ function Controller()
         {
             if(!model.listTagsSelected(model.tagNotes[i].tags)) continue;
             tmpcell = new SingleSelectionCell(model.views.constructNoteListSelectorCell.cloneNode(true), 123-123, this.noteSelected, model.tagNotes[i]);
-            tmpcell.html.firstChild.innerHTML = '<span class="note_cell_title">'+model.tagNotes[i].title+' - </span><span class="note_cell_author">'+model.tagNotes[i].username+'</span>';
+            tmpcell.html.firstChild.innerHTML = '<span class="note_cell_title">'+model.tagNotes[i].title+' - </span><span class="note_cell_author">'+model.tagNotes[i].username + this.getIconForNote(model.contributorNotes[i]) + '</span>';
             model.views.noteListSelector.appendChild(tmpcell.html);
             model.views.tagNoteCells[model.views.tagNoteCells.length] = tmpcell;
         }
@@ -331,12 +332,43 @@ function Controller()
         for(var i = 0; i < model.popularNotes.length; i++)
         {
             tmpcell = new SingleSelectionCell(model.views.constructNoteListSelectorCell.cloneNode(true), 123-123, this.noteSelected, model.popularNotes[i]);
-            tmpcell.html.firstChild.innerHTML = '<span class="note_cell_title">'+model.popularNotes[i].title+' - </span><span class="note_cell_author">'+model.popularNotes[i].username+'</span>';
+            tmpcell.html.firstChild.innerHTML = '<span class="note_cell_title">'+model.popularNotes[i].title+' - </span><span class="note_cell_author">'+model.popularNotes[i].username+ " ("+model.popularNotes[i].likes + this.getLikeIcon() + ", " + model.popularNotes[i].comments.length + this.getCommentIcon() +")" + this.getIconForNote(model.contributorNotes[i]) + '</span>';
             model.views.noteListSelector.appendChild(tmpcell.html);
             model.views.popularNoteCells[model.views.popularNoteCells.length] = tmpcell;
         }
     }
 
+	this.getIconForNote = function(note)
+	{
+		var iconHTML = "";
+		if (note.contents.type == "AUDIO")
+			iconHTML = '  <img src="./images/defaultAudioIcon.png" height=15px;>';
+		else if (note.contents.type == "VIDEO")
+			iconHTML = '  <img src="./images/defaultVideoIcon.png" height=15px;>';
+		else if (note.contents.type == "IMAGE")
+			iconHTML = '  <img src="./images/defaultImageIcon.png" height=15px;>';
+		else 
+			iconHTML = '  <img src="./images/defaultTextIcon.png" height=15px;>';
+			
+		return iconHTML;
+	};
+	
+	this.getLikeIcon = function()
+	{
+		var iconHTML =  '  <img src="./images/LikeIcon.png" height=15px;>';
+			
+		return iconHTML;
+	};
+	
+	
+	this.getCommentIcon = function()
+	{
+		var iconHTML =  '  <img src="./images/CommentIcon.png" height=15px;>';
+			
+		return iconHTML;
+	};
+	
+	
     this.displayNextNote = function(key)
     {
         if(model.views.mapLayoutButton.selected) ;
