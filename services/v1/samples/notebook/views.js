@@ -250,6 +250,12 @@ function SingleSelectionCell(html, odd, callback, object)
     this.deselect(); //Set its color
 }
 
+this.playerPicForNote = function(username) 
+{
+	var picHTML = '  <img src="' + model.getProfilePicForContributor(username) + '" height=40px;>';
+	return picHTML;
+};
+	
 function NoteView(html, object)
 {
     this.html = html;
@@ -263,7 +269,8 @@ function NoteView(html, object)
         //I recommend opening 'index.html' and finding the xml defining 'note_view_construct' (the DOM node cloned to be this.html) as reference (vim command ':sp index.html')
         this.html.children[0].children[0].innerHTML = this.object.title;
         this.html.children[0].children[1].innerHTML = this.object.likes+' likes, '+this.object.comments.length+' comments';
-        this.html.children[0].children[2].innerHTML = this.object.username;
+		console.log(this.object.username);
+        this.html.children[0].children[2].innerHTML = this.object.username + playerPicForNote(this.object.username);
 
         this.html.children[1].innerHTML = 'Tags: '+object.tagString;
 
@@ -275,6 +282,7 @@ function NoteView(html, object)
         for(var i = 0; i < this.object.comments.length; i++)
             this.html.children[4].appendChild(this.constructCommentHTML(this.object.comments[i]));
     };
+	
 
     this.constructContentHTML = function(content)
     {

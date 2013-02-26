@@ -214,7 +214,8 @@ function Controller()
         for(var i = 0; i < model.contributors.length; i++)
         {
             tmpcell = new SelectionCell(model.views.constructContributorMapFilterSelectorCell.cloneNode(true), 123-123, this.mapContributorClicked, model.contributors[i]);
-            tmpcell.html.firstChild.innerHTML = model.contributors[i] + "   (" + model.numberOfNotesForContributor(model.contributors[i]) + " notes)";
+			console.log(model.contributors[i]);
+            tmpcell.html.firstChild.innerHTML = model.contributors[i] +  this.playerPicForContributorList(model.contributors[i]) + "   (" + model.numberOfNotesForContributor(model.contributors[i]) + " notes)";
             model.views.contributorMapFilterSelector.appendChild(tmpcell.html);
             model.contributorMapCells[model.contributorMapCells.length] = tmpcell;
         }
@@ -229,7 +230,7 @@ function Controller()
         for(var i = 0; i < model.contributors.length; i++)
         {
             tmpcell = new SelectionCell(model.views.constructContributorListFilterSelectorCell.cloneNode(true), 123-123, this.listContributorClicked, model.contributors[i]);
-            tmpcell.html.firstChild.innerHTML = model.contributors[i] + "   (" + model.numberOfNotesForContributor(model.contributors[i]) + " notes)";
+            tmpcell.html.firstChild.innerHTML = model.contributors[i] + this.playerPicForContributorList(model.contributors[i]) + "   (" + model.numberOfNotesForContributor(model.contributors[i]) + " notes)";
             model.views.contributorListFilterSelector.appendChild(tmpcell.html);
             model.contributorListCells[model.contributorListCells.length] = tmpcell;
         }
@@ -322,6 +323,7 @@ function Controller()
             model.views.tagNoteCells[model.views.tagNoteCells.length] = tmpcell;
         }
     };
+	
     this.populateNotesByPopularity = function()
     {
         model.views.noteListSelector.innerHTML = ''; //Clear the children
@@ -340,12 +342,18 @@ function Controller()
 
 	this.getIconForNote = function(note)
 	{
+		if (note.contents[0] == null)
+			return "";
+			
+		console.log(note.contents[0]);
+		console.log(note.contents[0].type);
+		
 		var iconHTML = "";
-		if (note.contents.type == "AUDIO")
+		if (note.contents[0].type == "AUDIO")
 			iconHTML = '  <img src="./images/defaultAudioIcon.png" height=15px;>';
-		else if (note.contents.type == "VIDEO")
+		else if (note.contents[0].type == "VIDEO")
 			iconHTML = '  <img src="./images/defaultVideoIcon.png" height=15px;>';
-		else if (note.contents.type == "IMAGE")
+		else if (note.contents[0].type == "IMAGE")
 			iconHTML = '  <img src="./images/defaultImageIcon.png" height=15px;>';
 		else 
 			iconHTML = '  <img src="./images/defaultTextIcon.png" height=15px;>';
@@ -368,6 +376,11 @@ function Controller()
 		return iconHTML;
 	};
 	
+	this.playerPicForContributorList = function(username) 
+	{
+		var picHTML = '  <img src="' + model.getProfilePicForContributor(username) + '" height=22px;>';
+		return picHTML;
+	};
 	
     this.displayNextNote = function(key)
     {
