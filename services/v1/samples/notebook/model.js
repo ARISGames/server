@@ -174,15 +174,18 @@ function Model()
 		var picURL = "";
 		for(var i = 0; i < this.backpacks.length; i++)
         {
-			//console.log(this.backpacks[i].owner.user_name);
-			console.log(contributor);
+			console.log("username: " + this.backpacks[i].owner.user_name);
+			console.log("contributor: " + contributor);
 			if (contributor == null || this.backpacks[i].owner.user_name == null) {
-				return "./images/DefaultPCImage.png";
+				picURL = "./images/DefaultPCImage.png";
 			}
 			else if (this.backpacks[i].owner.user_name.toLowerCase() == contributor.toLowerCase())
 				picURL = this.backpacks[i].owner.player_pic_url;
 		}
 		
+		if (picURL == null)
+			picURL = "./images/DefaultPCImage.png";
+			
         return picURL;
     }
 

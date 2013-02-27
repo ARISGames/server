@@ -87,6 +87,7 @@ function SingleSelectionButton(html, callback)
     this.html.addEventListener('click', this.select, false);
 }
 
+	
 function MapMarker(callback, object)
 {
     var self = this; // <- I hate javascript.
@@ -139,6 +140,8 @@ function SelectionCell(html, odd, callback, object)
             if(self.hovered) self.html.style.backgroundColor = '#CCCCFF';
             else self.html.style.backgroundColor = '#DDDDFF';
         }
+		self.html.firstChild.innerHTML = changeCheckBox(self.html.firstChild.innerHTML, true);
+		
     };
     this.deselect = function()
     {
@@ -153,6 +156,8 @@ function SelectionCell(html, odd, callback, object)
             if(self.hovered) self.html.style.backgroundColor = '#CCCCCC'
             else self.html.style.backgroundColor = '#DDDDDD';
         }
+		self.html.firstChild.innerHTML = changeCheckBox(self.html.firstChild.innerHTML, false);
+	
     };
     this.clicked = function()
     {
@@ -173,6 +178,36 @@ function SelectionCell(html, odd, callback, object)
     this.html.addEventListener('click', this.clicked, false);
 
     this.deselect(); //give self odd coloring
+}
+
+function changeCheckBox(innerHTML, checked)
+{
+	
+	var checkboxCheckedFilename = "checkbox.png";
+	var checkboxUncheckedFilename = "checkboxUnchecked.png";
+	var htmlCheckboxChecked = '<img src="./images/' + checkboxCheckedFilename + '" height="12px";>  ';
+	var htmlCheckboxUnchecked = '<img src="./images/' + checkboxUncheckedFilename + '" height="12px";>  ';
+	
+	// clear out previous check box
+	console.log("orininal inner html: " + innerHTML);
+	var checkBoxLoc = innerHTML.indexOf(checkboxCheckedFilename);
+	if (checkBoxLoc >= 0) 
+		innerHTML = innerHTML.substr(htmlCheckboxChecked.length+4, innerHTML.length);
+	console.log("checkBoxLoc:" + checkBoxLoc);
+	checkBoxLoc = innerHTML.indexOf(checkboxUncheckedFilename);
+	if (checkBoxLoc >= 0) 
+		innerHTML = innerHTML.substr(htmlCheckboxUnchecked.length+4, innerHTML.length);
+	console.log("checkBoxLoc 2:" + checkBoxLoc);
+	console.log("cleaned inner html: " + innerHTML);
+	
+	// insert new check box
+	if (checked == true) 
+		innerHTML = htmlCheckboxChecked + innerHTML;
+	else
+		innerHTML = htmlCheckboxUnchecked + innerHTML;
+	console.log("new inner html: " + innerHTML);
+		
+	return innerHTML;
 }
 
 /* Note- the callback is in charge of enforcing the single selection */
@@ -252,7 +287,7 @@ function SingleSelectionCell(html, odd, callback, object)
 
 this.playerPicForNote = function(username) 
 {
-	var picHTML = '  <img src="' + model.getProfilePicForContributor(username) + '" height=40px;>';
+	var picHTML = '  <img src="' + model.getProfilePicForContributor(username) + '"vertical-align:middle; height=40px;> ';
 	return picHTML;
 };
 	
@@ -270,7 +305,7 @@ function NoteView(html, object)
         this.html.children[0].children[0].innerHTML = this.object.title;
         this.html.children[0].children[1].innerHTML = this.object.likes+' likes, '+this.object.comments.length+' comments';
 		console.log(this.object.username);
-        this.html.children[0].children[2].innerHTML = this.object.username + playerPicForNote(this.object.username);
+        this.html.children[0].children[2].innerHTML = playerPicForNote(this.object.username) + this.object.username;
 
         this.html.children[1].innerHTML = 'Tags: '+object.tagString;
 
