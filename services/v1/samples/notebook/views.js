@@ -157,7 +157,7 @@ function getMediaToUse(note) {
 		//	return note.contents[i].media_url;
 	//}
 	if (note.contents[0].type == "PHOTO")
-		mediaURL = "./images/defaultPhotoIcon.png";
+		mediaURL = "./images/defaultImageIcon.png";
 	else if (note.contents[0].type == "TEXT")
 		mediaURL = "./images/defaultTextIcon.png";
 	else if (note.contents[0].type == "AUDIO")
