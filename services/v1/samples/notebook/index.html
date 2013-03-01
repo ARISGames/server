@@ -3,15 +3,25 @@
 <title>Notebook</title>
 <link rel='stylesheet' type='text/css' href='css.css' />
 <link rel="stylesheet" type="text/css" href="https://google-developers.appspot.com/maps/documentation/javascript/examples/default.css" />
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.0/themes/base/jquery-ui.css" />
 <script type="text/javascript" src="utils/json2.js"></script>
 <script type="text/javascript" src="utils/nbutils.js"></script>
 <script type="text/javascript" src="views.js"></script>
 <script type="text/javascript" src="model.js"></script>
 <script type="text/javascript" src="controller.js"></script>
 <script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
+<script type="text/javascript" src="richmarker.js" ></script>
+<script src="http://code.jquery.com/jquery-1.9.1.js"></script>
+<script src="http://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
+
 <script type="text/javascript">
 
 window.addEventListener('load', pageLoad, false);
+
+$(function() {
+    $( "#map_note_view_container").draggable();
+});
+ 
 //Defining here to make available to everyone
 var model;
 var controller;

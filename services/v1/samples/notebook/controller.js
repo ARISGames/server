@@ -261,7 +261,10 @@ function Controller()
         {
             tmpcell = new SelectionCell(model.views.constructTagListFilterSelectorCell.cloneNode(true), 123-123, this.listTagClicked, model.tags[i]);
 			
-            tmpcell.html.firstChild.innerHTML =  this.checkBox(this.listTagClicked) + model.tags[i] + this.rightSideOfCell("   " + model.numberOfNotesForTag(model.tags[i]) + this.getNoteIcon());
+            //tmpcell.html.firstChild.innerHTML =  this.checkBox(this.listTagClicked) + model.tags[i] + this.rightSideOfCell("   " + model.numberOfNotesForTag(model.tags[i]) + this.getNoteIcon());
+			 tmpcell.html.firstChild.innerHTML = model.tags[i] + this.rightSideOfCell( model.numberOfNotesForTag(model.tags[i])  + this.getNoteIcon() + " </div>");
+			 console.log(model.tags[i]);
+			
             model.views.tagListFilterSelector.appendChild(tmpcell.html);
             model.tagListCells[model.tagListCells.length] = tmpcell;
         }
@@ -302,7 +305,7 @@ function Controller()
         {
             if(!model.listContributorSelected(model.contributorNotes[i].username)) continue;
             tmpcell = new SingleSelectionCell(model.views.constructNoteListSelectorCell.cloneNode(true), 123-123, this.noteSelected, model.contributorNotes[i]);
-            tmpcell.html.firstChild.innerHTML = '<span class="note_cell_title">'+model.contributorNotes[i].title+' - </span><span class="note_cell_author">'+model.contributorNotes[i].username + this.rightSideOfCell(this.getIconForNote(model.contributorNotes[i]) + '  </span>');
+            tmpcell.html.firstChild.innerHTML = '<span class="note_cell_title">'+model.contributorNotes[i].title+' - </span><span class="note_cell_author">'+model.contributorNotes[i].username + this.rightSideOfCell(this.getIconsForNoteContents(model.contributorNotes[i]) + '  </span>');
             model.views.noteListSelector.appendChild(tmpcell.html);
             model.views.contributorNoteCells[model.views.contributorNoteCells.length] = tmpcell;
         }
@@ -318,7 +321,7 @@ function Controller()
         {
             if(!model.listTagsSelected(model.tagNotes[i].tags)) continue;
             tmpcell = new SingleSelectionCell(model.views.constructNoteListSelectorCell.cloneNode(true), 123-123, this.noteSelected, model.tagNotes[i]);
-            tmpcell.html.firstChild.innerHTML ='<span class="note_cell_title">'+model.tagNotes[i].title+' - </span><span class="note_cell_author">'+model.tagNotes[i].username + this.rightSideOfCell(this.getIconForNote(model.contributorNotes[i]) + '</span>');
+            tmpcell.html.firstChild.innerHTML ='<span class="note_cell_title">'+model.tagNotes[i].title+' - </span><span class="note_cell_author">'+model.tagNotes[i].username + this.rightSideOfCell(this.getIconsForNoteContents(model.contributorNotes[i]) + '</span>');
             model.views.noteListSelector.appendChild(tmpcell.html);
             model.views.tagNoteCells[model.views.tagNoteCells.length] = tmpcell;
         }
@@ -334,29 +337,45 @@ function Controller()
         for(var i = 0; i < model.popularNotes.length; i++)
         {
             tmpcell = new SingleSelectionCell(model.views.constructNoteListSelectorCell.cloneNode(true), 123-123, this.noteSelected, model.popularNotes[i]);
-            tmpcell.html.firstChild.innerHTML = '<span class="note_cell_title">'+model.popularNotes[i].title+' - </span><span class="note_cell_author">'+model.popularNotes[i].username+ this.rightSideOfCell( this.getIconForNote(model.contributorNotes[i])  + "&nbsp;&nbsp;  "  + model.popularNotes[i].likes + this.getLikeIcon() + "&nbsp;&nbsp; " + model.popularNotes[i].comments.length + this.getCommentIcon() + '</span>');
+            tmpcell.html.firstChild.innerHTML = '<span class="note_cell_title">'+model.popularNotes[i].title+' - </span><span class="note_cell_author">'+model.popularNotes[i].username+ this.rightSideOfCell(model.popularNotes[i].likes + this.getLikeIcon() + "&nbsp;&nbsp; " + model.popularNotes[i].comments.length + this.getCommentIcon() + '</span>');
             model.views.noteListSelector.appendChild(tmpcell.html);
             model.views.popularNoteCells[model.views.popularNoteCells.length] = tmpcell;
         }
     }
 
-	this.getIconForNote = function(note)
+	this.getIconsForNoteContents = function(note)
 	{
 		if (note.contents[0] == null)
 			return "";
 			
-		console.log(note.contents[0]);
-		console.log(note.contents[0].type);
+		var textCount = 0;
+		var audioCount = 0;
+		var videoCount = 0;
+		var photoCount = 0;
+		
+		for (i = 0; i < note.contents.length; i++) {
+	
+			if (note.contents[i].type == "AUDIO")
+				audioCount++;
+			else if (note.contents[i].type == "VIDEO")
+				videoCount++;
+			else if (note.contents[i].type == "PHOTO")
+				photoCount++;
+			else  if (note.contents[i].type == "TEXT")
+				textCount++;
+		}
 		
 		var iconHTML = "";
-		if (note.contents[0].type == "AUDIO")
-			iconHTML = '  <img src="./images/defaultAudioIcon.png" height=16px;>  ';
-		else if (note.contents[0].type == "VIDEO")
-			iconHTML = '  <img src="./images/defaultVideoIcon.png" height=16px;>  ';
-		else if (note.contents[0].type == "IMAGE")
-			iconHTML = '  <img src="./images/defaultImageIcon.png" height=16px;>  ';
-		else 
-			iconHTML = '  <img src="./images/defaultTextIcon.png" height=16px;>  ';
+		if (textCount > 0)
+			iconHTML += '<img src="./images/defaultTextIcon.png" height=14px;>';
+		if (audioCount > 0)
+			iconHTML += '<img src="./images/defaultAudioIcon.png" height=15px;>';
+		if (photoCount > 0)
+			iconHTML += '<img src="./images/defaultImageIcon.png" height=15px;> ';
+		if (videoCount > 0)
+			iconHTML += '<img src="./images/defaultVideoIcon.png" height=14px;>';
+		
+		
 			
 		return iconHTML;
 	};
@@ -378,22 +397,22 @@ function Controller()
 	
 	this.getNoteIcon = function()
 	{
-		iconHTML = '  <img src="./images/defaultTextIcon.png" height=14px;>  ';
-			
+		//iconHTML = '  <img src="./images/defaultTextIcon.png" height=14px;>  ';
+		var iconHTML = "";	
 		return iconHTML;
 	};
 	
 	this.playerPicForContributorList = function(username) 
 	{
-		var picHTML = '  <img src="' + model.getProfilePicForContributor(username) + '" height=18px;>  ';
+		var picHTML = '  <img src="' + model.getProfilePicForContributor(username) + '" height=14px;>  ';
 		return picHTML;
 	};
 	
 	this.checkBox = function(checked)
 	{
-		checkboxHTML = '  <img src="./images/checkboxUnchecked.gif" height=15px;>';
+		checkboxHTML = '  <img src="./images/checkboxUnchecked.gif" height=16px;>';
 		if (checked) 	
-			checkboxHTML = '  <img src="./images/checkbox.png" height=15px;>';
+			checkboxHTML = '  <img src="./images/checkbox.png" height=16px;>';
 			
 		return checkboxHTML;
 	}
