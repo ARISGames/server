@@ -152,12 +152,13 @@ function constructMarker(note) {
 function getMediaToUse(note) {
 	var mediaURL = "";
 	
-	for (i = 0; i < note.contents.length; i++) {
-		if (note.contents[i].type == "PHOTO")
-			return note.contents[i].media_url;
-	}
-	
-	if (note.contents[0].type == "TEXT")
+	//for (i = 0; i < note.contents.length; i++) {
+		//if (note.contents[i].type == "PHOTO")
+		//	return note.contents[i].media_url;
+	//}
+	if (note.contents[0].type == "PHOTO")
+		mediaURL = "./images/defaultPhotoIcon.png";
+	else if (note.contents[0].type == "TEXT")
 		mediaURL = "./images/defaultTextIcon.png";
 	else if (note.contents[0].type == "AUDIO")
 		mediaURL = "./images/defaultAudioIcon.png";
@@ -169,10 +170,10 @@ function getMediaToUse(note) {
 
 function mediaToUseType(note) {
 	
-	for (i = 0; i < note.contents.length; i++) {
+	/*for (i = 0; i < note.contents.length; i++) {
 		if (note.contents[i].type == "PHOTO")
 			return "PHOTO";
-	}
+	}*/
 	
 	return note.contents[0].type;
 }
