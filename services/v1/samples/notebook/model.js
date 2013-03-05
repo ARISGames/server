@@ -270,7 +270,32 @@ function Model()
         this.gmap = new google.maps.Map(this.map, myOptions);
 		
 		// marker clusterer
-		this.markerclusterer = new MarkerClusterer(this.gmap);
+		var mcOptions = {styles: [{
+			height: 47,
+			url: "./images/speechBubble_cluster_large.png",
+			width: 50
+			},
+			{
+			height: 47,
+			url: "./images/speechBubble_cluster_large.png",
+			width: 50
+			},
+			{
+			height: 47,
+			url: "./images/speechBubble_cluster_large.png",
+			width: 50
+			},
+			{
+			height: 47,
+			url: "./images/speechBubble_cluster_large.png",
+			width: 50
+			},
+			{
+			height: 47,
+			url: "./images/speechBubble_cluster_large.png",
+			width: 50
+			}]};
+		this.markerclusterer = new MarkerClusterer(this.gmap,[],mcOptions);
 		this.markerclusterer.setMinimumClusterSize(3)
 		
     };

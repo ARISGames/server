@@ -102,10 +102,13 @@ div
 
 .selector_cell
 {
-    position:relative;
-    min-height:7%;
+    /*min-height:7%;
     text-align:left;
-    padding-left: 2%;
+    padding-left: 2%;*/
+	position:relative;
+    min-height:30px;
+    text-align:left;
+    padding-left: 10px;
     background-color:#FFFFFF;
 }
 

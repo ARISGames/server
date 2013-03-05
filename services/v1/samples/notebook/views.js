@@ -120,9 +120,10 @@ function MapMarker(callback, object)
     		new google.maps.Size(56, 75)
 			);
 		this.marker.setIcon(imageIcon);*/
-	
+   
    this.marker = imageMarker;
    model.views.markerclusterer.addMarker(this.marker);
+   
    google.maps.event.addListener(this.marker, 'click', function(e) { self.callback(self); });
    
 }
