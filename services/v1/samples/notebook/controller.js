@@ -279,6 +279,7 @@ function Controller()
 				model.mapMarkers[i].marker.setMap(null);
         }
         model.mapMarkers = [];
+		model.views.markerclusterer.clearMarkers();
         var tmpmarker;
         for(var i = 0; i < model.mapNotes.length; i++)
         {
