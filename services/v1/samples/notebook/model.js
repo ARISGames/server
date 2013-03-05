@@ -13,6 +13,7 @@ function Model()
     //All notes (no order)
     this.mapNotes = [];
     this.mapMarkers = [];
+	
     this.addMapNote = function(mapNote)
     {
         mapNote.geoloc = new google.maps.LatLng(mapNote.lat, mapNote.lon);
@@ -267,6 +268,11 @@ function Model()
         var centerLoc = new google.maps.LatLng(0, 0);
         var myOptions = { zoom:5, center:centerLoc, mapTypeId:google.maps.MapTypeId.ROADMAP };
         this.gmap = new google.maps.Map(this.map, myOptions);
+		
+		// marker clusterer
+		this.markerclusterer = new MarkerClusterer(this.gmap);
+		this.markerclusterer.setMinimumClusterSize(3)
+		
     };
 
     document.addEventListener('keydown', function(e) { if(e.keyIdentifier == 'Up' || e.keyIdentifier == 'Down') { controller.displayNextNote(e.keyIdentifier); e.stopPropagation(); e.preventDefault(); } }, false);

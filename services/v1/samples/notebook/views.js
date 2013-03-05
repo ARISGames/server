@@ -93,8 +93,9 @@ function MapMarker(callback, object)
     var self = this; // <- I hate javascript.
     this.callback = callback;
     this.object = object;
-	//this.marker = //new google.maps.Marker({ position:this.object.geoloc, map:model.views.gmap, });
-	console.log(this.object);
+	//this.marker = new google.maps.Marker({ position:this.object.geoloc, map:model.views.gmap, });  // won't need this eventually
+	
+	
 	
 	if (this.object.contents[0] == null)
 		return;
@@ -121,6 +122,7 @@ function MapMarker(callback, object)
 		this.marker.setIcon(imageIcon);*/
 	
    this.marker = imageMarker;
+   model.views.markerclusterer.addMarker(this.marker);
    google.maps.event.addListener(this.marker, 'click', function(e) { self.callback(self); });
    
 }
@@ -131,34 +133,84 @@ function constructMarker(note) {
 	mediaType = mediaToUseType(note);
 	var clip;
 	var size;
+	var height;
+	var width;
+	var left;
+	var top;
 	
 	if (mediaType == "PHOTO") {
-		clip = "clip:rect(2px 30px 32px 2px)";
+		clip = "rect(2px 30px 32px 2px)";
 		size = "height='40' width='30'";
 		position = "top:0;left:0;";
+		height = 40;
+		width = 30;
+		top = 0;
+		left = 0;
 		
 	} else
 	{
 		clip = "";
 		size = "height = '25' width = '25'";
 		position = "top:4;left:6;";
+		height = 25;
+		width = 25;
+		top = 4;
+		left = 6;
 	}
 	
-	html  = "<div style='cursor:pointer;'><img src='./images/speechBubble.png' height='51' width='43'/> <img src='" + getMediaToUse(note) + "'   style='" + position + " position:absolute;" + clip + "' " + size + "/></div><div style='top:1;left:33; position:absolute' >" +   getIconsForNoteContents(note) +"</div>"	;
+	
+	var image = new Image();
+	var imageSource = getMediaToUse(note); //"./images/defaultImageIcon.png";
+	image.onload = function() {
+		//replaceMarkerImage(imageSource);	
+	}
+	image.src = imageSource;
+	image.style.top = top;
+	image.style.left = left;
+	image.style.position = "absolute";
+	image.style.clip = clip;
+	image.height = height;
+	image.width = width;
+	
+	var outerDiv = document.createElement('div'); 
+	outerDiv.style.cursor = "pointer";
+	var innerDiv = document.createElement('div'); 
+	innerDiv.style.top = 1;
+	innerDiv.style.left = 33;
+	innerDiv.style.position = "absolute";
+	innerDiv.innerHTML = getIconsForNoteContents(note);
+	
+	var speechBubble = new Image();
+	speechBubble.src = './images/speechBubble.png';
+	speechBubble.height = 51;
+	speechBubble.width = 43;
+	
+	outerDiv.appendChild(speechBubble);
+	outerDiv.appendChild(image);
+	outerDiv.appendChild(innerDiv);
+	
+	html = outerDiv.outerHTML;
+	
+	console.log ("HTML: " + html);
+	
+	//html  = "<div style=><img src='./images/speechBubble.png' height='51' width='43'/> " + image + " </div><div style='top:1;left:33; position:absolute' >" +   getIconsForNoteContents(note) +"</div>"	;
+	
+	
 	
 	return html;
 }
 
+
 function getMediaToUse(note) {
 	var mediaURL = "";
 	
-	//for (i = 0; i < note.contents.length; i++) {
-		//if (note.contents[i].type == "PHOTO")
-		//	return note.contents[i].media_url;
-	//}
-	if (note.contents[0].type == "PHOTO")
-		mediaURL = "./images/defaultImageIcon.png";
-	else if (note.contents[0].type == "TEXT")
+	for (i = 0; i < note.contents.length; i++) {
+		if (note.contents[i].type == "PHOTO")
+			return note.contents[i].media_url;
+	}
+	//if (note.contents[0].type == "PHOTO")
+	//	mediaURL = "./images/defaultImageIcon.png";
+	if (note.contents[0].type == "TEXT")
 		mediaURL = "./images/defaultTextIcon.png";
 	else if (note.contents[0].type == "AUDIO")
 		mediaURL = "./images/defaultAudioIcon.png";
@@ -170,10 +222,10 @@ function getMediaToUse(note) {
 
 function mediaToUseType(note) {
 	
-	/*for (i = 0; i < note.contents.length; i++) {
+	for (i = 0; i < note.contents.length; i++) {
 		if (note.contents[i].type == "PHOTO")
 			return "PHOTO";
-	}*/
+	}
 	
 	return note.contents[0].type;
 }

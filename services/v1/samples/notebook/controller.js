@@ -202,6 +202,7 @@ function Controller()
         this.populateNotesByContributor();
         //this.populateNotesByTag();
         //this.populateNotesByPopularity();
+		
     };
 
     this.populateMapContributors = function()
@@ -270,10 +271,12 @@ function Controller()
         }
     };
     this.populateMapNotes = function(center)
-    {
+    {	
+	
         for(var i = 0; i < model.mapMarkers.length; i++)
         {
-            model.mapMarkers[i].marker.setMap(null);
+            if (model.mapMarkers[i].marker != null)
+				model.mapMarkers[i].marker.setMap(null);
         }
         model.mapMarkers = [];
         var tmpmarker;
@@ -293,6 +296,9 @@ function Controller()
                     bounds.extend(model.mapMarkers[i].object.geoloc);
             setTimeout(function(){ model.views.gmap.fitBounds(bounds); }, 100);
         }
+		
+		
+		
     }
     this.populateNotesByContributor = function()
     {
