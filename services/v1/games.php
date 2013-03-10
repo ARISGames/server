@@ -48,8 +48,21 @@ class Games extends Module
 	 */
 	public function getGamesForPlayerAtLocation($playerId, $latitude, $longitude, $maxDistance=99999999, $locational, $includeGamesinDevelopment)
 	{
-		if ($includeGamesinDevelopment) $query = "SELECT game_id FROM games WHERE is_locational = '{$locational}'";
-		else $query = "SELECT game_id FROM games WHERE is_locational = '{$locational}' AND ready_for_public = TRUE";
+		if ($includeGamesinDevelopment) $query = "
+		SELECT games.game_id FROM games JOIN locations ON games.game_id = locations.game_id 
+		WHERE locations.latitude BETWEEN {$latitude}-.5 AND {$latitude}+.5
+		AND locations.longitude BETWEEN {$longitude}-.5 AND {$longitude}+.5
+		AND is_locational = '{$locational}'
+		GROUP BY games.game_id
+		LIMIT 50";
+		else $query = "
+		SELECT games.game_id FROM games JOIN locations ON games.game_id = locations.game_id 
+		WHERE locations.latitude BETWEEN {$latitude}-.5 AND {$latitude}+.5
+		AND locations.longitude BETWEEN {$longitude}-.5 AND {$longitude}+.5
+		AND is_locational = '{$locational}'
+		AND ready_for_public = TRUE
+		GROUP BY games.game_id
+		LIMIT 50";
 
 		$gamesRs = @mysql_query($query);
 		NetDebug::trace(mysql_error());
