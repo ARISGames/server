@@ -212,6 +212,7 @@ class Notes extends Module
             $player = mysql_query($query);
             $playerObj = mysql_fetch_object($player);
             $note->username = $playerObj->user_name;
+            $note->displayname = $playerObj->display_name;
             $note->contents = Notes::getNoteContents($noteId, $note->game_id);
             $note->comments = Notes::getNoteComments($noteId, $playerId);
             $note->tags = Notes::getNoteTags($noteId, $note->game_id);
@@ -3666,6 +3667,7 @@ class Notes extends Module
             $player = mysql_query($query);
             $playerObj = mysql_fetch_object($player);
             $note->username = $playerObj->user_name;
+            $note->displayname = $playerObj->display_name;
             $note->contents = Notes::getNoteContentsAPI($noteId);
             $note->comments = Notes::getNoteCommentsAPI($noteId, $playerId);
             $note->tags = Notes::getNoteTagsAPI($noteId, $note->game_id);
