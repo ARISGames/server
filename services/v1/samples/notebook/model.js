@@ -13,6 +13,7 @@ function Model()
     //All notes (no order)
     this.mapNotes = [];
     this.mapMarkers = [];
+	
     this.addMapNote = function(mapNote)
     {
         mapNote.geoloc = new google.maps.LatLng(mapNote.lat, mapNote.lon);
@@ -143,6 +144,53 @@ function Model()
         return false;
     }
 
+	this.numberOfNotesForTag = function(tag)
+    {
+		var notesForTag = 0;
+		for(var i = 0; i < this.notes.length; i++)
+        {
+			for (var j = 0; j < this.notes[i].tags.length; j++) 
+			{		
+				if (this.notes[i].tags[j].tag.toLowerCase() == tag.toLowerCase())
+					notesForTag ++;
+			}
+		}
+        return notesForTag;
+    }
+	
+	
+	this.numberOfNotesForContributor = function(contributor)
+    {
+		var notesForContributor = 0;
+		for(var i = 0; i < this.notes.length; i++)
+        {
+			if (this.notes[i].username.toLowerCase() == contributor.toLowerCase())
+				notesForContributor ++;
+		}
+        return notesForContributor;
+    }
+	
+	this.getProfilePicForContributor = function(contributor)
+    {
+		var picURL = "";
+		for(var i = 0; i < this.backpacks.length; i++)
+        {
+			console.log("username: " + this.backpacks[i].owner.user_name);
+			console.log("contributor: " + contributor);
+			if (contributor == null || this.backpacks[i].owner.user_name == null) {
+				picURL = "./images/DefaultPCImage.png";
+			}
+			else if (this.backpacks[i].owner.user_name.toLowerCase() == contributor.toLowerCase())
+				picURL = this.backpacks[i].owner.player_pic_url;
+		}
+		
+		if (picURL == null)
+			picURL = "./images/DefaultPCImage.png";
+			
+        return picURL;
+    }
+
+
     this.views = new function Views()
     {
         //Layout/Sort Button Containers
@@ -220,6 +268,36 @@ function Model()
         var centerLoc = new google.maps.LatLng(0, 0);
         var myOptions = { zoom:5, center:centerLoc, mapTypeId:google.maps.MapTypeId.ROADMAP };
         this.gmap = new google.maps.Map(this.map, myOptions);
+		
+		// marker clusterer
+		var mcOptions = {styles: [{
+			height: 47,
+			url: "./images/speechBubble_cluster_large.png",
+			width: 50
+			},
+			{
+			height: 47,
+			url: "./images/speechBubble_cluster_large.png",
+			width: 50
+			},
+			{
+			height: 47,
+			url: "./images/speechBubble_cluster_large.png",
+			width: 50
+			},
+			{
+			height: 47,
+			url: "./images/speechBubble_cluster_large.png",
+			width: 50
+			},
+			{
+			height: 47,
+			url: "./images/speechBubble_cluster_large.png",
+			width: 50
+			}]};
+		this.markerclusterer = new MarkerClusterer(this.gmap,[],mcOptions);
+		this.markerclusterer.setMinimumClusterSize(3)
+		
     };
 
     document.addEventListener('keydown', function(e) { if(e.keyIdentifier == 'Up' || e.keyIdentifier == 'Down') { controller.displayNextNote(e.keyIdentifier); e.stopPropagation(); e.preventDefault(); } }, false);

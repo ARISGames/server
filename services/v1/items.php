@@ -370,6 +370,7 @@ class Items extends Module
         while($content = mysql_fetch_object($result)) {
             if($content->media_url) $content->media_url = Config::gamedataWWWPath . '/' . $content->media_url;
             if($content->icon_url) $content->icon_url = Config::gamedataWWWPath . '/' . $content->icon_url;
+            $content->tags = Items::getItemTags($content->item_id)->data;
             $contents[] = $content;
         }
         return $contents;
@@ -385,6 +386,7 @@ class Items extends Module
         while($content = mysql_fetch_object($result)){
             if($content->media_url) $content->media_url = Config::gamedataWWWPath . '/' . $content->media_url;
             if($content->icon_url) $content->icon_url = Config::gamedataWWWPath . '/' . $content->icon_url;
+            $content->tags = Items::getItemTags($content->item_id)->data;
             $contents[] = $content;
         }
 

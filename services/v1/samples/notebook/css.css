@@ -13,8 +13,8 @@ div
 {
     display:none;
     margin:0 auto;
-    width:900px;
-    font-family:HelveticaNeue-CondensedBold, Helvetica;
+    width:95%;
+    font-family: Helvetica, Arial;
 }
 
 #constructs
@@ -24,9 +24,9 @@ div
 
 #header_selector_box
 {
-    margin:10px auto;
-    height:65px;
-    width:900px;
+    margin: .5% auto;
+    height:65p;
+    width:95%;
 }
 
 .header_selector_row
@@ -34,7 +34,7 @@ div
     margin:0px auto;
     margin-top:5px; /* just 'top' for even spacing between rows and between borders */
     height:30px;
-    width:900px;
+    width:98%;
 }
 
 .header_selector_row_button
@@ -47,26 +47,27 @@ div
     text-align:center;
     vertical-align:middle;
     background-color:#DDDDDD;
+    width:49%;
 }
 .header_selector_layout_row_button
 {
-    width:440px;
+    width:49%;
 }
 .header_selector_sort_row_button
 {
-    width:291px; /* Should be '291.3333...px' */
+    width:33%; /* Should be '291.3333...px' */
 }
 #header_selector_sort_tag
 {
-    width:290px; /* To make up for the .333... */
+    width:31%; /* To make up for the .333... */
 }
 
 .layout
 {
     display:none;
     margin:4px auto;
-    width:892px;
-    height:500px;
+    width:95%;
+    height:85%;
 }
 
 #map_layout
@@ -78,7 +79,7 @@ div
 .filter_selector_box
 {
     float:left;
-    height:500px;
+    height:95%;
 }
 
 .filter_selector_container
@@ -87,7 +88,7 @@ div
 
 .filter_selector_container_header
 {
-    height:20px;
+    height: 20px;
     font-size:large;
 }
 
@@ -96,15 +97,19 @@ div
     overflow-y:scroll;
     overflow-x:hidden;
     border:1px solid black;
-    background-color:#DDDDDD;
+    background-color:#FFFFFF;
 }
 
 .selector_cell
 {
-    position:relative;
+    /*min-height:7%;
+    text-align:left;
+    padding-left: 2%;*/
+	position:relative;
     min-height:30px;
-    text-align:center;
-    background-color:#DDDDDD;
+    text-align:left;
+    padding-left: 10px;
+    background-color:#FFFFFF;
 }
 
 .default_selector_cell
@@ -133,15 +138,16 @@ div
 .button_cell
 {
     background-color:transparent;
-    height:40px;
+    height:12%;
 }
 
 .cell_button
 {
-    margin:5px 15px;
-    padding:2px 5px;
+    margin: 1% 1% 1% -1%;
+    padding:1%;
     border:2px solid black;
-    background-color:#DDDDDD;
+    background-color:#FFFFFF;
+    width:45%
 }
 
 .select_all_cell_button
@@ -156,18 +162,18 @@ div
 
 #map_filter_selector_box
 {
-    width:250px;
+    width:29%;
 }
 
 .map_filter_selector
 {
-    height:223px;
-    width:248px;
+    height:48%;
+    width:98%;
 }
 
 .map_filter_selector_cell
 {
-    width:248px;
+    width:98%;
 }
 
 #contributor_map_filter_selector_container
@@ -194,31 +200,33 @@ div
 {
     float:left;
     margin-left:10px; /* only left to remain flush with side of buttons */
-    width:632px;
-    height:500px;
+    height:100%;
+    width:69%;
+    border:1px solid black;
 }
+
 
 #list_filter_selector_box
 {
     float:left;
-    width:300px;
+    width:29%;
 }
 
 .list_filter_selector_container
 {
     display:none;
-    width:298px;
+    width:98%;
 }
 
 .list_filter_selector
 {
-    height:223px;
-    width:298px;
+    height:48%;
+    width:98%;
 }
 
 .list_filter_selector_cell
 {
-    width:298px;
+    width:98%;
 }
 
 #contributor_list_filter_selector_container
@@ -244,7 +252,6 @@ div
 {
 
 }
-
 #note_list_selector_container
 {
     display:block; /* default */
@@ -262,45 +269,40 @@ div
 
 .note_view_container
 {
-    width:580px;
+    width:40%;
     border:1px solid black;
     overflow-y:scroll;
     overflow-x:hidden;
 }
 
-#map
-{
-    height:498px;
-    width:630px;
-    border:1px solid black;
-}
 
 #map_note_view_container
 {
     display:none;
     position:absolute;
-    top:32px;
-    left:290px;
-    max-height:428px;
+    top:3%;
+    right:15%;
+    max-height:110%;
     background-color:white;
 }
 
 .map_note_view_close_button
 {
     float:right;
+    width:3%;
 }
 
 #list_note_view_container
 {
     float:left;
     margin-left:10px; /* only left to remain flush with side of buttons */
-    height:498px;
+    height:95%;
 }
 
 .note_view
 {
     padding:10px;
-    width:560px;
+    width:90%;
     background-color:#FFFFFF;
 }
 
@@ -324,6 +326,7 @@ div
     float:right;
     font-size:small;
     color:#444444;
+    margin: 0% 5% 1% 1%;
 }
 
 .note_view_owner
@@ -340,7 +343,7 @@ div
 .note_view_content_box
 {
     margin-bottom:10px;
-    width:558px;
+    width:90%;
     overflow-x:scroll;
 }
 
@@ -357,5 +360,6 @@ div
 
 .note_media
 {
-    width:558px;
+    width:90%;
 }
+

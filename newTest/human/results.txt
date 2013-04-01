@@ -1,86 +1,86 @@
 Updating svn...
-Complete: At revision 3756.
+Complete: At revision 3850.
 
 Running testHelper...
 
   -Running 'createPlayer'...
 	Duplicate name- deleting and re-calling...
-	Created Player(15182)
+	Created Player(17675)
   Test 'createPlayer' Succeeded (No Description)
   -Running 'createEditor'...
 	Duplicate name- deleting and re-calling...
-	Created Editor(3887)
+	Created Editor(4505)
   Test 'createEditor' Succeeded (No Description)
   -Running 'createGame'...
 	Duplicate name- deleting and re-calling...
-	Created Game(6126)
+	Created Game(7061)
   Test 'createGame' Succeeded (No Description)
   -Running 'createWebpage'...
-	Created Webpage(1588)
+	Created Webpage(1833)
   Test 'createWebpage' Succeeded (No Description)
   -Running 'createNpc'...
-	Created Npc(13496)
+	Created Npc(16693)
   Test 'createNpc' Succeeded (No Description)
   -Running 'createAugbubble'...
-	Created Augbubble(660)
+	Created Augbubble(779)
   Test 'createAugbubble' Succeeded (No Description)
   -Running 'createPlaque'...
-	Created Plaque(37897)
+	Created Plaque(47721)
   Test 'createPlaque' Succeeded (No Description)
   -Running 'createItem'...
-	Created Item(20765)
+	Created Item(25909)
   Test 'createItem' Succeeded (No Description)
   -Running 'createWebpageLocations'...
-	Created Webpage(1588) Location(60570)
+	Created Webpage(1833) Location(101543)
   Test 'createWebpageLocations' Succeeded (No Description)
   -Running 'createNpcLocations'...
-	Created Npc(13496) Location(60571)
+	Created Npc(16693) Location(101547)
   Test 'createNpcLocations' Succeeded (No Description)
   -Running 'createAugbubbleLocations'...
-	Created Augbubble(660) Location(60572)
+	Created Augbubble(779) Location(101551)
   Test 'createAugbubbleLocations' Succeeded (No Description)
   -Running 'createPlaqueLocations'...
-	Created Plaque(37897) Location(60573)
+	Created Plaque(47721) Location(101555)
   Test 'createPlaqueLocations' Succeeded (No Description)
   -Running 'createItemLocations'...
-	Created Item(20765) Location(60574)
+	Created Item(25909) Location(101559)
   Test 'createItemLocations' Succeeded (No Description)
   -Running 'getLocationsBeforeReqs'...
-	Found Location: Id-60570 Type-WebPage TypeId-1588
-	Found Location: Id-60571 Type-Npc TypeId-13496
-	Found Location: Id-60572 Type-AugBubble TypeId-660
-	Found Location: Id-60573 Type-Node TypeId-37897
-	Found Location: Id-60574 Type-Item TypeId-20765
+	Found Location: Id-101543 Type-WebPage TypeId-1833
+	Found Location: Id-101547 Type-Npc TypeId-16693
+	Found Location: Id-101551 Type-AugBubble TypeId-779
+	Found Location: Id-101555 Type-Node TypeId-47721
+	Found Location: Id-101559 Type-Item TypeId-25909
   Test 'getLocationsBeforeReqs' Succeeded (No Description)
   -Running 'createQuests'...
-	Created Quest(8154)
+	Created Quest(10451)
   Test 'createQuests' Succeeded (No Description)
   -Running 'setRequirementsForLocs'...
-	Adding Requirement to Location: Id-60574
-	Success(81706)
-	Adding Requirement to Location: Id-60571
-	Success(81707)
-	Adding Requirement to Location: Id-60573
-	Success(81708)
-	Adding Requirement to Location: Id-60570
-	Success(81709)
-	Adding Requirement to Location: Id-60572
-	Success(81710)
+	Adding Requirement to Location: Id-101559
+	Success(108429)
+	Adding Requirement to Location: Id-101547
+	Success(108433)
+	Adding Requirement to Location: Id-101555
+	Success(108437)
+	Adding Requirement to Location: Id-101543
+	Success(108441)
+	Adding Requirement to Location: Id-101551
+	Success(108445)
   Test 'setRequirementsForLocs' Succeeded (No Description)
   -Running 'getQuestsBeforeReqs'...
-	Found Active Quest(8154)
+	Found Active Quest(10451)
   Test 'getQuestsBeforeReqs' Succeeded (No Description)
   -Running 'getLocationsAfterReqs'...
   Test 'getLocationsAfterReqs' Succeeded (No Description)
   -Running 'setRequirementsForQuests'...
-	Adding Requirement to Quest: Id-8154
-	Success(81713)
+	Adding Requirement to Quest: Id-10451
+	Success(108451)
   Test 'setRequirementsForQuests' Succeeded (No Description)
   -Running 'getQuestsAfterReqs'...
-	Found Active Quest(8154)
+	Found Active Quest(10451)
   Test 'getQuestsAfterReqs' Succeeded (No Description)
 
-  Results:(2013-02-15 10:47:12)
+  Results:(2013-03-30 03:08:59)
   Tests Run- 20/20
   Tests Passed- 20/20
   Tests Failed- 0/20

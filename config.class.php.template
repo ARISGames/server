@@ -8,15 +8,24 @@ class Config
 	const dbHost 			= 'localhost';
 	const adminEmail		= ''; //This email address, if specified, will be notified of server errors
 	
-        const WWWPath                   = 'http://www.yourdomain.com';
+    const WWWPath			= 'http://www.yourdomain.com';
 	const serverWWWPath		= 'http://www.yourdomain.com/path/to/aris/server';
-	const gamedataWWWPath		= 'http://www.yourdomain.com/path/to/gamedata';
-	const playerdataWWWPath		= 'http://www.yourdomain.com/path/to/playerdata';
-	const gamedataFSPath		= '/path/to/gamedata'; //Make Sure this directory is writable
-	const playerdataFSPath		= '/path/to/playerdata'; //Make Sure this directory is writable
-	const serverErrorLog		= '/path/to/aris_error_log.txt'; //Make sure this file is writable
-	const gameMediaSubdir		= ''; //if this is used, you must include the trailing slash
+	const gamedataWWWPath	= 'http://www.yourdomain.com/path/to/gamedata';
+	const playerdataWWWPath	= 'http://www.yourdomain.com/path/to/playerdata';
+	const gamedataFSPath	= '/path/to/gamedata'; //Make Sure this directory is writable
+	const playerdataFSPath	= '/path/to/playerdata'; //Make Sure this directory is writable
+	const serverErrorLog	= '/path/to/aris_error_log.txt'; //Make sure this file is writable
+	const gameMediaSubdir	= ''; //if this is used, you must include the trailing slash
 
 	const mysqlBinPath		= '/Applications/MAMP/Library/bin';
+	
+	//pusher.com service
+	const pusher_key 		= 'key';
+    const pusher_secret 	= 'secret';
+    const pusher_app_id 	= 'app';
+	
+	//PHP accelerator and cache
+	const isAPCLoaded 		= FALSE; //Change to TRUE if the APC server extension has been configured
+
 }
 ?>

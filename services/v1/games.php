@@ -1082,13 +1082,11 @@ class Games extends Module
 			mysql_query($query);
 			$newID = mysql_insert_id();
 
-			$query = "UPDATE requirements SET requirement_detail_1 = {$newID} WHERE ('{$row->requirement}' = 'PLAYER_HAS_COMPLETED_QUEST') AND game_id = '{$newPrefix}' AND requirement_detail_1 = '{$row->quest_id}'";
+			$query = "UPDATE requirements SET requirement_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND requirement = 'PLAYER_HAS_COMPLETED_QUEST' AND requirement_detail_1 = '{$row->quest_id}'";
 			mysql_query($query);
 
-			$query = "UPDATE requirements SET content_id = {$newID} WHERE ('{$row->content_type}' = 'QuestDisplay' OR '{$row->content_type}' = 'QuestComplete') AND game_id = '{$newPrefix}' AND content_id = '{$row->quest_id}'";
-			mysql_query($query);
 
-			$query = "UPDATE player_log SET event_detail_1 = {$newID} WHERE ('{$row->event_type}' = 'VIEW_QUESTS' OR '{$row->event_type}' = 'COMPLETE_QUEST') AND game_id = '{$newPrefix}' AND event_detail_1 = '{$row->quest_id}'";
+			$query = "UPDATE requirements SET content_id = {$newID} WHERE game_id = '{$newPrefix}' AND (content_type = 'QuestDisplay' OR content_type = 'QuestComplete') AND content_id = '{$row->quest_id}'";
 			mysql_query($query);
 		}
 
@@ -1217,9 +1215,6 @@ class Games extends Module
 			$query = "UPDATE requirements SET requirement_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND requirement = 'PLAYER_VIEWED_NPC' AND requirement_detail_1 = {$row->npc_id}";
 			mysql_query($query);
 
-			$query = "UPDATE player_log SET event_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_NPC' AND event_detail_1 = {$row->npc_id}";
-			mysql_query($query);
-
 			$query = "UPDATE spawnables SET type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Npc' AND type_id = {$row->npc_id}";
 			mysql_query($query);
 		}
@@ -1251,9 +1246,6 @@ class Games extends Module
 			$query = "UPDATE requirements SET requirement_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND requirement = 'PLAYER_VIEWED_NODE' AND requirement_detail_1 = {$row->node_id}";
 			mysql_query($query);
 
-			$query = "UPDATE player_log SET event_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_NODE' AND event_detail_1 = {$row->node_id}";
-			mysql_query($query);
-
 			$query = "UPDATE spawnables SET type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Node' AND type_id = {$row->node_id}";
 			mysql_query($query);
 		}
@@ -1280,9 +1272,6 @@ class Games extends Module
 			mysql_query($query);
 
 			$query = "UPDATE requirements SET requirement_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND (requirement = 'PLAYER_HAS_ITEM' OR requirement = 'PLAYER_VIEWED_ITEM') AND requirement_detail_1 = {$row->item_id}";
-			mysql_query($query);
-
-			$query = "UPDATE player_log SET event_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND (event_type = 'PICKUP_ITEM' OR event_type = 'DROP_ITEM' OR event_type = 'DESTROY_ITEM' OR event_type = 'VIEW_ITEM') AND event_detail_1 = {$row->item_id}";
 			mysql_query($query);
 
 			$query = "UPDATE spawnables SET type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Item' AND type_id = {$row->item_id}";
