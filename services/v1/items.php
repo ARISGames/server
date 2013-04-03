@@ -363,7 +363,7 @@ class Items extends Module
     public static function getDetailedPlayerAttributes($playerId, $gameId)
     {
         /* ATTRIBUTES */
-        $query = "SELECT DISTINCT i.item_id, i.name, i.description, i.max_qty_in_inventory, i.weight, i.type, i.url, pi.qty, m.file_path as media_url, m.game_id as media_game_id, im.file_path as icon_url, im.game_id as icon_game_id FROM (SELECT * FROM player_items WHERE game_id = {$gameId}) as pi LEFT JOIN (SELECT * FROM items WHERE game_id = {$gameId}) as i ON pi.item_id = i.item_id LEFT JOIN media as m ON i.media_id = m.media_id LEFT JOIN media as im ON i.icon_media_id = im.media_id WHERE pi.player_id = {$playerId} AND pi.item_id = i.item_id AND i.type = 'ATTRIB' GROUP BY i.item_id";
+        $query = "SELECT DISTINCT i.item_id, i.name, i.description, i.max_qty_in_inventory, i.weight, i.type, i.url, pi.qty, m.file_path as media_url, m.game_id as media_game_id, im.file_path as icon_url, im.game_id as icon_game_id FROM (SELECT * FROM player_items WHERE game_id = {$gameId} AND player_id = {$playerId}) as pi LEFT JOIN (SELECT * FROM items WHERE game_id = {$gameId}) as i ON pi.item_id = i.item_id LEFT JOIN media as m ON i.media_id = m.media_id LEFT JOIN media as im ON i.icon_media_id = im.media_id WHERE i.type = 'ATTRIB' GROUP BY i.item_id";
 
         $result = mysql_query($query);
         $contents = array();
@@ -379,7 +379,7 @@ class Items extends Module
     public static function getDetailedPlayerItems($playerId, $gameId)
     {
         /* OTHER ITEMS */
-        $query = "SELECT DISTINCT i.item_id, i.name, i.description, i.max_qty_in_inventory, i.weight, i.type, i.url, pi.qty, m.file_path as media_url, m.game_id as media_game_id, im.file_path as icon_url, im.game_id as icon_game_id FROM (SELECT * FROM player_items WHERE game_id={$gameId}) as pi LEFT JOIN (SELECT * FROM items WHERE game_id = {$gameId}) as i ON pi.item_id = i.item_id LEFT JOIN media as m ON i.media_id = m.media_id LEFT JOIN media as im ON i.icon_media_id = im.media_id WHERE pi.player_id = {$playerId} AND pi.item_id = i.item_id AND i.type != 'ATTRIB' GROUP BY i.item_id";
+        $query = "SELECT DISTINCT i.item_id, i.name, i.description, i.max_qty_in_inventory, i.weight, i.type, i.url, pi.qty, m.file_path as media_url, m.game_id as media_game_id, im.file_path as icon_url, im.game_id as icon_game_id FROM (SELECT * FROM player_items WHERE game_id={$gameId} AND player_id = {$playerId}) as pi LEFT JOIN (SELECT * FROM items WHERE game_id = {$gameId}) as i ON pi.item_id = i.item_id LEFT JOIN media as m ON i.media_id = m.media_id LEFT JOIN media as im ON i.icon_media_id = im.media_id WHERE i.type != 'ATTRIB' GROUP BY i.item_id";
 
         $result = mysql_query($query);
         $contents = array();

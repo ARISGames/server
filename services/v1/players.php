@@ -618,9 +618,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
         $query = "SELECT DISTINCT player_id FROM player_log WHERE game_id='{$gameId}'";
         $result = mysql_query($query);
         while($player = mysql_fetch_object($result))
-        {
             $backPacks[] = Players::getSinglePlayerDataBP($gameId, $player->player_id, false, $getItems, $getAttributes, $getNotes);
-        }
         return $backPacks;
     }
 
@@ -628,9 +626,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
     {
         $backPacks = array();
         foreach($playerArray as $player)
-        {
             $backPacks[] = Players::getSinglePlayerDataBP($gameId, $player, false, $getItems, $getAttributes, $getNotes);
-        }
         return $backPacks;
     }
 
