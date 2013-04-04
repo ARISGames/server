@@ -455,7 +455,6 @@ class Locations extends Module
                 if (!$locobj->icon_media_id) 
                     $locobj->icon_media_id = $object->icon_media_id;
                 $locobj->delete_when_viewed = $spawnable->delete_when_viewed && $spawnable->active;
-                //Module::serverErrorLog($locobj->delete_when_viewed."<- final  ".$spawnable->delete_when_viewed." ".$spawnable->active);
 
                 //Add it
                 if($locobj->type != 'Item' || ($locobj->item_qty == -1 || $locobj->item_qty > 0))
