@@ -1,6 +1,7 @@
 function Controller()
 {
     var self = this; //<- I hate javascript.
+	
     this.setLayout = function(sender)
     {
         switch(sender)
@@ -145,6 +146,29 @@ function Controller()
         }
     };
 
+ 	this.noteCreate = function() 
+    {
+        var html = model.views.constructNoteCreateView.cloneNode(true);
+        model.views.noteCreateView = new NoteCreateView(html);
+        model.views.mapNoteViewContainer.innerHTML = '';
+        model.views.listNoteViewContainer.innerHTML = '';
+        if(model.views.mapLayoutButton.selected)
+        {
+            //model.views.mapNoteViewContainer.appendChild(model.views.mapNoteViewCloseButton.html);
+            model.views.mapNoteViewContainer.appendChild(model.views.noteCreateView.html);
+            model.views.mapNoteViewContainer.style.display = 'block';
+            setTimeout(function() { model.views.mapLayout.addEventListener('click', controller.hideMapNoteView, false); }, 100); //timeout to disallow imediate hiding
+        }
+        /*if(model.views.listLayoutButton.selected) 
+        {
+            model.views.listNoteViewContainer.appendChild(model.views.noteView.html);
+            if(model.views.contributorSortButton.selected) for(var i = 0; i < model.views.contributorNoteCells.length; i++) model.views.contributorNoteCells[i].deselect();
+            if(model.views.tagSortButton.selected) for(var i = 0; i < model.views.tagNoteCells.length; i++) model.views.tagNoteCells[i].deselect();
+            if(model.views.popularitySortButton.selected) for(var i = 0; i < model.views.popularNoteCells.length; i++) model.views.popularNoteCells[i].deselect();
+        }*/
+    };
+	
+	
     this.populateModel = function(gameData)
     {
         model.gameData = gameData;
@@ -207,6 +231,7 @@ function Controller()
 
     this.populateMapContributors = function()
     {
+		model.contributorMapCells = [];
         model.views.contributorMapFilterSelector.innerHTML = ''; //Clear the children
         model.views.contributorMapFilterSelector.appendChild(model.views.helperContributorMapFilterSelectorCell);
         if(model.contributors.length == 0)
@@ -214,15 +239,16 @@ function Controller()
         var tmpcell;
         for(var i = 0; i < model.contributors.length; i++)
         {
-            tmpcell = new SelectionCell(model.views.constructContributorMapFilterSelectorCell.cloneNode(true), 123-123, this.mapContributorClicked, model.contributors[i]);
-			console.log(model.contributors[i]);
-            tmpcell.html.firstChild.innerHTML = this.playerPicForContributorList(model.contributors[i]) + model.contributors[i] +  this.rightSideOfCell("   " + model.numberOfNotesForContributor(model.contributors[i]) + this.getNoteIcon());
-            model.views.contributorMapFilterSelector.appendChild(tmpcell.html);
-            model.contributorMapCells[model.contributorMapCells.length] = tmpcell;
+			if(!this.filterContributor(model.contributors[i], document.getElementById("filterbox").value)) continue;
+			tmpcell = new SelectionCell(model.views.constructContributorMapFilterSelectorCell.cloneNode(true), 123-123, this.mapContributorClicked, model.contributors[i]);
+			tmpcell.html.firstChild.innerHTML = this.playerPicForContributorList(model.contributors[i]) + model.contributors[i] +  this.rightSideOfCell("   " + model.numberOfNotesForContributor(model.contributors[i]) + this.getNoteIcon());
+			model.views.contributorMapFilterSelector.appendChild(tmpcell.html);
+			model.contributorMapCells[model.contributorMapCells.length] = tmpcell;
         }
     };
     this.populateListContributors = function()
     {
+		model.contributorListCells = [];
         model.views.contributorListFilterSelector.innerHTML = ''; //Clear the children
         model.views.contributorListFilterSelector.appendChild(model.views.helperContributorListFilterSelectorCell);
         if(model.contributors.length == 0)
@@ -230,14 +256,17 @@ function Controller()
         var tmpcell;
         for(var i = 0; i < model.contributors.length; i++)
         {
+			if(!this.filterContributor(model.contributors[i], document.getElementById("filterbox").value)) continue;
             tmpcell = new SelectionCell(model.views.constructContributorListFilterSelectorCell.cloneNode(true), 123-123, this.listContributorClicked, model.contributors[i]);
             tmpcell.html.firstChild.innerHTML = this.playerPicForContributorList(model.contributors[i]) + model.contributors[i] + this.rightSideOfCell("  " + model.numberOfNotesForContributor(model.contributors[i]) + this.getNoteIcon());
             model.views.contributorListFilterSelector.appendChild(tmpcell.html);
             model.contributorListCells[model.contributorListCells.length] = tmpcell;
         }
     };
+	
     this.populateMapTags = function()
     {
+		model.tagMapCells = [];
         model.views.tagMapFilterSelector.innerHTML = ''; //Clear the children
         model.views.tagMapFilterSelector.appendChild(model.views.helperTagMapFilterSelectorCell);
         if(model.tags.length == 0)
@@ -245,14 +274,19 @@ function Controller()
         var tmpcell;
         for(var i = 0; i < model.tags.length; i++)
         {
+			console.log(model.tags[i]);
+			if(!this.filterTag(model.tags[i], document.getElementById("filterbox").value)) continue;
+			
             tmpcell = new SelectionCell(model.views.constructTagMapFilterSelectorCell.cloneNode(true), 123-123, this.mapTagClicked, model.tags[i]);
             tmpcell.html.firstChild.innerHTML = model.tags[i] + this.rightSideOfCell( model.numberOfNotesForTag(model.tags[i])  + this.getNoteIcon() + " </div>");
             model.views.tagMapFilterSelector.appendChild(tmpcell.html);
             model.tagMapCells[model.tagMapCells.length] = tmpcell;
         }
     };
+	
     this.populateListTags = function()
     {
+		model.tagListCells = [];
         model.views.tagListFilterSelector.innerHTML = ''; //Clear the children
         model.views.tagListFilterSelector.appendChild(model.views.helperTagListFilterSelectorCell);
         if(model.tags.length == 0)
@@ -260,12 +294,11 @@ function Controller()
         var tmpcell;
         for(var i = 0; i < model.tags.length; i++)
         {
+			if(!this.filterTag(model.tags[i], document.getElementById("filterbox").value)) continue;
             tmpcell = new SelectionCell(model.views.constructTagListFilterSelectorCell.cloneNode(true), 123-123, this.listTagClicked, model.tags[i]);
 			
             //tmpcell.html.firstChild.innerHTML =  this.checkBox(this.listTagClicked) + model.tags[i] + this.rightSideOfCell("   " + model.numberOfNotesForTag(model.tags[i]) + this.getNoteIcon());
-			 tmpcell.html.firstChild.innerHTML = model.tags[i] + this.rightSideOfCell( model.numberOfNotesForTag(model.tags[i])  + this.getNoteIcon() + " </div>");
-			 console.log(model.tags[i]);
-			
+			 tmpcell.html.firstChild.innerHTML = model.tags[i] + this.rightSideOfCell( model.numberOfNotesForTag(model.tags[i])  + this.getNoteIcon() + " </div>");			
             model.views.tagListFilterSelector.appendChild(tmpcell.html);
             model.tagListCells[model.tagListCells.length] = tmpcell;
         }
@@ -285,6 +318,8 @@ function Controller()
         {
             if(!model.mapContributorSelected(model.mapNotes[i].username)) continue;
             if(!model.mapTagsSelected(model.mapNotes[i].tags)) continue;
+			if(!this.filter(model.mapNotes[i], document.getElementById("filterbox").value)) continue;
+			
             tmpmarker = new MapMarker(this.noteSelected, model.mapNotes[i]);
             model.mapMarkers[model.mapMarkers.length] = tmpmarker;
         }
@@ -297,10 +332,104 @@ function Controller()
                     bounds.extend(model.mapMarkers[i].object.geoloc);
             setTimeout(function(){ model.views.gmap.fitBounds(bounds); }, 100);
         }
+	
+    };
+	
+	this.filter = function(note, filter) {
 		
+		if (filter == "") 
+			return true; 
 		
+		// check title
+		if (note.title.toLowerCase().indexOf(filter.toLowerCase()) != -1)
+			return true;
 		
-    }
+		// check contributor
+		if (note.username.toLowerCase().indexOf(filter.toLowerCase()) != -1)
+			return true;
+		
+		// check type
+		for (i = 0; i < note.contents.length; i++) {
+			if (note.contents[i].type.toLowerCase().indexOf(filter.toLowerCase()) != -1) 
+					return true;
+		}
+		
+		// check tags
+		for (var i = 0; i < note.tags.length; i++) 
+		{		
+			if (note.tags[i].tag.toLowerCase().indexOf(filter.toLowerCase()) != -1) 
+				return true;
+		}
+		
+		return false;
+	};
+	
+	
+	this.filterTag = function(tagToSearch, filter) {
+		
+		if (filter == "") 
+			return true; 
+		
+		// check tag
+		
+		if (tagToSearch != null)
+		{
+			if (tagToSearch.toLowerCase().indexOf(filter.toLowerCase()) != -1)
+				return true;
+		}
+		
+		if (tagToSearch != null && tagToSearch != "")
+		{
+			
+			if (model.numberOfNotesForTag(tagToSearch) > 0) 
+				return true;
+			
+		}
+			
+		
+		return false;
+	};
+	
+	this.filterContributor = function(contributor, filter) {
+		
+		if (filter == "") 
+			return true; 
+		
+		// check contributor
+
+		if (contributor.toLowerCase().indexOf(filter.toLowerCase()) != -1){
+			console.log(contributor.toLowerCase());
+			console.log(contributor.toLowerCase().indexOf(filter.toLowerCase()));
+			return true;
+		}
+		
+		// check for note title & tags & type
+		for(var i = 0; i < model.contributorNotes.length; i++)
+        {
+			if (model.contributorNotes[i].username.toLowerCase() == contributor.toLowerCase())  {
+				// check title
+				if (model.contributorNotes[i].title.toLowerCase().indexOf(filter.toLowerCase()) != -1)
+					return true;
+					
+				// check tags
+				for (var j = 0; j < model.contributorNotes[i].tags.length; j++) 
+				{		
+					if (model.contributorNotes[i].tags[j].tag.toLowerCase().indexOf(filter.toLowerCase()) != -1) 
+						return true;
+				}
+				//check type
+				for (var k = 0; k < model.contributorNotes[i].contents.length; k++) {
+					if (model.contributorNotes[i].contents[k].type.toLowerCase().indexOf(filter.toLowerCase()) != -1) 
+						return true;
+				}
+					
+			}
+			
+		}
+
+		return 0;
+	};
+	
     this.populateNotesByContributor = function()
     {
         model.views.noteListSelector.innerHTML = ''; //Clear the children
@@ -311,12 +440,14 @@ function Controller()
         for(var i = 0; i < model.contributorNotes.length; i++)
         {
             if(!model.listContributorSelected(model.contributorNotes[i].username)) continue;
+			if(!this.filter(model.contributorNotes[i], document.getElementById("filterbox").value)) continue;
             tmpcell = new SingleSelectionCell(model.views.constructNoteListSelectorCell.cloneNode(true), 123-123, this.noteSelected, model.contributorNotes[i]);
             tmpcell.html.firstChild.innerHTML = '<span class="note_cell_title">'+model.contributorNotes[i].title+' - </span><span class="note_cell_author">'+model.contributorNotes[i].username + this.rightSideOfCell(this.getIconsForNoteContents(model.contributorNotes[i]) + '  </span>');
             model.views.noteListSelector.appendChild(tmpcell.html);
             model.views.contributorNoteCells[model.views.contributorNoteCells.length] = tmpcell;
         }
     };
+	
     this.populateNotesByTag = function()
     {
         model.views.noteListSelector.innerHTML = ''; //Clear the children
@@ -327,11 +458,13 @@ function Controller()
         for(var i = 0; i < model.tagNotes.length; i++)
         {
             if(!model.listTagsSelected(model.tagNotes[i].tags)) continue;
+			if(!this.filter(model.tagNotes[i], document.getElementById("filterbox").value)) continue;
             tmpcell = new SingleSelectionCell(model.views.constructNoteListSelectorCell.cloneNode(true), 123-123, this.noteSelected, model.tagNotes[i]);
             tmpcell.html.firstChild.innerHTML ='<span class="note_cell_title">'+model.tagNotes[i].title+' - </span><span class="note_cell_author">'+model.tagNotes[i].username + this.rightSideOfCell(this.getIconsForNoteContents(model.contributorNotes[i]) + '</span>');
             model.views.noteListSelector.appendChild(tmpcell.html);
             model.views.tagNoteCells[model.views.tagNoteCells.length] = tmpcell;
         }
+		document.getElementById("note_list_selector_container_header").innerHTML = "Notes (" + model.numberOfTotalNotes() +")";
     };
 	
     this.populateNotesByPopularity = function()
@@ -343,6 +476,7 @@ function Controller()
         model.views.popularNoteCells = [];
         for(var i = 0; i < model.popularNotes.length; i++)
         {
+			if(!this.filter(model.popularNotes[i], document.getElementById("filterbox").value)) continue;
             tmpcell = new SingleSelectionCell(model.views.constructNoteListSelectorCell.cloneNode(true), 123-123, this.noteSelected, model.popularNotes[i]);
             tmpcell.html.firstChild.innerHTML = '<span class="note_cell_title">'+model.popularNotes[i].title+' - </span><span class="note_cell_author">'+model.popularNotes[i].username+ this.rightSideOfCell(model.popularNotes[i].likes + this.getLikeIcon() + "&nbsp;&nbsp; " + model.popularNotes[i].comments.length + this.getCommentIcon() + '</span>');
             model.views.noteListSelector.appendChild(tmpcell.html);
@@ -381,9 +515,7 @@ function Controller()
 			iconHTML += '<img src="./images/defaultImageIcon.png" height=15px;> ';
 		if (videoCount > 0)
 			iconHTML += '<img src="./images/defaultVideoIcon.png" height=14px;>';
-		
-		
-			
+	
 		return iconHTML;
 	};
 	
@@ -457,4 +589,112 @@ function Controller()
         model.views.mapNoteViewContainer.innerHTML = '';
         model.views.mapLayout.removeEventListener('click', controller.hideMapNoteView, false);
     }
+    
+    this.hideCreateNoteView = function()
+    {
+        model.views.createNoteViewContainer.style.display = 'none';
+        model.views.createNoteViewContainer.innerHTML = '';
+    }
+	
+	this.repopulateAll = function()
+	{
+		
+		console.log("repopulating");
+		this.populateMapContributors();
+        this.selectAllMapContributors();
+
+        this.populateListContributors();
+        this.selectAllListContributors();
+
+        this.populateMapTags();
+        this.selectAllMapTags();
+
+        this.populateListTags();
+        this.selectAllListTags();
+
+        this.populateMapNotes(false);
+        this.populateNotesByContributor();
+        this.populateNotesByTag();
+        this.populateNotesByPopularity();
+	}
+	
+	
+	this.createNewNote = function()
+	{
+	
+		//var args = {gameId: 3290, playerId: 8090};
+    	var gameId = '3290';//model.gameId;
+		var playerId = '8090';//model.playerId;		
+    	callService("notes.createNewNoteStartIncomplete", this.newNoteCreated, "/"+ gameId + "/" + playerId, false);
+	}
+	
+	this.newNoteCreated = function(returnString)
+	{
+		// set note Id
+		var startJson = returnString.indexOf("{");
+		var jsonString = returnString.substr(startJson);
+		var obj = JSON.parse(jsonString);
+		
+		var noteId = obj.data;
+		console.log("New note created. id: " + noteId);
+	
+		model.currentNote.noteId = noteId;
+	}
+	
+	this.updateNoteLocation = function(noteId, lat, lon) 
+	{
+    	var gameId = 3290; //model.gameId;
+    	var getString = "/"+ gameId + "/" + noteId + "/" + lat + "/" + lon;
+		callService("notes.updateLocation", function(){}, getString, false);
+	}
+	
+	this.addContentToNote = function(noteId, filename, type, text, title)
+	{
+		
+		var gameId = 3290; //model.gameId;
+    	var playerId = 8090; //model.playerId;
+		
+		if (type == "TEXT") {
+			var getString = "/"+ noteId + "/" + gameId + "/" + playerId + "/0/" + type + "/" + text;
+			callService("notes.addContentToNote", function(){}, getString, false);	
+		} else {
+		
+			var getString = "/"+ gameId + "/" + noteId + "/" + playerId + "/" + filename + "/" + type;
+			callService("notes.addContentToNoteFromFileName", function(){}, getString, false);	
+		}
+		
+    	
+	}
+	
+	this.updateNote = function(noteId, title) 
+	{
+		var getString = "/"+ noteId + "/" + title + "/true/true";
+		
+    	callService("notes.updateNote", function(){}, getString, false);
+	}
+	
+	this.addCommentToNote = function(noteId, comment)
+	{
+			
+		var gameId = 3290; //model.gameId;
+    	var playerId = 8090; //model.playerId;
+		var getString = "/"+ gameId + "/" + playerId + "/" + noteId + "/" + title;
+    	callService("notes.addCommentToNote", function(){}, getString, false);
+	}
+		
+	this.addTagToNote = function(noteId, tag)
+	{
+		//function addTagToNote($noteId, $gameId, $tag)
+		var gameId = 3290; //model.gameId;;
+		var getString = "/"+ noteId + "/" + gameId + "/" + tag ;
+		callService("notes.addTagToNote", function(){}, getString, false);
+	}
+	
+	this.deleteNote = function(noteId)
+	{
+		var getString = "/"+ noteId;
+		callService("notes.deleteNote", function(){}, getString, false);
+	}
+	
+	
 }

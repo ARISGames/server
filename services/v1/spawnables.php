@@ -10,7 +10,7 @@ class Spawnables extends Module
         else
             $query = "INSERT INTO spawnables (game_id, type, type_id, location_name, amount, min_area, max_area, amount_restriction, location_bound_type, latitude, longitude, spawn_probability, spawn_rate, delete_when_viewed, time_to_live, error_range, force_view, hidden, allow_quick_travel, wiggle, show_title, active) VALUES ($gameId, '{$type}', $typeId, '$locationName', $amount, $minArea, $maxArea, '{$amountRestriction}', '{$locationBoundType}', $lat, $lon, $spawnProbability, $spawnRate, $deleteWhenViewed, $timeToLive, $errorRange, $forceView, $hidden, $allowQuickTravel, $wiggle, $showTitle, 1);";
 
-        mysql_query($query);
+        Module::query($query);
         $spawnableId = mysql_insert_id();
         return new returnData(0,$spawnableId);
     }
@@ -18,7 +18,7 @@ class Spawnables extends Module
     public static function hasActiveSpawnable($gameId, $type, $typeId)
     {
         $query = "SELECT * FROM spawnables WHERE game_id = $gameId AND type = '$type' AND type_id = $typeId AND active = 1"; 
-        $result = mysql_query($query);
+        $result = Module::query($query);
         if($obj = mysql_fetch_object($result)) return $obj->spawnable_id;
         else return false;
     }
@@ -26,7 +26,7 @@ class Spawnables extends Module
     public static function hasSpawnable($gameId, $type, $typeId)
     {
         $query = "SELECT * FROM spawnables WHERE game_id = $gameId AND type = '$type' AND type_id = $typeId"; 
-        $result = mysql_query($query);
+        $result = Module::query($query);
         if($obj = mysql_fetch_object($result)) return $obj->spawnable_id;
         else return false;
     }
@@ -34,18 +34,18 @@ class Spawnables extends Module
     public static function deleteSpawnable($spawnableId)
     {
         $query = "UPDATE spawnables SET active = 0 WHERE spawnable_id = $spawnableId";
-        mysql_query($query);
+        Module::query($query);
         /*
         //This does a hard delete
         $query = "SELECT * FROM spawnables WHERE spawnable_id = $spawnableId";
-        $result = mysql_query($query);
+        $result = Module::query($query);
         $obj = mysql_fetch_object($result);
         if($obj)
         {
         $query = "DELETE FROM spawnables WHERE spawnable_id = $spawnableId";
-        mysql_query($query);
+        Module::query($query);
         $query = "DELETE FROM ".$obj->game_id."_requirements WHERE content_type = 'Spawnable' AND content_id = $spawnableId";
-        mysql_query($query);
+        Module::query($query);
         }
          */
         return new returnData(0);
@@ -66,7 +66,7 @@ class Spawnables extends Module
             $query = "UPDATE spawnables SET location_name = '$locationName', amount = $amount, min_area = $minArea, max_area = $maxArea, amount_restriction = '{$amountRestriction}', location_bound_type = '{$locationBoundType}', latitude = $lat, longitude = $lon, spawn_probability = $spawnProbability, spawn_rate = $spawnRate, delete_when_viewed = $deleteWhenViewed, time_to_live = $timeToLive, error_range = $errorRange, force_view = $forceView, hidden = $hidden, allow_quick_travel = $allowQuickTravel, wiggle = $wiggle, show_title = $showTitle, active = $active WHERE game_id = $gameId AND type = '{$type}' AND type_id = $typeId";
         else
             $query = "UPDATE spawnables SET game_id = $gameId, type = '$type', type_id = $typeId, location_name = '$locationName', amount = $amount, min_area = $minArea, max_area = $maxArea, amount_restriction = '{$amountRestriction}', location_bound_type = '{$locationBoundType}', latitude = $lat, longitude = $lon, spawn_probability = $spawnProbability, spawn_rate = $spawnRate, delete_when_viewed = $deleteWhenViewed, time_to_live = $timeToLive, error_range = $errorRange, force_view = $forceView, hidden = $hidden, allow_quick_travel = $allowQuickTravel, wiggle = $wiggle, show_title = $showTitle, active = $active WHERE spawnable_id = $spawnableId";
-        mysql_query($query);
+        Module::query($query);
         return new returnData(0);
     }
 
@@ -89,7 +89,7 @@ class Spawnables extends Module
                 $query = "SELECT name as title FROM aug_bubbles WHERE aug_bubble_id = {$typeId} LIMIT 1";
                 break;
         }
-        $result = mysql_query($query);
+        $result = Module::query($query);
         $obj = mysql_fetch_object($result);
         $title = $obj->title;
         Spawnables::createSpawnable($gameId, $type, $typeId, $title, 5, 35, 50, 'PER_PLAYER', 'PLAYER', 0, 0, 50, 10, 0, 100, 15, 0, 0, 0, 1, 0);
@@ -99,7 +99,7 @@ class Spawnables extends Module
     public static function getSpawnableForObject($gameId, $type, $typeId)
     {
         $query = "SELECT * FROM spawnables WHERE game_id = $gameId AND type = '".$type."' AND type_id = '".$typeId."' AND active = 1 LIMIT 1";
-        $result = mysql_query($query);
+        $result = Module::query($query);
         $obj = mysql_fetch_object($result);
         if($obj) return new returnData(0, $obj);
         else return new returnData(1, "No Spawnables For Object");
@@ -108,7 +108,7 @@ class Spawnables extends Module
     public static function getSpawnablesForGame($gameId)
     {
         $query = "SELECT * FROM spawnables WHERE game_id = $gameId AND active = 1";
-        $result = mysql_query($query);
+        $result = Module::query($query);
         $spawnables = array();
         while($obj = mysql_fetch_object($result))
         {

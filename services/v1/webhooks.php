@@ -5,161 +5,157 @@ require_once("module.php");
 class WebHooks extends Module
 {	
 
-	/**
-	 * Fetch all WebHooks
-	 * @returns the WebHooks
-	 */
-	public function getWebHooks($intGameID)
-	{
+    /**
+     * Fetch all WebHooks
+     * @returns the WebHooks
+     */
+    public function getWebHooks($intGameID)
+    {
 
-		$prefix = Module::getPrefix($intGameID);
-		if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
-
-		$query = "SELECT * FROM web_hooks WHERE game_id = '{$intGameID}'";
-		//NetDebug::trace($query);
-
-		$rsResult = @mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
-
-		return new returnData(0, $rsResult);
-	}
+        $prefix = Module::getPrefix($intGameID);
+        if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 
-	/**
-	 * Fetch a specific event
-	 * @returns a single event
-	 */
-	public function getWebHook($intGameID, $intWebHookID)
-	{
+        $query = "SELECT * FROM web_hooks WHERE game_id = '{$intGameID}'";
 
-		$prefix = Module::getPrefix($intGameID);
-		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        $rsResult = Module::query($query);
+        if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
-		$query = "SELECT * FROM web_hooks WHERE game_id = '{$intGameID}' AND web_hook_id = '{$intWebHookID}' LIMIT 1";
+        return new returnData(0, $rsResult);
+    }
 
-		$rsResult = @mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
-		$event = @mysql_fetch_object($rsResult);
-		if (!$event) return new returnData(2, NULL, "invalid quest id");
+    /**
+     * Fetch a specific event
+     * @returns a single event
+     */
+    public function getWebHook($intGameID, $intWebHookID)
+    {
 
-		return new returnData(0, $event);
+        $prefix = Module::getPrefix($intGameID);
+        if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-	}
+        $query = "SELECT * FROM web_hooks WHERE game_id = '{$intGameID}' AND web_hook_id = '{$intWebHookID}' LIMIT 1";
 
-	/**
-	 * Create an Event
-	 * @returns the new eventID on success
-	 */
-	public function createWebHook($intGameID, $strName, $strURL, $boolIncoming)
-	{
+        $rsResult = Module::query($query);
+        if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
-		$strName = addslashes($strName);	
-		$strURL = addslashes($strURL);	
+        $event = @mysql_fetch_object($rsResult);
+        if (!$event) return new returnData(2, NULL, "invalid quest id");
 
-		$prefix = Module::getPrefix($intGameID);
-		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        return new returnData(0, $event);
 
-		$query = "INSERT INTO web_hooks
-			(game_id, name, url, incoming)
-			VALUES ('{$intGameID}', '{$strName}','{$strURL}','{$boolIncoming}')";
+    }
 
-		NetDebug::trace("Running a query = $query");	
+    /**
+     * Create an Event
+     * @returns the new eventID on success
+     */
+    public function createWebHook($intGameID, $strName, $strURL, $boolIncoming)
+    {
 
-		@mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+        $strName = addslashes($strName);	
+        $strURL = addslashes($strURL);	
 
-		return new returnData(0, mysql_insert_id());
-	}
+        $prefix = Module::getPrefix($intGameID);
+        if (!$prefix) return new returnData(1, NULL, "invalid game id");
+
+        $query = "INSERT INTO web_hooks
+            (game_id, name, url, incoming)
+            VALUES ('{$intGameID}', '{$strName}','{$strURL}','{$boolIncoming}')";
+
+
+        Module::query($query);
+        if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+
+        return new returnData(0, mysql_insert_id());
+    }
 
 
 
-	/**
-	 * Update a specific Event
-	 * @returns true if edit was done, false if no changes were made
-	 */
-	public function updateWebHook($intGameID, $intWebHookID, $strName, $strURL)
-	{
+    /**
+     * Update a specific Event
+     * @returns true if edit was done, false if no changes were made
+     */
+    public function updateWebHook($intGameID, $intWebHookID, $strName, $strURL)
+    {
 
-		$strName = addslashes($strName);	
-		$strURL = addslashes($strURL);	
+        $strName = addslashes($strName);	
+        $strURL = addslashes($strURL);	
 
-		$prefix = Module::getPrefix($intGameID);
-		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        $prefix = Module::getPrefix($intGameID);
+        if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		$query = "UPDATE web_hooks
-			SET 
-			name = '{$strName}',
-			     url = '{$strURL}'
-				     WHERE web_hook_id = '{$intWebHookID}'";
-
-		NetDebug::trace("Running a query = $query");	
-
-		@mysql_query($query);
-		NetDebug::trace(mysql_error());	
-
-		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
-
-		if (mysql_affected_rows()) return new returnData(0, TRUE);
-		else return new returnData(0, FALSE);
+        $query = "UPDATE web_hooks
+            SET 
+            name = '{$strName}',
+                 url = '{$strURL}'
+                     WHERE web_hook_id = '{$intWebHookID}'";
 
 
-	}
+        Module::query($query);
+
+        if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+
+        if (mysql_affected_rows()) return new returnData(0, TRUE);
+        else return new returnData(0, FALSE);
 
 
-	/**
-	 * Delete an Event
-	 * @returns true if delete was done, false if no changes were made
-	 */
-	public function deleteWebHook($intGameID, $intWebHookID)
-	{
-		$prefix = Module::getPrefix($intGameID);
-		if (!$prefix) return new returnData(1, NULL, "invalid game id");
+    }
 
-		$query = "DELETE FROM web_hooks WHERE web_hook_id = {$intWebHookID}";
 
-		$rsResult = @mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+    /**
+     * Delete an Event
+     * @returns true if delete was done, false if no changes were made
+     */
+    public function deleteWebHook($intGameID, $intWebHookID)
+    {
+        $prefix = Module::getPrefix($intGameID);
+        if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
-		if (!mysql_affected_rows()) {
-			return new returnData(2, NULL, 'invalid event id');
-		}
+        $query = "DELETE FROM web_hooks WHERE web_hook_id = {$intWebHookID}";
 
-		$query = "DELETE FROM requirements WHERE game_id = {$prefix} AND content_type = 'OutgoingWebHook' AND content_id = '{$intWebHookID}'";
+        $rsResult = Module::query($query);
+        if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
-		$rsResult = @mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, "{$query} SQL Error");
+        if (!mysql_affected_rows()) {
+            return new returnData(2, NULL, 'invalid event id');
+        }
+
+        $query = "DELETE FROM requirements WHERE game_id = {$prefix} AND content_type = 'OutgoingWebHook' AND content_id = '{$intWebHookID}'";
+
+        $rsResult = Module::query($query);
+        if (mysql_error()) return new returnData(3, NULL, "{$query} SQL Error");
 
 
 
-		$query = "DELETE FROM requirements WHERE game_id = {$prefix} AND requirement = 'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK' AND requirement_detail_1 = '{$intWebHookID}'";
+        $query = "DELETE FROM requirements WHERE game_id = {$prefix} AND requirement = 'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK' AND requirement_detail_1 = '{$intWebHookID}'";
 
-		$rsResult = @mysql_query($query);
-		if (mysql_error()) return new returnData(3, NULL, "{$query} SQL Error");
-
-
-		return new returnData(0, TRUE);
+        $rsResult = Module::query($query);
+        if (mysql_error()) return new returnData(3, NULL, "{$query} SQL Error");
 
 
+        return new returnData(0, TRUE);
 
-	}	
 
-	/**
-	 * Deal with Receiving a Web Hook
-	 * @returns 0
-	 */
-	public function setWebHookReq($gameId, $webHookId, $lastLocationId, $playerId)
-	{
-		if($playerId != NULL){
-			Module::processGameEvent($playerId, $gameId, "RECEIVE_WEBHOOK", $webHookId);
-		}
-		else{
-			$query = "SELECT player_id FROM player_log WHERE game_id='{$gameId}', event_detail_1='{$lastLocationId}', deleted='0'";
-			$result = mysql_query($query);
-			while($pid = mysql_fetch_object($result)){
-				Module::processGameEvent($playerId, $gameId, "RECEIVE_WEBHOOK", $webHookId);
-			}
-		}
-	}
+
+    }	
+
+    /**
+     * Deal with Receiving a Web Hook
+     * @returns 0
+     */
+    public function setWebHookReq($gameId, $webHookId, $lastLocationId, $playerId)
+    {
+        if($playerId != NULL){
+            Module::processGameEvent($playerId, $gameId, "RECEIVE_WEBHOOK", $webHookId);
+        }
+        else{
+            $query = "SELECT player_id FROM player_log WHERE game_id='{$gameId}', event_detail_1='{$lastLocationId}', deleted='0'";
+            $result = Module::query($query);
+            while($pid = mysql_fetch_object($result)){
+                Module::processGameEvent($playerId, $gameId, "RECEIVE_WEBHOOK", $webHookId);
+            }
+        }
+    }
 }
