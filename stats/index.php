@@ -411,11 +411,11 @@ ORDER BY count DESC
 
   $counter = 0;
 
-	echo "<div id=\"" . $topTenDivName . "\">\n";
+  echo "<div id=\"" . $topTenDivName . "\">\n";
 	
   while ($game = mysql_fetch_object($result))
   {
-	  $counter++;
+	$counter++;
 	  
     if ($counter > $GLOBALS['numTopGames'])
     {

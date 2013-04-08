@@ -74,7 +74,6 @@ class Players extends Module
         return new returnData(0, intval($player->player_id));
     }
 
-
     /*
      * Should be the new way to log in. The above function doesn't return a robust, expandible, json package. It returns just an int.
      * Because of this, the parsers using it try to parse an int directly from the return data, disallowing the attachment of more data.
