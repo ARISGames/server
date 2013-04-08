@@ -1,20 +1,6 @@
 <?php
 require_once("module.php");
-/*
-   +-------------------+------------------------------+------+-----+-------------------+-----------------------------+
-   | Field             | Type                         | Null | Key | Default           | Extra                       |
-   +-------------------+------------------------------+------+-----+-------------------+-----------------------------+
-   | fountain_id       | int(11)                      | NO   | PRI | NULL              | auto_increment              |
-   | game_id           | int(11)                      | NO   |     | NULL              |                             |
-   | type              | enum('Location','Spawnable') | NO   |     | NULL              |                             |
-   | location_id       | int(11)                      | NO   |     | NULL              |                             |
-   | spawn_probability | double                       | NO   |     | NULL              |                             |
-   | spawn_rate        | int(11)                      | NO   |     | NULL              |                             |
-   | max_amount        | int(11)                      | NO   |     | NULL              |                             |
-   | last_spawned      | timestamp                    | NO   |     | CURRENT_TIMESTAMP | on update CURRENT_TIMESTAMP |
-   | active            | tinyint(1)                   | NO   |     | 1                 |                             |
-   +-------------------+------------------------------+------+-----+-------------------+-----------------------------+
- */
+
 class Fountains extends Module
 {
     public static function createFountain($gameId, $type, $locationId, $spawnProbability, $spawnRate, $maxAmount)
@@ -25,7 +11,7 @@ class Fountains extends Module
             $query = "UPDATE fountains SET active = 1 WHERE game_id = $gameId AND location_id = $locationId";
         else
             $query = "INSERT INTO fountains (game_id, type, location_id, spawn_probability, spawn_rate, max_amount, active) VALUES 
-            ($gameId, '{$type}', $locationId, spawn_probability, spawn_rate, max_amount, 1)";
+                ($gameId, '{$type}', $locationId, spawn_probability, spawn_rate, max_amount, 1)";
 
         Module::query($query);
         $fountainId = mysql_insert_id();

@@ -417,10 +417,10 @@ class Locations extends Module
             if($spawnable->time_to_live != -1)
             {
                 /*$query = "DELETE game_locations, game_qrcodes 
-			FROM (SELECT * FROM locations WHERE game_id = {$prefix}) AS game_locations 
-			LEFT_JOIN (SELECT * FROM qrcodes WHERE game_id = {$prefix}) AS game_qrcodes ON game_locations.location_id = game_qrcodes.link_id 
-			WHERE type = '".$spawnable->type."' AND type_id = ".$spawnable->type_id." AND ((spawnstamp < NOW() - INTERVAL ".$spawnable->time_to_live." SECOND) OR (type = 'Item' AND item_qty = 0))";
-                        */
+                  FROM (SELECT * FROM locations WHERE game_id = {$prefix}) AS game_locations 
+                  LEFT_JOIN (SELECT * FROM qrcodes WHERE game_id = {$prefix}) AS game_qrcodes ON game_locations.location_id = game_qrcodes.link_id 
+                  WHERE type = '".$spawnable->type."' AND type_id = ".$spawnable->type_id." AND ((spawnstamp < NOW() - INTERVAL ".$spawnable->time_to_live." SECOND) OR (type = 'Item' AND item_qty = 0))";
+                 */
                 $query = "DELETE locations, qrcodes FROM locations, qrcodes WHERE locations.game_id = {$prefix} AND qrcodes.game_id = {$prefix} AND locations.location_id = qrcodes.link_id AND locations.type = '".$spawnable->type."' AND locations.type_id = ".$spawnable->type_id." AND ((locations.spawnstamp < NOW() - INTERVAL ".$spawnable->time_to_live." SECOND) OR (locations.type = 'Item' AND locations.item_qty = 0))";
                 Module::query($query);
             }
@@ -787,10 +787,10 @@ class Locations extends Module
 
         //Delete the Locations and related QR Codes
         $query = "DELETE locations, qrcodes 
-        	FROM locations
-		LEFT JOIN qrcodes
-		ON locations.game_id = qrcodes.game_id AND locations.location_id = qrcodes.link_id
-		WHERE locations.type = '{$strObjectType}' AND locations.type_id = '{$intObjectId}' AND qrcodes.link_type = 'Location'";
+            FROM locations
+            LEFT JOIN qrcodes
+            ON locations.game_id = qrcodes.game_id AND locations.location_id = qrcodes.link_id
+            WHERE locations.type = '{$strObjectType}' AND locations.type_id = '{$intObjectId}' AND qrcodes.link_type = 'Location'";
 
 
         Module::query($query);

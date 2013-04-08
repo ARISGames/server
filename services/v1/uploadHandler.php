@@ -35,17 +35,17 @@ $gameMediaDirectory = $media->getMediaDirectory($_POST['path'])->data;
 
 $pathInfo = '';
 if (@$_REQUEST['fileName']) {
-	//We are coming from the iPhone Client
-	$pathInfo = pathinfo($_REQUEST['fileName']);
+    //We are coming from the iPhone Client
+    $pathInfo = pathinfo($_REQUEST['fileName']);
 }
 else {
-	//We are coming from the form
-	$pathInfo = pathinfo($_FILES['file']['name']);
+    //We are coming from the form
+    $pathInfo = pathinfo($_FILES['file']['name']);
 }
 
 $newMediaFileName = 'aris' . md5( date("YmdGisu") . substr((string)microtime(),2,6) . strtolower($_FILES['file']['name'])) . '.' . strtolower($pathInfo['extension']);
 if ($pathInfo['extension'] == '')
-	$newMediaFileName = $newMediaFileName . 'jpg';    // blobs from YOI map in jpg form aren't coming through with file a extension.  This is a band-aid.
+$newMediaFileName = $newMediaFileName . 'jpg';    // blobs from YOI map in jpg form aren't coming through with file a extension.  This is a band-aid.
 $newMediaFilePath = $gameMediaDirectory ."/". $newMediaFileName;
 
 if (!move_uploaded_file( $_FILES['file']['tmp_name'], $newMediaFilePath))

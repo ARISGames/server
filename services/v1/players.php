@@ -75,49 +75,49 @@ class Players extends Module
     }
 
 
-	/*
-	* Should be the new way to log in. The above function doesn't return a robust, expandible, json package. It returns just an int.
-	* Because of this, the parsers using it try to parse an int directly from the return data, disallowing the attachment of more data.
-	*/
-	public function getLoginPlayerObject($strUser,$strPassword)
-	{
-        	$query = "SELECT player_id, user_name, display_name, media_id  FROM players 
-            	WHERE user_name = '{$strUser}' and password = MD5('{$strPassword}') LIMIT 1";
-        	$rs = Module::query($query);
-        	if (mysql_num_rows($rs) < 1) return new returnData(0, NULL, 'bad username or password');
-        	$player = @mysql_fetch_object($rs);
-        	Module::appendLog($intPlayerID, NULL, Module::kLOG_LOGIN);//Only place outside of Module's EVENT_PIPELINE that can append the Log
-        	return new returnData(0, $player);
-	}
+    /*
+     * Should be the new way to log in. The above function doesn't return a robust, expandible, json package. It returns just an int.
+     * Because of this, the parsers using it try to parse an int directly from the return data, disallowing the attachment of more data.
+     */
+    public function getLoginPlayerObject($strUser,$strPassword)
+    {
+        $query = "SELECT player_id, user_name, display_name, media_id  FROM players 
+            WHERE user_name = '{$strUser}' and password = MD5('{$strPassword}') LIMIT 1";
+        $rs = Module::query($query);
+        if (mysql_num_rows($rs) < 1) return new returnData(0, NULL, 'bad username or password');
+        $player = @mysql_fetch_object($rs);
+        Module::appendLog($intPlayerID, NULL, Module::kLOG_LOGIN);//Only place outside of Module's EVENT_PIPELINE that can append the Log
+        return new returnData(0, $player);
+    }
 
-        /* stolen from http://www.lateralcode.com/creating-a-random-string-with-php/ */
-        public function rand_string( $length ) 
-        {
-            $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";  
+    /* stolen from http://www.lateralcode.com/creating-a-random-string-with-php/ */
+    public function rand_string( $length ) 
+    {
+        $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";  
 
-            $size = strlen( $chars );
-            for( $i = 0; $i < $length; $i++ ) {
-                $str .= $chars[ rand( 0, $size - 1 ) ];
-            }
-
-            return $str;
+        $size = strlen( $chars );
+        for( $i = 0; $i < $length; $i++ ) {
+            $str .= $chars[ rand( 0, $size - 1 ) ];
         }
 
-        public function createPlayerAndGetLoginPlayerObject($strGroup)
+        return $str;
+    }
+
+    public function createPlayerAndGetLoginPlayerObject($strGroup)
+    {
+        $newPlayer->returnCode = 1;
+        $userName;
+        while($newPlayer->returnCode == 1)
         {
-            $newPlayer->returnCode = 1;
-            $userName;
-            while($newPlayer->returnCode == 1)
-            {
-                $userName = $strGroup."_".Players::rand_string(5);
-                $newPlayer = Players::createPlayer($userName, $strGroup, $strGroup."-player", '', '', $strGroup);
-            }
-
-            if($newPlayer)
-	        return Players::getLoginPlayerObject($userName,$strGroup);
-
-            return new returnData(1, NULL, 'error...');
+            $userName = $strGroup."_".Players::rand_string(5);
+            $newPlayer = Players::createPlayer($userName, $strGroup, $strGroup."-player", '', '', $strGroup);
         }
+
+        if($newPlayer)
+            return Players::getLoginPlayerObject($userName,$strGroup);
+
+        return new returnData(1, NULL, 'error...');
+    }
 
     /**
      * updates the player's last game
@@ -136,32 +136,32 @@ class Players extends Module
         else return new returnData(0, FALSE);
     }	
 
-function addPlayerPicFromFileName($playerId, $filename, $name)
-{
-	if(!$name) $name = $playerId."_player_pic";
-	$newMediaResultData = Media::createMedia("player", $name, $filename, 0);
-	$newMediaId = $newMediaResultData->data->media_id;
+    function addPlayerPicFromFileName($playerId, $filename, $name)
+    {
+        if(!$name) $name = $playerId."_player_pic";
+        $newMediaResultData = Media::createMedia("player", $name, $filename, 0);
+        $newMediaId = $newMediaResultData->data->media_id;
         Players::addPlayerPic($playerId, $newMediaId);
         $returnObj->media_id = $newMediaId;
         return new returnData(0,$returnObj);
-}
+    }
 
-function addPlayerPic($playerId, $mediaId)
-{
-	$query = "UPDATE players SET media_id = {$mediaId} WHERE player_id = {$playerId}";
-	Module::query($query);
-	return new returnData(0);
-}
+    function addPlayerPic($playerId, $mediaId)
+    {
+        $query = "UPDATE players SET media_id = {$mediaId} WHERE player_id = {$playerId}";
+        Module::query($query);
+        return new returnData(0);
+    }
 
-function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
-{
-	if($mediaId != 0)
-		$query = "UPDATE players SET display_name = '{$name}', media_id = {$mediaId} WHERE player_id = {$playerId}";
-	else
-		$query = "UPDATE players SET display_name = '{$name}' WHERE player_id = {$playerId}";
-	Module::query($query);
-	return new returnData(0);
-}
+    function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
+    {
+        if($mediaId != 0)
+            $query = "UPDATE players SET display_name = '{$name}', media_id = {$mediaId} WHERE player_id = {$playerId}";
+        else
+            $query = "UPDATE players SET display_name = '{$name}' WHERE player_id = {$playerId}";
+        Module::query($query);
+        return new returnData(0);
+    }
 
     /**
      * getPlayers
@@ -196,7 +196,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
     {
         $timeLimitInMinutes = 20;
 
-	$query = "SELECT p.player_id, p.user_name, p.latitude, p.longitude, pl.timestamp FROM (SELECT * FROM players WHERE players.show_on_map = '1' AND players.last_game_id = '{$intGameID}' AND players.player_id != '{$intPlayerID}') as p JOIN (SELECT * FROM player_log WHERE player_log.game_id = '{$intGameID}' AND player_log.timestamp > DATE_SUB( NOW(), INTERVAL $timeLimitInMinutes MINUTE )) as pl ON p.player_id = pl.player_id WHERE (p.latitude != 0 OR p.longitude != 0) GROUP BY p.player_id;";
+        $query = "SELECT p.player_id, p.user_name, p.latitude, p.longitude, pl.timestamp FROM (SELECT * FROM players WHERE players.show_on_map = '1' AND players.last_game_id = '{$intGameID}' AND players.player_id != '{$intPlayerID}') as p JOIN (SELECT * FROM player_log WHERE player_log.game_id = '{$intGameID}' AND player_log.timestamp > DATE_SUB( NOW(), INTERVAL $timeLimitInMinutes MINUTE )) as pl ON p.player_id = pl.player_id WHERE (p.latitude != 0 OR p.longitude != 0) GROUP BY p.player_id;";
 
         $rs = Module::query($query);
 
@@ -226,7 +226,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
         $query = "UPDATE player_log
             SET deleted = 1
             WHERE player_id = '{$intPlayerID}' AND game_id = '{$intGameID}'";		
-        Module::query($query);
+            Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
         $gameReturnData = Games::getGame($intGameID);
@@ -326,12 +326,12 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
         if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
         Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_ITEM, $intItemID, $intLocationID);
-        
+
         $query = "UPDATE player_items SET viewed = 1 WHERE game_id = {$intGameID} AND player_id = {$intPlayerID} AND item_id = {$intItemID}";
-        
-        
+
+
         Module::query($query);
-        
+
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
         if (mysql_affected_rows()) return new returnData(0, TRUE);
         else return new returnData(0, FALSE);
@@ -629,7 +629,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
         $backpack->owner->display_name = $name->display_name;
         $backpack->owner->group_name = $name->group_name;
         $backpack->owner->player_id = $playerId;
-	$playerpic = Media::getMediaObject('player', $name->media_id)->data;
+        $playerpic = Media::getMediaObject('player', $name->media_id)->data;
         if($playerpic)
             $backpack->owner->player_pic_url = $playerpic->url_path.$playerpic->file_path;
         else

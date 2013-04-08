@@ -205,7 +205,7 @@ class Items extends Module
         if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
         $query = "UPDATE items 
-                SET name = '{$name}', 
+            SET name = '{$name}', 
                 description = '{$description}', 
                 icon_media_id = '{$iconMediaId}',
                 media_id = '{$mediaId}', 
@@ -217,7 +217,7 @@ class Items extends Module
                 weight = '{$weight}',
                 url = '{$url}',
                 type = '{$type}'
-                WHERE item_id = '{$itemId}' AND game_id = '{$prefix}'";
+                    WHERE item_id = '{$itemId}' AND game_id = '{$prefix}'";
 
 
         Module::query($query);
@@ -273,7 +273,7 @@ class Items extends Module
          */
         $pOneGifts = $giftsFromPOneJSON["items"];
         $pTwoGifts = $giftsFromPTwoJSON["items"];
-        
+
         foreach($pOneGifts as $pog)
         {
             Module::adjustQtyForPlayerItem($gameId, $pog["item_id"], $pOneId, -1*$pog["qtyDelta"]);
