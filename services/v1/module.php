@@ -143,7 +143,6 @@ abstract class Module
   protected function getPrefix($intGameID) {	
     //Lookup game information
     $query = "SELECT prefix FROM games WHERE game_id = '{$intGameID}' LIMIT 1";
-    //NetDebug::trace($query);
     $rsResult = @mysql_query($query);
     if (mysql_num_rows($rsResult) < 1) return FALSE;
     $gameRecord = mysql_fetch_array($rsResult);
@@ -191,14 +190,8 @@ abstract class Module
     $item = Items::getItem($intGameId, $intItemID)->data;
     $maxQty = $item->max_qty_in_inventory; 
 
-    NetDebug::trace("Module: giveItemToPlayer: Player currently has $currentQty - Item max is $maxQty");
-
-
-    if ($currentQty + $qtyToGive > $maxQty  && $maxQty != -1) {
-      //we are going over the limit
+    if ($currentQty + $qtyToGive > $maxQty  && $maxQty != -1)
       $qtyToGive =  $maxQty - $currentQty;
-      NetDebug::trace("Module: giveItemToPlayer: Attempted to go over item max qty. Request change to $qtyToGive");
-    }
 
     if ($qtyToGive < 1) return 0;
     else {
@@ -226,19 +219,14 @@ abstract class Module
     $item = Items::getItem($intGameId, $intItemID)->data;
     $maxQty = $item->max_qty_in_inventory; 
 
-    //Module::serverErrorLog("Module: setItemCountForPlayer: Player currently has $currentQty. Setting to $qty.");
 
-    if ($qty > $maxQty  && $maxQty != -1) {
-      //we are going over the limit
+    if ($qty > $maxQty  && $maxQty != -1)
       $qty =  $maxQty;
-      //Module::serverErrorLog("Module: setItemCountForPlayer: Attempted to go over item max qty. Request change to $qty");
-    }
 
     if ($qty < 0) return 0;
     else {
       $amountToAdjust = $qty - $currentQty;
       Module::adjustQtyForPlayerItem($intGameId, $intItemID, $intPlayerID, $amountToAdjust);
-      //Module::serverErrorLog("Module: setItemCountForPlayer: Player amount of item is being adjusted by $amountToAdjust.");
       return $qty;
     }
   }
@@ -258,7 +246,6 @@ abstract class Module
     $query = "DELETE FROM player_items 
       WHERE item_id = {$intItemID} AND game_id = '{$intGameId}'";
     $result = @mysql_query($query);
-    NetDebug::trace($query . mysql_error());    
   }
 
   /**
@@ -269,41 +256,33 @@ abstract class Module
     $query = "SELECT * FROM player_items 
       WHERE player_id = $intPlayerID AND item_id = $intItemID AND game_id = '{$intGameId}' LIMIT 1";
     $result = @mysql_query($query);
-    NetDebug::trace($query . mysql_error());
 
     if ($existingPlayerItem = @mysql_fetch_object($result)) {
       //Check if this change will make the qty go to < 1, if so delete the record
       $newQty = $existingPlayerItem->qty + $amountOfAdjustment;
       if ($newQty < 1) {
-        NetDebug::trace("Adjustment would result in a qty of $newQty so delete the record");
         $query = "DELETE FROM player_items 
           WHERE player_id = $intPlayerID AND item_id = $intItemID AND game_id = '{$intGameId}'";
-        NetDebug::trace($query);
         @mysql_query($query);
       }
       else {
         //Update the qty
-        NetDebug::trace("Updating Qty to $newQty");
         $query = "UPDATE player_items 
           SET qty = $newQty
           WHERE player_id = $intPlayerID AND item_id = $intItemID AND game_id = '{$intGameId}'";
-        NetDebug::trace($query);
         @mysql_query($query);
       }
     }
     else if ($amountOfAdjustment > 0) {
       //Create a record
-      NetDebug::trace("Creating a new player_item record");
 
       $query = "INSERT INTO player_items 
         (game_id,player_id, item_id, qty) VALUES ({$intGameId},$intPlayerID, $intItemID, $amountOfAdjustment)
         ON duplicate KEY UPDATE item_id = $intItemID";
-      NetDebug::trace($query);
       @mysql_query($query);
     }
     else 
     {
-      NetDebug::trace("Decrementing the qty of an item the player does not have. Ignored.");
       return;
     }
 
@@ -322,7 +301,6 @@ abstract class Module
     $query = "UPDATE locations 
       SET item_qty = item_qty-{$intQty}
     WHERE location_id = '{$intLocationID}' AND item_qty > 0 AND game_id = '{$intGameId}'";
-    NetDebug::trace($query);	
     @mysql_query($query);    	
   }
 
@@ -343,20 +321,16 @@ abstract class Module
       HAVING distance<= {$clumpingRangeInMeters}
     ORDER BY distance ASC"; 	
       $result = @mysql_query($query);
-    NetDebug::trace($query . ' ' . mysql_error());  
 
     if ($closestLocationWithinClumpingRange = @mysql_fetch_object($result)) {
       //We have a match
-      NetDebug::trace("An item exists nearby, adding to that location");   	
 
       $query = "UPDATE locations
         SET item_qty = item_qty + {$intQty}
       WHERE location_id = {$closestLocationWithinClumpingRange->location_id} AND game_id = '{$intGameId}'";
-      NetDebug::trace($query . ' ' . mysql_error());  
       @mysql_query($query);
     }
     else {
-      NetDebug::trace("No item exists nearby, creating a new location");   	
 
       $itemName = $this->getItemName($intGameId, $intItemID);
       $error = 100; //Use 100 meters
@@ -364,7 +338,6 @@ abstract class Module
 
       $query = "INSERT INTO locations (game_id, name, type, type_id, icon_media_id, latitude, longitude, error, item_qty)
         VALUES ('{$intGameId}', '{$itemName}','Item','{$intItemID}', '{$icon_media_id}', '{$floatLat}','{$floatLong}', '{$error}','{$intQty}')";
-      NetDebug::trace($query . ' ' . mysql_error());  
       @mysql_query($query);
 
       $newId = mysql_insert_id();
@@ -381,20 +354,16 @@ abstract class Module
 
     $query = "SELECT * FROM locations WHERE type = 'PlayerNote' AND type_id = '{$noteId}' AND game_id = '{$intGameId}'";	
     $result = @mysql_query($query);
-    NetDebug::trace($query . ' ' . mysql_error());  
 
     if ($existingNote = @mysql_fetch_object($result)) {
       //We have a match
-      NetDebug::trace("This note has already been placed");   	
 
       $query = "UPDATE locations
         SET latitude = '{$floatLat}', longitude = '{$floatLong}'
         WHERE location_id = {$existingNote->location_id} AND game_id = '{$intGameId}'";
-      NetDebug::trace($query . ' ' . mysql_error());  
       @mysql_query($query);
     }
     else {
-      NetDebug::trace("Note has not yet been placed");   	
 
       $error = 100; //Use 100 meters
       $query = "SELECT title, owner_id FROM notes WHERE note_id = '{$noteId}'";
@@ -404,7 +373,6 @@ abstract class Module
 
       $query = "INSERT INTO locations (game_id, name, type, type_id, icon_media_id, latitude, longitude, error, item_qty, hidden, force_view, allow_quick_travel)
         VALUES ('{$intGameId}', '{$title}','PlayerNote','{$noteId}', ".Module::kPLAYER_NOTE_DEFAULT_ICON.", '{$floatLat}','{$floatLong}', '{$error}','1',0,0,0)";
-      NetDebug::trace($query . ' ' . mysql_error());  
       @mysql_query($query);
 
       $newId = mysql_insert_id();
@@ -491,7 +459,6 @@ abstract class Module
       deleted = 0
       LIMIT 1";
 
-    //NetDebug::trace($query);
     $rsResult = @mysql_query($query);
     if (mysql_num_rows($rsResult) > 0) return true;
     else return false;	
@@ -510,7 +477,6 @@ abstract class Module
    */     
   protected function playerHasItem($gameID, $playerID, $itemID, $minItemQuantity) {
     if (!$minItemQuantity) $minItemQuantity = 1;
-    //NetDebug::trace("checking if player $playerID has atleast $minItemQuantity of item $itemID in inventory");		
     $qty = Module::itemQtyInPlayerInventory($gameID, $playerID, $itemID);
     if ($qty >= $minItemQuantity) return TRUE;
     else return false;
@@ -518,7 +484,6 @@ abstract class Module
   
   protected function playerHasTaggedItem($gameID, $playerID, $tagID, $minItemQuantity) {
     if (!$minItemQuantity) $minItemQuantity = 1;
-    //NetDebug::trace("checking if player $playerID has atleast $minItemQuantity of item $itemID in inventory");		
     $qty = Module::itemTagQtyInPlayerInventory($gameID, $playerID, $tagID);
     if ($qty >= $minItemQuantity) return TRUE;
     else return false;
@@ -575,7 +540,6 @@ abstract class Module
   //Spelled 'distAnce' wrong in function name and variable name... afraid to change it... the repercussions could be ASTRONOMICAL.
   protected function playerHasUploadedMediaItemWithinDistence($intGameID, $intPlayerID, $dblLatitude, $dblLongitude, $dblDistenceInMeters, $qty, $mediaType) 
   {
-    NetDebug::trace("playerHasUploadedMediaItemWithinDistence(gid:$intGameID, pid:$intPlayerID, lat:$dblLatitude, lon:$dblLongitude, dist:$dblDistenceInMeters, qty:$qty, type:$mediaType)");
     $prefix = Module::getPrefix($intGameID);
     if (!$prefix) return false;
 
@@ -592,7 +556,6 @@ abstract class Module
       (((acos(sin(({$dblLatitude}*pi()/180)) * sin((origin_latitude*pi()/180))+cos(({$dblLatitude}*pi()/180)) * 
               cos((origin_latitude*pi()/180)) * 
               cos((({$dblLongitude} - origin_longitude)*pi()/180))))*180/pi())*60*1.1515*1.609344*1000) < {$dblDistenceInMeters}";
-    //NetDebug::trace($query);
     $rsResult = @mysql_query($query);
     if (mysql_error()) return false;
     if (@mysql_num_rows($rsResult) >= $qty) return true;
@@ -606,13 +569,10 @@ abstract class Module
       $query = "SELECT * FROM note_content LEFT JOIN notes ON note_content.note_id = notes.note_id LEFT JOIN (SELECT * FROM locations WHERE game_id = '{$intGameID}') AS game_locations ON notes.note_id = game_locations.type_id WHERE owner_id = '{$intPlayerID}' AND note_content.type='AUDIO'";
     else if($mediaType == Module::kLOG_UPLOAD_MEDIA_ITEM_VIDEO)
       $query = "SELECT * FROM note_content LEFT JOIN notes ON note_content.note_id = notes.note_id LEFT JOIN (SELECT * FROM locations WHERE game_id = '{$intGameID}') AS game_locations ON notes.note_id = game_locations.type_id WHERE owner_id = '{$intPlayerID}' AND note_content.type='VIDEO'";
-    else
-      NetDebug::trace("error...");
     $queryappendation = "AND (((acos(sin(({$dblLatitude}*pi()/180)) * sin((game_locations.latitude*pi()/180))+cos(({$dblLatitude}*pi()/180)) * 
       cos((game_locations.latitude*pi()/180)) * 
       cos((({$dblLongitude} - game_locations.longitude)*pi()/180))))*180/pi())*60*1.1515*1.609344*1000) < {$dblDistenceInMeters}";
     $result = mysql_query($query.$queryappendation);
-    NetDebug::trace(mysql_num_rows($result)." - ".$qty);
     if (mysql_num_rows($result) >= $qty) return true;
     else return false;
   }	    
@@ -623,9 +583,7 @@ abstract class Module
     if (!$prefix) return FALSE;
 
     $query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerID}' AND parent_note_id = 0 AND incomplete = '0'";
-    NetDebug::trace($query);
     $result = @mysql_query($query);
-    NetDebug::trace(mysql_num_rows($result));
     if (mysql_num_rows($result) >= $qty) return true;
     return false;
   }
@@ -636,9 +594,7 @@ abstract class Module
     if (!$prefix) return FALSE;
 
     $query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerID}' AND parent_note_id = 0 AND incomplete = '0'";
-    NetDebug::trace($query);
     $result = @mysql_query($query);
-    NetDebug::trace(mysql_num_rows($result));
     $num = 0;
     while($noteobj = mysql_fetch_object($result))
     {
@@ -657,12 +613,10 @@ abstract class Module
     if (!$prefix) return FALSE;
 
     $query = "SELECT note_id FROM notes WHERE game_id = '{$intGameID}' AND owner_id = '{$intPlayerID}' AND incomplete = '0'";
-    NetDebug::trace($query);
     $result = @mysql_query($query);
     while($note_id = mysql_fetch_object($result))
     {
       $query = "SELECT note_id FROM notes WHERE game_id = '{$intGameID}' AND parent_note_id = '{$note_id->note_id}'";
-      NetDebug::trace($query);
       $res = @mysql_query($query);
       if (@mysql_num_rows($res) >= $qty) return true;
     }
@@ -675,12 +629,10 @@ abstract class Module
     if (!$prefix) return FALSE;
 
     $query = "SELECT note_id FROM notes WHERE game_id = '{$intGameID}' AND owner_id = '{$intPlayerID}' AND incomplete = '0'";
-    NetDebug::trace($query);
     $result = @mysql_query($query);
     while($note_id = mysql_fetch_object($result))
     {
       $query = "SELECT player_id FROM note_likes WHERE note_id = '{$note_id->note_id}'";
-      NetDebug::trace($query);
       $res = @mysql_query($query);
       if (@mysql_num_rows($res) >= $qty) return true;
     }
@@ -693,7 +645,6 @@ abstract class Module
     if (!$prefix) return FALSE;
 
     $query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerID}' AND parent_note_id != 0";
-    NetDebug::trace($query);
     $result = @mysql_query($query);
     if (@mysql_num_rows($result) >= $qty) return true;
     return false;
@@ -706,7 +657,6 @@ abstract class Module
    * @return boolean
    */	
   protected function objectMeetsRequirements ($strPrefix, $intPlayerID, $strObjectType, $intObjectID) {		
-    //NetDebug::trace("Checking Requirements for {$strObjectType}:{$intObjectID} for playerID:$intPlayerID in gameID:$strPrefix");
 
     //Fetch the requirements
     $query = "SELECT requirement,
@@ -720,11 +670,9 @@ abstract class Module
     $requirementsExist = FALSE;
     while ($requirement = mysql_fetch_array($rsRequirments)) {
       $requirementsExist = TRUE;
-      //NetDebug::trace("Requirement for {$strObjectType}:{$intObjectID} is {$requirement['requirement']}:{$requirement['requirement_detail_1']}");
       //Check the requirement
 
       $requirementMet = FALSE;
-      //NetDebug::trace("Checking ".$requirement['requirement']);
       switch ($requirement['requirement']) {
         //Log related
         case Module::kREQ_PLAYER_VIEWED_ITEM:
@@ -801,24 +749,20 @@ abstract class Module
           $requirementMet = Module::playerHasGivenNoteComments($strPrefix, $intPlayerID, $requirement['requirement_detail_2']);
           break;
 
-          NetDebug::trace("Was Requirement Met?: ".$requirementMet);
       }//switch
 
       //Account for the 'NOT's
       if($requirement['not_operator'] == "NOT") $requirementMet = !$requirementMet;
 
       if ($requirement['boolean_operator'] == "AND" && $requirementMet == FALSE) {
-        //NetDebug::trace("An AND requirement was not met. Requirements Failed.");
         return FALSE;
       }
 
       if ($requirement['boolean_operator'] == "AND" && $requirementMet == TRUE) {
-        //NetDebug::trace("An AND requirement was met. Remembering");
         $andsMet = TRUE;
       }
 
       if ($requirement['boolean_operator'] == "OR" && $requirementMet == TRUE){
-        //NetDebug::trace("An OR requirement was met. Requirements Passed.");
         return TRUE;
       }
 
@@ -828,15 +772,12 @@ abstract class Module
     }
 
     if (!$requirementsExist) {
-      //NetDebug::trace("No requirements exist. Requirements Passed.");
       return TRUE;
     }
     if ($andsMet) {
-      //NetDebug::trace("All AND requirements exist. Requirements Passed.");
       return TRUE;
     }
     else {
-      //NetDebug::trace("At end. Requirements Not Passed.");			
       return FALSE;
     }
   }	
@@ -855,12 +796,10 @@ abstract class Module
     $query = "SELECT * FROM player_state_changes 
       WHERE event_type = '{$strEventType}'
       AND event_detail = '{$strEventDetail}' AND game_id = '{$strPrefix}'";
-    NetDebug::trace($query);
 
     $rsStateChanges = @mysql_query($query);
 
     while ($stateChange = mysql_fetch_array($rsStateChanges)) {
-      NetDebug::trace("State Change Found");
 
       //Check the requirement
       switch ($stateChange['action']) {
@@ -887,7 +826,6 @@ abstract class Module
    */
   public function processGameEvent($playerId, $gameId, $eventType, $eventDetail1='N/A', $eventDetail2='N/A', $eventDetail3='N/A', $eventDetail4='N/A')
   {
-    //NetDebug::trace("Module::processGameEvent: playerId:$playerId, gameId:$gameId, eventType:$eventType, eventDetail1:$eventDetail1, eventDetail2:$eventDetail2, eventDetail3:$eventDetail3, eventDetail4:$eventDetail4");
     //Module::serverErrorLog("Module::processGameEvent: playerId:$playerId, gameId:$gameId, eventType:$eventType, eventDetail1:$eventDetail1, eventDetail2:$eventDetail2, eventDetail3:$eventDetail3, eventDetail4:$eventDetail4");
     Module::appendLog($playerId, $gameId, $eventType, $eventDetail1, $eventDetail2, $eventDetail3);
     Module::applyPlayerStateChanges($gameId, $playerId, $eventType, $eventDetail1);
@@ -942,7 +880,6 @@ abstract class Module
     }
     if($shouldCheckSpawnablesForDeletion)
     {
-       // Module::serverErrorLog("Checking ".$type." ".$eventDetail2);
       $query = "SELECT * FROM spawnables WHERE game_id = $gameId AND active = 1 AND type = '$type' AND type_id = $eventDetail1 LIMIT 1";
 
       $result = mysql_query($query);
@@ -961,7 +898,6 @@ abstract class Module
   protected function appendLog($playerId, $gameId, $eventType, $eventDetail1='N/A', $eventDetail2='N/A', $eventDetail3='N/A')
   {
     $query = "INSERT INTO player_log (player_id, game_id, event_type, event_detail_1, event_detail_2, event_detail_3) VALUES ({$playerId},{$gameId},'{$eventType}','{$eventDetail1}','{$eventDetail2}','{$eventDetail3}')";
-    NetDebug::trace("Module::appendLog: $query");
 
     @mysql_query($query);
   }
@@ -1069,7 +1005,6 @@ abstract class Module
     $name = str_replace(" ", "", $webHook->name);
     $name = str_replace("{playerId}", $playerId, $webHook->name);
     $url = $webHook->url . "?hook=" . $name . "&wid=" . $webHook->web_hook_id . "&gameid=" . $gameId . "&playerid=" . $playerId; 
-    NetDebug::trace("Module::fireOffWebHook: Final URL: $url");
     @file_get_contents($url);
   }
 
@@ -1079,7 +1014,6 @@ abstract class Module
    */
   protected function serverErrorLog($message)
   {
-    NetDebug::trace("Logging an Error: $message");
     $errorLogFile = fopen(Config::serverErrorLog, "a");
     $errorData = date('c') . ' "' . $message . '"' ."\n";
     fwrite($errorLogFile, $errorData);
@@ -1096,10 +1030,6 @@ abstract class Module
     if (empty($to)) {
       return false;
     }
-
-    NetDebug::trace("TO: $to");
-    NetDebug::trace("SUBJECT: $subject");
-    NetDebug::trace("BODY: $body");
 
     $mail = new phpmailer;
     $mail->PluginDir = '../../libraries/phpmailer';      // plugin directory (eg smtp plugin)

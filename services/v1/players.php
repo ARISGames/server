@@ -576,6 +576,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
      **/
     public static function getPlayerBackpacksFromArray($bpReqObj)
     {
+        Module::serverErrorLog('Get Backpacks From Arrays Called: '.date_format(date_create(), 'H:i:s')."\n".$bpReqObj);
         $gameId = $bpReqObj['gameId'];
         $playerArray = $bpReqObj['playerArray'];
         $getItems = (isset($bpReqObj['items']) ? $bpReqObj['items'] : true); //Default true
@@ -618,19 +619,16 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
         $query = "SELECT DISTINCT player_id FROM player_log WHERE game_id='{$gameId}'";
         $result = mysql_query($query);
         while($player = mysql_fetch_object($result))
-        {
             $backPacks[] = Players::getSinglePlayerDataBP($gameId, $player->player_id, false, $getItems, $getAttributes, $getNotes);
-        }
         return $backPacks;
     }
 
     private static function getPlayerArrayDataBP($gameId, $playerArray, $getItems = true, $getAttributes = true, $getNotes = true)
     {
+        Module::serverErrorLog('Get Player Array Data Called: '.date_format(date_create(), 'H:i:s')."\n".$playerArray);
         $backPacks = array();
         foreach($playerArray as $player)
-        {
             $backPacks[] = Players::getSinglePlayerDataBP($gameId, $player, false, $getItems, $getAttributes, $getNotes);
-        }
         return $backPacks;
     }
 
@@ -639,6 +637,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
      */
     private static function getSinglePlayerDataBP($gameId, $playerId, $individual=false, $getItems = true, $getAttributes = true, $getNotes = true)
     {
+        Module::serverErrorLog('Single Player Start: '.date_format(date_create(), 'H:i:s'));
         $backpack = new stdClass();
 
         //Get owner information
@@ -658,12 +657,15 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
             $backpack->owner->player_pic_url = null;
 
         /* ATTRIBUTES */
+        Module::serverErrorLog('Attributes    Start: '.date_format(date_create(), 'H:i:s'));
         if($getAttributes) $backpack->attributes = Items::getDetailedPlayerAttributes($playerId, $gameId);
 
         /* OTHER ITEMS */
+        Module::serverErrorLog('Items         Start: '.date_format(date_create(), 'H:i:s'));
         if($getItems) $backpack->items = Items::getDetailedPlayerItems($playerId, $gameId);
 
         /* NOTES */
+        Module::serverErrorLog('Notes         Start: '.date_format(date_create(), 'H:i:s'));
         if($getNotes) $backpack->notes = Notes::getDetailedPlayerNotes($playerId, $gameId, $individual);
 
         return $backpack;
