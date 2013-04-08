@@ -17,9 +17,8 @@ class WebHooks extends Module
 
 
 		$query = "SELECT * FROM web_hooks WHERE game_id = '{$intGameID}'";
-		//NetDebug::trace($query);
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		return new returnData(0, $rsResult);
@@ -38,7 +37,7 @@ class WebHooks extends Module
 
 		$query = "SELECT * FROM web_hooks WHERE game_id = '{$intGameID}' AND web_hook_id = '{$intWebHookID}' LIMIT 1";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		$event = @mysql_fetch_object($rsResult);
@@ -65,9 +64,8 @@ class WebHooks extends Module
 			(game_id, name, url, incoming)
 			VALUES ('{$intGameID}', '{$strName}','{$strURL}','{$boolIncoming}')";
 
-		NetDebug::trace("Running a query = $query");	
 
-		@mysql_query($query);
+		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		return new returnData(0, mysql_insert_id());
@@ -94,10 +92,8 @@ class WebHooks extends Module
 			     url = '{$strURL}'
 				     WHERE web_hook_id = '{$intWebHookID}'";
 
-		NetDebug::trace("Running a query = $query");	
 
-		@mysql_query($query);
-		NetDebug::trace(mysql_error());	
+		Module::query($query);
 
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
@@ -119,7 +115,7 @@ class WebHooks extends Module
 
 		$query = "DELETE FROM web_hooks WHERE web_hook_id = {$intWebHookID}";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		if (!mysql_affected_rows()) {
@@ -128,14 +124,14 @@ class WebHooks extends Module
 
 		$query = "DELETE FROM requirements WHERE game_id = {$prefix} AND content_type = 'OutgoingWebHook' AND content_id = '{$intWebHookID}'";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "{$query} SQL Error");
 
 
 
 		$query = "DELETE FROM requirements WHERE game_id = {$prefix} AND requirement = 'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK' AND requirement_detail_1 = '{$intWebHookID}'";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "{$query} SQL Error");
 
 
@@ -156,7 +152,7 @@ class WebHooks extends Module
 		}
 		else{
 			$query = "SELECT player_id FROM player_log WHERE game_id='{$gameId}', event_detail_1='{$lastLocationId}', deleted='0'";
-			$result = mysql_query($query);
+			$result = Module::query($query);
 			while($pid = mysql_fetch_object($result)){
 				Module::processGameEvent($playerId, $gameId, "RECEIVE_WEBHOOK", $webHookId);
 			}

@@ -19,10 +19,9 @@ class PlayerStateChanges extends Module
 
 		$query = "SELECT * FROM player_state_changes
 			WHERE game_id = {$prefix} AND event_type = '{$strEventType}' and event_detail = '{$strEventDetail}'";
-		NetDebug::trace($query);
 
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 		return new returnData(0, $rsResult);
@@ -39,7 +38,7 @@ class PlayerStateChanges extends Module
 
 		$query = "SELECT * FROM player_state_changes WHERE game_id = {$prefix} AND id = {$intPlayerStateChangeID} LIMIT 1";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		$row = @mysql_fetch_object($rsResult);
@@ -69,9 +68,8 @@ class PlayerStateChanges extends Module
 			(game_id, event_type, event_detail, action, action_detail, action_amount)
 			VALUES ('{$prefix}','{$strEventType}','{$intEventDetail}','{$strActionType}','{$strActionDetail}','{$intActionAmount}')";
 
-		NetDebug::trace("Running a query = $query");	
 
-		@mysql_query($query);
+		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		return new returnData(0, mysql_insert_id());
@@ -106,10 +104,8 @@ class PlayerStateChanges extends Module
 				   action_amount = '{$intActionAmount}'
 					   WHERE game_id = '{$prefix}' AND id = '{$intPlayerStateChangeID}'";
 
-		NetDebug::trace("Running a query = $query");	
 
-		@mysql_query($query);
-		NetDebug::trace(mysql_error());	
+		Module::query($query);
 
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
@@ -129,7 +125,7 @@ class PlayerStateChanges extends Module
 
 		$query = "DELETE FROM player_state_changes WHERE game_id = {$prefix} AND id = {$intPlayerStateChangeID}";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		if (mysql_affected_rows()) {
@@ -167,9 +163,8 @@ class PlayerStateChanges extends Module
 		//Delete the Locations and related QR Codes
 		$query = "DELETE FROM player_state_changes WHERE game_id = {$prefix} AND {$whereClause}";
 
-		@mysql_query($query);
+		Module::query($query);
 
-		NetDebug::trace("Query: $query" . mysql_error());		
 
 
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -214,9 +209,8 @@ class PlayerStateChanges extends Module
 		if (!$prefix) return FALSE;
 
 		$query = "SHOW COLUMNS FROM player_state_changes LIKE 'event_type'";
-		NetDebug::trace($query);
 
-		$result = @mysql_query( $query );
+		$result = Module::query( $query );
 		$row = @mysql_fetch_array( $result , MYSQL_NUM );
 		$regex = "/'(.*?)'/";
 		preg_match_all( $regex , $row[1], $enum_array );
@@ -233,7 +227,7 @@ class PlayerStateChanges extends Module
 		if (!$prefix) return FALSE;
 
 		$query = "SHOW COLUMNS FROM player_state_changes LIKE 'action'";
-		$result = mysql_query( $query );
+		$result = Module::query( $query );
 		$row = mysql_fetch_array( $result , MYSQL_NUM );
 		$regex = "/'(.*?)'/";
 		preg_match_all( $regex , $row[1], $enum_array );
@@ -257,8 +251,6 @@ class PlayerStateChanges extends Module
 	 */
 	private function isValidActionType($intGameID, $strActionType) {
 		$validTypes = $this->lookupActionTypeOptionsFromSQL($intGameID);
-		NetDebug::trace($validTypes);
-		NetDebug::trace('Requested Type:' . $strActionType);
 		return in_array($strActionType, $validTypes);
 	}	
 

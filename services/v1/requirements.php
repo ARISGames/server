@@ -19,10 +19,9 @@ class Requirements extends Module
 
 		$query = "SELECT * FROM requirements
 			WHERE game_id = {$prefix} AND content_type = '{$objectType}' and content_id = '{$objectId}'";
-		NetDebug::trace($query);
 
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 		return new returnData(0, $rsResult);
@@ -39,7 +38,7 @@ class Requirements extends Module
 
 		$query = "SELECT * FROM requirements WHERE game_id = {$prefix} AND requirement_id = {$requirementId} LIMIT 1";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		$requirement = @mysql_fetch_object($rsResult);
@@ -85,10 +84,8 @@ class Requirements extends Module
 			VALUES ('{$prefix}','{$objectType}','{$objectId}','{$requirementType}',
 					'{$requirementDetail1}', '{$requirementDetail2}', '{$requirementDetail3}', '{$requirementDetail4}', '{$booleanOperator}','{$notOperator}')";
 
-		NetDebug::trace("Running a query = $query");	
 
-		@mysql_query($query);
-		//NetDebug::trace(mysql_error());	
+		Module::query($query);
 
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:".mysql_error());
 
@@ -141,9 +138,8 @@ class Requirements extends Module
 				     not_operator = '{$notOperator}'
 					     WHERE game_id = {$prefix} AND requirement_id = '{$requirementId}'";
 
-		NetDebug::trace("Running a query = $query");	
 
-		@mysql_query($query);
+		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		if (mysql_affected_rows()) return new returnData(0, TRUE);
@@ -162,7 +158,7 @@ class Requirements extends Module
 
 		$query = "DELETE FROM requirements WHERE game_id = {$prefix} AND requirement_id = {$requirementId}";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		if (mysql_affected_rows()) {
@@ -213,9 +209,8 @@ class Requirements extends Module
 		$query = "DELETE FROM requirements
 			WHERE game_id = {$prefix} AND ({$requirementString}) AND requirement_detail_1 = '{$objectId}'";
 
-		@mysql_query($query);
+		Module::query($query);
 
-		NetDebug::trace("Query: $query" . mysql_error());		
 
 
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -261,9 +256,8 @@ class Requirements extends Module
 		if (!$prefix) return FALSE;
 
 		$query = "SHOW COLUMNS FROM requirements LIKE 'content_type'";
-		NetDebug::trace($query);
 
-		$result = @mysql_query( $query );
+		$result = Module::query( $query );
 		$row = @mysql_fetch_array( $result , MYSQL_NUM );
 		$regex = "/'(.*?)'/";
 		preg_match_all( $regex , $row[1], $enum_array );
@@ -280,7 +274,7 @@ class Requirements extends Module
 		if (!$prefix) return FALSE;
 
 		$query = "SHOW COLUMNS FROM requirements LIKE 'requirement'";
-		$result = mysql_query( $query );
+		$result = Module::query( $query );
 		$row = mysql_fetch_array( $result , MYSQL_NUM );
 		$regex = "/'(.*?)'/";
 		preg_match_all( $regex , $row[1], $enum_array );
@@ -304,7 +298,6 @@ class Requirements extends Module
 	 */
 	private function isValidRequirementType($gameId, $requirementType) {
 		$validTypes = $this->lookupRequirementTypeOptionsFromSQL($gameId);
-		NetDebug::trace($validTypes);
 
 		return in_array($requirementType, $validTypes);
 	}	

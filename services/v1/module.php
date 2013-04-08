@@ -108,7 +108,7 @@ abstract class Module
         $idColumnName
         LIMIT 1
         ";
-        if($result = mysql_query($query))
+        if($result = Module::query($query))
         {
             if($lowestNonUsedId = mysql_fetch_object($result)->media_id)
                 return $lowestNonUsedId;
@@ -117,7 +117,7 @@ abstract class Module
         {
             //Just going to use the next auto_increment id...
             $query = "SELECT MAX($idColumnName) as 'nextAIID' FROM $tableName";
-            $result = mysql_query($query);
+            $result = Module::query($query);
             if($nextAutoIncrementId = mysql_fetch_object($result)->nextAIID)
                 return $nextAutoIncrementId;
         }
@@ -132,8 +132,8 @@ abstract class Module
       if(Config::adminEmail) Module::sendEmail(Config::adminEmail,"ARIS Server Error", mysql_error());
     }
     mysql_select_db (Config::dbSchema);
-    mysql_query("set names utf8");
-    mysql_query("set charset set utf8");
+    Module::query("set names utf8");
+    Module::query("set charset set utf8");
   }	
 
   public function query($query)
@@ -177,7 +177,7 @@ abstract class Module
   protected function getPrefix($intGameID) {	
     //Lookup game information
     $query = "SELECT prefix FROM games WHERE game_id = '{$intGameID}' LIMIT 1";
-    $rsResult = @mysql_query($query);
+    $rsResult = Module::query($query);
     if (mysql_num_rows($rsResult) < 1) return FALSE;
     $gameRecord = mysql_fetch_array($rsResult);
     return substr($gameRecord['prefix'],0,strlen($gameRecord['prefix'])-1);
@@ -192,7 +192,7 @@ abstract class Module
   {	
     //Lookup game information
     $query = "SELECT game_id FROM games WHERE prefix= '{$strPrefix}_'";
-    $rsResult = @mysql_query($query);
+    $rsResult = Module::query($query);
     if (mysql_num_rows($rsResult) < 1) return FALSE;
     $gameRecord = mysql_fetch_array($rsResult);
     return $gameRecord['game_id'];
@@ -233,11 +233,11 @@ abstract class Module
         
 	//check log if item has already been viewed. If yes, set item to viewed in database
 	$query = "SELECT * FROM player_log WHERE game_id = {$intGameId} AND player_id = {$intPlayerID} AND event_type = 'VIEW_ITEM' AND event_detail_1 = {$intItemID} AND deleted = 0;";
-	$result = mysql_query($query);
+	$result = Module::query($query);
 	while(mysql_fetch_object($result))
 	{
 		$query2 = "UPDATE player_items SET viewed = 1 WHERE game_id = {$intGameId} AND player_id = {$intPlayerID} AND item_id = {$intItemID}";
-		mysql_query($query2);
+		Module::query($query2);
 		break;
 	}
 
@@ -279,7 +279,7 @@ abstract class Module
   protected function removeItemFromAllPlayerInventories($intGameId, $intItemID ) {
     $query = "DELETE FROM player_items 
       WHERE item_id = {$intItemID} AND game_id = '{$intGameId}'";
-    $result = @mysql_query($query);
+    $result = Module::query($query);
   }
 
   /**
@@ -289,7 +289,7 @@ abstract class Module
     //Get any existing record
     $query = "SELECT * FROM player_items 
       WHERE player_id = $intPlayerID AND item_id = $intItemID AND game_id = '{$intGameId}' LIMIT 1";
-    $result = @mysql_query($query);
+    $result = Module::query($query);
 
     if ($existingPlayerItem = @mysql_fetch_object($result)) {
       //Check if this change will make the qty go to < 1, if so delete the record
@@ -297,14 +297,14 @@ abstract class Module
       if ($newQty < 1) {
         $query = "DELETE FROM player_items 
           WHERE player_id = $intPlayerID AND item_id = $intItemID AND game_id = '{$intGameId}'";
-        @mysql_query($query);
+        Module::query($query);
       }
       else {
         //Update the qty
         $query = "UPDATE player_items 
           SET qty = $newQty
           WHERE player_id = $intPlayerID AND item_id = $intItemID AND game_id = '{$intGameId}'";
-        @mysql_query($query);
+        Module::query($query);
       }
     }
     else if ($amountOfAdjustment > 0) {
@@ -313,7 +313,7 @@ abstract class Module
       $query = "INSERT INTO player_items 
         (game_id,player_id, item_id, qty) VALUES ({$intGameId},$intPlayerID, $intItemID, $amountOfAdjustment)
         ON duplicate KEY UPDATE item_id = $intItemID";
-      @mysql_query($query);
+      Module::query($query);
     }
     else 
     {
@@ -335,7 +335,7 @@ abstract class Module
     $query = "UPDATE locations 
       SET item_qty = item_qty-{$intQty}
     WHERE location_id = '{$intLocationID}' AND item_qty > 0 AND game_id = '{$intGameId}'";
-    @mysql_query($query);    	
+    Module::query($query);    	
   }
 
 
@@ -354,7 +354,7 @@ abstract class Module
       WHERE type = 'item' AND type_id = '{$intItemID}' AND game_id = '{$intGameId}'
       HAVING distance<= {$clumpingRangeInMeters}
     ORDER BY distance ASC"; 	
-      $result = @mysql_query($query);
+      $result = Module::query($query);
 
     if ($closestLocationWithinClumpingRange = @mysql_fetch_object($result)) {
       //We have a match
@@ -362,7 +362,7 @@ abstract class Module
       $query = "UPDATE locations
         SET item_qty = item_qty + {$intQty}
       WHERE location_id = {$closestLocationWithinClumpingRange->location_id} AND game_id = '{$intGameId}'";
-      @mysql_query($query);
+      Module::query($query);
     }
     else {
 
@@ -372,7 +372,7 @@ abstract class Module
 
       $query = "INSERT INTO locations (game_id, name, type, type_id, icon_media_id, latitude, longitude, error, item_qty)
         VALUES ('{$intGameId}', '{$itemName}','Item','{$intItemID}', '{$icon_media_id}', '{$floatLat}','{$floatLong}', '{$error}','{$intQty}')";
-      @mysql_query($query);
+      Module::query($query);
 
       $newId = mysql_insert_id();
       //Create a coresponding QR Code
@@ -387,7 +387,7 @@ abstract class Module
   protected function giveNoteToWorld($intGameId, $noteId, $floatLat, $floatLong) {
 
     $query = "SELECT * FROM locations WHERE type = 'PlayerNote' AND type_id = '{$noteId}' AND game_id = '{$intGameId}'";	
-    $result = @mysql_query($query);
+    $result = Module::query($query);
 
     if ($existingNote = @mysql_fetch_object($result)) {
       //We have a match
@@ -395,19 +395,19 @@ abstract class Module
       $query = "UPDATE locations
         SET latitude = '{$floatLat}', longitude = '{$floatLong}'
         WHERE location_id = {$existingNote->location_id} AND game_id = '{$intGameId}'";
-      @mysql_query($query);
+      Module::query($query);
     }
     else {
 
       $error = 100; //Use 100 meters
       $query = "SELECT title, owner_id FROM notes WHERE note_id = '{$noteId}'";
-      $result = @mysql_query($query);
+      $result = Module::query($query);
       $obj = @mysql_fetch_object($result);
       $title = $obj->title;
 
       $query = "INSERT INTO locations (game_id, name, type, type_id, icon_media_id, latitude, longitude, error, item_qty, hidden, force_view, allow_quick_travel)
         VALUES ('{$intGameId}', '{$title}','PlayerNote','{$noteId}', ".Module::kPLAYER_NOTE_DEFAULT_ICON.", '{$floatLat}','{$floatLong}', '{$error}','1',0,0,0)";
-      @mysql_query($query);
+      Module::query($query);
 
       $newId = mysql_insert_id();
       //Create a coresponding QR Code
@@ -449,7 +449,7 @@ abstract class Module
   protected function recordExists($strPrefix, $strTable, $intRecordID){
     $key = substr($strTable, 0, strlen($strTable)-1);
     $query = "SELECT * FROM {$strTable} WHERE {$key} = $intRecordID AND game_id = '{$strPrefix}'";
-    $rsResult = @mysql_query($query);
+    $rsResult = Module::query($query);
     if (mysql_error()) return FALSE;
     if (mysql_num_rows($rsResult) < 1) return FALSE;
     return true;
@@ -460,7 +460,7 @@ abstract class Module
    **/
   protected function getItemName($strPrefix, $intItemID){
     $query = "SELECT name FROM items WHERE item_id = $intItemID AND game_id = '{$strPrefix}'";
-    $rsResult = @mysql_query($query);		
+    $rsResult = Module::query($query);		
     $row = @mysql_fetch_array($rsResult);	
     return $row['name'];
   }
@@ -470,7 +470,7 @@ abstract class Module
    **/
   protected function getItemIconMediaId($strPrefix, $intItemID){
     $query = "SELECT name FROM items WHERE item_id = $intItemID AND game_id = '{$strPrefix}'";
-    $rsResult = @mysql_query($query);		
+    $rsResult = Module::query($query);		
     $row = @mysql_fetch_array($rsResult);	
     return $row['icon_media_id'];
   }   
@@ -493,7 +493,7 @@ abstract class Module
       deleted = 0
       LIMIT 1";
 
-    $rsResult = @mysql_query($query);
+    $rsResult = Module::query($query);
     if (mysql_num_rows($rsResult) > 0) return true;
     else return false;	
   }
@@ -540,7 +540,7 @@ abstract class Module
       WHERE player_id = '{$playerId}' 
       AND item_id = '{$itemId}' AND game_id = '{$gameId}' LIMIT 1";
 
-    $rsResult = @mysql_query($query);
+    $rsResult = Module::query($query);
     $playerItem = mysql_fetch_object($rsResult);
     if ($playerItem) {
       return $playerItem->qty;
@@ -555,7 +555,7 @@ abstract class Module
     if (!$prefix) return FALSE;
 
     $query = "SELECT object_id FROM object_tags WHERE tag_id = '{$tagId}' AND object_type = 'ITEM'";
-    $result = mysql_query($query);
+    $result = Module::query($query);
     $qty = 0;
     while($obj = mysql_fetch_object($result))
         $qty+=Module::itemQtyInPlayerInventory($gameId, $playerId, $obj->object_id);
@@ -590,7 +590,7 @@ abstract class Module
       (((acos(sin(({$dblLatitude}*pi()/180)) * sin((origin_latitude*pi()/180))+cos(({$dblLatitude}*pi()/180)) * 
               cos((origin_latitude*pi()/180)) * 
               cos((({$dblLongitude} - origin_longitude)*pi()/180))))*180/pi())*60*1.1515*1.609344*1000) < {$dblDistenceInMeters}";
-    $rsResult = @mysql_query($query);
+    $rsResult = Module::query($query);
     if (mysql_error()) return false;
     if (@mysql_num_rows($rsResult) >= $qty) return true;
 
@@ -606,7 +606,7 @@ abstract class Module
     $queryappendation = "AND (((acos(sin(({$dblLatitude}*pi()/180)) * sin((game_locations.latitude*pi()/180))+cos(({$dblLatitude}*pi()/180)) * 
       cos((game_locations.latitude*pi()/180)) * 
       cos((({$dblLongitude} - game_locations.longitude)*pi()/180))))*180/pi())*60*1.1515*1.609344*1000) < {$dblDistenceInMeters}";
-    $result = mysql_query($query.$queryappendation);
+    $result = Module::query($query.$queryappendation);
     if (mysql_num_rows($result) >= $qty) return true;
     else return false;
   }	    
@@ -617,7 +617,7 @@ abstract class Module
     if (!$prefix) return FALSE;
 
     $query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerID}' AND parent_note_id = 0 AND incomplete = '0'";
-    $result = @mysql_query($query);
+    $result = Module::query($query);
     if (mysql_num_rows($result) >= $qty) return true;
     return false;
   }
@@ -628,12 +628,12 @@ abstract class Module
     if (!$prefix) return FALSE;
 
     $query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerID}' AND parent_note_id = 0 AND incomplete = '0'";
-    $result = @mysql_query($query);
+    $result = Module::query($query);
     $num = 0;
     while($noteobj = mysql_fetch_object($result))
     {
       $query = "SELECT * FROM note_tags WHERE note_id='{$noteobj->note_id}' AND tag_id='{$tag}'";
-      $result2 = mysql_query($query);
+      $result2 = Module::query($query);
       if(mysql_num_rows($result2)>0) $num++;
     }
     if(($qty == "" && $num > 0) || $num > $qty)
@@ -647,11 +647,11 @@ abstract class Module
     if (!$prefix) return FALSE;
 
     $query = "SELECT note_id FROM notes WHERE game_id = '{$intGameID}' AND owner_id = '{$intPlayerID}' AND incomplete = '0'";
-    $result = @mysql_query($query);
+    $result = Module::query($query);
     while($note_id = mysql_fetch_object($result))
     {
       $query = "SELECT note_id FROM notes WHERE game_id = '{$intGameID}' AND parent_note_id = '{$note_id->note_id}'";
-      $res = @mysql_query($query);
+      $res = Module::query($query);
       if (@mysql_num_rows($res) >= $qty) return true;
     }
     return false;
@@ -663,11 +663,11 @@ abstract class Module
     if (!$prefix) return FALSE;
 
     $query = "SELECT note_id FROM notes WHERE game_id = '{$intGameID}' AND owner_id = '{$intPlayerID}' AND incomplete = '0'";
-    $result = @mysql_query($query);
+    $result = Module::query($query);
     while($note_id = mysql_fetch_object($result))
     {
       $query = "SELECT player_id FROM note_likes WHERE note_id = '{$note_id->note_id}'";
-      $res = @mysql_query($query);
+      $res = Module::query($query);
       if (@mysql_num_rows($res) >= $qty) return true;
     }
     return false;
@@ -679,7 +679,7 @@ abstract class Module
     if (!$prefix) return FALSE;
 
     $query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerID}' AND parent_note_id != 0";
-    $result = @mysql_query($query);
+    $result = Module::query($query);
     if (@mysql_num_rows($result) >= $qty) return true;
     return false;
   }
@@ -698,7 +698,7 @@ abstract class Module
       boolean_operator, not_operator
         FROM requirements 
         WHERE content_type = '{$strObjectType}' AND content_id = '{$intObjectID}' AND game_id = '{$strPrefix}'";
-    $rsRequirments = @mysql_query($query);
+    $rsRequirments = Module::query($query);
 
     $andsMet = FALSE;
     $requirementsExist = FALSE;
@@ -831,7 +831,7 @@ abstract class Module
       WHERE event_type = '{$strEventType}'
       AND event_detail = '{$strEventDetail}' AND game_id = '{$strPrefix}'";
 
-    $rsStateChanges = @mysql_query($query);
+    $rsStateChanges = Module::query($query);
 
     while ($stateChange = mysql_fetch_array($rsStateChanges)) {
 
@@ -916,11 +916,11 @@ abstract class Module
     {
       $query = "SELECT * FROM spawnables WHERE game_id = $gameId AND active = 1 AND type = '$type' AND type_id = $eventDetail1 LIMIT 1";
 
-      $result = mysql_query($query);
+      $result = Module::query($query);
       if(($obj = mysql_fetch_object($result)) && $obj->delete_when_viewed == 1 && $obj->active == 1) 
       {
         $query = "DELETE locations, qrcodes FROM locations LEFT JOIN qrcodes ON locations.location_id = qrcodes.link_id WHERE location_id = $eventDetail2 AND locations.game_id = '{$gameId}'";
-        mysql_query($query);
+        Module::query($query);
       }
     }
   }
@@ -933,7 +933,7 @@ abstract class Module
   {
     $query = "INSERT INTO player_log (player_id, game_id, event_type, event_detail_1, event_detail_2, event_detail_3) VALUES ({$playerId},{$gameId},'{$eventType}','{$eventDetail1}','{$eventDetail2}','{$eventDetail3}')";
 
-    @mysql_query($query);
+    Module::query($query);
   }
 
   /*
@@ -944,14 +944,14 @@ abstract class Module
   {
     //Get all quests for game
     $query = "SELECT * FROM quests WHERE game_id = '{$gameId}'";
-    $result = mysql_query($query);
+    $result = Module::query($query);
     $gameQuests = array();
     while($gameQuest = mysql_fetch_object($result))
       $gameQuests[] = $gameQuest;
 
     //Get all completed quests by player
     $query = "SELECT * FROM player_log WHERE game_id = $gameId AND player_id = $playerId AND event_type = 'COMPLETE_QUEST' AND deleted = 0;";
-    $result = mysql_query($query);
+    $result = Module::query($query);
     $playerCompletedQuests = array();
     while($playerCompletedQuest = mysql_fetch_object($result))
     {
@@ -981,14 +981,14 @@ abstract class Module
   {
     //Get all webhooks for game
     $query = "SELECT * FROM web_hooks WHERE game_id = '{$gameId}' AND incoming = 0";
-    $result = mysql_query($query);
+    $result = Module::query($query);
     $gameWebhooks = array();
     while($gameWebhook = mysql_fetch_object($result))
       $gameWebhooks[] = $gameWebhook;
 
     //Get all webhooks fired by player
     $query = "SELECT * FROM player_log WHERE game_id = $gameId AND player_id = $playerId AND event_type = 'SEND_WEBHOOK' AND deleted = 0;";
-    $result = mysql_query($query);
+    $result = Module::query($query);
     $playerFiredWebhooks = array();
     while($playerFiredWebhook = mysql_fetch_object($result))
       $playerFiredWebhooks[] = $playerFiredWebhook;
@@ -1034,7 +1034,7 @@ abstract class Module
     Module::appendLog($playerId, $gameId, "SEND_WEBHOOK", $webHookId);
 
     $query = "SELECT * FROM web_hooks WHERE web_hook_id = '{$webHookId}' LIMIT 1";
-    $result = mysql_query($query);
+    $result = Module::query($query);
     $webHook = mysql_fetch_object($result);
     $name = str_replace(" ", "", $webHook->name);
     $name = str_replace("{playerId}", $playerId, $webHook->name);

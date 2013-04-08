@@ -16,7 +16,7 @@ class Movables extends Module
                        velocity INT NOT NULL DEFAULT 0,
                        move_stamp TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
                        active TINYINT(1) NOT NULL DEFAULT 1);";
-        mysql_query($query);
+        Module::query($query);
     }
 
     public static function createMovable($gameId, $type, $typeId, $locationName, $algorithm_type, $algorithm_detail, $velocity, $moveStamp, $lat, $lon, $deleteWhenViewed, $errorRange, $forceView, $hidden, $allowQuickTravel, $wiggle, $showTitle = 0)
@@ -26,7 +26,7 @@ class Movables extends Module
         else
             $query = "INSERT INTO movables (game_id, type, type_id, location_name, algorithm_type, algorithm_detail, velocity, latitude, longitude, delete_when_viewed, error_range, force_view, hidden, allow_quick_travel, wiggle, show_title, active) VALUES ($gameId, '{$type}', $typeId, '$locationName', '{$algorithm_type}', $algorithm_detail, $velocity, $lat, $lon, $deleteWhenViewed, $errorRange, $forceView, $hidden, $allowQuickTravel, $wiggle, $showTitle, 1);";
 
-        mysql_query($query);
+        Module::query($query);
         $movableId = mysql_insert_id();
         return new returnData(0,$movableId);
     }
@@ -34,7 +34,7 @@ class Movables extends Module
     public static function hasActiveMovable($gameId, $type, $typeId)
     {
         $query = "SELECT * FROM movables WHERE game_id = $gameId AND type = '$type' AND type_id = $typeId AND active = 1"; 
-        $result = mysql_query($query);
+        $result = Module::query($query);
         if($obj = mysql_fetch_object($result)) return $obj->movable_id;
         else return false;
     }
@@ -42,7 +42,7 @@ class Movables extends Module
     public static function hasMovable($gameId, $type, $typeId)
     {
         $query = "SELECT * FROM movables WHERE game_id = $gameId AND type = '$type' AND type_id = $typeId"; 
-        $result = mysql_query($query);
+        $result = Module::query($query);
         if($obj = mysql_fetch_object($result)) return $obj->movable_id;
         else return false;
     }
@@ -50,18 +50,18 @@ class Movables extends Module
     public static function deleteMovable($movableId)
     {
         $query = "UPDATE movables SET active = 0 WHERE movable_id = $movableId";
-        mysql_query($query);
+        Module::query($query);
         /*
         //This does a hard delete
         $query = "SELECT * FROM movables WHERE movable_id = $movableId";
-        $result = mysql_query($query);
+        $result = Module::query($query);
         $obj = mysql_fetch_object($result);
         if($obj)
         {
         $query = "DELETE FROM movables WHERE movable_id = $movableId";
-        mysql_query($query);
+        Module::query($query);
         $query = "DELETE FROM ".$obj->game_id."_requirements WHERE content_type = 'Movable' AND content_id = $movableId";
-        mysql_query($query);
+        Module::query($query);
         }
          */
         return new returnData(0);
@@ -82,7 +82,7 @@ class Movables extends Module
             $query = "UPDATE movables SET location_name = '$locationName', amount = $amount, min_area = $minArea, max_area = $maxArea, amount_restriction = '{$amountRestriction}', location_bound_type = '{$locationBoundType}', latitude = $lat, longitude = $lon, spawn_probability = $spawnProbability, spawn_rate = $spawnRate, delete_when_viewed = $deleteWhenViewed, time_to_live = $timeToLive, error_range = $errorRange, force_view = $forceView, hidden = $hidden, allow_quick_travel = $allowQuickTravel, wiggle = $wiggle, show_title = $showTitle, active = $active WHERE game_id = $gameId AND type = '{$type}' AND type_id = $typeId";
         else
             $query = "UPDATE movables SET game_id = $gameId, type = '$type', type_id = $typeId, location_name = '$locationName', amount = $amount, min_area = $minArea, max_area = $maxArea, amount_restriction = '{$amountRestriction}', location_bound_type = '{$locationBoundType}', latitude = $lat, longitude = $lon, spawn_probability = $spawnProbability, spawn_rate = $spawnRate, delete_when_viewed = $deleteWhenViewed, time_to_live = $timeToLive, error_range = $errorRange, force_view = $forceView, hidden = $hidden, allow_quick_travel = $allowQuickTravel, wiggle = $wiggle, show_title = $showTitle, active = $active WHERE movable_id = $movableId";
-        mysql_query($query);
+        Module::query($query);
         return new returnData(0);
     }
 
@@ -105,7 +105,7 @@ class Movables extends Module
                 $query = "SELECT name as title FROM aug_bubbles WHERE aug_bubble_id = {$typeId} LIMIT 1";
                 break;
         }
-        $result = mysql_query($query);
+        $result = Module::query($query);
         $obj = mysql_fetch_object($result);
         $title = $obj->title;
         Movables::createMovable($gameId, $type, $typeId, $title, 5, 35, 50, 'PER_PLAYER', 'PLAYER', 0, 0, 50, 10, 0, 100, 15, 0, 0, 0, 1, 0);
@@ -115,7 +115,7 @@ class Movables extends Module
     public static function getMovableForObject($gameId, $type, $typeId)
     {
         $query = "SELECT * FROM movables WHERE game_id = $gameId AND type = '".$type."' AND type_id = '".$typeId."' AND active = 1 LIMIT 1";
-        $result = mysql_query($query);
+        $result = Module::query($query);
         $obj = mysql_fetch_object($result);
         if($obj) return new returnData(0, $obj);
         else return new returnData(1, "No Movables For Object");
@@ -124,7 +124,7 @@ class Movables extends Module
     public static function getMovablesForGame($gameId)
     {
         $query = "SELECT * FROM movables WHERE game_id = $gameId AND active = 1";
-        $result = mysql_query($query);
+        $result = Module::query($query);
         $movables = array();
         while($obj = mysql_fetch_object($result))
         {

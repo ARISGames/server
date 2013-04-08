@@ -269,7 +269,7 @@ div
 
 .note_view_container
 {
-    width:40%;
+    
     border:1px solid black;
     overflow-y:scroll;
     overflow-x:hidden;
@@ -284,7 +284,20 @@ div
     right:15%;
     max-height:110%;
     background-color:white;
+    width:45%;
 }
+
+#create_note_view_container
+{
+    display:none;
+    position:absolute;
+    top:3%;
+    right:15%;
+    max-height:110%;
+    background-color:white;
+    width:85%;
+}
+
 
 .map_note_view_close_button
 {
@@ -295,28 +308,27 @@ div
 #list_note_view_container
 {
     float:left;
-    margin-left:10px; /* only left to remain flush with side of buttons */
-    height:95%;
+    margin-left:.5%; /* only left to remain flush with side of buttons */
+    height:98%;
+    width:69%;
 }
 
 .note_view
 {
-    padding:10px;
-    width:90%;
+    padding:1%;
+    width:98%;
     background-color:#FFFFFF;
 }
 
 .note_view_header
 {
-    margin-bottom:10px;
-    width:560px;
+    margin-bottom:.5%;
+    width:95%;
 }
 
 .note_view_title
 {
     float:left;
-    width:0px;
-    white-space:nowrap;
     overflow:visible;
     font-size:xx-large;
 }
@@ -326,31 +338,37 @@ div
     float:right;
     font-size:small;
     color:#444444;
-    margin: 0% 5% 1% 1%;
+    margin: 0% 3% 0% 0% ;
+}
+
+.note_view_created
+{
+    float:right;
+    font-size:small;
+    color:#444444;
+    margin: 0% 3% 0% 0% ;
 }
 
 .note_view_owner
 {
-    clear:both;
+    clear:left;
     color:#444444;
 }
 
 .note_view_tags
 {
-    margin:10px 0px;
+    margin:1% 0%;
 }
 
 .note_view_content_box
 {
-    margin-bottom:10px;
-    width:90%;
+    margin-bottom:1%;
     overflow-x:scroll;
 }
 
 .note_content_cell
 {
-    margin-bottom:10px;
-    overflow:hidden;
+    margin-bottom:1%;
 }
 
 .note_view_comment_label
@@ -360,6 +378,10 @@ div
 
 .note_media
 {
-    width:90%;
+    width:80%;
+    margin:.5% 10%;
 }
+
+.hidden { visibility: hidden; display: none;}
+.unhidden { visibility: visible; display: block;}
 

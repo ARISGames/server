@@ -17,7 +17,7 @@ class Quests extends Module
 
 		$query = "SELECT * FROM quests WHERE game_id = {$prefix} ORDER BY sort_index";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 		
 		return new returnData(0, $rsResult);
@@ -34,9 +34,8 @@ class Quests extends Module
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$query = "SELECT * FROM quests WHERE game_id = {$prefix} ORDER BY sort_index";
-		//NetDebug::trace($query);
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 		
 		$activeQuests = array();
@@ -52,7 +51,7 @@ class Quests extends Module
 		}	
 
 		$query = "SELECT count(quest_id) as `count` FROM (SELECT * FROM quests WHERE game_id = {$prefix}) AS game_quests";
-		$countRs = @mysql_query($query);
+		$countRs = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 		$count = @mysql_fetch_object($countRs);
 
@@ -74,7 +73,7 @@ class Quests extends Module
 
 		$query = "SELECT * FROM quests WHERE game_id = {$prefix} AND quest_id = {$intQuestID} LIMIT 1";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		$event = @mysql_fetch_object($rsResult);
@@ -102,9 +101,8 @@ class Quests extends Module
 			(game_id, name, description, text_when_complete, sort_index, exit_to_tab, full_screen_notify)
 			VALUES ('{$prefix}','{$strName}','{$strIncompleteDescription}','{$strCompleteDescription}','{$index}','{$exitToTab}','{$boolFullScreenNotification}')";
 
-		NetDebug::trace("Running a query = $query");	
 
-		@mysql_query($query);
+		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		return new returnData(0, mysql_insert_id());
@@ -135,10 +133,8 @@ class Quests extends Module
                         full_screen_notify = '{$boolFullScreenNotification}'
 			WHERE game_id = {$prefix} AND quest_id = '{$intQuestID}'";
 
-		NetDebug::trace("Running a query = $query");	
 
-		@mysql_query($query);
-		NetDebug::trace(mysql_error());	
+		Module::query($query);
 
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
@@ -160,7 +156,7 @@ class Quests extends Module
 
 		$query = "DELETE FROM quests WHERE game_id = {$prefix} AND quest_id = {$intQuestID}";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		if (mysql_affected_rows()) {
@@ -177,16 +173,16 @@ class Quests extends Module
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$query = "SELECT * FROM quests WHERE game_id = {$prefix} AND (quest_id = '{$a}' OR quest_id = '{$b}')";
-		$result = mysql_query($query);
+		$result = Module::query($query);
 		$quests = array();
 		while($quest = mysql_fetch_object($result)){
 			$quests[$quest->quest_id] = $quest;
 		}
 
 		$query = "UPDATE quests SET sort_index = '{$quests[$a]->sort_index}' WHERE game_id = {$prefix} AND quest_id = '{$b}'";
-		mysql_query($query);
+		Module::query($query);
 		$query = "UPDATE quests SET sort_index = '{$quests[$b]->sort_index}' WHERE game_id = {$prefix} AND quest_id = '{$a}'";
-		mysql_query($query);
+		Module::query($query);
 
 		return new returnData(0);
 	}

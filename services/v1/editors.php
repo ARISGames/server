@@ -14,9 +14,7 @@ class Editors extends Module
 		$query = "SELECT * FROM editors 
 				WHERE name = '$strUser' and password = MD5('{$strPassword}') LIMIT 1";
 		
-		//NetDebug::trace($query);
-
-		$rs = @mysql_query($query);
+		$rs = Module::query($query);
 		if (mysql_num_rows($rs) < 1) return new returnData(4, NULL, 'bad username or password');
 		
 		$editor = @mysql_fetch_array($rs);
@@ -33,14 +31,14 @@ class Editors extends Module
 		$query = "SELECT editor_id FROM editors 
 				  WHERE name = '{$strUser}' LIMIT 1";
 			
-		if (mysql_fetch_array(mysql_query($query))) {
+		if (mysql_fetch_array(Module::query($query))) {
 			return new returnData(4, NULL, 'user exists');
 		}
 		
 		$query = "SELECT editor_id FROM editors 
 				  WHERE email = '{$strEmail}' LIMIT 1";
 			
-		if (mysql_fetch_array(mysql_query($query))) {
+		if (mysql_fetch_array(Module::query($query))) {
 			return new returnData(5, NULL, 'email exists');
 		}
 		
@@ -49,7 +47,7 @@ class Editors extends Module
 		$query = "INSERT INTO editors (name, password, email, comments, created) 
 				  VALUES ('{$strUser}',MD5('$strPassword'),'{$strEmail}','{$strComments}', NOW())";
 			
-		@mysql_query($query);
+		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 		
 		$subject = "Welcome to the ARIS Alpha Editor!";
@@ -78,7 +76,7 @@ class Editors extends Module
 	public function deleteEditor($strUser, $strPassword)
 	{	
 		$query = "DELETE FROM editors WHERE name = '{$strUser}' AND password = '".md5($strPassword)."';";
-		@mysql_query($query);
+		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
                 return new returnData(0); 
         }
@@ -97,9 +95,7 @@ class Editors extends Module
 				WHERE password = MD5('{$strOldPassword}')
 				AND editor_id = {$intEditorID}";
 		
-		NetDebug::trace($query);
-		
-		@mysql_query($query);
+		Module::query($query);
 
 		if (mysql_affected_rows() < 1) return new returnData(4, NULL, 'No editors exist with matching ID and password');
 		return new returnData(0, NULL);
@@ -116,9 +112,7 @@ class Editors extends Module
         FROM editors 
         WHERE editor_id = {$intEditorID}";
 		
-		NetDebug::trace($query);
-		
-		$result = @mysql_query($query);
+		$result = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, 'SQL Error' . mysql_error());
         
         if (!$editor = mysql_fetch_array($result)) return new returnData(4, NULL, "Not an editor");
@@ -139,18 +133,16 @@ class Editors extends Module
          $char = substr($chars, rand(0,35), 1);
          $newPass .= $char;
          }*/
-		//NetDebug::trace("New Password: {$newPass}");
-        
 		//set the editor record to this pw
 		//$query = "UPDATE editors SET password = MD5('{$newPass}') 
 		//		WHERE email = '{$strEmail}'";
 		
-		//@mysql_query($query);
+		//Module::query($query);
 		//if (mysql_error()) return new returnData(3, NULL, 'SQL Error' . mysql_error());
 		//if (!mysql_affected_rows()) return new returnData(4, NULL, "Email is not an editor");
 		
         $query2 = "SELECT editor_id, password FROM editors WHERE email = '{$strEmail}'";
-        $result = @mysql_query($query2);
+        $result = Module::query($query2);
         if (!$editor = mysql_fetch_array($result)) return new returnData(4, NULL, "Not an editor");
         
         $editorid = $editor['editor_id'];
@@ -168,7 +160,7 @@ class Editors extends Module
 		//set the editor record to this pw
 		$query = "SELECT * FROM editors	WHERE email = '{$strEmail}'";
 		
-		$result = @mysql_query($query);
+		$result = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error' . mysql_error());
 	
 		if (!$editor = mysql_fetch_array($result)) return new returnData(4, NULL, "Email is not an editor");

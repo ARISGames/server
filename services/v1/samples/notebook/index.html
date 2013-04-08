@@ -9,29 +9,21 @@
 <script type="text/javascript" src="views.js"></script>
 <script type="text/javascript" src="model.js"></script>
 <script type="text/javascript" src="controller.js"></script>
-<script type="text/javascript" src="https://maps.googleapis.com/maps/api/js?sensor=false"></script>
+<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=true&libraries=places"></script>
 <script src="http://code.jquery.com/jquery-1.9.1.js"></script>
 <script src="http://code.jquery.com/ui/1.10.1/jquery-ui.js"></script>
 <script type="text/javascript" src="utils/richmarker.js" ></script>
 <script type="text/javascript" src="utils/markerclusterer.js"></script>
+<script src="utils/recorder.js"></script>
 <script type="text/javascript">
 
 window.addEventListener('load', pageLoad, false);
 
-/*$(document).ready(function () {
-	console.log("Calling Jail");
-    $('img.lazy').jail({
-            callback : (function(){alert("All the images are loaded");}),
-            callbackAfterEachImage : function() {alert("one image is loaded");}
-        });
-});*/
 
+$(function() {
+    //$( "#map_note_view_container").draggable();
+});
 
-//$(function() {
-//    $( "#map_note_view_container").draggable();
-//});
-
- 
 //Defining here to make available to everyone
 var model;
 var controller;
@@ -40,7 +32,6 @@ var checkboxCheckedImage = new Image();
 checkboxCheckedImage.src = "./images/checkbox.png";
 var checkboxUncheckedImage = new Image();
 checkboxUncheckedImage.src = "./images/checkboxUnchecked.png";
-
 	
 function pageLoad()
 {
@@ -59,6 +50,9 @@ function pageLoad()
 
     if (navigator.appName == 'Microsoft Internet Explorer') 
         alert('You might need to install quicktime to properly view some media.\n(http://www.apple.com/quicktime/download)');
+		
+	model.gameId = gameId;
+	model.playerId = playerId;
 }
 
 function submitForm()
@@ -123,6 +117,9 @@ function finishLoadGame(responseText)
 <div id='message'></div>
 
 <div id='content'>
+<span> Search: <input id='filterbox' type='text' /></span>
+<button onClick="JavaScript:controller.noteCreate()">Create New Note</button>
+
     <div id='header_selector_box'>
         <div id='header_selector_layout' class='header_selector_row'>
             <div id='header_selector_layout_map' class='header_selector_row_button header_selector_layout_row_button'>Map</div>
@@ -137,29 +134,30 @@ function finishLoadGame(responseText)
     <div id='map_layout' class='layout'>
         <div id='map_filter_selector_box' class='filter_selector_box'>
             <div id='contributor_map_filter_selector_container' class='map_filter_selector_container filter_selector_container'>
-                <div class='filter_selector_container_header'>Contributors:</div>
+                <div class='filter_selector_container_header'>Contributors</div>
                 <div id='contributor_map_filter_selector' class='map_filter_selector filter_selector'></div>
             </div>
             <div id='tag_map_filter_selector_container' class='map_filter_selector_container filter_selector_container'>
-                <div class='filter_selector_container_header'>Tags:</div>
+                <div class='filter_selector_container_header'>Tags</div>
                 <div id='tag_map_filter_selector' class='map_filter_selector filter_selector'></div>
             </div>
         </div>
         <div id='map'></div>
         <div id='map_note_view_container' class='note_view_container'></div>
+        <div id='create_note_view_container' class='note_view_container'></div>
     </div>
     <div id='list_layout' class='layout'>
         <div id='list_filter_selector_box' class='filter_selector_box'>
             <div id='contributor_list_filter_selector_container' class='list_filter_selector_container filter_selector_container'>
-                <div class='filter_selector_container_header'>Contributors:</div>
+                <div class='filter_selector_container_header'>Contributors</div>
                 <div id='contributor_list_filter_selector' class='list_filter_selector filter_selector'></div>
             </div>
             <div id='tag_list_filter_selector_container' class='list_filter_selector_container filter_selector_container'>
-                <div class='filter_selector_container_header'>Tags:</div>
+                <div class='filter_selector_container_header'>Tags</div>
                 <div id='tag_list_filter_selector' class='list_filter_selector filter_selector'></div>
             </div>
             <div id='note_list_selector_container' class='list_filter_selector_container filter_selector_container'>
-                <div class='filter_selector_container_header'>Notes:</div>
+                <div id='note_list_selector_container_header' class='filter_selector_container_header'>Notes</div>
                 <div id='note_list_selector' class='list_filter_selector filter_selector'></div>
             </div>
         </div>
@@ -176,6 +174,7 @@ function finishLoadGame(responseText)
         <div id='note_view_header_construct' class='note_view_header'>
             <div id='note_view_title_construct' class='note_view_title'>Title</div>
             <div id='note_view_counts_construct' class='note_view_counts'>n Likes, n Comments</div>
+            <div id='note_view_created_construct' class='note_view_created'>Created: </div>
             <div id='note_view_owner_construct' class='note_view_owner'>Owner</div>
         </div>
         <div id='note_view_tags_construct' class='note_view_tags'></div>
@@ -183,9 +182,32 @@ function finishLoadGame(responseText)
         <div id='note_view_comment_label_construct' class='note_view_comment_label'>Comments:</div>
         <div id='note_view_comment_box_construct' class='note_view_comment_box'></div>
     </div>
+    
     <div id='note_view_default' class='note_view'>
         Click a note to display
     </div>
+    
+    <!-- Create Note -->
+    <div id='note_create_view_construct' class='note_create_view'>
+        <div id='note_create_view_image_construct' class='note_create_view_image'>Image:</div>
+        <div id='note_create_view_audio_construct' class='note_create_view_audio'>Audio:</div>
+        <div id='note_create_view_caption_construct' class='note_create_view_caption'>Caption:</div>
+        <div id='note_create_view_location_construct' class='note_create_view_location'>Location:</div>
+        <div id='note_create_view_tags_construct' class='note_create_view_tags'>Tags:</div>
+        <div id='note_create_view_submit_construct' class='note_create_view_submit'>Submit:</div>
+    </div>
+    
+    <div id='note_create_view_default' class='note_create_view'>
+        <div id='note_create_view_image_construct' class='note_create_view_image'>Image:</div>
+        <div id='note_create_view_audio_construct' class='note_create_view_audio'>Audio:</div>
+        <div id='note_create_view_caption_construct' class='note_create_view_caption'>Caption:</div>
+        <div id='note_create_view_location_construct' class='note_create_view_location'>Location:</div>
+        <div id='note_create_view_tags_construct' class='note_create_view_tags'>Tags:</div>
+        <div id='note_create_view_submit_construct' class='note_create_view_submit'>Submit:</div>
+    </div>
+    <!--<div id='note_create_view_default' class='note_create_view'>
+        Click a note to display
+    </div>-->
 
     <div id='map_note_view_close_button' class='map_note_view_close_button cell_button'>X</div>
     <!-- Note Content Cell -->
@@ -228,5 +250,22 @@ function finishLoadGame(responseText)
     <div id='note_list_selector_cell_default' class='note_list_selector_cell list_filter_selector_cell default_selector_cell selector_cell'><span class='default_selector_cell_message cell_message'>(No notes found)</span></div>
 
 </div>
+
+    
+  
+ 
 </body>
 </html>
+
+<script>
+$('#filterbox').keypress(function(e) {
+    if(e.which == 13) {
+		console.log("repopulateAll Called");
+        controller.repopulateAll();
+    }
+});
+
+
+
+    
+</script>

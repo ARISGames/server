@@ -30,7 +30,7 @@ class Conversations extends Module
                 game_npc_conversations.node_id = game_nodes.node_id 
                 ORDER BY sort_index";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
 		return new returnData(0, $rsResult);	
 	}
@@ -40,16 +40,16 @@ class Conversations extends Module
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$query = "SELECT * FROM npc_conversations WHERE game_id = {$prefix} AND npc_id = '{$npcId}' AND (conversation_id = '{$a}' OR conversation_id = '{$b}')";
-		$result = mysql_query($query);
+		$result = Module::query($query);
 		$convos = array();
 		while($convo = mysql_fetch_object($result)){
 			$convos[$convo->conversation_id] = $convo;
 		}
 
 		$query = "UPDATE npc_conversations SET sort_index = '{$convos[$a]->sort_index}' WHERE game_id = '{$prefix}' AND conversation_id = '{$b}'";
-		mysql_query($query);
+		Module::query($query);
 		$query = "UPDATE npc_conversations SET sort_index = '{$convos[$b]->sort_index}' WHERE game_id = '{$prefix}' AND conversation_id = '{$a}'";
-		mysql_query($query);
+		Module::query($query);
 
 		return new returnData(0);
 	}
@@ -79,8 +79,7 @@ class Conversations extends Module
 		$query = "INSERT INTO nodes (game_id, text)
 			VALUES ('{$prefix}','{$nodeText}')";
 
-		NetDebug::trace("createNode: Running a query = $query");	
-		@mysql_query($query);
+		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);	
 
 		$newNodeId = mysql_insert_id();
@@ -88,8 +87,7 @@ class Conversations extends Module
 
 		$query = "INSERT INTO npc_conversations (npc_id, game_id, node_id, text, sort_index)
 			VALUES ('{$npcId}','{$prefix}','{$newNodeId}','{$conversationText}','{$index}')";
-		NetDebug::trace("createConversation: Running a query = $query");	
-		@mysql_query($query);
+		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);	
 
 		$newConversationId = mysql_insert_id();
@@ -122,8 +120,7 @@ class Conversations extends Module
 		$prefix = Module::getPrefix($gameId);
 
 		$query = "SELECT node_id FROM npc_conversations WHERE game_id = '{$prefix}' AND conversation_id = {$conversationId} LIMIT 1";
-		NetDebug::trace("Running a query = $query");	
-		$nodeIdRs = @mysql_query($query);
+		$nodeIdRs = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);			
 		$nodeIdObject = @mysql_fetch_object($nodeIdRs);
 		if (!$nodeIdObject) return new returnData(2, NULL, "No such conversation");			
@@ -133,14 +130,12 @@ class Conversations extends Module
                 $nodeText = str_replace("”", "\"", $nodeText);
 
 		$query = "UPDATE nodes SET text = '{$nodeText}', title = '{$conversationText}' WHERE game_id = '{$prefix}' AND node_id = {$nodeId}";
-		NetDebug::trace("Running a query = $query");	
-		@mysql_query($query);
+		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);	
 
 
 		$query = "UPDATE npc_conversations SET text = '{$conversationText}', sort_index = '{$index}' WHERE game_id = '{$prefix}' AND conversation_id = {$conversationId}";
-		NetDebug::trace("Running a query = $query");	
-		@mysql_query($query);
+		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);	
 
 
@@ -166,8 +161,7 @@ class Conversations extends Module
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$query = "SELECT node_id FROM npc_conversations WHERE game_id = '{$prefix}' AND conversation_id = {$conversationId} LIMIT 1";
-		NetDebug::trace("Running a query = $query");	
-		$nodeIdRs = @mysql_query($query);
+		$nodeIdRs = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);			
 		$nodeIdObject = @mysql_fetch_object($nodeIdRs);
 		if (!$nodeIdObject) return new returnData(2, NULL, "No such conversation");			
@@ -176,7 +170,7 @@ class Conversations extends Module
 		Nodes::deleteNode($gameId, $nodeId);
 
 		$query = "DELETE FROM npc_conversations WHERE game_id = '{$prefix}' AND conversation_id = {$conversationId}";
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		if (mysql_affected_rows()) return new returnData(0);

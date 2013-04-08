@@ -22,7 +22,7 @@ class Players extends Module
         $query = "SELECT player_id FROM players 
             WHERE user_name = '{$strNewUserName}' LIMIT 1";
 
-        if ($obj = mysql_fetch_object(mysql_query($query))) {
+        if ($obj = mysql_fetch_object(Module::query($query))) {
             return new returnData(1, $obj->player_id, 'user exists');
         }
 
@@ -31,7 +31,7 @@ class Players extends Module
             VALUES ('{$strNewUserName}', MD5('$strPassword'),
                     '{$strFirstName}','{$strLastName}','{$strEmail}', NOW(), '{$strGroup}')";
 
-        mysql_query($query);
+        Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 
         return new returnData(0, mysql_insert_id());
@@ -40,7 +40,7 @@ class Players extends Module
     public function movePlayerToGroup($intPlayerId, $strGroup)
     {
         $query = "UPDATE players SET group_name = '{$strGroup}' WHERE player_id = '{$intPlayerId}'";
-        mysql_query($query);
+        Module::query($query);
         return new returnData(0);
     }
 
@@ -53,7 +53,7 @@ class Players extends Module
         $strUserName = addslashes($strUserName);	
 
         $query = "DELETE FROM players WHERE user_name = '".$strUserName."' AND password = MD5('$strPassword')";
-        mysql_query($query);
+        Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 
         return new returnData(0);
@@ -67,8 +67,7 @@ class Players extends Module
     {
         $query = "SELECT * FROM players 
             WHERE user_name = '{$strUser}' and password = MD5('{$strPassword}') LIMIT 1";
-        NetDebug::trace($query);
-        $rs = @mysql_query($query);
+        $rs = Module::query($query);
         if (mysql_num_rows($rs) < 1) return new returnData(0, NULL, 'bad username or password');
         $player = @mysql_fetch_object($rs);
         Module::appendLog($intPlayerID, NULL, Module::kLOG_LOGIN);//Only place outside of Module's EVENT_PIPELINE that can append the Log
@@ -84,8 +83,7 @@ class Players extends Module
 	{
         	$query = "SELECT player_id, user_name, display_name, media_id  FROM players 
             	WHERE user_name = '{$strUser}' and password = MD5('{$strPassword}') LIMIT 1";
-        	NetDebug::trace($query);
-        	$rs = @mysql_query($query);
+        	$rs = Module::query($query);
         	if (mysql_num_rows($rs) < 1) return new returnData(0, NULL, 'bad username or password');
         	$player = @mysql_fetch_object($rs);
         	Module::appendLog($intPlayerID, NULL, Module::kLOG_LOGIN);//Only place outside of Module's EVENT_PIPELINE that can append the Log
@@ -131,9 +129,7 @@ class Players extends Module
             SET last_game_id = '{$intGameID}'
             WHERE player_id = {$intPlayerID}";
 
-        NetDebug::trace($query);
-
-        @mysql_query($query);
+        Module::query($query);
 
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
         if (mysql_affected_rows()) return new returnData(0, TRUE);
@@ -153,7 +149,7 @@ function addPlayerPicFromFileName($playerId, $filename, $name)
 function addPlayerPic($playerId, $mediaId)
 {
 	$query = "UPDATE players SET media_id = {$mediaId} WHERE player_id = {$playerId}";
-	mysql_query($query);
+	Module::query($query);
 	return new returnData(0);
 }
 
@@ -163,7 +159,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
 		$query = "UPDATE players SET display_name = '{$name}', media_id = {$mediaId} WHERE player_id = {$playerId}";
 	else
 		$query = "UPDATE players SET display_name = '{$name}' WHERE player_id = {$playerId}";
-	mysql_query($query);
+	Module::query($query);
 	return new returnData(0);
 }
 
@@ -175,9 +171,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
     {
         $query = "SELECT player_id, user_name, latitude, longitude FROM players";
 
-        //NetDebug::trace($query);
-
-        $rs = @mysql_query($query);
+        $rs = Module::query($query);
         return new returnData(0, $rs);
     }
 
@@ -190,9 +184,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
         $query = "SELECT player_id, user_name, latitude, longitude FROM players 
             WHERE last_game_id = '{$intGameID}'";
 
-        //NetDebug::trace($query);
-
-        $rs = @mysql_query($query);
+        $rs = Module::query($query);
         return new returnData(0, $rs);
     }
 
@@ -205,10 +197,8 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
         $timeLimitInMinutes = 20;
 
 	$query = "SELECT p.player_id, p.user_name, p.latitude, p.longitude, pl.timestamp FROM (SELECT * FROM players WHERE players.show_on_map = '1' AND players.last_game_id = '{$intGameID}' AND players.player_id != '{$intPlayerID}') as p JOIN (SELECT * FROM player_log WHERE player_log.game_id = '{$intGameID}' AND player_log.timestamp > DATE_SUB( NOW(), INTERVAL $timeLimitInMinutes MINUTE )) as pl ON p.player_id = pl.player_id WHERE (p.latitude != 0 OR p.longitude != 0) GROUP BY p.player_id;";
-        NetDebug::trace($query);
 
-        $rs = @mysql_query($query);
-        NetDebug::trace(mysql_error());
+        $rs = Module::query($query);
 
 
         $array = array();
@@ -230,34 +220,28 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
         if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
         $query = "DELETE FROM player_items WHERE player_id = '{$intPlayerID}' AND game_id = {$prefix}";		
-        NetDebug::trace($query);
-        @mysql_query($query);
+        Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
         $query = "UPDATE player_log
             SET deleted = 1
             WHERE player_id = '{$intPlayerID}' AND game_id = '{$intGameID}'";		
-            NetDebug::trace($query);
-        @mysql_query($query);
+        Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
         $gameReturnData = Games::getGame($intGameID);
         $game = $gameReturnData->data;
         if ($game->delete_player_locations_on_reset) {
-            NetDebug::trace("Deleting all player created items");
 
             $query = "SELECT item_id FROM items WHERE game_id = {$prefix} AND creator_player_id = {$intPlayerID}";	
-            NetDebug::trace($query);
-            $itemsRs = @mysql_query($query);
+            $itemsRs = Module::query($query);
             if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
             while ($item = @mysql_fetch_object($itemsRs)) {			
                 $query = "DELETE FROM locations
                     WHERE game_id = {$prefix} AND locations.type = 'Item' 
                     AND locations.type_id = '{$item->item_id}'";
-                NetDebug::trace("Delete Location Query: $query");		
-                @mysql_query($query);
-                NetDebug::trace(mysql_error());		
+                Module::query($query);
             }	
         }	
 
@@ -271,7 +255,6 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
      */
     public function updatePlayerLocation($intPlayerID, $intGameID, $floatLat, $floatLong)
     {
-        NetDebug::trace("Inserting Log");
         Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_MOVE, $floatLat, $floatLong);
         if (mysql_affected_rows()) return new returnData(0, TRUE);
         else return new returnData(0, FALSE);
@@ -346,9 +329,8 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
         
         $query = "UPDATE player_items SET viewed = 1 WHERE game_id = {$intGameID} AND player_id = {$intPlayerID} AND item_id = {$intItemID}";
         
-        NetDebug::trace($query);
         
-        @mysql_query($query);
+        Module::query($query);
         
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
         if (mysql_affected_rows()) return new returnData(0, TRUE);
@@ -395,13 +377,12 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
      */
     public function pickupItemFromLocation($intGameID, $intPlayerID, $intItemID, $intLocationID, $qty=1)
     {	
-        NetDebug::trace("Pickup $qty of item $intItemID");
 
         $prefix = Module::getPrefix($intGameID);
         if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
         $query = "SELECT item_qty from locations WHERE game_id = {$prefix} AND location_id = $intLocationID";
-        $result = mysql_query($query);
+        $result = Module::query($query);
         $loc = mysql_fetch_object($result);
 
         if($loc->item_qty != -1 && $loc->item_qty < $qty){
@@ -507,7 +488,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
     function setShowPlayerOnMap($playerId, $spom)
     {
         $query = "UPDATE players SET show_on_map = '{$spom}' WHERE player_id = '{$playerId}'";
-        mysql_query($query);
+        Module::query($query);
         return new returnData(0);
     }
 
@@ -524,8 +505,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
         else 
             $query2 = "SELECT * FROM players WHERE email = '{$strEmail}'";
 
-        NetDebug::trace($query2);
-        $result = @mysql_query($query2);
+        $result = Module::query($query2);
         if (!$player = mysql_fetch_array($result)) return new returnData(4, NULL, "Not a player");
 
         $playerid = $player['player_id'];
@@ -554,9 +534,8 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
             WHERE password = MD5('{$strOldPassword}')
             AND player_id = {$intPlayerID}";
 
-        NetDebug::trace($query);
 
-        @mysql_query($query);
+        Module::query($query);
 
         if (mysql_affected_rows() < 1) return new returnData(4, NULL, 'No players exist with matching ID and password');
         return new returnData(0, NULL);
@@ -617,7 +596,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
     {
         $backPacks = array();
         $query = "SELECT DISTINCT player_id FROM player_log WHERE game_id='{$gameId}'";
-        $result = mysql_query($query);
+        $result = Module::query($query);
         while($player = mysql_fetch_object($result))
             $backPacks[] = Players::getSinglePlayerDataBP($gameId, $player->player_id, false, $getItems, $getAttributes, $getNotes);
         return $backPacks;
@@ -642,7 +621,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
 
         //Get owner information
         $query = "SELECT user_name, display_name, group_name, media_id FROM players WHERE player_id = '{$playerId}'";
-        $result = mysql_query($query);
+        $result = Module::query($query);
         $name = mysql_fetch_object($result);
         if(!$name) return "Invalid Player ID";
         $backpack->owner = new stdClass();
@@ -695,7 +674,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
             $query = $query."user_name = '{$usernameArray[$i]}' OR ";
         $query = substr($query, 0, strlen($query)-4).";";
 
-        $result = mysql_query($query);
+        $result = Module::query($query);
 
         $reterr = "username ";
         while($un = mysql_fetch_object($result))
@@ -711,7 +690,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
         for($i = 0; $i < count($usernameArray); $i++)
             $query = $query."('{$usernameArray[$i]}', MD5('$passwordArray[$i]'), '{$firstnameArray[$i]}','{$lastnameArray[$i]}','{$emailArray[$i]}', NOW()), ";
         $query = substr($query, 0, strlen($query)-2).";";
-        $result = mysql_query($query);
+        $result = Module::query($query);
         if (mysql_error()) 	return new returnData(1, "","Error Inserting Records");
 
 
@@ -720,7 +699,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
         for($i = 0; $i < count($usernameArray); $i++)
             $query = $query."user_name = '{$usernameArray[$i]}' OR ";
         $query = substr($query, 0, strlen($query)-4).";";
-        $result = mysql_query($query);
+        $result = Module::query($query);
         if (mysql_error()) 	return new returnData(1, "","Error Verifying Records");
 
 
@@ -746,7 +725,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
             $query = $query."user_name = '{$playerArray[$i]["username"]}' OR ";
         $query = substr($query, 0, strlen($query)-4).";";
         //$query of form "SELECT user_name FROM players WHERE user_name = 'user1' OR user_name = 'user2' OR user_name = 'user3';"
-        $result = mysql_query($query);
+        $result = Module::query($query);
 
         //Check if any duplicates exist
         $reterr = "Duplicate username(s): ";
@@ -763,7 +742,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
         for($i = 0; $i < count($playerArray); $i++)
             $query = $query."('{$playerArray[$i]["username"]}', MD5('{$playerArray[$i]["password"]}'), '{$playerArray[$i]["firstName"]}','{$playerArray[$i]["lastName"]}','{$playerArray[$i]["email"]}', NOW()), ";
         $query = substr($query, 0, strlen($query)-2).";";
-        $result = mysql_query($query);
+        $result = Module::query($query);
         if (mysql_error()) 	return new returnData(1, "","Error Inserting Records");
 
         //Generate the result
@@ -771,7 +750,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
         for($i = 0; $i < count($playerArray); $i++)
             $query = $query."user_name = '{$playerArray[$i]["username"]}' OR ";
         $query = substr($query, 0, strlen($query)-4).";";
-        $result = mysql_query($query);
+        $result = Module::query($query);
         if (mysql_error()) 	return new returnData(1, "","Error Verifying Records");
 
         return new returnData(0,$result);
@@ -784,7 +763,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
             //Treat as string
             $query = "SELECT player_id FROM players WHERE group_name = '$groupReqObj';";
 
-            $playersSQLObj = mysql_query($query);
+            $playersSQLObj = Module::query($query);
             $playersArray = array();
             while($playerId = mysql_fetch_object($playersSQLObj))
                 $playersArray[] = $playerId->player_id;
@@ -794,7 +773,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
         {
             $query = "SELECT player_id FROM players WHERE group_name = '{$groupReqObj['group_name']}';";
 
-            $playersSQLObj = mysql_query($query);
+            $playersSQLObj = Module::query($query);
             $playersArray = array();
             while($playerId = mysql_fetch_object($playersSQLObj))
                 $playersArray[] = $playerId->player_id;
@@ -820,7 +799,7 @@ function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
         if (!$prefix) return new returnData(1, "Error- Invalid Game Id");
 
         $query = "SELECT * FROM player_log WHERE game_id = '{$gameId}' AND timestamp BETWEEN '{$startDate}' AND '{$endDate}'";
-        $result = mysql_query($query);
+        $result = Module::query($query);
 
         $log = array();
         while($entry = mysql_fetch_object($result))

@@ -21,7 +21,7 @@ class Locations extends Module
         if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
         $query = "SELECT game_locations.*, f.active AS is_fountain FROM (SELECT * FROM locations WHERE game_id = {$prefix}) AS game_locations LEFT JOIN (SELECT active, location_id FROM fountains WHERE game_id = $prefix) AS f ON game_locations.location_id = f.location_id";
-        $rsResult = @mysql_query($query);
+        $rsResult = Module::query($query);
 
         if (mysql_error()) return new returnData(3, NULL, "SQL Error:".mysql_error());
         return new returnData(0, $rsResult);	
@@ -40,11 +40,10 @@ class Locations extends Module
         if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
         $query = "SELECT match_media_id FROM qrcodes WHERE game_id = {$prefix} AND link_id = {$intLocationID}";
-        $result = mysql_query($query);
+        $result = Module::query($query);
 
         $medias = array();
         while($mid = mysql_fetch_object($result)){
-            NetDebug::trace($mid->match_media_id);
             $medias[] = Media::getMediaObject($intGameId, $mid->match_media_id);
         }
 
@@ -65,7 +64,7 @@ class Locations extends Module
 
         //Check if location exists, and store code
         $query = "SELECT * FROM qrcodes WHERE game_id = {$prefix} AND link_id={$intLocationId}";
-        $result = mysql_query($query);
+        $result = Module::query($query);
         $code = 0;
         if(mysql_num_rows($result) != 0){
             $row = mysql_fetch_object($result);
@@ -75,22 +74,22 @@ class Locations extends Module
 
         //Check if this media/location pair already exists. If so, exit (our job is already done)
         $query = "SELECT * FROM qrcodes WHERE game_id = {$prefix} AND link_id ={$intLocationId} AND match_media_id ={$intMatchMediaID}";
-        $result = mysql_query($query);
+        $result = Module::query($query);
         if(mysql_num_rows($result) != 0) return new returnData(0); 
 
         //Check if this is the only entry...
         $query = "SELECT * FROM qrcodes WHERE game_id = {$prefix} AND link_id ={$intLocationId} AND match_media_id ='0'";
-        $result = mysql_query($query);
+        $result = Module::query($query);
         if(mysql_num_rows($result) == 1){
             $query = "UPDATE qrcodes SET match_media_id = {$intMatchMediaID} WHERE game_id = {$prefix} AND link_id={$intLocationId}";
-            mysql_query($query);
+            Module::query($query);
             Locations::generateDescriptors($intMatchMediaID, $intGameId);
             return new returnData(0);
         }
 
 
         $query = "INSERT INTO qrcodes (game_id, link_id, match_media_id, code) VALUES ({$prefix}, {$intLocationId}, {$intMatchMediaID}, {$code})";
-        mysql_query($query);
+        Module::query($query);
         Locations::generateDescriptors($intMatchMediaID, $intGameId);
 
         return new returnData(0);
@@ -100,15 +99,12 @@ class Locations extends Module
         //Get the filename for the media
         if ($mediaId) {
             $query = "SELECT file_path FROM media WHERE media_id = '{$mediaId}' LIMIT 1";
-            $result = @mysql_query($query);
+            $result = Module::query($query);
             $fileName = mysql_fetch_object($result)->file_path;	
-            if (mysql_error()) NetDebug::trace("SQL Error: ". mysql_error());
 
             $gameMediaAndDescriptorsPath = Media::getMediaDirectory($gameId)->data;
             $execCommand = '../../ImageMatcher/ImageMatcher generate ' . $gameMediaAndDescriptorsPath . $fileName;
-            NetDebug::trace($execCommand);
             $console = exec($execCommand);
-            NetDebug::trace($console);
         }
     }
 
@@ -126,16 +122,16 @@ class Locations extends Module
 
         //Check if this is the only remaining QR code entry. If so, ONLY clear the image match media ID, DO NOT delete the whole row.
         $query = "SELECT * FROM qrcodes WHERE game_id = {$prefix} AND link_id ={$intLocationId}";
-        $result = @mysql_query($query);
+        $result = Module::query($query);
         if(mysql_num_rows($result) == 1){
             $query = "UPDATE qrcodes SET match_media_id = '0' WHERE game_id = {$prefix} AND link_id={$intLocationId} AND match_media_id = {$intMatchMediaID}";
-            mysql_query($query);
+            Module::query($query);
             deleteImageMatchXML($intMatchMediaID, $intGameId);
             return new returnData(0);
         }
         elseif(mysql_num_rows($result) > 1){
             $query = "DELETE FROM qrcodes WHERE game_id = {$prefix} AND link_id={$intLocationId} AND match_media_id={$intMatchMediaID}";
-            mysql_query($query);
+            Module::query($query);
             deleteImageMatchXML($intMatchMediaID, $intGameId);
             return new returnData(0);
         }
@@ -146,10 +142,9 @@ class Locations extends Module
 
     public function deleteImageMatchXML($mediaId, $gameId){
         $query = "SELECT file_path FROM media WHERE media_id = '{$mediaId}' AND (game_id = '{$gameId}' OR game_id = '0')";
-        $result = mysql_query($query);
+        $result = Module::query($query);
 
         if($med = mysql_fetch_object($result)){
-            NetDebug::trace("../../gamedata/".$gameId."/".substr($med->file_path, 0, -4).".xml");
             unlink("../../gamedata/".$gameId."/".substr($med->file_path, 0, -4).".xml");
         }
     }
@@ -173,10 +168,8 @@ class Locations extends Module
             ON game_locations.location_id = game_qrcodes.link_id LEFT JOIN
             (SELECT location_id, active FROM fountains WHERE game_id = $prefix) AS f
             ON game_locations.location_id = f.location_id";
-        NetDebug::trace($query);	
 
-        $rsResult = @mysql_query($query);
-        NetDebug::trace(mysql_error());	
+        $rsResult = Module::query($query);
 
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
         return new returnData(0, $rsResult);	
@@ -201,16 +194,15 @@ class Locations extends Module
         //Gets all non-spawned locations
         $query = "SELECT game_locations.*, gamefountains.fountain_id, gamefountains.spawn_probability, gamefountains.spawn_rate, gamefountains.max_amount, gamefountains.last_spawned, gamefountains.active FROM (SELECT * FROM locations WHERE game_id = {$prefix}) AS game_locations LEFT JOIN (SELECT * FROM spawnables WHERE game_id = $prefix) AS gamespawns ON game_locations.type = gamespawns.type AND game_locations.type_id = gamespawns.type_id LEFT JOIN (SELECT * FROM fountains WHERE game_id = $prefix) AS gamefountains ON game_locations.location_id = gamefountains.location_id WHERE game_locations.latitude != '' AND game_locations.longitude != '' AND (spawnable_id IS NULL OR gamespawns.active = 0)";
 
-        $rsLocations = @mysql_query($query);
+        $rsLocations = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error" . mysql_error());
 
         $query = "SELECT full_quick_travel FROM games WHERE game_id = '{$intGameId}'";
-        $fqtresult = mysql_query($query);
+        $fqtresult = Module::query($query);
         $fullQuickTravel = (mysql_fetch_object($fqtresult)->full_quick_travel == 1) ? true : false;
 
         while ($location = mysql_fetch_object($rsLocations)) {
             //If location and object it links to meet requirments, add it to the array
-            NetDebug::trace('Location ' . $location->location_id . ' Found. Checking Reqs');	
 
             //Does it Exist?
             switch ($location->type) {
@@ -235,18 +227,16 @@ class Locations extends Module
             }
 
             if ($location->type == 'PlayerNote') {
-                $rsObject = @mysql_query($query);
+                $rsObject = Module::query($query);
                 $object = @mysql_fetch_object($rsObject);
                 if (!$object || $object->public_to_map == 0) {
-                    NetDebug::trace("Skipping Location:'{$location->location_id}' becasue it points to something bogus, or it isn't shared to map");	
                     continue;
                 }
             }
             else {
-                $rsObject = @mysql_query($query);
+                $rsObject = Module::query($query);
                 $object = @mysql_fetch_object($rsObject);
                 if (!$object) {
-                    NetDebug::trace("Skipping Location:'{$location->location_id}' becasue it points to something bogus");	
                     continue;
                 }
             }
@@ -263,50 +253,42 @@ class Locations extends Module
                     }
                     $secondsOfSpawning-=$location->spawn_rate;
                     $query = "UPDATE fountains SET last_spawned = now() WHERE fountain_id = ".$location->fountain_id;
-                    mysql_query($query);
+                    Module::query($query);
                 }
                 if($location->item_qty >= $location->max_amount)
                 {
                     $query = "UPDATE fountains SET last_spawned = now() WHERE fountain_id = ".$location->fountain_id;
-                    mysql_query($query);
+                    Module::query($query);
                 }
                 $query = "UPDATE locations SET item_qty = ".$location->item_qty." WHERE game_id = {$prefix} AND location_id = ".$location->location_id;
-                mysql_query($query);
+                Module::query($query);
             }
 
             if($location->type == 'Item' && $location->item_qty < 1 && $location->item_qty != -1)
             {
-                NetDebug::trace("Skipping Location:'{$location->location_id}' becasue it has < 1 item_qty");
                 continue;
             }
 
             //Does it meet it's requirements?
             if (!$this->objectMeetsRequirements($prefix, $intPlayerID, 'Location', $location->location_id)) {
-                // NetDebug::trace($prefix . " " . $intPlayerID . " 'Location' " . $location->location_id);
-                NetDebug::trace("Skipping Location:'{$location->location_id}' becasue it doesn't meet it's requirements");
                 continue;
-            }
-            else{
-                NetDebug::trace("Requirement met. Awwe yeeeaaaah.");
             }
 
             //Special Case for Notes
             if($location->type == 'PlayerNote')
             {
                 $query = "SELECT public_to_map, public_to_notebook, owner_id FROM notes WHERE note_id='{$location->type_id}' LIMIT 1";
-                $result = mysql_query($query);
+                $result = Module::query($query);
                 $note = mysql_fetch_object($result);
                 //If note doesn't exist, or if it is neither public nor owned by the owner, skip it.
                 if(!$note || !($note->public_to_map || $note->owner_id == $intPlayerID))
                 {
-                    NetDebug::trace("Skipping Location:{$location->location_id} because Note doesn't exist, or current user does not have permission to view it");
                     continue;
                 }
                 if($note->public_to_notebook || $note->owner_id == $intPlayerId)
                     $location->allow_quick_travel = 1;
             }
 
-            NetDebug::trace('Location:{$location->location_id} is ok');	
 
             //If location's icon is not defined, use the object's icon
             if (!$location->icon_media_id) {
@@ -324,11 +306,10 @@ class Locations extends Module
 
         //Get all spawned locations (needs separate calculations, as requirements are not associated with each location)
         $query = "SELECT * FROM spawnables WHERE game_id = ".$prefix." AND active = 1";
-        $results = mysql_query($query);
+        $results = Module::query($query);
         while($spawnable = mysql_fetch_object($results)){
 
             //If spawnable and object it links to meet requirments, add it to the array
-            NetDebug::trace('Spawnable ' . $spawnable->spawnable_id . ' Found. Checking Reqs');	
 
             //Does it Exist?
             switch ($spawnable->type) {
@@ -352,10 +333,9 @@ class Locations extends Module
                     break;
             }
 
-            $rsObject = @mysql_query($query);
+            $rsObject = Module::query($query);
             $object = @mysql_fetch_object($rsObject);
             if (!$object) {
-                NetDebug::trace("Skipping Spawnable:'{$spawnable->spawnable_id}' becasue it points to something bogus");	
                 continue;
             }
             $spawnable->icon_media_id = $object->icon_media_id;
@@ -363,11 +343,9 @@ class Locations extends Module
 
             //Does it meet it's requirements?
             if (!$this->objectMeetsRequirements ($prefix, $intPlayerID, 'Spawnable', $spawnable->spawnable_id)) {
-                NetDebug::trace("Skipping Spawnable:'{$spawnable->spawnable_id}' becasue it doesn't meet it's requirements");
                 continue;
             }
             else{
-                NetDebug::trace("Requirement met. Awwe yeeeaaaah.");
             }
 
 
@@ -378,7 +356,7 @@ class Locations extends Module
                 {
                     //Find player location from log and set lat and lon accordingly
                     $query = "SELECT event_detail_1, event_detail_2 FROM player_log WHERE player_id = $intPlayerID AND (game_id = $intGameId OR game_id = 0) AND event_type = 'MOVE' AND deleted = 0 ORDER BY timestamp DESC LIMIT 1";
-                    $result = mysql_query($query);
+                    $result = Module::query($query);
                     if($obj = mysql_fetch_object($result))
                     {
                         $lat = $obj->event_detail_1;
@@ -398,18 +376,18 @@ class Locations extends Module
                 if($spawnable->location_bound_type == 'LOCATION')
                 {
                     $query = "SELECT DISTINCT player_id FROM player_log WHERE game_id = {$prefix}  AND deleted = 0 AND timestamp >= NOW() - INTERVAL 20 MINUTE";
-                    $result = mysql_query($query);
+                    $result = Module::query($query);
                     $spawnable->amount *= mysql_num_rows($result);
                 }
                 $radius = Module::mToDeg($spawnable->max_area);
                 $query = "SELECT * FROM locations WHERE game_id = {$prefix} AND type = '".$spawnable->type."' AND type_id = ".$spawnable->type_id." AND latitude < ". ($lat+$radius) ." AND latitude > ". ($lat-$radius) ." AND longitude < ". ($lon+$radius) ." AND longitude > ". ($lon-$radius);
-                $result = mysql_query($query);
+                $result = Module::query($query);
                 $numLocs = mysql_num_rows($result);
             }
             else if($spawnable->amount_restriction == 'TOTAL')
             {
                 $query = "SELECT * FROM locations WHERE game_id = {$prefix} AND type = '".$spawnable->type."' AND type_id = ".$spawnable->type_id;
-                $result = mysql_query($query);
+                $result = Module::query($query);
                 $numLocs = mysql_num_rows($result);
             }
 
@@ -425,14 +403,14 @@ class Locations extends Module
                     Locations::createLocationWithQrCode($intGameId, $spawnable->location_name, $spawnable->icon_media_id, $newLat, $newLon, $spawnable->error_range, $spawnable->type, $spawnable->type_id, 1, $spawnable->hidden, $spawnable->force_view, $spawnable->allow_quick_travel, $spawnable->wiggle, $spawnable->show_title, '', 0, "You've incorrectly encountered a spawnable! Weird...");
                 }
                 $query = "UPDATE spawnables SET last_spawned = now() WHERE spawnable_id = ".$spawnable->spawnable_id;
-                mysql_query($query);
+                Module::query($query);
                 $secondsOfSpawning-=$spawnable->spawn_rate;
                 if(location_bound_type != 'LOCATION') $secondsOfSpawning = 0; //Only simulate once unless location bound is a location
             }
             if($numLocs >= $spawnable->amount)
             {
                 $query = "UPDATE spawnables SET last_spawned = now() WHERE spawnable_id = ".$spawnable->spawnable_id;
-                mysql_query($query);
+                Module::query($query);
             } 
 
             //Destroy spawnables
@@ -444,11 +422,11 @@ class Locations extends Module
 			WHERE type = '".$spawnable->type."' AND type_id = ".$spawnable->type_id." AND ((spawnstamp < NOW() - INTERVAL ".$spawnable->time_to_live." SECOND) OR (type = 'Item' AND item_qty = 0))";
                         */
                 $query = "DELETE locations, qrcodes FROM locations, qrcodes WHERE locations.game_id = {$prefix} AND qrcodes.game_id = {$prefix} AND locations.location_id = qrcodes.link_id AND locations.type = '".$spawnable->type."' AND locations.type_id = ".$spawnable->type_id." AND ((locations.spawnstamp < NOW() - INTERVAL ".$spawnable->time_to_live." SECOND) OR (locations.type = 'Item' AND locations.item_qty = 0))";
-                mysql_query($query);
+                Module::query($query);
             }
 
             $query = "SELECT * FROM locations WHERE game_id = {$prefix} AND type = '".$spawnable->type."' AND type_id = ".$spawnable->type_id;
-            $locresults = mysql_query($query);
+            $locresults = Module::query($query);
             while($locobj = mysql_fetch_object($locresults))
             {
                 //If location's icon is not defined, use the object's icon
@@ -467,7 +445,6 @@ class Locations extends Module
         $playersArray = $playersJSON->data;
 
         foreach ($playersArray as $player) {
-            NetDebug::trace("adding player: " . $player->user_name );	
 
             $tmpPlayerObject = new stdClass();
 
@@ -488,7 +465,6 @@ class Locations extends Module
             $tmpPlayerObject->location_id = "0";
 
             $arrayLocations[] = $tmpPlayerObject;
-            NetDebug::trace("just adding player: " . $tmpPlayerObject->name );	
 
         }
 
@@ -512,7 +488,7 @@ class Locations extends Module
 
         $query = "SELECT * FROM locations WHERE game_id = {$prefix} AND location_id = {$intLocationID} LIMIT 1";
 
-        $rsResult = @mysql_query($query);
+        $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
         $location = mysql_fetch_object($rsResult);
         if (!$location) return new returnData(2, NULL, "No matching location");
@@ -595,12 +571,10 @@ class Locations extends Module
                     '{$strObjectType}','{$intObjectID}','{$intQuantity}',
                     '{$boolHidden}','{$boolForceView}', '{$boolAllowQuickTravel}', '{$boolAllowWiggle}', '{$boolDisplayAnnotation}')";
 
-        NetDebug::trace("createLocation: Running a query = $query");	
 
-        @mysql_query($query);
+        Module::query($query);
 
         if (mysql_error()) {
-            NetDebug::trace("createLocation: SQL Error = " . mysql_error());
             return new returnData(3, NULL, "SQL Error");
         }
 
@@ -668,11 +642,9 @@ class Locations extends Module
                  show_title = '{$boolDisplayAnnotations}',
                  WHERE game_id = {$prefix} AND location_id = '{$intLocationID}'";
 
-        NetDebug::trace("updateLocation: Query: $query");		
 
-        @mysql_query($query);
+        Module::query($query);
         if (mysql_error()) {
-            NetDebug::trace("MySQL Error:" . mysql_error());
             return new returnData(3, NULL, "SQL Error");		
         }
 
@@ -734,10 +706,8 @@ class Locations extends Module
                  wiggle = '{$boolAllowWiggle}',
                  show_title = '{$boolDisplayAnnotation}' 
                      WHERE game_id = {$prefix} AND location_id = '{$intLocationID}'";
-        NetDebug::trace("updateLocation: Query: $query");		
-        @mysql_query($query);
+        Module::query($query);
         if (mysql_error()) {
-            NetDebug::trace("MySQL Error:" . mysql_error());
             return new returnData(3, NULL, "SQL Error" . mysql_error());		
         }
 
@@ -746,12 +716,10 @@ class Locations extends Module
             SET 
             code = '{$qrCode}', fail_text = '{$errorText}'
             WHERE game_id = {$prefix} AND link_type = 'Location' AND link_id = '{$intLocationID}'";
-        NetDebug::trace("updateLocation: Query: $query");		
-        @mysql_query($query);
+        Module::query($query);
 
 
         if (mysql_error()) {
-            NetDebug::trace("MySQL Error:" . mysql_error());
             return new returnData(3, NULL, "SQL Error on query: {$query} Error:" . mysql_error());		
         }		
 
@@ -782,9 +750,8 @@ class Locations extends Module
         //Lookup the name of the item
         $query = "DELETE FROM locations 
             WHERE game_id = {$prefix} AND location_id = '{$intLocationId}'";
-        NetDebug::trace("deleteLocation: Query: $query");		
 
-        @mysql_query($query);
+        Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
         //Delete any QR Codes that point here
@@ -825,10 +792,8 @@ class Locations extends Module
 		ON locations.game_id = qrcodes.game_id AND locations.location_id = qrcodes.link_id
 		WHERE locations.type = '{$strObjectType}' AND locations.type_id = '{$intObjectId}' AND qrcodes.link_type = 'Location'";
 
-        NetDebug::trace("Query: $query");		
 
-        @mysql_query($query);
-        NetDebug::trace(mysql_error());		
+        Module::query($query);
 
         if (mysql_error()) return new returnData(3, NULL, "SQL Error" . mysql_error());
 
@@ -879,7 +844,7 @@ class Locations extends Module
         if (!$prefix) return FALSE;
 
         $query = "SHOW COLUMNS FROM locations LIKE 'type'";
-        $result = mysql_query( $query );
+        $result = Module::query( $query );
         $row = mysql_fetch_array( $result , MYSQL_NUM );
         $regex = "/'(.*?)'/";
         preg_match_all( $regex , $row[1], $enum_array );

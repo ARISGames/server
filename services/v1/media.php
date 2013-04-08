@@ -23,7 +23,7 @@ class Media extends Module
 		if ($intGameID == 0) $query = "SELECT * FROM media WHERE game_id = 0 AND SUBSTRING(file_path,1,1) != 'p'";
 		else $query = "SELECT * FROM media WHERE game_id = {$prefix} OR (game_id = 0 AND SUBSTRING(file_path,1,1) != 'p')";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		$returnData = new returnData(0, array());
@@ -66,8 +66,7 @@ class Media extends Module
 	
 
 		$query = "SELECT * FROM media WHERE media_id = {$intMediaID} LIMIT 1";
-		//NetDebug::trace($query);
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		$mediaRow = mysql_fetch_object($rsResult);
@@ -142,9 +141,8 @@ class Media extends Module
 			(media_id, game_id, name, file_path, is_icon)
 			VALUES ('".Module::findLowestIdFromTable('media','media_id')."','{$prefix}','{$strName}', '".$intGameID."/".$strFileName."',{$boolIsIcon})";
 
-		NetDebug::trace("Running a query = $query");	
 
-		@mysql_query($query);
+		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:".mysql_error());
 
 		$media->media_id = mysql_insert_id();
@@ -181,9 +179,8 @@ class Media extends Module
 			SET name = '{$strName}' 
 			WHERE media_id = '{$intMediaID}' and game_id = '{$prefix}'";
 
-		NetDebug::trace("updateNpc: Running a query = $query");	
 
-		@mysql_query($query);
+		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		if (mysql_affected_rows()) return new returnData(0, TRUE);
@@ -200,7 +197,7 @@ class Media extends Module
 
 		$query = "SELECT * FROM media 
 			WHERE media_id = {$intMediaID}";
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:". mysql_error());
 
 		$mediaRow = mysql_fetch_array($rsResult);
@@ -210,7 +207,7 @@ class Media extends Module
 		$query = "DELETE FROM media 
 			WHERE media_id = {$intMediaID}";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
 
 		//Delete the file		

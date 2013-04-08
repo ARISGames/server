@@ -3,6 +3,12 @@ function Model()
     this.gameJSONText = '';
     this.gameData = {};
     this.backpacks = [];
+	this.gameId = 3290; //GWS: change this later
+	this.playerId = 8090;  // GWS: Change this when adding logging in
+	this.currentNote = new Object();
+	this.currentNote.noteId = 0;
+	this.audio_context = '';
+  	this.recorder = '';
 
     //All notes in order they were received 
     this.notes = [];
@@ -149,13 +155,31 @@ function Model()
 		var notesForTag = 0;
 		for(var i = 0; i < this.notes.length; i++)
         {
+			if(!controller.filter(this.notes[i], document.getElementById("filterbox").value)) continue;
 			for (var j = 0; j < this.notes[i].tags.length; j++) 
 			{		
-				if (this.notes[i].tags[j].tag.toLowerCase() == tag.toLowerCase())
+				if (this.notes[i].tags[j].tag.toLowerCase() == tag.toLowerCase()) {
+					console.log("matching tag: " + tag.toLowerCase());
 					notesForTag ++;
+					
+				}
+				
 			}
 		}
         return notesForTag;
+    }
+	
+	this.numberOfTotalNotes = function()
+    {
+		var notes = 0;
+		for(var i = 0; i < this.notes.length; i++)
+        {
+			if(!controller.filter(this.notes[i], document.getElementById("filterbox").value)) continue;
+			
+			notes ++;		
+		}
+		
+        return notes;
     }
 	
 	
@@ -164,8 +188,11 @@ function Model()
 		var notesForContributor = 0;
 		for(var i = 0; i < this.notes.length; i++)
         {
-			if (this.notes[i].username.toLowerCase() == contributor.toLowerCase())
-				notesForContributor ++;
+			
+			if (this.notes[i].username.toLowerCase() == contributor.toLowerCase()) {
+				if(controller.filter(this.notes[i], document.getElementById("filterbox").value))	
+					notesForContributor ++;
+			}
 		}
         return notesForContributor;
     }
@@ -175,8 +202,6 @@ function Model()
 		var picURL = "";
 		for(var i = 0; i < this.backpacks.length; i++)
         {
-			console.log("username: " + this.backpacks[i].owner.user_name);
-			console.log("contributor: " + contributor);
 			if (contributor == null || this.backpacks[i].owner.user_name == null) {
 				picURL = "./images/DefaultPCImage.png";
 			}
@@ -258,10 +283,14 @@ function Model()
         this.mapNoteViewContainer = document.getElementById('map_note_view_container');
         this.mapNoteViewContainer.addEventListener('click', function(e) { e.stopPropagation(); });
         this.mapNoteViewCloseButton = new ActionButton(document.getElementById('map_note_view_close_button'), controller.hideMapNoteView);
+        this.createNoteViewContainer = document.getElementById('create_note_view_container');
         this.listNoteViewContainer = document.getElementById('list_note_view_container');
         this.constructNoteView = document.getElementById('note_view_construct');
+		this.constructNoteCreateView = document.getElementById('note_create_view_construct');
         this.defaultNoteView = document.getElementById('note_view_default');
+		this.defaultNoteCreateView = document.getElementById('note_create_view_default');
         this.noteView = new NoteView(this.defaultNoteView, null);
+		this.noteCreateView = new NoteCreateView(this.defaultNoteCreateView);
 
         //Map
         this.map = document.getElementById('map');
@@ -271,29 +300,39 @@ function Model()
 		
 		// marker clusterer
 		var mcOptions = {styles: [{
-			height: 47,
+			height: 57,
 			url: "./images/speechBubble_cluster_large.png",
-			width: 50
+			width: 52,
+			anchor:[19,17],
+			fontFamily:"Helvetica, Arial"
 			},
 			{
-			height: 47,
+			height: 57,
 			url: "./images/speechBubble_cluster_large.png",
-			width: 50
+			width: 52,
+			anchor:[17,17],
+			fontFamily: "Helvetica, Arial"
 			},
 			{
-			height: 47,
+			height: 57,
 			url: "./images/speechBubble_cluster_large.png",
-			width: 50
+			width: 52,
+			anchor:[17,17],
+			fontFamily: "Helvetica, Arial"
 			},
 			{
-			height: 47,
+			height: 57,
 			url: "./images/speechBubble_cluster_large.png",
-			width: 50
+			width: 52,
+			anchor:[17,17],
+			fontFamily: "Helvetica, Arial"
 			},
 			{
-			height: 47,
+			height: 57,
 			url: "./images/speechBubble_cluster_large.png",
-			width: 50
+			width: 52,
+			anchor:[17,17],
+			fontFamily: "Helvetica, Arial"
 			}]};
 		this.markerclusterer = new MarkerClusterer(this.gmap,[],mcOptions);
 		this.markerclusterer.setMinimumClusterSize(3)

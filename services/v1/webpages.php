@@ -25,10 +25,9 @@ class WebPages extends Module
 
 
 		$query = "SELECT * FROM web_pages WHERE game_id = '{$gameId}'";
-		NetDebug::trace($query);
 
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 		return new returnData(0, $rsResult);
@@ -53,7 +52,7 @@ class WebPages extends Module
 
 		$query = "SELECT * FROM web_pages WHERE game_id = '{$gameId}' AND web_page_id = '{$webPageId}' LIMIT 1";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		$webPage = @mysql_fetch_object($rsResult);
@@ -87,9 +86,8 @@ class WebPages extends Module
 					'{$url}',
 					'{$iconMediaId}')";
 
-		NetDebug::trace("createWebPage: Running a query = $query");	
 
-		@mysql_query($query);
+		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);		
 
 		return new returnData(0, mysql_insert_id());
@@ -123,9 +121,8 @@ class WebPages extends Module
 			    icon_media_id = '{$iconMediaId}' 
 				    WHERE web_page_id = '{$webPageId}'";
 
-		NetDebug::trace("updateWebPage: Running a query = $query");	
 
-		@mysql_query($query);
+		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);
 
 		if (mysql_affected_rows()) return new returnData(0, TRUE, "Success Running:" . $query);
@@ -158,7 +155,7 @@ class WebPages extends Module
 
 		$query = "DELETE FROM web_pages WHERE game_id = '{$gameId}' AND web_page_id = {$webPageId}";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		if (mysql_affected_rows()) {

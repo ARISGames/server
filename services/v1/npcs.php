@@ -20,7 +20,7 @@ class Npcs extends Module
 
 		$query = "SELECT * FROM npcs WHERE game_id = {$prefix}";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 		return new returnData(0, $rsResult);	
@@ -39,7 +39,7 @@ class Npcs extends Module
 
 		$query = "SELECT * FROM npcs WHERE game_id = {$prefix} AND npc_id = {$intNpcID} LIMIT 1";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		$npc = @mysql_fetch_object($rsResult);
@@ -124,9 +124,8 @@ class Npcs extends Module
 			(game_id, name, description, text, closing, media_id, icon_media_id)
 			VALUES ({$prefix}, '{$name}', '{$description}', '{$greeting}', '{$closing}','{$mediaID}','{$iconMediaID}')";
 
-		NetDebug::trace("createNpc: Running a query = $query");	
 
-		@mysql_query($query);
+		Module::query($query);
 
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
 		return new returnData(0, mysql_insert_id());		
@@ -170,9 +169,8 @@ class Npcs extends Module
 			    media_id = '{$mediaID}', icon_media_id = '{$iconMediaID}'
 				    WHERE npc_id = '{$npcID}' AND game_id = {$prefix}";
 
-		NetDebug::trace("updateNpc: Running a query = $query");	
 
-		@mysql_query($query);
+		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());	
 
 		if (mysql_affected_rows()) return new returnData(0, TRUE, "");
@@ -197,14 +195,14 @@ class Npcs extends Module
 		
 		$query = "DELETE FROM npcs WHERE npc_id = {$intNpcID} AND game_id = {$intGameId}";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		$hasDeletedNPC = mysql_affected_rows();
 
 		$query = "DELETE FROM npc_conversations WHERE npc_id = {$intNpcID} AND game_id = {$intGameId}";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		
@@ -229,9 +227,8 @@ class Npcs extends Module
 			(game_id, npc_id, node_id, text)
 			VALUES ({$prefix}, '{$intNpcID}', '{$intNodeID}', '{$strText}')";
 
-		NetDebug::trace("createConversation: Running a query = $query");	
 
-		@mysql_query($query);
+		Module::query($query);
 
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
@@ -252,9 +249,8 @@ class Npcs extends Module
 
 		$query = "SELECT * FROM npc_conversations WHERE game_id = {$prefix} AND npc_id = '{$intNpcID}' ORDER BY sort_index";
 
-		NetDebug::trace("getConversations: Running a query = $query");	
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		return new returnData(0, $rsResult);		
@@ -270,7 +266,6 @@ class Npcs extends Module
 		$prefix = Module::getPrefix($intGameId);
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");		
 
-		NetDebug::trace("getConversationsForPlayer beginning");	
 
 		$conversationsReturnData= Npcs::getConversations($intGameId, $intNpcID);	
 		$conversations = $conversationsReturnData->data;
@@ -279,11 +274,10 @@ class Npcs extends Module
 		$conversationsWithRequirementsMet = array();
 
 		while ($conversation = mysql_fetch_array($conversations)) {
-			NetDebug::trace("Testing Conversation {$conversation['conversation_id']}");	
 
 			if (Module::objectMeetsRequirements ($prefix, $intPlayerID, 'Node',  $conversation['node_id']) ) {
 				$query = "SELECT * FROM player_log WHERE game_id = '{$intGameId}' AND player_id = '{$intPlayerID}' AND event_type = '".Module::kLOG_VIEW_NODE."' AND event_detail_1 = '".$conversation['node_id']."' AND deleted = '0'";
-				$result = mysql_query($query);
+				$result = Module::query($query);
 				if(mysql_num_rows($result) > 0) $conversation['has_viewed'] = true;
 				else $conversation['has_viewed'] = false;
 				$conversationsWithRequirementsMet[] = $conversation;
@@ -309,7 +303,7 @@ class Npcs extends Module
 			SET npc_id = '{$intNewNPC}', node_id = '{$intNewNode}', text = '{$strNewText}'
 			WHERE game_id = {$prefix} AND conversation_id = {$intConverationID}";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		if (mysql_affected_rows()) return new returnData(0, TRUE);
@@ -330,7 +324,7 @@ class Npcs extends Module
 		//Find locations
 		$query = "SELECT location_id FROM locations WHERE 
 			type  = 'Npc' and type_id = {$intNpcID} AND game_id = {$prefix}";
-		$rsLocations = @mysql_query($query);
+		$rsLocations = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error in Locations query");
 
 		$referrers = array();
@@ -355,7 +349,7 @@ class Npcs extends Module
 
 		$query = "DELETE FROM npc_conversations WHERE game_id = {$prefix} AND conversation_id = {$intConverationID}";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(1, NULL, "SQL Error");
 
 		if (mysql_affected_rows()) return new returnData(0);
@@ -371,7 +365,7 @@ class Npcs extends Module
 		$characters = array();
 
 		$query = "SELECT * FROM npcs WHERE game_id = {$prefix}";
-		$npcs = @mysql_query($query);
+		$npcs = Module::query($query);
 		if (mysql_error()) return new returnData(1, NULL, mysql_error);
 
 		while($npc = mysql_fetch_object($npcs))
@@ -390,21 +384,21 @@ class Npcs extends Module
 
 			//Convos
 			$query = "SELECT * FROM npc_conversations WHERE game_id = {$prefix} AND npc_id = '{$npc->npc_id}'";
-			$convos = @mysql_query($query);
+			$convos = Module::query($query);
 			if (mysql_error()) return new returnData(1, NULL, mysql_error);
 			while($convo = mysql_fetch_object($convos))
 			{
 				$script = new stdClass();
 				$script->option = $convo->text;
 				$query = "SELECT * FROM nodes WHERE game_id = {$prefix} AND node_id = '{$convo->node_id}'";
-				$nodeRow = @mysql_query($query);
+				$nodeRow = Module::query($query);
 				if (mysql_error()) return new returnData(1, NULL, mysql_error);
 				$node = mysql_fetch_object($nodeRow);
 				$script->content = $node->text;
 
 				$requirements = array();
 				$query = "SELECT * FROM requirements WHERE content_type = 'Node' AND content_id = '{$node->node_id}' AND game_id = {$prefix}";
-				$reqs = @mysql_query($query);
+				$reqs = Module::query($query);
 				if (mysql_error()) return new returnData(1, NULL, mysql_error);
 				while($reqObj = mysql_fetch_object($reqs))
 				{
@@ -420,7 +414,7 @@ class Npcs extends Module
 
 				$exchanges = array();
 				$query = "SELECT * FROM player_state_changes WHERE event_type = 'VIEW_NODE' AND event_detail = '{$node->node_id}' AND game_id = {$prefix}";
-				$exchngs = @mysql_query($query);
+				$exchngs = Module::query($query);
 				if (mysql_error()) return new returnData(1, NULL, mysql_error);
 				while($exchangeObj = mysql_fetch_object($exchngs))
 				{

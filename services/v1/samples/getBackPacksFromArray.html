@@ -11,15 +11,15 @@
 		alert(params);
         	xmlhttp.send(params); //Synchronous call
 
-        	var response=JSON.parse(xmlhttp.responseText);
-		if(response.returnCode == 1) //Error
-		{
-			document.getElementById('playerBackPacks').innerHTML = response.data;	
-		}
-		else
-		{
+        	//var response=JSON.parse(xmlhttp.responseText);
+		//if(response.returnCode == 1) //Error
+		//{
+			//document.getElementById('playerBackPacks').innerHTML = response.data;	
+		//}
+		//else
+		//{
 			document.getElementById('playerBackPacks').innerHTML = "Success!-<br />"+xmlhttp.responseText;	
-		}
+		//}
 	}
 
 	function pageLoad()
@@ -41,7 +41,7 @@
 		//get all players' backpacks in game
 		var bpReqObj = new Object();
 		bpReqObj.players = null;
-		bpReqObj.gameId = 177;
+		bpReqObj.gameId = 159;
 		sendRequest("players.getPlayerBackpacksFromArray", JSON.stringify(bpReqObj));
 	}
 </script>

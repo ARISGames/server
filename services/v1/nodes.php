@@ -18,7 +18,7 @@ class Nodes extends Module
 
 		$query = "SELECT game_nodes.*, game_npc_conversations.npc_id, game_npcs.name FROM (SELECT * FROM nodes WHERE game_id = '{$prefix}') AS game_nodes LEFT JOIN (SELECT * FROM npc_conversations WHERE game_id = '{$prefix}') AS game_npc_conversations ON game_nodes.node_id = game_npc_conversations.node_id LEFT JOIN (SELECT * FROM npcs WHERE game_id = '{$prefix}') AS game_npcs ON game_npc_conversations.npc_id = game_npcs.npc_id ORDER BY npc_id DESC";
 		//^ Where mysql boys become mysql men 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 		return new returnData(0, $rsResult);	
@@ -36,7 +36,7 @@ class Nodes extends Module
 
 		$query = "SELECT * FROM nodes WHERE game_id = {$prefix} AND node_id = {$intNodeID} LIMIT 1";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		$node = mysql_fetch_object($rsResult);		
@@ -82,9 +82,8 @@ class Nodes extends Module
 					'{$intQAIncorrectNodeID}', 
 					'{$intQACorrectNodeID}')";
 
-		NetDebug::trace("createNode: Running a query = $query");	
 
-		@mysql_query($query);
+		Module::query($query);
 
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);	
 
@@ -123,9 +122,8 @@ class Nodes extends Module
 			    require_answer_correct_node_id = '{$intQACorrectNodeID}'
 				    WHERE game_id = {$prefix} AND node_id = '{$intNodeID}'";
 
-		NetDebug::trace("updateNode: Running a query = $query");	
 
-		mysql_query($query);
+		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);	
 
 
@@ -139,7 +137,7 @@ class Nodes extends Module
 		if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 		$query = "SELECT node_id FROM npc_conversations WHERE game_id = {$intGameId} AND npc_id = {$intNpcId}";
-		$result = @mysql_query($query);
+		$result = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
                 while($nid = mysql_fetch_object($result))
@@ -164,7 +162,7 @@ class Nodes extends Module
 
 		$query = "DELETE FROM nodes WHERE game_id = {$prefix} AND node_id = {$intNodeID}";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		if (mysql_affected_rows()) return new returnData(0);
@@ -184,7 +182,7 @@ class Nodes extends Module
 		//Find locations
 		$query = "SELECT location_id FROM locations WHERE 
 			type  = 'Node' AND type_id = {$intNodeID} AND game_id = '{$prefix}'";
-		$rsLocations = @mysql_query($query);
+		$rsLocations = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error in Locations query");
 
 		//Find Nodes
@@ -193,7 +191,7 @@ class Nodes extends Module
 			(opt1_node_id  = {$intNodeID} or
 			opt2_node_id  = {$intNodeID} or
 			opt3_node_id  = {$intNodeID})";
-		$rsNodes = @mysql_query($query);
+		$rsNodes = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error in Nodes Query");
 
 
@@ -202,8 +200,7 @@ class Nodes extends Module
 			JOIN (SELECT * FROM npc_conversations WHERE game_id = '{$prefix}') AS game_npc_conversations
 			ON game_npcs.npc_id = game_npc_conversations.npc_id
 			WHERE game_npc_conversations.node_id = {$intNodeID}";
-		NetDebug::trace($query);			
-		$rsNpcs = @mysql_query($query);
+		$rsNpcs = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error in NPC Query");
 
 

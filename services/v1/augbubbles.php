@@ -23,16 +23,14 @@ class AugBubbles extends Module
 
 
 		$query = "SELECT * FROM aug_bubbles WHERE game_id = '{$gameId}'";
-		NetDebug::trace($query);
-		$augBubblesRS = @mysql_query($query);
+		$augBubblesRS = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" .mysql_error());
 
 		$augBubbles = array();
 
 		while ($augBubble = mysql_fetch_object($augBubblesRS)) {
 			$query = "SELECT * FROM aug_bubble_media WHERE aug_bubble_id = '{$augBubble->aug_bubble_id}'";
-			NetDebug::trace($query);
-			$mediaRS = @mysql_query($query);
+			$mediaRS = Module::query($query);
 			if (mysql_error()) return new returnData(3, NULL, "SQL Error:".mysql_error());
 
 			//extract the recordset
@@ -66,15 +64,14 @@ class AugBubbles extends Module
 
 		$query = "SELECT * FROM aug_bubbles WHERE game_id = '{$gameId}' AND aug_bubble_id = '{$augBubbleId}' LIMIT 1";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		$augBubble = @mysql_fetch_object($rsResult);
 		if (!$augBubble) return new returnData(2, NULL, "invalid aug bubble id");
 
 		$query = "SELECT * FROM aug_bubble_media WHERE aug_bubble_id = '{$augBubble->aug_bubble_id}'";
-		NetDebug::trace($query);
-		$mediaRS = @mysql_query($query);
+		$mediaRS = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:".mysql_error());
 
 		//extract the recordset
@@ -90,7 +87,7 @@ class AugBubbles extends Module
 
 
 		$query = "SELECT * FROM aug_bubble_media WHERE aug_bubble_id = '{$augBubbleId}'";
-		$result = mysql_query($query);
+		$result = Module::query($query);
 
 		return new returnData(0, $result);
 	}
@@ -119,9 +116,7 @@ class AugBubbles extends Module
 			(game_id, name, description, icon_media_id)
 			VALUES ('{$gameId}', '{$name}', '{$desc}', '{$iconMediaId}')";
 
-		NetDebug::trace("createAugBubble: Running a query = $query");	
-
-		@mysql_query($query);
+		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);		
 
 		return new returnData(0, mysql_insert_id());
@@ -155,9 +150,7 @@ class AugBubbles extends Module
 			    icon_media_id = '{$iconMediaId}'
 				    WHERE aug_bubble_id = '{$augBubbleId}'";
 
-		NetDebug::trace("updateAugBubble: Running a query = $query");	
-
-		@mysql_query($query);
+		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);
 
 		if (mysql_affected_rows()) return new returnData(0, TRUE, "Success Running:" . $query);
@@ -170,7 +163,7 @@ class AugBubbles extends Module
 	{
 		$prefix = Module::getPrefix($gameId);
 		$query = "DELETE FROM aug_bubble_media WHERE aug_bubble_id = '{$intAugId}' AND media_id = '{$intMediaId}'";
-		mysql_query($query);
+		Module::query($query);
 
 		return new returnData(0);
 	}
@@ -181,7 +174,7 @@ class AugBubbles extends Module
 
 		/* This will be for when index is implemented
 		   $query = "SELECT * FROM aug_bubble_media WHERE aug_bubble_id = '{$intAugId}' AND media_id = '{$intMediaId}'";
-		   $result = mysql_query($query);
+		   $result = Module::query($query);
 
 		   if(mysql_num_rows($result)>0){
 		   $query = "UPDATE aug_bubble_media SET";
@@ -189,8 +182,7 @@ class AugBubbles extends Module
 		 */
 
 		$query = "INSERT INTO aug_bubble_media (aug_bubble_id, media_id, text, game_id) VALUES ('{$intAugId}', '{$intMediaId}', '{$stringName}', '{$intGameId}')";
-		NetDebug::trace($query);
-		mysql_query($query);
+		Module::query($query);
 
 		if (mysql_error()) return new returnData(1, NULL, mysql_error());
 
@@ -220,7 +212,7 @@ class AugBubbles extends Module
 
 		$query = "DELETE FROM aug_bubbles WHERE game_id = '{$gameId}' AND aug_bubble_id = {$augBubbleId}";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		if (mysql_affected_rows()) {

@@ -20,10 +20,9 @@ class QRCodes extends Module
 
 
 		$query = "SELECT * FROM qrcodes WHERE game_id = {$prefix}";
-		NetDebug::trace($query);
 
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 		return new returnData(0, $rsResult);
@@ -41,7 +40,7 @@ class QRCodes extends Module
 
 		$query = "SELECT * FROM qrcodes WHERE game_id = {$prefix} AND qrcode_id = {$intQRCodeID} LIMIT 1";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		$event = @mysql_fetch_object($rsResult);
@@ -62,14 +61,13 @@ class QRCodes extends Module
 
 		$query = "SELECT * FROM qrcodes WHERE game_id = {$prefix}";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		//Set up a tmp directory
 		$relDir = "{$prefix}_qrcodes_" . date('Y_m_d_h_i_s');
 		$tmpDir = Config::gamedataFSPath . "/backups/{$relDir}";
 		$command = "mkdir {$tmpDir}";
-		NetDebug::trace($command);
 		exec($command, $output, $return);
 		if ($return) return new returnData(4, NULL, "cannot create backup dir, check file permissions");
 
@@ -79,30 +77,24 @@ class QRCodes extends Module
 			$fileNameType = '';
 			$fileNameId = '';
 			$fileNameName = '';
-			NetDebug::trace("QR Code Type:" . $qrCode->link_type);
 
 			switch ($qrCode->link_type) {
 				case 'Location':
-					NetDebug::trace("It is Location " . $qrCode->link_id);
 					$fileNameType = "Location";
 					$fileNameId = $qrCode->link_id;
 
 					$locationReturnData = Locations::getLocation($intGameId, $qrCode->link_id);
 					$location = $locationReturnData->data;				
-					NetDebug::trace("Location Found. Type:" . $location->type .". Look up the Object" );
 					switch ($location->type) {
 						case 'Npc': 
-							NetDebug::trace("It is an NPC");
 							$object = Npcs::getNpc($intGameId, $location->type_id);
 							$fileNameName = $object->data->name;
 							break;
 						case 'Node': 
-							NetDebug::trace("It is an NPC");
 							$object = Nodes::getNode($intGameId, $location->type_id);
 							$fileNameName = $object->data->title;
 							break;
 						case 'Item':
-							NetDebug::trace("It is an Item");
 							$object = Items::getItem($intGameId, $location->type_id);
 							$fileNameName = $object->data->name;
 							break;	
@@ -115,11 +107,9 @@ class QRCodes extends Module
 			}
 
 			$fileName = "{$fileNameType}{$fileNameId}-{$fileNameName}.jpg";
-			NetDebug::trace("The file name will be {$fileName}");
 
 			$command = "curl -s -o /{$tmpDir}/{$fileName} 'http://chart.apis.google.com/chart?chs=300x300&cht=qr&choe=UTF-8&chl={$qrCode->code}'";
 			exec($command, $output, $return);
-			NetDebug::trace($command);
 			if ($return) return new returnData(4, NULL, "cannot download and save qr code image, check file permissions and url in console");
 		}
 
@@ -127,11 +117,9 @@ class QRCodes extends Module
 		$zipFileName = "aris_qr_codes.tar";
 		$cwd = Config::gamedataFSPath . "/backups";
 		chdir($cwd);
-		NetDebug::trace("cd $cwd");
 
 		$command = "tar -cf {$zipFileName} {$relDir}/";
 		exec($command, $output, $return);
-		NetDebug::trace($command);
 		if ($return) return new returnData(5, NULL, "cannot compress backup dir, check that tar command is availabe.");
 
 		//Delete the Temp
@@ -150,14 +138,11 @@ class QRCodes extends Module
 	 */
 	public function getBestImageMatchNearbyObjectForPlayer($intGameId, $intPlayerId, $strFileName)
 	{    
-		//NetDebug::trace(getcwd());
 
 		$gameMediaAndDescriptorsPath = Media::getMediaDirectory($intGameId)->data;
 		$execCommand = '../../ImageMatcher/ImageMatcher match ' . $gameMediaAndDescriptorsPath . $strFileName . ' ' . $gameMediaAndDescriptorsPath;
-		NetDebug::trace($execCommand);
 
 		$console = exec($execCommand); //Run it
-		NetDebug::trace('Console:' . $console);
 		Module::serverErrorLog('getBestImageMatchNearbyObjectForPlayer Console:' . $console);
 
 
@@ -165,10 +150,8 @@ class QRCodes extends Module
 		$fileName = $consoleJSON['filename'];        
 		$pathParts = pathinfo($fileName);
 		$fileName =  $pathParts['filename']; // requires PHP 5.2.0        
-		NetDebug::trace('fileName: ' . $fileName);
 
 		$similarity = $consoleJSON['similarity'];
-		NetDebug::trace('similarity: ' . $similarity);
 		if ($similarity > 0.2) return new returnData(0, NULL, "No match found. Best simularity was {$similarity}");
 
 
@@ -184,9 +167,8 @@ class QRCodes extends Module
 			OR media.file_path = '{$fileName}.png'
 			LIMIT 1";
 
-		NetDebug::trace('query: ' . $query);
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error: ". mysql_error());
 
 		$qrcode = @mysql_fetch_object($rsResult);
@@ -209,11 +191,9 @@ class QRCodes extends Module
 		$returnResult = new returnData(0, $qrcode);
 
 		//Get the data
-		NetDebug::trace("QRCode link_type=" . $qrcode->link_type . " link_id=" . $qrcode->link_id);
 
 		switch ($qrcode->link_type) {
 			case 'Location':
-				NetDebug::trace("It is Location " . $qrcode->link_id);
 				$returnResult->data->object = Locations::getLocation($intGameId, $qrcode->link_id)->data;
 				if (!$returnResult->data->object) return new returnData(5, NULL, "bad link in qr code, no matching location found");
 				break;
@@ -240,7 +220,7 @@ class QRCodes extends Module
 
 		$query = "SELECT * FROM qrcodes WHERE game_id = {$prefix} AND code = '{$strCode}'";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error: ". mysql_error());
 
 		$rData = new returnData(0, NULL, "invalid QRCode code");
@@ -264,11 +244,9 @@ class QRCodes extends Module
 				$rData = new returnData(0, $qrcode);
 
 				//Get the data
-				NetDebug::trace("QRCode link_type=" . $qrcode->link_type . " link_id=" . $qrcode->link_id);
 
 				switch ($qrcode->link_type) {
 					case 'Location':
-						NetDebug::trace("It is Location " . $qrcode->link_id);
 						$rData->data->object = Locations::getLocation($intGameId, $qrcode->link_id)->data;
 						if (!$rData->data->object) return new returnData(5, NULL, "bad link in qr code, no matching location found");
 						return $rData;
@@ -301,16 +279,14 @@ class QRCodes extends Module
 			$charSet = "123456789";
 			$strCode = '';
 			for ($i=0; $i<4; $i++) $strCode .= substr($charSet,rand(0,strlen(charSet)-1),1);
-			NetDebug::trace("New Code was Created: " . $strCode);	
 		}
 
 		$query = "INSERT INTO qrcodes 
 			(game_id, link_type, link_id, code, match_media_id, fail_text)
 			VALUES ('{$prefix}','{$strLinkType}','{$intLinkID}','{$strCode}','{$imageMatchId}', '{$errorText}')";
 
-		NetDebug::trace("Running a query = $query");	
 
-		@mysql_query($query);
+		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error: ". mysql_error());
 
 		return new returnData(0, mysql_insert_id());
@@ -341,9 +317,8 @@ class QRCodes extends Module
 				  fail_text = '{$errorText}'
 					  WHERE game_id = {$prefix} AND qrcode_id = '{$intQRCodeID}'";
 
-		NetDebug::trace("Running a query = $query");	
 
-		@mysql_query($query);
+		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		if (mysql_affected_rows()) return new returnData(0, TRUE);
@@ -364,7 +339,7 @@ class QRCodes extends Module
 
 		$query = "DELETE FROM qrcodes WHERE game_id = {$prefix} AND qrcode_id = {$intQRCodeID}";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		if (mysql_affected_rows()) {
@@ -387,7 +362,7 @@ class QRCodes extends Module
 		$query = "DELETE FROM qrcodes WHERE game_id = {$prefix} AND
                 link_type = '{$strLinkType}' AND link_id = '{$intLinkID}'";
 
-		$rsResult = @mysql_query($query);
+		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		if (mysql_affected_rows()) {
@@ -418,9 +393,8 @@ class QRCodes extends Module
 		if (!$prefix) return FALSE;
 
 		$query = "SHOW COLUMNS FROM qrcodes LIKE 'link_type'";
-//		NetDebug::trace($query);
 
-		$result = @mysql_query( $query );
+		$result = Module::query( $query );
 		$row = @mysql_fetch_array( $result , MYSQL_NUM );
 		$regex = "/'(.*?)'/";
 		preg_match_all( $regex , $row[1], $enum_array );
