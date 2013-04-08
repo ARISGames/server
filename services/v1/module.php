@@ -136,6 +136,40 @@ abstract class Module
     mysql_query("set charset set utf8");
   }	
 
+  public function query($query)
+  {
+    $r = mysql_query($query);
+    if(mysql_error()) 
+    {
+    
+        Module::serverErrorLog("Error With Request:\n"."http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]"."\nQuery:\n".$query."\nError: ".mysql_error());
+        return false;
+    }
+    return $r;
+  }
+
+  public function queryObject($query)
+  {
+    if($r = Module::query($query))
+    {
+        $o = mysql_fetch_object($r);
+        return $o;
+    }
+    return stdClass();
+  }
+
+  public function queryArray($query)
+  {
+    if($r = Module::query($query))
+    {
+        $a = array();
+        while($o = mysql_fetch_object($r)) 
+            $a[] = $o;
+        return $a;
+    }
+    return array();
+  }
+
   /**
    * Fetch the prefix of a game
    * @returns a prefix string without the trailing _
@@ -154,14 +188,14 @@ abstract class Module
    * Fetch the GameID from a prefix
    * @returns a gameID int
    */
-  protected function getGameIdFromPrefix($strPrefix) {	
+  protected function getGameIdFromPrefix($strPrefix)
+  {	
     //Lookup game information
     $query = "SELECT game_id FROM games WHERE prefix= '{$strPrefix}_'";
     $rsResult = @mysql_query($query);
     if (mysql_num_rows($rsResult) < 1) return FALSE;
     $gameRecord = mysql_fetch_array($rsResult);
     return $gameRecord['game_id'];
-
   }	
 
   /*
@@ -1015,7 +1049,7 @@ abstract class Module
   protected function serverErrorLog($message)
   {
     $errorLogFile = fopen(Config::serverErrorLog, "a");
-    $errorData = date('c') . ' "' . $message . '"' ."\n";
+    $errorData = date('c').":\n".$message."\n\n";
     fwrite($errorLogFile, $errorData);
     fclose($errorLogFile);
   }

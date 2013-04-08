@@ -163,6 +163,11 @@ class Notes extends Module
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         return new returnData(0, $newAve);	
     }
+    
+    function updateLocation($gameId, $noteId, $lat, $lng)
+    {
+        Module::giveNoteToWorld($gameId, $noteId, $lat, $lng);
+    }
 
     //Gets all notes accessible through the notebook by an arbitrary player
     function getNotesForGame($gameId, $playerId) 
@@ -3658,7 +3663,7 @@ class Notes extends Module
 
     private static function getDetailedFullNoteObject($noteId, $playerId=0)
     {
-        $query = "SELECT note_id, game_id, owner_id, title, public_to_map, public_to_notebook FROM notes WHERE note_id = '{$noteId}'";
+        $query = "SELECT note_id, game_id, owner_id, title, public_to_map, public_to_notebook, created FROM notes WHERE note_id = '{$noteId}'";
         $result = @mysql_query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         if($note = mysql_fetch_object($result))
