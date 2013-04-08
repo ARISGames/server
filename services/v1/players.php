@@ -70,7 +70,7 @@ class Players extends Module
         $rs = Module::query($query);
         if (mysql_num_rows($rs) < 1) return new returnData(0, NULL, 'bad username or password');
         $player = @mysql_fetch_object($rs);
-        Module::appendLog($intPlayerID, NULL, Module::kLOG_LOGIN);//Only place outside of Module's EVENT_PIPELINE that can append the Log
+        Module::appendLog($player->player_id, NULL, Module::kLOG_LOGIN);//Only place outside of Module's EVENT_PIPELINE that can append the Log
         return new returnData(0, intval($player->player_id));
     }
 
@@ -86,7 +86,7 @@ class Players extends Module
         $rs = Module::query($query);
         if (mysql_num_rows($rs) < 1) return new returnData(0, NULL, 'bad username or password');
         $player = @mysql_fetch_object($rs);
-        Module::appendLog($intPlayerID, NULL, Module::kLOG_LOGIN);//Only place outside of Module's EVENT_PIPELINE that can append the Log
+        Module::appendLog($player->player_id, NULL, Module::kLOG_LOGIN);//Only place outside of Module's EVENT_PIPELINE that can append the Log
         return new returnData(0, $player);
     }
 
