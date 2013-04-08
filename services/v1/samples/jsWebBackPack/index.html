@@ -26,6 +26,7 @@
 		else
 		{
 			//document.getElementById('playerBackPacks').innerHTML = "Success!-<br />"+response.data;	
+			console.log(JSON.stringify(response.data));
 			formatPage(response.data);
                         gameJSON = response.data;
 		}
