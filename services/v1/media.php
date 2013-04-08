@@ -56,6 +56,8 @@ class Media extends Module
      */
     public function getMediaObject($intGameID, $intMediaID)
     {
+        if (!$intMediaID) return new returnData(2, NULL, "No matching media");
+
         if($intGameID == "player")
             $prefix = 'null';
         else
@@ -63,7 +65,6 @@ class Media extends Module
             $prefix = Module::getPrefix($intGameID);
             if (!$prefix) return new returnData(1, NULL, "invalid game id");
         }
-
 
         $query = "SELECT * FROM media WHERE media_id = {$intMediaID} LIMIT 1";
         $rsResult = Module::query($query);
