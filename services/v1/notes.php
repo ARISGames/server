@@ -273,7 +273,7 @@ class Notes extends Module
     //Array of json objects:
     //	tag = 'my tag'
     //	tag_id = 4
-    //	player_created = 0 (if 0, created by game author, and potentially used in requirements. if 1, created by some player)
+    //	player_created = 0 (if 0, by game author, and potentially used in requirements. if 1, created by some player)
     function getNoteTags($noteId, $gameId)
     {
         $query = "SELECT gt.tag, gt.tag_id, gt.player_created FROM note_tags LEFT JOIN ((SELECT tag, tag_id, player_created FROM game_tags WHERE game_id = '{$gameId}') as gt) ON note_tags.tag_id = gt.tag_id WHERE note_id = '{$noteId}'";
@@ -560,7 +560,7 @@ class Notes extends Module
 
     private static function getDetailedFullNoteObject($noteId, $playerId=0)
     {
-        $query = "SELECT note_id, game_id, owner_id, title, public_to_map, public_to_notebook, created FROM notes WHERE note_id = '{$noteId}'";
+        $query = "SELECT note_id, game_id, owner_id, title, public_to_map, public_to_notebook FROM notes WHERE note_id = '{$noteId}'";
         $result = Module::query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         if($note = mysql_fetch_object($result))
