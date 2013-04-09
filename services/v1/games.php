@@ -421,7 +421,7 @@ class Games extends Module
 	public function upgradeDatabase() 
 	{		
 		$version = 1;  //Arbitrary version. Increment on edit. Should be able to grep the log to see what last run upgrade was. (Unreliable)
-		Module::serverErrorLog("Upgrading database. Version ".$version);
+		//Module::serverErrorLog("Upgrading database. Version ".$version);
 
 		/* Version 1 Upgrades */
 		$query = "";
@@ -463,7 +463,7 @@ class Games extends Module
 	 */	
 	public function deleteGame($intGameID)
 	{
-		Module::serverErrorLog("Deleting Game Id: {$intGameID}");
+		//Module::serverErrorLog("Deleting Game Id: {$intGameID}");
 
 		$returnData = new returnData(0, NULL, NULL);
 
@@ -961,7 +961,7 @@ class Games extends Module
 	 */
 	public function duplicateGame($intGameId, $intEditorID = 0){
 
-		Module::serverErrorLog("Duplicating Game ID:".$intGameId);
+		//Module::serverErrorLog("Duplicating Game ID:".$intGameId);
 		$prefix = Module::getPrefix($intGameId);
 
 		$query = "SELECT * FROM games WHERE game_id = {$intGameId} LIMIT 1";

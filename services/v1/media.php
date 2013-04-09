@@ -56,7 +56,7 @@ class Media extends Module
      */
     public function getMediaObject($intGameID, $intMediaID)
     {
-        if (!$intMediaID) return new returnData(2, NULL, "No matching media");
+        if (!$intMediaID || !is_int($intMediaID)) return new returnData(2, NULL, "No matching media");
 
         if($intGameID == "player")
             $prefix = 'null';
