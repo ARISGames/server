@@ -594,7 +594,7 @@ class Players extends Module
     private static function getAllPlayerDataBP($gameId, $getItems = true, $getAttributes = true, $getNotes = true)
     {
         $backPacks = array();
-        $query = "SELECT DISTINCT player_id FROM player_log WHERE game_id='{$gameId}'";
+        $query = "SELECT DISTINCT player_id FROM player_log WHERE game_id='{$gameId}' AND player_id != 0";
         $result = Module::query($query);
         while($player = mysql_fetch_object($result))
             $backPacks[] = Players::getSinglePlayerDataBP($gameId, $player->player_id, false, $getItems, $getAttributes, $getNotes);
