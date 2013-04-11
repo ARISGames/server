@@ -2,7 +2,6 @@
 require_once("module.php");
 require_once("media.php");
 require_once("quests.php");
-require_once("test.php");
 
 class Games extends Module
 {	
@@ -1243,7 +1242,7 @@ class Games extends Module
 						$child[$attributeTitle] = $newNodeIds[intval($attributeValue)];
 					else if(strcmp($attributeTitle, $kTagExitToCharacter) == 0)
 						$child[$attributeTitle] = $newNpcIds[intval($attributeValue)];
-					else if(strcmp($attributeTitle, $kTagExitToItem) == 0){
+					else if(strcmp($attributeTitle, $kTagExitToItem) == 0)
 						$child[$attributeTitle] = $newItemIds[intval($attributeValue)];
 					else if(strcmp($child->getName(), $kTagPlaque) == 0 && strcmp($attributeTitle, $kTagId) == 0)
 						$child[$attributeTitle] = $newNodeIds[intval($attributeValue)];

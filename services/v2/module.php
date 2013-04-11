@@ -78,7 +78,9 @@ abstract class Module extends Utils
 
     public function Module()
     {
+        Utils::serverErrorLog("Testing...");
         Utils::connect();
+        Utils::serverErrorLog("Connected...");
     }	
 
     protected function getPrefix($intGameID) {	

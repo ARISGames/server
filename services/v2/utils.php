@@ -21,7 +21,6 @@ abstract class Utils
         $r = mysql_query($query);
         if(mysql_error()) 
         {
-
             Utils::serverErrorLog("Error With Request:\n"."http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]"."\nQuery:\n".$query."\nError: ".mysql_error());
             return false;
         }
