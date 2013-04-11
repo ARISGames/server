@@ -11,10 +11,6 @@ class Media extends Module
     protected $validAudioTypes = array('mp3','m4a','caf');
     protected $validVideoTypes = array('mp4','m4v','3gp','mov');
 
-    /**
-     * Fetch all Media
-     * @returns the media
-     */
     public function getMedia($intGameID)
     {
         $prefix = Module::getPrefix($intGameID);
@@ -50,10 +46,6 @@ class Media extends Module
         return $returnData;
     }
 
-    /**
-     * Fetch one Media Item
-     * @returns the media item
-     */
     public function getMediaObject($intGameID, $intMediaID)
     {
         //apparently, "is_numeric(NAN)" returns 'true'. NAN literally means "Not A Number". Think about that one for a sec.
@@ -91,39 +83,21 @@ class Media extends Module
         return new returnData(0, $mediaItem);
     }	
 
-
-    /**
-     * Fetch the valid file extensions
-     * @returns the extensions
-     */
     public function getValidAudioExtensions()
     {
         return new returnData(0, $this->validAudioTypes);
     }
 
-    /**
-     * Fetch the valid file extensions
-     * @returns the extensions
-     */
     public function getValidVideoExtensions()
     {
         return new returnData(0, $this->validVideoTypes);
     }
 
-    /**
-     * Fetch the valid file extensions
-     * @returns the extensions
-     */
     public function getValidImageAndIconExtensions()
     {
         return new returnData(0, $this->validImageAndIconTypes);
     }
 
-
-    /**
-     * Create a media record
-     * @returns the new mediaID on success
-     */
     public function createMedia($intGameID, $strName, $strFileName, $boolIsIcon)
     {
         if($intGameID == 'player')
@@ -140,9 +114,8 @@ class Media extends Module
             return new returnData(4, NULL, "Icons must have a valid Image file extension");
 
         $query = "INSERT INTO media 
-            (media_id, game_id, name, file_path, is_icon)
-            VALUES ('".Module::findLowestIdFromTable('media','media_id')."','{$prefix}','{$strName}', '".$intGameID."/".$strFileName."',{$boolIsIcon})";
-
+            (game_id, name, file_path, is_icon)
+            VALUES ('{$prefix}','{$strName}', '".$intGameID."/".$strFileName."',{$boolIsIcon})";
 
         Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error:".mysql_error());
@@ -160,10 +133,6 @@ class Media extends Module
         return new returnData(0,$media);
     }
 
-    /**
-     * Update a specific Media
-     * @returns true if edit was done, false if no changes were made
-     */
     public function renameMedia($intGameID, $intMediaID, $strName)
     {
         if($intGameID == 'player')
@@ -189,14 +158,8 @@ class Media extends Module
         else return new returnData(0, FALSE);	
     }
 
-
-    /**
-     * Delete a Media Item
-     * @returns true if delete was done, false if no changes were made
-     */
     public function deleteMedia($intGameID, $intMediaID)
     {
-
         $query = "SELECT * FROM media 
             WHERE media_id = {$intMediaID}";
         $rsResult = Module::query($query);
@@ -220,30 +183,20 @@ class Media extends Module
         //Done
         if (mysql_affected_rows()) return new returnData(0, TRUE);
         else return new returnData(0, FALSE);	
-
-
     }	
 
-
-    /**
-     * @returns path to the media directory on the file system
-     */
-    public function getMediaDirectory($gameID){
+    public function getMediaDirectory($gameID)
+    {
         return new returnData(0, Config::gamedataFSPath . "/{$gameID}" . Config::gameMediaSubdir);
     }
 
-    /**
-     * @returns path to the media directory URL
-     */
-    public function getMediaDirectoryURL($gameID){
+    public function getMediaDirectoryURL($gameID)
+    {
         return new returnData(0, Config::gamedataWWWPath . "/{$gameID}". Config::gameMediaSubdir);
     }	
 
-    /**
-     * Determine the Item Type
-     * @returns "Audio", "Video" or "Image"
-     */
-    public function getMediaType($strMediaFileName) {
+    public function getMediaType($strMediaFileName)
+    {
         $mediaParts = pathinfo($strMediaFileName);
         $mediaExtension = $mediaParts['extension'];
 
