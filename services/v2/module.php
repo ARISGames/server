@@ -76,11 +76,22 @@ abstract class Module extends Utils
     //constants for note icon id
     const kPLAYER_NOTE_DEFAULT_ICON = '94';
 
+    public function authenticate($gameId, $editorId, $token, $permissionReq)
+    {
+        $permissionReq = addslashes($permissionReq);
+        $token         = addslashes($token);
+
+        $ge = Utils::queryObject("SELECT ".$permissionReq."_token FROM (SELECT editor_id FROM game_editors WHERE game_id = ".$gameId." AND editor_id = ".$editorId." LIMIT 1) as ges LEFT JOIN editors ON ges.editor_id = editors.editor_id LIMIT 1");
+        if($ge && $ge->{$permissionReq."_token"} == $token)
+            return true;
+
+        Utils::serverErrorLog("Failed Authentication!");
+        return false;
+    }
+
     public function Module()
     {
-        Utils::serverErrorLog("Testing...");
         Utils::connect();
-        Utils::serverErrorLog("Connected...");
     }	
 
     protected function getPrefix($intGameID) {	

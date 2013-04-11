@@ -13,9 +13,9 @@ class Games extends Module
 		return new returnData(0, $rs, NULL);		
 	}
 
-	public function getGame($intGameID)
+	public function getGame($intGameId)
 	{
-		$query = "SELECT * FROM games WHERE game_id = {$intGameID} LIMIT 1";
+		$query = "SELECT * FROM games WHERE game_id = {$intGameId} LIMIT 1";
 		$rs = Module::query($query);
 		if (mysql_error())  return new returnData(3, NULL, 'SQL error');
 
@@ -209,24 +209,24 @@ class Games extends Module
 		return $gameObj;
 	}
 
-	public function getGamesForEditor($intEditorID)
+	public function getGamesForEditor($intEditorId)
 	{
 		$query = "SELECT super_admin FROM editors 
-			WHERE editor_id = '$intEditorID' LIMIT 1";
+			WHERE editor_id = '$intEditorId' LIMIT 1";
 		$editor = mysql_fetch_array(Module::query($query));
 
 		if ($editor['super_admin'] == 1)
 			$query = "SELECT * FROM games";
 		else
 			$query = "SELECT g.* from games g, game_editors ge 
-				WHERE g.game_id = ge.game_id AND ge.editor_id = '$intEditorID'";
+				WHERE g.game_id = ge.game_id AND ge.editor_id = '$intEditorId'";
 
 		$rs = Module::query($query);
 		if (mysql_error())  return new returnData(3, NULL, 'SQL error');
 		return new returnData(0, $rs, NULL);		
 	}
 
-	public function createGame($intEditorID, $strFullName, $strDescription, $intPCMediaID, $intIconMediaID, $intMediaID,
+	public function createGame($intEditorId, $strFullName, $strDescription, $intPCMediaId, $intIconMediaId, $intMediaId,
 			$boolIsLocational, $boolReadyForPublic, 
 			$boolShareToMap, $boolShareToBook, $playerCreateTag, $playerCreateComments, $playerLikeNotes,
 			$intIntroNodeId, $intCompleteNodeId, $intInventoryCap, $boolAllowTrading = true, $boolShowPlayerOnMap = true, $strMapType = 'STREET', $allLocQuickTravel = 'false', $usePlayerPic = 0)
@@ -244,23 +244,23 @@ class Games extends Module
 			is_locational, ready_for_public,
 			allow_share_note_to_map, allow_share_note_to_book, allow_player_tags, allow_note_comments, allow_note_likes,
 			on_launch_node_id, game_complete_node_id, inventory_weight_cap, created, allow_trading, show_player_location, use_player_pic, map_type, full_quick_travel)
-				VALUES ('".addSlashes($strFullName)."','".addSlashes($strDescription)."','{$intPCMediaID}','{$intIconMediaID}', '{$intMediaID}',
+				VALUES ('".addSlashes($strFullName)."','".addSlashes($strDescription)."','{$intPCMediaId}','{$intIconMediaId}', '{$intMediaId}',
 						'{$boolIsLocational}', '{$boolReadyForPublic}', 
 						'{$boolShareToMap}', '{$boolShareToBook}', '{$playerCreateTag}', '{$playerCreateComments}','{$playerLikeNotes}',
 						'{$intIntroNodeId}','{$intCompleteNodeId}','{$intInventoryCap}', NOW(), '{$boolAllowTrading}', '{$boolShowPlayerOnMap}', '{$usePlayerPic}', '{$strMapType}', '{$allLocQuickTravel}')";
 		Module::query($query);
 		if (mysql_error())  return new returnData(6, NULL, "cannot create game record using SQL: $query");
-		$newGameID = mysql_insert_id();
+		$newGameId = mysql_insert_id();
 		$strShortName = mysql_insert_id();
 
 		//HACK: We should change the engine to look at the game_id, but for now we will just set the
 		//short name to the new game id
-		$query = "UPDATE games SET prefix = '{$strShortName}_' WHERE game_id = '{$newGameID}'";
+		$query = "UPDATE games SET prefix = '{$strShortName}_' WHERE game_id = '{$newGameId}'";
 		Module::query($query);
 		if (mysql_error())  return new returnData(6, NULL, 'cannot update game record');
 
 		//Make the creator an editor of the game
-		$query = "INSERT INTO game_editors (game_id,editor_id) VALUES ('{$newGameID}','{$intEditorID}')";
+		$query = "INSERT INTO game_editors (game_id,editor_id) VALUES ('{$newGameId}','{$intEditorId}')";
 		Module::query($query);
 		if (mysql_error()) return new returnData(6, NULL, 'cannot create game_editors record');
 
@@ -283,12 +283,12 @@ class Games extends Module
 		if (mysql_error()) return new returnData(6, NULL, 'cannot create game_tab_data table- ' . mysql_error());	
 
 		$media = new Media();
-		$returnObject = $media->getMediaDirectory($newGameID);
+		$returnObject = $media->getMediaDirectory($newGameId);
 		$newGameDirectory = $returnObject->data;
 
 		mkdir($newGameDirectory,0777);
 
-		return new returnData(0, $newGameID, NULL);
+		return new returnData(0, $newGameId, NULL);
 	}
 
 	/**
@@ -296,7 +296,7 @@ class Games extends Module
 	 * NOT IMPLEMENTED: usePlayerPic is not used in this function
 	 * @returns true if a record was updated, false otherwise
 	 */	
-	public function updateGame($intGameID, $strName, $strDescription, $intPCMediaID, $intIconMediaID, $intMediaID,
+	public function updateGame($intGameId, $strName, $strDescription, $intPCMediaId, $intIconMediaId, $intMediaId,
 			$boolIsLocational, $boolReadyForPublic,
 			$boolShareToMap, $boolShareToBook, $playerCreateTag, $playerCreateComments, $playerLikeNotes,
 			$intIntroNodeId, $intCompleteNodeId, $intInventoryCap, $boolAllowTrading = true, $boolShowPlayerOnMap = true, $strMapType = 'STREET', $allLocQuickTravel = 'false', $usePlayerPic = 0)
@@ -307,9 +307,9 @@ class Games extends Module
 			SET 
 			name = '{$strName}',
 			     description = '{$strDescription}',
-			     pc_media_id = '{$intPCMediaID}',
-			     icon_media_id = '{$intIconMediaID}',
-			     media_id = '{$intMediaID}',
+			     pc_media_id = '{$intPCMediaId}',
+			     icon_media_id = '{$intIconMediaId}',
+			     media_id = '{$intMediaId}',
 			     allow_share_note_to_map = '{$boolShareToMap}',
 			     allow_share_note_to_book = '{$boolShareToBook}',
 			     allow_player_tags = '{$playerCreateTag}',
@@ -324,7 +324,7 @@ class Games extends Module
 			     show_player_location = '{$boolShowPlayerOnMap}',
 			     map_type = '{$strMapType}',
 			     full_quick_travel = '{$allLocQuickTravel}'
-				     WHERE game_id = {$intGameID}";
+				     WHERE game_id = {$intGameId}";
 		Module::query($query);
 		if (mysql_error()) return new returnData(3, false, "SQL Error: " . mysql_error());
 
@@ -332,11 +332,11 @@ class Games extends Module
 		else return new returnData(0, FALSE);		
 	}		
 
-	public function setPCMediaID($intGameID, $intPCMediaID)
+	public function setPCMediaId($intGameId, $intPCMediaId)
 	{
 		$query = "UPDATE games 
-			SET pc_media_id = '{$intPCMediaID}'
-			WHERE game_id = {$intGameID}";
+			SET pc_media_id = '{$intPCMediaId}'
+			WHERE game_id = {$intGameId}";
 		Module::query($query);
 		if (mysql_error()) return new returnData(3, false, "SQL Error");
 
@@ -362,13 +362,13 @@ class Games extends Module
 		return new returnData(0);
 	}
 
-	public function setGameName($intGameID, $strNewName)
+	public function setGameName($intGameId, $strNewName)
 	{
 		$returnData = new returnData(0, Module::query($query), NULL);
 
 		$strNewGameName = addslashes($strNewGameName);	
 
-		$query = "UPDATE games SET name = '{$strNewName}' WHERE game_id = {$intGameID}";
+		$query = "UPDATE games SET name = '{$strNewName}' WHERE game_id = {$intGameId}";
 		Module::query($query);
 		if (mysql_error()) return new returnData(3, false, "SQL Error");
 
@@ -376,13 +376,16 @@ class Games extends Module
 		else return new returnData(0, FALSE);		
 	}		
 
-	public function deleteGame($intGameID)
+	public function deleteGame($intGameId, $intEditorId, $editorToken)
 	{
-	        Module::serverErrorLog("Deleting Game Id: {$intGameID}");
+                if(!Module::authenticate($intGameId, $intEditorId, $editorToken, "read_write"))
+                    return new returnData(6, NULL, "Failed Authentication");
+
+	        Module::serverErrorLog("Deleting Game Id: {$intGameId}");
 		$returnData = new returnData(0, NULL, NULL);
 
-		$prefix = Module::getPrefix($intGameID);
-		if (!$prefix || $intGameID == 0) return new returnData(1, NULL, "game does not exist");
+		$prefix = Module::getPrefix($intGameId);
+		if (!$prefix || $intGameId == 0) return new returnData(1, NULL, "game does not exist");
 
 		//Delete the files
 		$command = 'rm -rf '. Config::gamedataFSPath . "/{$prefix}";
@@ -396,7 +399,7 @@ class Games extends Module
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
 
 		//Delete any media records
-		$query = "DELETE FROM media WHERE game_id = '{$intGameID}'";
+		$query = "DELETE FROM media WHERE game_id = '{$intGameId}'";
 		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
 
@@ -406,22 +409,22 @@ class Games extends Module
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
 
 		//Delete Web Pages
-		$query = "DELETE FROM web_pages WHERE game_id = '{$intGameID}'";
+		$query = "DELETE FROM web_pages WHERE game_id = '{$intGameId}'";
 		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
 
 		//Delete Aug Bubbles
-		$query = "DELETE FROM aug_bubbles WHERE game_id = '{$intGameID}'";
+		$query = "DELETE FROM aug_bubbles WHERE game_id = '{$intGameId}'";
 		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
 
 		//And AugBubble Media
-		$query = "DELETE FROM aug_bubble_media WHERE game_id = '{$intGameID}'";
+		$query = "DELETE FROM aug_bubble_media WHERE game_id = '{$intGameId}'";
 		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');	
 
 		//Delete Overlays
-		$query = "SELECT * FROM overlays WHERE game_id = '{$intGameID}'";
+		$query = "SELECT * FROM overlays WHERE game_id = '{$intGameId}'";
 		$result = Module::query($query);
 		while($result && $row = mysql_fetch_object($result)){
 			$query = "DELETE FROM overlay_tiles WHERE overlay_id = '{$row->overlay_id}'";
@@ -434,99 +437,99 @@ class Games extends Module
 		}
 
 		//Delete WebHooks
-		$query = "DELETE FROM web_hooks WHERE game_id = '{$intGameID}'";
+		$query = "DELETE FROM web_hooks WHERE game_id = '{$intGameId}'";
 		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 
 		//Delete Tab Bar information
-		$query = "DELETE FROM game_tab_data WHERE game_id = '{$intGameID}'";
+		$query = "DELETE FROM game_tab_data WHERE game_id = '{$intGameId}'";
 		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 
 		//Delete Note stuff
-		$query = "DELETE FROM notes WHERE game_id = '{$intGameID}'";
+		$query = "DELETE FROM notes WHERE game_id = '{$intGameId}'";
 		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 
 		//Delete Note Media
-		$query = "DELETE FROM note_content WHERE game_id = '{$intGameID}'";
+		$query = "DELETE FROM note_content WHERE game_id = '{$intGameId}'";
 		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 
 		//Delete NPCs
-		$query = "DELETE FROM npcs WHERE game_id = '{$intGameID}'";
+		$query = "DELETE FROM npcs WHERE game_id = '{$intGameId}'";
 		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 		return new returnData(0);	
 
 		//Delete Folder Contents
-		$query = "DELETE FROM folder_contents WHERE game_id = '{$intGameID}'";
+		$query = "DELETE FROM folder_contents WHERE game_id = '{$intGameId}'";
 		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 
 		//Delete Folders
-		$query = "DELETE FROM folders WHERE game_id = '{$intGameID}'";
+		$query = "DELETE FROM folders WHERE game_id = '{$intGameId}'";
 		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 		return new returnData(0);	
 
 		//Delete Items
-		$query = "DELETE FROM items WHERE game_id = '{$intGameID}'";
+		$query = "DELETE FROM items WHERE game_id = '{$intGameId}'";
 		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 		return new returnData(0);	
 		return new returnData(0);	
 
 		//Delete Locations
-		$query = "DELETE FROM locations WHERE game_id = '{$intGameID}'";
+		$query = "DELETE FROM locations WHERE game_id = '{$intGameId}'";
 		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 		return new returnData(0);	
 
 		//Delete Nodes
-		$query = "DELETE FROM nodes WHERE game_id = '{$intGameID}'";
+		$query = "DELETE FROM nodes WHERE game_id = '{$intGameId}'";
 		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 		return new returnData(0);
 
 		//Delete NPC Conversations
-		$query = "DELETE FROM npc_conversations WHERE game_id = '{$intGameID}'";
+		$query = "DELETE FROM npc_conversations WHERE game_id = '{$intGameId}'";
 		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 		return new returnData(0);	
 
 		//Delete NPC Greetings
-		$query = "DELETE FROM npc_greetings WHERE game_id = '{$intGameID}'";
+		$query = "DELETE FROM npc_greetings WHERE game_id = '{$intGameId}'";
 		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 		return new returnData(0);	
 
 		//Delete Player Items
-		$query = "DELETE FROM player_items WHERE game_id = '{$intGameID}'";
+		$query = "DELETE FROM player_items WHERE game_id = '{$intGameId}'";
 		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 		return new returnData(0);	
 
 		//Delete Player State Changes
-		$query = "DELETE FROM player_state_changes WHERE game_id = '{$intGameID}'";
+		$query = "DELETE FROM player_state_changes WHERE game_id = '{$intGameId}'";
 		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 		return new returnData(0);	
 
 		//Delete QR Codes
-		$query = "DELETE FROM qrcodes WHERE game_id = '{$intGameID}'";
+		$query = "DELETE FROM qrcodes WHERE game_id = '{$intGameId}'";
 		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 		return new returnData(0);	
 
 		//Delete Quests
-		$query = "DELETE FROM quests WHERE game_id = '{$intGameID}'";
+		$query = "DELETE FROM quests WHERE game_id = '{$intGameId}'";
 		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 		return new returnData(0);	
 
 		//Delete Requirements
-		$query = "DELETE FROM requirements WHERE game_id = '{$intGameID}'";
+		$query = "DELETE FROM requirements WHERE game_id = '{$intGameId}'";
 		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 		return new returnData(0);	
@@ -540,28 +543,28 @@ class Games extends Module
 		return new returnData(0, $rsResult);
 	}
 
-	public function getGameEditors($intGameID)
+	public function getGameEditors($intGameId)
 	{
-		$query = "SELECT game_editors.*, editors.* FROM game_editors LEFT JOIN editors ON game_editors.editor_id=editors.editor_id WHERE game_editors.game_id = {$intGameID}";
+		$query = "SELECT game_editors.*, editors.* FROM game_editors LEFT JOIN editors ON game_editors.editor_id=editors.editor_id WHERE game_editors.game_id = {$intGameId}";
 		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 		return new returnData(0, $rsResult);
 	}
 
-	public function addEditorToGame($intEditorID, $intGameID)
+	public function addEditorToGame($intEditorId, $intGameId)
 	{
-		$query = "INSERT INTO game_editors (editor_id, game_id) VALUES ('{$intEditorID}','{$intGameID}')";
+		$query = "INSERT INTO game_editors (editor_id, game_id) VALUES ('{$intEditorId}','{$intGameId}')";
 		$rsResult = Module::query($query);
 
 		if (mysql_errno() == 1062) return new returnData(4, NULL, 'duplicate');
 		if (mysql_error()) return new returnData(3, NULL, 'sql error');
 
-		$query = "SELECT email FROM editors WHERE editor_id = $intEditorID";
+		$query = "SELECT email FROM editors WHERE editor_id = $intEditorId";
 		$result = Module::query($query);
 		$emailObj = mysql_fetch_object($result);
 		$email = $emailObj->email;
 
-		$query = "SELECT name FROM games WHERE game_id = $intGameID";
+		$query = "SELECT name FROM games WHERE game_id = $intGameId";
 		$result = Module::query($query);
 		$gameObj = mysql_fetch_object($result);
 		$game = $gameObj->name;
@@ -572,9 +575,9 @@ class Games extends Module
 		return new returnData(0);	
 	}	
 
-	public function removeEditorFromGame($intEditorID, $intGameID)
+	public function removeEditorFromGame($intEditorId, $intGameId)
 	{
-		$query = "DELETE FROM game_editors WHERE editor_id = '{$intEditorID}' AND game_id = '{$intGameID}'";
+		$query = "DELETE FROM game_editors WHERE editor_id = '{$intEditorId}' AND game_id = '{$intGameId}'";
 		$rsResult = Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
 
@@ -728,9 +731,9 @@ class Games extends Module
 		return new returnData(0, $games, NULL);
 	}		
 
-	public function duplicateGame($intGameId, $intEditorID = 0)
+	public function duplicateGame($intGameId, $intEditorId = 0)
         {
-		Module::serverErrorLog("Duplicating Game ID:".$intGameId);
+		Module::serverErrorLog("Duplicating Game Id:".$intGameId);
 		$prefix = Module::getPrefix($intGameId);
 
 		$query = "SELECT * FROM games WHERE game_id = {$intGameId} LIMIT 1";
@@ -753,11 +756,11 @@ class Games extends Module
 		}
 		$game->name = $game->name."_copy".$appendNo;
 
-		$newGameID = new stdClass();
-		$newGameID->data = 0;
-		if($intEditorID != 0)
+		$newGameId = new stdClass();
+		$newGameId->data = 0;
+		if($intEditorId != 0)
 		{
-			$newGameId = Games::createGame($intEditorID, $game->name, $game->description, 
+			$newGameId = Games::createGame($intEditorId, $game->name, $game->description, 
 					$game->pc_media_id, $game->icon_media_id, $game->media_id,
 					$game->is_locational, $game->ready_for_public, 
 					$game->allow_share_note_to_map, $game->allow_share_note_to_book, $game->allow_player_tags, $game->allow_player_comments, $game->allow_note_likes,
@@ -807,13 +810,13 @@ class Games extends Module
 			$query = "INSERT INTO quests (game_id, name, description, text_when_complete, sort_index, exit_to_tab, active_media_id, complete_media_id, active_icon_media_id, complete_icon_media_id) VALUES ('{$newPrefix}', '".addSlashes($row->name)."', '".addSlashes($row->description)."', '".addSlashes($row->text_when_complete)."', '{$row->sort_index}', '{$row->exit_to_tab}', '{$row->active_media_id}', '{$row->complete_media_id}', '{$row->active_icon_media_id}', '{$row->complete_icon_media_id}')";
 
 			Module::query($query);
-			$newID = mysql_insert_id();
+			$newId = mysql_insert_id();
 
-			$query = "UPDATE requirements SET requirement_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND requirement = 'PLAYER_HAS_COMPLETED_QUEST' AND requirement_detail_1 = '{$row->quest_id}'";
+			$query = "UPDATE requirements SET requirement_detail_1 = {$newId} WHERE game_id = '{$newPrefix}' AND requirement = 'PLAYER_HAS_COMPLETED_QUEST' AND requirement_detail_1 = '{$row->quest_id}'";
 			Module::query($query);
 
 
-			$query = "UPDATE requirements SET content_id = {$newID} WHERE game_id = '{$newPrefix}' AND (content_type = 'QuestDisplay' OR content_type = 'QuestComplete') AND content_id = '{$row->quest_id}'";
+			$query = "UPDATE requirements SET content_id = {$newId} WHERE game_id = '{$newPrefix}' AND (content_type = 'QuestDisplay' OR content_type = 'QuestComplete') AND content_id = '{$row->quest_id}'";
 			Module::query($query);
 		}
 
@@ -859,11 +862,11 @@ class Games extends Module
 		while($result && $row = mysql_fetch_object($result)){
 			$query = "INSERT INTO overlays (game_id, sort_order, alpha, num_tiles, game_overlay_id) VALUES ('{$newPrefix}', '{$row->sort_order}', '{$row->alpha}', '{$row->num_tiles}', '{$row->game_overlay_id}')";
 			Module::query($query);
-			$newID = mysql_insert_id();
+			$newId = mysql_insert_id();
 			$query = "SELECT * FROM overlay_tiles WHERE overlay_id = '{$row->overlay_id}'";
 			$result = Module::query($query);
 			while($result && $row = mysql_fetch_object($result)){
-				$query = "INSERT INTO overlay_tiles (overlay_id, media_id, zoom, x, x_max, y, y_max) VALUES ('{$newID}', '{$row->media_id}', '{$row->zoom}', '{$row->x}', '{$row->x_max}',  '{$row->y}',  '{$row->y_max}')";
+				$query = "INSERT INTO overlay_tiles (overlay_id, media_id, zoom, x, x_max, y, y_max) VALUES ('{$newId}', '{$row->media_id}', '{$row->zoom}', '{$row->x}', '{$row->x_max}',  '{$row->y}',  '{$row->y_max}')";
 				Module::query($query);
 			}
 		}
@@ -880,9 +883,9 @@ class Games extends Module
 		while($result && $row = mysql_fetch_object($result)){
 			$query = "INSERT INTO spawnables (game_id, type, type_id, amount, max_area, amount_restriction, location_bound_type, latitude, longitude, spawn_probability, spawn_rate, delete_when_viewed, last_spawned, error_range, force_view, hidden, allow_quick_travel, wiggle, time_to_live, active, location_name, show_title, min_area) VALUES ('{$newPrefix}', '{$row->type}', '{$row->type_id}', '{$row->amount}', '{$row->max_area}', '{$row->amount_restriction}', '{$row->location_bound_type}', '{$row->latitude}', '{$row->longitude}', '{$row->spawn_probability}', '{$row->spawn_rate}', '{$row->delete_when_viewed}', '{$row->last_spawned}', '{$row->error_range}', '{$row->force_view}', '{$row->hidden}', '{$row->allow_quick_travel}', '{$row->wiggle}', '{$row->time_to_live}', '{$row->active}', '{$row->location_name}', '{$row->show_title}', '{$row->min_area}')";
 			Module::query($query);
-			$newID = mysql_insert_id();
+			$newId = mysql_insert_id();
 
-			$query = "UPDATE fountains SET location_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Spawnable' AND location_id = {$row->spawnable_id}";
+			$query = "UPDATE fountains SET location_id = {$newId} WHERE game_id = '{$newPrefix}' AND type = 'Spawnable' AND location_id = {$row->spawnable_id}";
 			Module::query($query);
 		}
 
@@ -891,15 +894,15 @@ class Games extends Module
 		while($result && $row = mysql_fetch_object($result)){
 			$query = "INSERT INTO locations (game_id, name, description, latitude, longitude, error, type, type_id, icon_media_id, item_qty, hidden, force_view, allow_quick_travel) VALUES ('{$newPrefix}', '".addSlashes($row->name)."', '".addSlashes($row->description)."', '{$row->latitude}', '{$row->longitude}', '{$row->error}', '{$row->type}', '{$row->type_id}', '{$row->icon_media_id}', '{$row->item_qty}', '{$row->hidden}', '{$row->force_view}', '{$row->allow_quick_travel}')";
 			Module::query($query);
-			$newID = mysql_insert_id();
+			$newId = mysql_insert_id();
 
-			$query = "UPDATE fountains SET location_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Location' AND location_id = {$row->location_id}";
+			$query = "UPDATE fountains SET location_id = {$newId} WHERE game_id = '{$newPrefix}' AND type = 'Location' AND location_id = {$row->location_id}";
 			Module::query($query);
 
-			$query = "UPDATE qrcodes SET link_id = {$newID} WHERE game_id = '{$newPrefix}' AND link_type = 'Location' AND link_id = {$row->location_id}";
+			$query = "UPDATE qrcodes SET link_id = {$newId} WHERE game_id = '{$newPrefix}' AND link_type = 'Location' AND link_id = {$row->location_id}";
 			Module::query($query);
 
-			$query = "UPDATE requirements SET content_id = {$newID} WHERE game_id = '{$newPrefix}' AND content_type = 'Location' AND content_id = {$row->location_id}";
+			$query = "UPDATE requirements SET content_id = {$newId} WHERE game_id = '{$newPrefix}' AND content_type = 'Location' AND content_id = {$row->location_id}";
 			Module::query($query);
 		}
 
@@ -924,25 +927,25 @@ class Games extends Module
 
 			$query = "INSERT INTO npcs (game_id, name, description, text, closing, media_id, icon_media_id) VALUES ('{$newPrefix}', '".addSlashes($row->name)."', '".addSlashes($row->description)."', '".addSlashes($row->text)."', '".addSlashes($row->closing)."', '{$row->media_id}', '{$row->icon_media_id}')";
 			Module::query($query);
-			$newID = mysql_insert_id();
-			$newNpcIds[($row->npc_id)] = $newID;
+			$newId = mysql_insert_id();
+			$newNpcIds[($row->npc_id)] = $newId;
 
-			$query = "UPDATE npc_conversations SET npc_id = {$newID} WHERE game_id = '{$newPrefix}' AND npc_id = {$row->npc_id}";
+			$query = "UPDATE npc_conversations SET npc_id = {$newId} WHERE game_id = '{$newPrefix}' AND npc_id = {$row->npc_id}";
 			Module::query($query);
 
-			$query = "UPDATE folder_contents SET content_id = {$newID} WHERE game_id = '{$newPrefix}' AND content_type = 'Npc' AND content_id = {$row->npc_id}";
+			$query = "UPDATE folder_contents SET content_id = {$newId} WHERE game_id = '{$newPrefix}' AND content_type = 'Npc' AND content_id = {$row->npc_id}";
 			Module::query($query);
 
-			$query = "UPDATE locations SET type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Npc' AND type_id = {$row->npc_id}";
+			$query = "UPDATE locations SET type_id = {$newId} WHERE game_id = '{$newPrefix}' AND type = 'Npc' AND type_id = {$row->npc_id}";
 			Module::query($query);
 
-			$query = "UPDATE player_state_changes SET event_detail = {$newID} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_NPC' AND event_detail = {$row->npc_id}";
+			$query = "UPDATE player_state_changes SET event_detail = {$newId} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_NPC' AND event_detail = {$row->npc_id}";
 			Module::query($query);
 
-			$query = "UPDATE requirements SET requirement_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND requirement = 'PLAYER_VIEWED_NPC' AND requirement_detail_1 = {$row->npc_id}";
+			$query = "UPDATE requirements SET requirement_detail_1 = {$newId} WHERE game_id = '{$newPrefix}' AND requirement = 'PLAYER_VIEWED_NPC' AND requirement_detail_1 = {$row->npc_id}";
 			Module::query($query);
 
-			$query = "UPDATE spawnables SET type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Npc' AND type_id = {$row->npc_id}";
+			$query = "UPDATE spawnables SET type_id = {$newId} WHERE game_id = '{$newPrefix}' AND type = 'Npc' AND type_id = {$row->npc_id}";
 			Module::query($query);
 		}
 
@@ -952,28 +955,28 @@ class Games extends Module
 		while($result && $row = mysql_fetch_object($result)){
 			$query = "INSERT INTO nodes (game_id, title, text, opt1_text, opt1_node_id, opt2_text, opt2_node_id, opt3_text, opt3_node_id, require_answer_incorrect_node_id, require_answer_string, require_answer_correct_node_id, media_id, icon_media_id) VALUES ('{$newPrefix}', '".addSlashes($row->title)."', '".addSlashes($row->text)."', '{$row->opt1_text}', '{$row->opt1_node_id}', '{$row->opt2_text}', '{$row->opt2_node_id}', '{$row->opt3_text}', '{$row->opt3_node_id}', '{$row->require_answer_incorrect_node_id}', '{$row->require_answer_string}', '{$row->require_answer_correct_node_id}', '{$row->media_id}', '{$row->icon_media_id}')";
 			Module::query($query);
-			$newID = mysql_insert_id();
-			$newNodeIds[($row->node_id)] = $newID;
+			$newId = mysql_insert_id();
+			$newNodeIds[($row->node_id)] = $newId;
 
-			$query = "UPDATE folder_contents SET content_id = {$newID} WHERE game_id = '{$newPrefix}' AND content_type = 'Node' AND content_id = {$row->node_id}";
+			$query = "UPDATE folder_contents SET content_id = {$newId} WHERE game_id = '{$newPrefix}' AND content_type = 'Node' AND content_id = {$row->node_id}";
 			Module::query($query);
 
-			$query = "UPDATE locations SET type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Node' AND type_id = {$row->node_id}";
+			$query = "UPDATE locations SET type_id = {$newId} WHERE game_id = '{$newPrefix}' AND type = 'Node' AND type_id = {$row->node_id}";
 			Module::query($query);
 
-			$query = "UPDATE npc_conversations SET node_id = {$newID} WHERE game_id = '{$newPrefix}' AND node_id = {$row->node_id}";
+			$query = "UPDATE npc_conversations SET node_id = {$newId} WHERE game_id = '{$newPrefix}' AND node_id = {$row->node_id}";
 			Module::query($query);
 
-			$query = "UPDATE player_state_changes SET event_detail = {$newID} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_NODE' AND event_detail = {$row->node_id}";
+			$query = "UPDATE player_state_changes SET event_detail = {$newId} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_NODE' AND event_detail = {$row->node_id}";
 			Module::query($query);
 
-			$query = "UPDATE requirements SET content_id = {$newID} WHERE game_id = '{$newPrefix}' AND content_type = 'Node' AND content_id = {$row->node_id}";
+			$query = "UPDATE requirements SET content_id = {$newId} WHERE game_id = '{$newPrefix}' AND content_type = 'Node' AND content_id = {$row->node_id}";
 			Module::query($query);
 
-			$query = "UPDATE requirements SET requirement_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND requirement = 'PLAYER_VIEWED_NODE' AND requirement_detail_1 = {$row->node_id}";
+			$query = "UPDATE requirements SET requirement_detail_1 = {$newId} WHERE game_id = '{$newPrefix}' AND requirement = 'PLAYER_VIEWED_NODE' AND requirement_detail_1 = {$row->node_id}";
 			Module::query($query);
 
-			$query = "UPDATE spawnables SET type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Node' AND type_id = {$row->node_id}";
+			$query = "UPDATE spawnables SET type_id = {$newId} WHERE game_id = '{$newPrefix}' AND type = 'Node' AND type_id = {$row->node_id}";
 			Module::query($query);
 		}
 
@@ -983,25 +986,25 @@ class Games extends Module
 		while($result && $row = mysql_fetch_object($result)){
 			$query = "INSERT INTO items (game_id, name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight, url, type, tradeable) VALUES ('{$newPrefix}', '".addSlashes($row->name)."', '".addSlashes($row->description)."', '{$row->is_attribute}', '{$row->icon_media_id}', '{$row->media_id}', '{$row->dropable}', '{$row->destroyable}', '{$row->max_qty_in_inventory}', '{$row->creator_player_id}', '{$row->origin_latitude}', '{$row->origin_longitude}', '{$row->origin_timestamp}', '{$row->weight}', '{$row->url}', '{$row->type}', '{$row->tradeable}')";
 			Module::query($query);
-			$newID = mysql_insert_id();
-			$newItemIds[($row->item_id)] = $newID;
+			$newId = mysql_insert_id();
+			$newItemIds[($row->item_id)] = $newId;
 
-			$query = "UPDATE folder_contents SET content_id = {$newID} WHERE game_id = '{$newPrefix}' AND content_type = 'Item' AND content_id = {$row->item_id}";
+			$query = "UPDATE folder_contents SET content_id = {$newId} WHERE game_id = '{$newPrefix}' AND content_type = 'Item' AND content_id = {$row->item_id}";
 			Module::query($query);
 
-			$query = "UPDATE locations SET type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Item' AND type_id = {$row->item_id}";
+			$query = "UPDATE locations SET type_id = {$newId} WHERE game_id = '{$newPrefix}' AND type = 'Item' AND type_id = {$row->item_id}";
 			Module::query($query);
 
-			$query = "UPDATE player_state_changes SET event_detail = {$newID} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_ITEM' AND event_detail = {$row->item_id}";
+			$query = "UPDATE player_state_changes SET event_detail = {$newId} WHERE game_id = '{$newPrefix}' AND event_type = 'VIEW_ITEM' AND event_detail = {$row->item_id}";
 			Module::query($query);
 
-			$query = "UPDATE player_state_changes SET action_detail = {$newID} WHERE game_id = '{$newPrefix}' AND action_detail = {$row->item_id}";
+			$query = "UPDATE player_state_changes SET action_detail = {$newId} WHERE game_id = '{$newPrefix}' AND action_detail = {$row->item_id}";
 			Module::query($query);
 
-			$query = "UPDATE requirements SET requirement_detail_1 = {$newID} WHERE game_id = '{$newPrefix}' AND (requirement = 'PLAYER_HAS_ITEM' OR requirement = 'PLAYER_VIEWED_ITEM') AND requirement_detail_1 = {$row->item_id}";
+			$query = "UPDATE requirements SET requirement_detail_1 = {$newId} WHERE game_id = '{$newPrefix}' AND (requirement = 'PLAYER_HAS_ITEM' OR requirement = 'PLAYER_VIEWED_ITEM') AND requirement_detail_1 = {$row->item_id}";
 			Module::query($query);
 
-			$query = "UPDATE spawnables SET type_id = {$newID} WHERE game_id = '{$newPrefix}' AND type = 'Item' AND type_id = {$row->item_id}";
+			$query = "UPDATE spawnables SET type_id = {$newId} WHERE game_id = '{$newPrefix}' AND type = 'Item' AND type_id = {$row->item_id}";
 			Module::query($query);
 		}
 
@@ -1018,16 +1021,16 @@ class Games extends Module
 		while($result && $row = mysql_fetch_object($result)){
 			$query = "INSERT INTO aug_bubbles (game_id, name, description, icon_media_id) VALUES ('{$newPrefix}', '".addSlashes($row->name)."', '".addSlashes($row->description)."', '{$row->icon_media_id}')).";
 			Module::query($query);
-			$newID = mysql_insert_id();
-			$newAugBubbleIds[($row->aug_bubble_id)] = $newID;
+			$newId = mysql_insert_id();
+			$newAugBubbleIds[($row->aug_bubble_id)] = $newId;
 
-			$query = "UPDATE aug_bubble_media SET aug_bubble_id = {$newID} WHERE aug_bubble_id = {$row->aug_bubble_id}";
+			$query = "UPDATE aug_bubble_media SET aug_bubble_id = {$newId} WHERE aug_bubble_id = {$row->aug_bubble_id}";
 			Module::query($query);
-			$query = "UPDATE locations SET type_id = {$newID} WHERE type = 'AugBubble' AND type_id = {$row->aug_bubble_id} AND game_id = '{$newPrefix}'";
+			$query = "UPDATE locations SET type_id = {$newId} WHERE type = 'AugBubble' AND type_id = {$row->aug_bubble_id} AND game_id = '{$newPrefix}'";
 			Module::query($query);
-			$query = "UPDATE folder_contents SET content_id = {$newID} WHERE content_type = 'AugBubble' AND content_id = {$row->aug_bubble_id} AND game_id = '{$newPrefix}'";
+			$query = "UPDATE folder_contents SET content_id = {$newId} WHERE content_type = 'AugBubble' AND content_id = {$row->aug_bubble_id} AND game_id = '{$newPrefix}'";
 			Module::query($query);
-			$query = "UPDATE requirements SET requirement_detail_1 = {$newID} WHERE (requirement = 'PLAYER_HAS_NOT_VIEWED_AUGBUBBLE' OR requirement = 'PLAYER_VIEWED_AUGBUBBLE') AND requirement_detail_1 = {$row->aug_bubble_id}  AND game_id = '{$newPrefix}'";
+			$query = "UPDATE requirements SET requirement_detail_1 = {$newId} WHERE (requirement = 'PLAYER_HAS_NOT_VIEWED_AUGBUBBLE' OR requirement = 'PLAYER_VIEWED_AUGBUBBLE') AND requirement_detail_1 = {$row->aug_bubble_id}  AND game_id = '{$newPrefix}'";
 			Module::query($query);
 		}
 
@@ -1037,14 +1040,14 @@ class Games extends Module
 		while($result && $row = mysql_fetch_object($result)){
 			$query = "INSERT INTO web_pages (game_id, name, url, icon_media_id) VALUES ('{$newPrefix}', '".addSlashes($row->name)."', '{$row->url}', '{$row->icon_media_id}')";
 			Module::query($query);
-			$newID = mysql_insert_id();
-			$newWebPageIds[($row->web_page_id)] = $newID;
+			$newId = mysql_insert_id();
+			$newWebPageIds[($row->web_page_id)] = $newId;
 
-			$query = "UPDATE locations SET type_id = {$newID} WHERE type = 'WebPage' AND type_id = {$row->web_page_id} AND game_id = '{$newPrefix}'";
+			$query = "UPDATE locations SET type_id = {$newId} WHERE type = 'WebPage' AND type_id = {$row->web_page_id} AND game_id = '{$newPrefix}'";
 			Module::query($query);
-			$query = "UPDATE folder_contents SET content_id = {$newID} WHERE content_type = 'WebPage' AND content_id = {$row->web_page_id} AND game_id = '{$newPrefix}'";
+			$query = "UPDATE folder_contents SET content_id = {$newId} WHERE content_type = 'WebPage' AND content_id = {$row->web_page_id} AND game_id = '{$newPrefix}'";
 			Module::query($query);
-			$query = "UPDATE requirements SET requirement_detail_1 = {$newID} WHERE (requirement = 'PLAYER_HAS_NOT_VIEWED_WEBPAGE' OR requirement = 'PLAYER_VIEWED_WEBPAGE') AND requirement_detail_1 = {$row->web_page_id} AND game_id = '{$newPrefix}'";
+			$query = "UPDATE requirements SET requirement_detail_1 = {$newId} WHERE (requirement = 'PLAYER_HAS_NOT_VIEWED_WEBPAGE' OR requirement = 'PLAYER_VIEWED_WEBPAGE') AND requirement_detail_1 = {$row->web_page_id} AND game_id = '{$newPrefix}'";
 			Module::query($query);
 		}
 
@@ -1053,9 +1056,9 @@ class Games extends Module
 		while($result && $row = mysql_fetch_object($result)){
 			$query = "INSERT INTO web_hooks (game_id, name, url, incoming) VALUES ('{$newPrefix}', '".addSlashes($row->name)."', '".addSlashes($row->url)."', '{$row->incoming}')";
 			Module::query($query);
-			$newID = mysql_insert_id();
+			$newId = mysql_insert_id();
 
-			$query = "UPDATE requirements SET content_id = {$newID} WHERE content_type = 'OutgoingWebHook' AND content_id = {$row->web_hook_id}  AND game_id = '{$newPrefix}'";
+			$query = "UPDATE requirements SET content_id = {$newId} WHERE content_type = 'OutgoingWebHook' AND content_id = {$row->web_hook_id}  AND game_id = '{$newPrefix}'";
 			Module::query($query);
 		}
 
@@ -1069,18 +1072,18 @@ class Games extends Module
 
 			$query = "INSERT INTO overlays (game_id, game_overlay_id, name, sort_index, file_uploaded) VALUES ('{$newPrefix}', '{$row->game_overlay_id}', '{$row->name}', '{$row->sort_index}', '{$row->file_uploaded}')";
 			Module::query($query);
-			$newID = mysql_insert_id();
-			array_push($newOverlayId, $newID);
+			$newId = mysql_insert_id();
+			array_push($newOverlayId, $newId);
 
 			$query2 = "SELECT * FROM overlay_tiles WHERE overlay_id = {$origOverlayId}";
 			$result2 = Module::query($query2);
 			while($row2 = mysql_fetch_object($result2)){
-				$query3 = "INSERT INTO overlay_tiles (overlay_id, media_id, zoom, x, y) VALUES ('{$newID}', '{$row2->media_id}', '{$row2->zoom}', '{$row2->x}', '{$row2->y}')";
+				$query3 = "INSERT INTO overlay_tiles (overlay_id, media_id, zoom, x, y) VALUES ('{$newId}', '{$row2->media_id}', '{$row2->zoom}', '{$row2->x}', '{$row2->y}')";
 				Module::query($query3);
 			}
 
 
-			$query = "UPDATE requirements SET content_id = {$newID} WHERE content_type = 'CustomMap' AND content_id = {$row->overlay_id}";
+			$query = "UPDATE requirements SET content_id = {$newId} WHERE content_type = 'CustomMap' AND content_id = {$row->overlay_id}";
 			Module::query($query);
 
 		}
@@ -1093,48 +1096,48 @@ class Games extends Module
 			$newMediaFilePath = $newPrefix.substr($row->file_path,strpos($row->file_path,'/'));
 			$query = "INSERT INTO media (game_id, name, file_path, is_icon) VALUES ('{$newPrefix}', '".addSlashes($row->name)."', '{$newMediaFilePath}', '{$row->is_icon}')";
 			Module::query($query);
-			$newID = mysql_insert_id();
-			$newMediaIds[($row->media_id)] = $newID;
+			$newId = mysql_insert_id();
+			$newMediaIds[($row->media_id)] = $newId;
 
 			if($row->file_path != "" && substr($row->file_path,-1) != "/" && file_exists("../../gamedata/" . $row->file_path)) copy(("../../gamedata/" . $row->file_path),("../../gamedata/" . $newMediaFilePath));
 
-			$query = "UPDATE items SET icon_media_id = {$newID} WHERE icon_media_id = $row->media_id AND game_id = '{$newPrefix}'";
+			$query = "UPDATE items SET icon_media_id = {$newId} WHERE icon_media_id = $row->media_id AND game_id = '{$newPrefix}'";
 			Module::query($query);
-			$query = "UPDATE items SET media_id = {$newID} WHERE media_id = $row->media_id AND game_id = '{$newPrefix}'";
+			$query = "UPDATE items SET media_id = {$newId} WHERE media_id = $row->media_id AND game_id = '{$newPrefix}'";
 			Module::query($query);
-			$query = "UPDATE locations SET icon_media_id = {$newID} WHERE icon_media_id = $row->media_id AND game_id = '{$newPrefix}'";
+			$query = "UPDATE locations SET icon_media_id = {$newId} WHERE icon_media_id = $row->media_id AND game_id = '{$newPrefix}'";
 			Module::query($query);
-			$query = "UPDATE nodes SET icon_media_id = {$newID} WHERE icon_media_id = $row->media_id AND game_id = '{$newPrefix}'";
+			$query = "UPDATE nodes SET icon_media_id = {$newId} WHERE icon_media_id = $row->media_id AND game_id = '{$newPrefix}'";
 			Module::query($query);
-			$query = "UPDATE nodes SET media_id = {$newID} WHERE media_id = $row->media_id AND game_id = '{$newPrefix}'";
+			$query = "UPDATE nodes SET media_id = {$newId} WHERE media_id = $row->media_id AND game_id = '{$newPrefix}'";
 			Module::query($query);
-			$query = "UPDATE npcs SET icon_media_id = {$newID} WHERE icon_media_id = $row->media_id AND game_id = '{$newPrefix}'";
+			$query = "UPDATE npcs SET icon_media_id = {$newId} WHERE icon_media_id = $row->media_id AND game_id = '{$newPrefix}'";
 			Module::query($query);
-			$query = "UPDATE npcs SET media_id = {$newID} WHERE media_id = $row->media_id AND game_id = '{$newPrefix}'";
+			$query = "UPDATE npcs SET media_id = {$newId} WHERE media_id = $row->media_id AND game_id = '{$newPrefix}'";
 			Module::query($query);
-			$query = "UPDATE qrcodes SET match_media_id = {$newID} WHERE match_media_id = $row->media_id AND game_id = '{$newPrefix}'";
+			$query = "UPDATE qrcodes SET match_media_id = {$newId} WHERE match_media_id = $row->media_id AND game_id = '{$newPrefix}'";
 			Module::query($query);
-			$query = "UPDATE quests SET active_icon_media_id = {$newID} WHERE active_icon_media_id = $row->media_id AND game_id = '{$newPrefix}'";
+			$query = "UPDATE quests SET active_icon_media_id = {$newId} WHERE active_icon_media_id = $row->media_id AND game_id = '{$newPrefix}'";
 			Module::query($query);
-			$query = "UPDATE quests SET complete_icon_media_id = {$newID} WHERE complete_icon_media_id = $row->media_id AND game_id = '{$newPrefix}'";
+			$query = "UPDATE quests SET complete_icon_media_id = {$newId} WHERE complete_icon_media_id = $row->media_id AND game_id = '{$newPrefix}'";
 			Module::query($query);
-			$query = "UPDATE quests SET active_media_id = {$newID} WHERE active_media_id = $row->media_id AND game_id = '{$newPrefix}'";
+			$query = "UPDATE quests SET active_media_id = {$newId} WHERE active_media_id = $row->media_id AND game_id = '{$newPrefix}'";
 			Module::query($query);
-			$query = "UPDATE quests SET complete_media_id = {$newID} WHERE complete_media_id = $row->media_id AND game_id = '{$newPrefix}'";
+			$query = "UPDATE quests SET complete_media_id = {$newId} WHERE complete_media_id = $row->media_id AND game_id = '{$newPrefix}'";
 			Module::query($query);
-			$query = "UPDATE aug_bubbles SET icon_media_id = {$newID} WHERE icon_media_id = $row->media_id AND game_id = {$newPrefix}";
+			$query = "UPDATE aug_bubbles SET icon_media_id = {$newId} WHERE icon_media_id = $row->media_id AND game_id = {$newPrefix}";
 			Module::query($query);
-			$query = "UPDATE aug_bubble_media SET media_id = {$newID} WHERE media_id = $row->media_id AND game_id = {$newPrefix}";
+			$query = "UPDATE aug_bubble_media SET media_id = {$newId} WHERE media_id = $row->media_id AND game_id = {$newPrefix}";
 			Module::query($query);
-			$query = "UPDATE games SET icon_media_id = {$newID} WHERE icon_media_id = $row->media_id AND game_id = {$newPrefix}";
+			$query = "UPDATE games SET icon_media_id = {$newId} WHERE icon_media_id = $row->media_id AND game_id = {$newPrefix}";
 			Module::query($query);
-			$query = "UPDATE games SET media_id = {$newID} WHERE media_id = $row->media_id AND game_id = {$newPrefix}";
+			$query = "UPDATE games SET media_id = {$newId} WHERE media_id = $row->media_id AND game_id = {$newPrefix}";
 			Module::query($query);
-			$query = "UPDATE games SET pc_media_id = {$newID} WHERE pc_media_id = $row->media_id AND game_id = {$newPrefix}";
+			$query = "UPDATE games SET pc_media_id = {$newId} WHERE pc_media_id = $row->media_id AND game_id = {$newPrefix}";
 			Module::query($query);
-			$query = "UPDATE web_pages SET icon_media_id = {$newID} WHERE icon_media_id = $row->media_id AND game_id = {$newPrefix}";
+			$query = "UPDATE web_pages SET icon_media_id = {$newId} WHERE icon_media_id = $row->media_id AND game_id = {$newPrefix}";
 			Module::query($query);
-			$query = "UPDATE overlay_tiles, overlays SET overlay_tiles.media_id = {$newID} WHERE overlay_tiles.media_id = $row->media_id AND overlays.game_id = {$newPrefix} AND overlay_tiles.overlay_id = overlays.overlay_id";
+			$query = "UPDATE overlay_tiles, overlays SET overlay_tiles.media_id = {$newId} WHERE overlay_tiles.media_id = $row->media_id AND overlays.game_id = {$newPrefix} AND overlay_tiles.overlay_id = overlays.overlay_id";
 			Module::query($query);
 
 		}
@@ -1279,7 +1282,7 @@ class Games extends Module
 
 		$result = Module::query($query);
 		$game = mysql_fetch_object($result);
-		if(!$game) return "Invalid Game ID";
+		if(!$game) return "Invalid Game Id";
 
 		if($game->media_url) $game->media_url = Config::gamedataWWWPath . '/' . $game->media_url;
 		if($game->icon_url) $game->icon_url = Config::gamedataWWWPath . '/' . $game->icon_url;
