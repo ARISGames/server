@@ -15,18 +15,18 @@ class EditorFoldersAndContent extends Module
     const EDITORCONTENT = 1;
     const EDITORFOLDER = 2;
 
-    public function getFoldersAndContent($intGameId)
+    public function getFoldersAndContent($gameId, $editorId, $editorToken)
     {
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
         //Get the folders
-        $query = "SELECT * FROM folders WHERE game_id = '{$prefix}'";
+        $query = "SELECT * FROM folders WHERE game_id = '{$gameId}'";
         $folders = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error:". mysql_error());
 
         //Get the Contents with some of the content's data
-        $query = "SELECT * FROM folder_contents WHERE game_id = '{$prefix}'";
+        $query = "SELECT * FROM folder_contents WHERE game_id = '{$gameId}'";
         $rsContents = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error:". mysql_error());
 
@@ -35,7 +35,7 @@ class EditorFoldersAndContent extends Module
 
         while ($content = mysql_fetch_object($rsContents)) {
             //Save the modified copy to the array
-            $arrayContents[] = self::hydrateContent($content, $intGameId);
+            $arrayContents[] = self::hydrateContent($content, $gameId);
         }
 
         //fake out amfphp to package this array as a flex array collection
@@ -46,60 +46,57 @@ class EditorFoldersAndContent extends Module
         return new returnData(0, $foldersAndContents);
     }
 
-    public function getContent($intGameId, $intObjectContentID)
+    public function getContent($gameId, $intObjectContentID)
     {
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(3, NULL, "invalid game id");
-
         //Get the Contents with some of the content's data
-        $query = "SELECT * FROM folder_contents WHERE game_id = '{$prefix}' AND object_content_id = '{$intObjectContentID}' LIMIT 1";
+        $query = "SELECT * FROM folder_contents WHERE game_id = '{$gameId}' AND object_content_id = '{$intObjectContentID}' LIMIT 1";
         $rsContents = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error:". mysql_error());
 
         $content = @mysql_fetch_object($rsContents);
         if (!$content) return new returnData(2, NULL, "invalid object content id for this game");
 
-        $content = self::hydrateContent($content, $intGameId);
+        $content = self::hydrateContent($content, $gameId);
         return new returnData(0, $content);
     }
 
-    public function duplicateObject($intGameId, $objContentId)
+    public function duplicateObject($gameId, $objContentId, $editorId, $editorToken)
     {
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(3, NULL, "invalid game id");
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
-        $query = "SELECT * FROM folder_contents WHERE game_id = '{$prefix}' AND object_content_id = '{$objContentId}'";
+        $query = "SELECT * FROM folder_contents WHERE game_id = '{$gameId}' AND object_content_id = '{$objContentId}'";
         $result = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error:". mysql_error());
         $row = mysql_fetch_object($result);
 
         if($row->content_type == "Npc") {
-            $query = "INSERT INTO npcs (game_id, name, description, text, closing, media_id, icon_media_id) SELECT game_id, name, description, text, closing, media_id, icon_media_id FROM npcs WHERE game_id = '{$prefix}' AND  npc_id = '{$row->content_id}'";
+            $query = "INSERT INTO npcs (game_id, name, description, text, closing, media_id, icon_media_id) SELECT game_id, name, description, text, closing, media_id, icon_media_id FROM npcs WHERE game_id = '{$gameId}' AND  npc_id = '{$row->content_id}'";
             Module::query($query);
             if (mysql_error()) return new returnData(3, NULL, "SQL Error:". mysql_error());
             $newContentId = mysql_insert_id();
-            $query = "SELECT * FROM npc_conversations WHERE npc_id = '{$row->content_id}' AND game_id = '{$prefix}'";
+            $query = "SELECT * FROM npc_conversations WHERE npc_id = '{$row->content_id}' AND game_id = '{$gameId}'";
             $result = Module::query($query);
             if (mysql_error()) return new returnData(3, NULL, "SQL Error:". mysql_error());
             while($npcConvo = mysql_fetch_object($result))
             {
-                $query = "INSERT INTO nodes (game_id, title, text, opt1_text, opt1_node_id, opt2_text, opt2_node_id, opt3_text, opt3_node_id, require_answer_incorrect_node_id, require_answer_string, require_answer_correct_node_id, media_id, icon_media_id) SELECT game_id, title, text, opt1_text, opt1_node_id, opt2_text, opt2_node_id, opt3_text, opt3_node_id, require_answer_incorrect_node_id, require_answer_string, require_answer_correct_node_id, media_id, icon_media_id FROM nodes WHERE game_id = {$prefix} AND node_id = '{$npcConvo->node_id}'";
+                $query = "INSERT INTO nodes (game_id, title, text, opt1_text, opt1_node_id, opt2_text, opt2_node_id, opt3_text, opt3_node_id, require_answer_incorrect_node_id, require_answer_string, require_answer_correct_node_id, media_id, icon_media_id) SELECT game_id, title, text, opt1_text, opt1_node_id, opt2_text, opt2_node_id, opt3_text, opt3_node_id, require_answer_incorrect_node_id, require_answer_string, require_answer_correct_node_id, media_id, icon_media_id FROM nodes WHERE game_id = {$gameId} AND node_id = '{$npcConvo->node_id}'";
                 Module::query($query);
                 if (mysql_error()) return new returnData(3, NULL, "SQL Error:". mysql_error());
                 $newNodeId = mysql_insert_id();
 
-                $query = "INSERT INTO npc_conversations (game_id, npc_id, node_id, text, sort_index) VALUES ('{$intGameId}', '{$newContentId}', '{$newNodeId}', '{$npcConvo->text}', '{$npcConvo->sort_index}')";
+                $query = "INSERT INTO npc_conversations (game_id, npc_id, node_id, text, sort_index) VALUES ('{$gameId}', '{$newContentId}', '{$newNodeId}', '{$npcConvo->text}', '{$npcConvo->sort_index}')";
                 Module::query($query);
                 if (mysql_error()) return new returnData(3, NULL, "SQL Error:". mysql_error());
             }
         }
         else if($row->content_type == "Item") {
-            $query = "INSERT INTO items (game_id, name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight, url, type) SELECT game_id, name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight, url, type FROM items WHERE item_id = '{$row->content_id}' AND game_id = '{$intGameId}'";
+            $query = "INSERT INTO items (game_id, name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight, url, type) SELECT game_id, name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight, url, type FROM items WHERE item_id = '{$row->content_id}' AND game_id = '{$gameId}'";
             Module::query($query);
             $newContentId = mysql_insert_id();
         }
         else if($row->content_type == "Node") {
-            $query = "INSERT INTO nodes (game_id, title, text, opt1_text, opt1_node_id, opt2_text, opt2_node_id, opt3_text, opt3_node_id, require_answer_incorrect_node_id, require_answer_string, require_answer_correct_node_id, media_id, icon_media_id) SELECT game_id, title, text, opt1_text, opt1_node_id, opt2_text, opt2_node_id, opt3_text, opt3_node_id, require_answer_incorrect_node_id, require_answer_string, require_answer_correct_node_id, media_id, icon_media_id FROM nodes WHERE node_id = '{$row->content_id}' AND game_id = '{$intGameId}'";
+            $query = "INSERT INTO nodes (game_id, title, text, opt1_text, opt1_node_id, opt2_text, opt2_node_id, opt3_text, opt3_node_id, require_answer_incorrect_node_id, require_answer_string, require_answer_correct_node_id, media_id, icon_media_id) SELECT game_id, title, text, opt1_text, opt1_node_id, opt2_text, opt2_node_id, opt3_text, opt3_node_id, require_answer_incorrect_node_id, require_answer_string, require_answer_correct_node_id, media_id, icon_media_id FROM nodes WHERE node_id = '{$row->content_id}' AND game_id = '{$gameId}'";
             Module::query($query);
             $newContentId = mysql_insert_id();
         }
@@ -116,47 +113,47 @@ class EditorFoldersAndContent extends Module
             $result = Module::query($query);
             while($augMedia = mysql_fetch_object($result))
             {
-                $query = "INSERT INTO aug_bubble_media (aug_bubble_id, media_id, text, game_id) VALUES ('{$newContentId}', '{$augMedia->media_id}', '{$augMedia->text}', '{$prefix}')";
+                $query = "INSERT INTO aug_bubble_media (aug_bubble_id, media_id, text, game_id) VALUES ('{$newContentId}', '{$augMedia->media_id}', '{$augMedia->text}', '{$gameId}')";
                 Module::query($query);
             }
         }
 
-        $query = "INSERT INTO folder_contents (game_id, folder_id, content_type, content_id, previous_id) VALUES ('{$intGameId}', '{$row->folder_id}', '{$row->content_type}', '{$newContentId}', '{$row->previous_id}')";
+        $query = "INSERT INTO folder_contents (game_id, folder_id, content_type, content_id, previous_id) VALUES ('{$gameId}', '{$row->folder_id}', '{$row->content_type}', '{$newContentId}', '{$row->previous_id}')";
         Module::query($query);
 
         return new returnData(0);
     }
 
-    private function hydrateContent($folderContentObject, $intGameId) {
+    private function hydrateContent($folderContentObject, $gameId) {
         $content = $folderContentObject;
 
         if ($content->content_type == 'Node') {
             //Fetch the corresponding node
-            $contentDetails = Nodes::getNode($intGameId,$content->content_id)->data;
+            $contentDetails = Nodes::getNode($gameId,$content->content_id)->data;
             $content->name = $contentDetails->title;
         }
         else if ($content->content_type == 'Item') {
-            $contentDetails = Items::getItem($intGameId,$content->content_id)->data;
+            $contentDetails = Items::getItem($gameId,$content->content_id)->data;
             $content->name = $contentDetails->name;
         }
         else if ($content->content_type == 'Npc') {
-            $contentDetails = Npcs::getNpc($intGameId,$content->content_id)->data;
+            $contentDetails = Npcs::getNpc($gameId,$content->content_id)->data;
             $content->name = $contentDetails->name;
         }
         else if ($content->content_type == 'WebPage') {
-            $contentDetails = WebPages::getWebPage($intGameId,$content->content_id)->data;
+            $contentDetails = WebPages::getWebPage($gameId,$content->content_id)->data;
             $content->name = $contentDetails->name;
             $content->media = NULL;
             $content->media_id = NULL;
         }
         else if ($content->content_type == 'AugBubble') {
-            $contentDetails = AugBubbles::getAugBubble($intGameId,$content->content_id)->data;
+            $contentDetails = AugBubbles::getAugBubble($gameId,$content->content_id)->data;
             $content->name = $contentDetails->name;
             $content->media = NULL;
             $content->media_id = NULL;
         }
         else if ($content->content_type == 'CustomMap') {
-            $contentDetails = Overlays::getOverlay($intGameID,$content->content_id)->data;
+            $contentDetails = Overlays::getOverlay($gameId,$content->content_id)->data;
             $content->name = $contentDetails->name;
         }
         else if ($content->content_type == 'PlayerNote') {
@@ -169,16 +166,16 @@ class EditorFoldersAndContent extends Module
 
         //Get the Icon Media
         $mediaHelper = new Media;
-        $mediaReturnObject = $mediaHelper->getMediaObject($intGameId, $contentDetails->icon_media_id);
+        $mediaReturnObject = $mediaHelper->getMediaObject($gameId, $contentDetails->icon_media_id);
         $media = $mediaReturnObject->data;
         $content->icon_media = $media;
         $content->icon_media_id = $contentDetails->icon_media_id;
-        $content->is_spawnable = Spawnables::hasActiveSpawnable($intGameId, $content->content_type, $content->content_id);
+        $content->is_spawnable = Spawnables::hasActiveSpawnable($gameId, $content->content_type, $content->content_id);
 
         if ($content->content_type != 'WebPage' && $content->content_type != 'PlayerNote' && $content->content_type != 'AugBubble' && $content->content_type != 'CustomMap'){
             //Get the Media
             $mediaHelper = new Media;
-            $mediaReturnObject = $mediaHelper->getMediaObject($intGameId, $contentDetails->media_id);
+            $mediaReturnObject = $mediaHelper->getMediaObject($gameId, $contentDetails->media_id);
             $media = $mediaReturnObject->data;
             $content->media = $media;
             $content->media_id = $contentDetails->media_id;
@@ -187,7 +184,7 @@ class EditorFoldersAndContent extends Module
            if ($content->content_type == 'AugBubble'){
         //Get the Alignment Media
         $mediaHelper = new Media;
-        $mediaReturnObject = $mediaHelper->getMediaObject($intGameId, $contentDetails->alignment_media_id);
+        $mediaReturnObject = $mediaHelper->getMediaObject($gameId, $contentDetails->alignment_media_id);
         $alignmentMedia = $mediaReturnObject->data;
         $content->alignment_media = $alignmentMedia;
         $content->alignment_media_id = $alignmentMedia->media_id;
@@ -197,12 +194,12 @@ class EditorFoldersAndContent extends Module
         return $content;
     }
 
-    public function saveFolder($intGameId, $intFolderID, $strName, $intParentID, $intSortOrder, $boolIsOpen )
+    public function saveFolder($gameId, $intFolderID, $strName, $intParentID, $intSortOrder, $boolIsOpen, $editorId, $editorToken)
     {
-        $strName = addslashes($strName);	
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        $strName = addslashes($strName);	
 
         if ($intFolderID) {
             //This is an update
@@ -215,7 +212,7 @@ class EditorFoldersAndContent extends Module
                      is_open = '{$boolIsOpen}'
                          WHERE 
                          folder_id = {$intFolderID} AND
-                         game_id = '{$intGameId}'
+                         game_id = '{$gameId}'
                          ";
 
             Module::query($query);
@@ -226,7 +223,7 @@ class EditorFoldersAndContent extends Module
             //This is an insert
 
             $query = "INSERT INTO folders (game_id, name, parent_id, previous_id, is_open)
-                VALUES ('{$intGameId}','{$strName}', '{$intParentID}', '{$intSortOrder}', '{$boolIsOpen}')";
+                VALUES ('{$gameId}','{$strName}', '{$intParentID}', '{$intSortOrder}', '{$boolIsOpen}')";
 
             Module::query($query);
             $newFolderID = mysql_insert_id();
@@ -236,10 +233,10 @@ class EditorFoldersAndContent extends Module
         }
     }
 
-    public static function saveContent($intGameId, $intObjectContentID, $intFolderID, $strContentType, $intContentID, $intSortOrder )
+    public static function saveContent($gameId, $intObjectContentID, $intFolderID, $strContentType, $intContentID, $intSortOrder, $editorId, $editorToken)
     {
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
         if ($intObjectContentID) {
             //This is an update
@@ -251,7 +248,7 @@ class EditorFoldersAndContent extends Module
                           previous_id = '{$intSortOrder}'
                               WHERE 
                               object_content_id = {$intObjectContentID} AND
-                              game_id = {$intGameId}
+                              game_id = {$gameId}
             ";
 
             Module::query($query);
@@ -263,7 +260,7 @@ class EditorFoldersAndContent extends Module
             $query = "INSERT INTO folder_contents 
                 (game_id, folder_id, content_type, content_id, previous_id)
                 VALUES 
-                ('{$intGameId}','{$intFolderID}', '{$strContentType}', '{$intContentID}', '{$intSortOrder}')";
+                ('{$gameId}','{$intFolderID}', '{$strContentType}', '{$intContentID}', '{$intSortOrder}')";
 
             Module::query($query);
             $newContentID = mysql_insert_id();
@@ -273,12 +270,12 @@ class EditorFoldersAndContent extends Module
         }
     }
 
-    public function deleteFolder($intGameId, $intFolderID)
+    public function deleteFolder($gameId, $intFolderID, $editorId, $editorToken)
     {
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");		
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
-        $query = "DELETE FROM folders WHERE folder_id = {$intFolderID} AND game_id = '{$intGameId}'";
+        $query = "DELETE FROM folders WHERE folder_id = {$intFolderID} AND game_id = '{$gameId}'";
         Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
@@ -286,30 +283,30 @@ class EditorFoldersAndContent extends Module
         else return new returnData(2, 'invalid folder id');
     }	
 
-    public static function deleteContent($intGameId, $intContentID)
+    public static function deleteContent($gameId, $intContentID, $editorId, $editorToken)
     {
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");		
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
         //Lookup the object
-        $query = "SELECT content_type,content_id FROM folder_contents WHERE object_content_id = {$intContentID} AND game_id = '{$intGameId}' LIMIT 1";
+        $query = "SELECT content_type,content_id FROM folder_contents WHERE object_content_id = {$intContentID} AND game_id = '{$gameId}' LIMIT 1";
         $contentQueryResult = Module::query($query);
         $content = @mysql_fetch_object($contentQueryResult);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
-        Spawnables::deleteSpawnablesOfObject($intGameId, $content->content_type, $content->content_id);
+        Spawnables::deleteSpawnablesOfObject($gameId, $content->content_type, $content->content_id);
 
         //Delete the content record
-        $query = "DELETE FROM folder_contents WHERE object_content_id = {$intContentID} AND game_id = '{$intGameId}'";
+        $query = "DELETE FROM folder_contents WHERE object_content_id = {$intContentID} AND game_id = '{$gameId}'";
         Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
         //Delete the object
-        if ($content->content_type == "Node") Nodes::deleteNode($intGameId, $content->content_id);
-        else if ($content->content_type == "Item") Items::deleteItem($intGameId, $content->content_id);
-        else if ($content->content_type == "Npc") Npcs::deleteNpc($intGameId, $content->content_id);
-        else if ($content->content_type == "WebPage") WebPages::deleteWebPage($intGameId, $content->content_id);
-        else if ($content->content_type == "AugBubble") AugBubbles::deleteAugBubble($intGameId, $content->content_id);
+        if ($content->content_type == "Node") Nodes::deleteNode($gameId, $content->content_id);
+        else if ($content->content_type == "Item") Items::deleteItem($gameId, $content->content_id);
+        else if ($content->content_type == "Npc") Npcs::deleteNpc($gameId, $content->content_id);
+        else if ($content->content_type == "WebPage") WebPages::deleteWebPage($gameId, $content->content_id);
+        else if ($content->content_type == "AugBubble") AugBubbles::deleteAugBubble($gameId, $content->content_id);
         else if ($content->content_type == "PlayerNote") Notes::deleteNote($content->content_id);
 
         if (mysql_affected_rows()) return new returnData(0);

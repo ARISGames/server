@@ -60,8 +60,11 @@ class AugBubbles extends Module
         return new returnData(0, $result);
     }
 
-    public static function createAugBubble($gameId, $name, $desc, $iconMediaId)
+    public static function createAugBubble($gameId, $name, $desc, $iconMediaId, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $name = addslashes($name);	
 
         $query = "INSERT INTO aug_bubbles 
@@ -93,16 +96,22 @@ class AugBubbles extends Module
 
     }
 
-    public static function removeAugBubbleMediaIndex($intAugId, $intMediaId, $intIndex)
+    public static function removeAugBubbleMediaIndex($intAugId, $intMediaId, $intIndex, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $query = "DELETE FROM aug_bubble_media WHERE aug_bubble_id = '{$intAugId}' AND media_id = '{$intMediaId}'";
         Module::query($query);
 
         return new returnData(0);
     }
 
-    public static function updateAugBubbleMediaIndex($intAugId, $intMediaId, $stringName, $intGameId, $intIndex)
+    public static function updateAugBubbleMediaIndex($intAugId, $intMediaId, $stringName, $intGameId, $intIndex, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         /* This will be for when index is implemented
            $query = "SELECT * FROM aug_bubble_media WHERE aug_bubble_id = '{$intAugId}' AND media_id = '{$intMediaId}'";
            $result = Module::query($query);

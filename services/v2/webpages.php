@@ -20,9 +20,6 @@ class WebPages extends Module
 
     public static function getWebPage($gameId, $webPageId)
     {
-        $prefix = Module::getPrefix($gameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
         $query = "SELECT * FROM web_pages WHERE game_id = '{$gameId}' AND web_page_id = '{$webPageId}' LIMIT 1";
 
         $rsResult = Module::query($query);
@@ -34,12 +31,12 @@ class WebPages extends Module
         return new returnData(0, $webPage);
     }
 
-    public static function createWebPage($gameId, $name, $url, $iconMediaId)
+    public static function createWebPage($gameId, $name, $url, $iconMediaId, $editorId, $editorToken)
     {
-        $name = addslashes($name);	
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
-        $prefix = Module::getPrefix($gameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        $name = addslashes($name);	
 
         $query = "INSERT INTO web_pages 
             (game_id, name, url, icon_media_id)
@@ -53,13 +50,12 @@ class WebPages extends Module
         return new returnData(0, mysql_insert_id());
     }
 
-    public static function updateWebPage($gameId, $webPageId, $name, $url, $iconMediaId)
+    public static function updateWebPage($gameId, $webPageId, $name, $url, $iconMediaId, $editorId, $editorToken)
     {
-        $prefix = Module::getPrefix($gameId);
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
         $name = addslashes($name);	
-
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
         $query = "UPDATE web_pages 
             SET name = '{$name}', 
@@ -76,9 +72,6 @@ class WebPages extends Module
 
     public static function deleteWebPage($gameId, $webPageId)
     {
-        $prefix = Module::getPrefix($gameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
         Locations::deleteLocationsForObject($gameId, 'WebPage', $webPageId);
         Requirements::deleteRequirementsForRequirementObject($gameId, 'WebPage', $webPageId);
         PlayerStateChanges::deletePlayerStateChangesThatRefrenceObject($gameId, 'WebPage', $webPageId);

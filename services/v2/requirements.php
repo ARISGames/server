@@ -3,15 +3,15 @@ require_once("module.php");
 
 class Requirements extends Module
 {	
-    public function getRequirementsForObject($gameId, $objectType, $objectId)
+    public function getRequirementsForObject($gameId, $objectType, $objectId, $editorId, $editorToken)
     {
-        $prefix = Module::getPrefix($gameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
         if (!$this->isValidObjectType($objectType)) return new returnData(4, NULL, "Invalid object type");
 
         $query = "SELECT * FROM requirements
-            WHERE game_id = {$prefix} AND content_type = '{$objectType}' and content_id = '{$objectId}'";
+            WHERE game_id = {$gameId} AND content_type = '{$objectType}' and content_id = '{$objectId}'";
 
         $rsResult = Module::query($query);
 
@@ -21,10 +21,7 @@ class Requirements extends Module
 
     public function getRequirement($gameId, $requirementId)
     {
-        $prefix = Module::getPrefix($gameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
-        $query = "SELECT * FROM requirements WHERE game_id = {$prefix} AND requirement_id = {$requirementId} LIMIT 1";
+        $query = "SELECT * FROM requirements WHERE game_id = {$gameId} AND requirement_id = {$requirementId} LIMIT 1";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -36,10 +33,10 @@ class Requirements extends Module
     }
 
     public function createRequirement($gameId, $objectType, $objectId, 
-            $requirementType, $requirementDetail1, $requirementDetail2, $requirementDetail3, $requirementDetail4, $booleanOperator, $notOperator)
+            $requirementType, $requirementDetail1, $requirementDetail2, $requirementDetail3, $requirementDetail4, $booleanOperator, $notOperator, $editorId, $editorToken)
     {
-        $prefix = Module::getPrefix($gameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
         //test the object type 
         if (!$this->isValidObjectType($objectType)) return new returnData(4, NULL, "Invalid object type");
@@ -54,7 +51,7 @@ class Requirements extends Module
         $query = "INSERT INTO requirements 
             (game_id, content_type, content_id, requirement, 
              requirement_detail_1,requirement_detail_2,requirement_detail_3,requirement_detail_4,boolean_operator,not_operator)
-            VALUES ('{$prefix}','{$objectType}','{$objectId}','{$requirementType}',
+            VALUES ('{$gameId}','{$objectType}','{$objectId}','{$requirementType}',
                     '{$requirementDetail1}', '{$requirementDetail2}', '{$requirementDetail3}', '{$requirementDetail4}', '{$booleanOperator}','{$notOperator}')";
 
         Module::query($query);
@@ -66,10 +63,10 @@ class Requirements extends Module
 
     public function updateRequirement($gameId, $requirementId, $objectType, $objectId, 
             $requirementType, $requirementDetail1, $requirementDetail2,$requirementDetail3,$requirementDetail4,
-            $booleanOperator,$notOperator)
+            $booleanOperator,$notOperator, $editorId, $editorToken)
     {
-        $prefix = Module::getPrefix($gameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
         //test the object type 
         if (!$this->isValidObjectType($objectType)) return new returnData(4, NULL, "Invalid object type");
@@ -88,7 +85,7 @@ class Requirements extends Module
                          requirement_detail_4 = '{$requirementDetail4}',
                          boolean_operator = '{$booleanOperator}',
                          not_operator = '{$notOperator}'
-                             WHERE game_id = {$prefix} AND requirement_id = '{$requirementId}'";
+                             WHERE game_id = {$gameId} AND requirement_id = '{$requirementId}'";
 
         Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -97,12 +94,12 @@ class Requirements extends Module
         else return new returnData(0, FALSE);
     }
 
-    public function deleteRequirement($gameId, $requirementId)
+    public function deleteRequirement($gameId, $requirementId, $editorId, $editorToken)
     {
-        $prefix = Module::getPrefix($gameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
-        $query = "DELETE FROM requirements WHERE game_id = {$prefix} AND requirement_id = {$requirementId}";
+        $query = "DELETE FROM requirements WHERE game_id = {$gameId} AND requirement_id = {$requirementId}";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -118,9 +115,6 @@ class Requirements extends Module
 
     public function deleteRequirementsForRequirementObject($gameId, $objectType, $objectId)
     {
-        $prefix = Module::getPrefix($gameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
         $requirementString = '';
 
         switch ($objectType) {
@@ -152,7 +146,7 @@ class Requirements extends Module
 
         //Delete the Locations and related QR Codes
         $query = "DELETE FROM requirements
-            WHERE game_id = {$prefix} AND ({$requirementString}) AND requirement_detail_1 = '{$objectId}'";
+            WHERE game_id = {$gameId} AND ({$requirementString}) AND requirement_detail_1 = '{$objectId}'";
 
         Module::query($query);
 

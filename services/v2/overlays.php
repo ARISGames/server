@@ -4,8 +4,11 @@ require_once("module.php");
 class Overlays extends Module
 {
     /* Create overlay in database so it shows up as an object in the edior */
-    public function createOverlay($gameId, $name, $index)
+    public function createOverlay($gameId, $name, $index, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $name = addslashes($name);	
 
         $queryOverlayID = "SELECT max( overlay_id ) as max_overlay_id FROM server.overlays"; 
@@ -33,12 +36,12 @@ class Overlays extends Module
             return new returnData(0, $overlayId); 			
     }
 
-    public function updateOverlay($intGameID, $intOverlayID, $strName, $index)
+    public function updateOverlay($gameId, $intOverlayID, $strName, $index, $editorId, $editorToken)
     {
-        $strName = addslashes($strName);	
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
-        $prefix = Module::getPrefix($intGameID);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        $strName = addslashes($strName);	
 
         $query = "UPDATE overlays
             SET 
@@ -54,10 +57,10 @@ class Overlays extends Module
         else return new returnData(0, FALSE);
     }
 
-    public function deleteOverlay($intGameID, $intOverlayID)
+    public function deleteOverlay($gameId, $intOverlayID, $editorId, $editorToken)
     {
-        $prefix = Module::getPrefix($intGameID);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
         $query = "DELETE FROM overlays WHERE overlay_id = {$intOverlayID}";
 
@@ -71,7 +74,7 @@ class Overlays extends Module
         $rsResult2 = Module::query($query2);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
-        $query = "DELETE FROM requirements WHERE content_type = 'CustomMap' AND content_id = '{$intOverlayID}' AND game_id = {$intGameID}";
+        $query = "DELETE FROM requirements WHERE content_type = 'CustomMap' AND content_id = '{$intOverlayID}' AND game_id = {$gameId}";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "{$query} SQL Error");
@@ -79,12 +82,9 @@ class Overlays extends Module
         return new returnData(0, TRUE);
     }	
 
-    public function getOverlay($intGameID, $intOverlayID)
+    public function getOverlay($gameId, $intOverlayID)
     {
-        $prefix = Module::getPrefix($intGameID);
-        if (!$prefix && $intGameID != 0) return new returnData(1, NULL, "invalid game id");
-
-        $query = "SELECT * FROM server.overlays WHERE game_id = {$intGameID} AND overlay_id = {$intOverlayID}";
+        $query = "SELECT * FROM server.overlays WHERE game_id = {$gameId} AND overlay_id = {$intOverlayID}";
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error 2");
 
@@ -93,9 +93,9 @@ class Overlays extends Module
         return $returnData;
     }
 
-    public function getOverlaysForEditor($intGameID)
+    public function getOverlaysForEditor($gameId)
     {
-        $query = "SELECT * FROM overlays WHERE overlays.game_id = {$intGameID} ORDER BY sort_index";
+        $query = "SELECT * FROM overlays WHERE overlays.game_id = {$gameId} ORDER BY sort_index";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -105,14 +105,11 @@ class Overlays extends Module
         return $returnData;
     }
 
-    public function getOverlays($intGameID)
+    public function getOverlays($gameId)
     {
         /*
-           $prefix = Module::getPrefix($intGameID);
-           if (!$prefix && $intGameID != 0) return new returnData(1, NULL, "invalid game id");
-
-           if ($intGameID == 0) $query = "SELECT * FROM overlays, overlay_tiles, media WHERE overlays.game_id = 0 AND overlays.overlay_id = overlay_tiles.overlay_id AND overlay_tiles.media_id = media.media_id ORDER BY overlays.sort_index";
-           else $query = "SELECT * FROM overlays, overlay_tiles, media WHERE (overlays.game_id = {$prefix}) AND overlays.overlay_id = overlay_tiles.overlay_id AND overlay_tiles.media_id = media.media_id ORDER BY overlays.sort_index";
+           if ($gameId == 0) $query = "SELECT * FROM overlays, overlay_tiles, media WHERE overlays.game_id = 0 AND overlays.overlay_id = overlay_tiles.overlay_id AND overlay_tiles.media_id = media.media_id ORDER BY overlays.sort_index";
+           else $query = "SELECT * FROM overlays, overlay_tiles, media WHERE (overlays.game_id = {$gameId}) AND overlays.overlay_id = overlay_tiles.overlay_id AND overlay_tiles.media_id = media.media_id ORDER BY overlays.sort_index";
 
 
            $rsResult = Module::query($query);
@@ -139,16 +136,12 @@ class Overlays extends Module
 
          */
         return $returnData;
-
     }
 
-    public function getCurrentOverlaysForPlayer($intGameID, $intPlayerID)
+    public function getCurrentOverlaysForPlayer($gameId, $intPlayerID)
     {
-        $prefix = Module::getPrefix($intGameID);
-        if (!$prefix && $intGameID != 0) return new returnData(1, NULL, "invalid game id");
-
-        if ($intGameID == 0) $query = "SELECT * FROM overlays, overlay_tiles, media WHERE overlays.game_id = 0 AND overlays.overlay_id = overlay_tiles.overlay_id AND overlay_tiles.media_id = media.media_id ORDER BY overlays.sort_index";
-        else $query = "SELECT * FROM overlays, overlay_tiles, media WHERE (overlays.game_id = {$prefix}) AND overlays.overlay_id = overlay_tiles.overlay_id AND overlay_tiles.media_id = media.media_id ORDER BY overlays.sort_index";
+        if ($gameId == 0) $query = "SELECT * FROM overlays, overlay_tiles, media WHERE overlays.game_id = 0 AND overlays.overlay_id = overlay_tiles.overlay_id AND overlay_tiles.media_id = media.media_id ORDER BY overlays.sort_index";
+        else $query = "SELECT * FROM overlays, overlay_tiles, media WHERE (overlays.game_id = {$gameId}) AND overlays.overlay_id = overlay_tiles.overlay_id AND overlay_tiles.media_id = media.media_id ORDER BY overlays.sort_index";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -159,7 +152,7 @@ class Overlays extends Module
         while ($overlayRow = mysql_fetch_array($rsResult)) {
 
             //Does it meet it's requirements?
-            if (!$this->objectMeetsRequirements($prefix, $intPlayerID, 'CustomMap', $overlayRow['overlay_id'])) {
+            if (!$this->objectMeetsRequirements($gameId, $intPlayerID, 'CustomMap', $overlayRow['overlay_id'])) {
                 continue;
             }
 
@@ -211,9 +204,10 @@ class Overlays extends Module
         return new returnData(0, $tile);
     }	
 
-    public function swapSortIndex($gameId, $overlayIdA, $overlayIdB){
-        $prefix = Module::getPrefix($gameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
+    public function swapSortIndex($gameId, $overlayIdA, $overlayIdB, $editorId, $editorToken)
+    {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
         $query = "SELECT * FROM overlays WHERE overlay_id = '{$overlayIdA}' OR overlay_id = '{$overlayIdB}'";
         $result = Module::query($query);
@@ -233,10 +227,10 @@ class Overlays extends Module
     }
 
     // To test: http://dev.arisgames.org/server/json.php/v1.overlays.writeOverlaysToDatabase/3069
-    public function writeOverlaysToDatabase($intGameID)
+    public function writeOverlaysToDatabase($gameId)
     {
         // go to folder for game ID: /var/www/html/server/gamedata/{game_id}/MapOverlays/0
-        $sGameDir = "/var/www/html/server/gamedata/".$intGameID."/";
+        $sGameDir = "/var/www/html/server/gamedata/".$gameId."/";
         $sOverlayDir = $sGameDir ."MapOverlays";
         $dirGame = new DirectoryIterator($sOverlayDir);
         $intOverlayID = 0;
@@ -246,7 +240,7 @@ class Overlays extends Module
             if ($dirOverlay->isDir() && !$dirOverlay->isDot()) {
 
                 // check if there's already a row in overlays table for this overlay.  if not, create one
-                $query = "INSERT IGNORE INTO overlays SET game_id = {$intGameID}, game_overlay_id={$intOverlayID}";
+                $query = "INSERT IGNORE INTO overlays SET game_id = {$gameId}, game_overlay_id={$intOverlayID}";
                 $rsResult = Module::query($query);
                 if (mysql_error()) return new returnData(3, NULL, "SQL Error at Overlay Level: " . $query);   
 
@@ -274,8 +268,8 @@ class Overlays extends Module
                                         $fullFileName = $intOverlayID . "_" . $dirZoomName . "_" . $dirXName . "_" . $fileYName . "_" . time();
                                         $fullNewDirAndFileName = $sGameDir . $fullFileName;
                                         $fullOldDirAndFileName = $sOverlayDir. "/" . $intOverlayID . "/" . $dirZoomName . "/" . $dirXName . "/" . $fileYName;
-                                        $filePath = $intGameID . "/" . $fullFileName;
-                                        $query3 = "INSERT INTO media SET game_id = {$intGameID}, name = '{$fullFileName}', file_path = '{$filePath}'";
+                                        $filePath = $gameId . "/" . $fullFileName;
+                                        $query3 = "INSERT INTO media SET game_id = {$gameId}, name = '{$fullFileName}', file_path = '{$filePath}'";
                                         $rsResult3 = Module::query($query3);
                                         if (mysql_error()) return new returnData(3, NULL, "SQL Error inserting Media: ". $query3);   
 
@@ -301,10 +295,14 @@ class Overlays extends Module
     }	
 
     //to test: http://dev.arisgames.org/server/json.php/v1.overlays.writeOverlayToDatabase/3289/1/aris218f403f29adc83670ba6ccc2833b996 
-    public function writeOverlayToDatabase($intGameID, $overlayId, $folderName)
+    //^ THIS EXAMPLE URL IS NOW INVALID- NEED EDITOR ID AND AUTH TOKEN
+    public function writeOverlayToDatabase($gameId, $overlayId, $folderName, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         // go to folder for game ID: /var/www/html/server/gamedata/{game_id}/
-        $sGameDir = "/var/www/html/server/gamedata/".$intGameID."/";
+        $sGameDir = "/var/www/html/server/gamedata/".$gameId."/";
         $sOverlayDir = $sGameDir . $folderName;
         $diOverlay = new DirectoryIterator($sOverlayDir);
         $i=0;
@@ -343,8 +341,8 @@ class Overlays extends Module
                                         $fullFileName = $overlayId . "_" . $dirZoomName . "_" . $dirXName . "_" . $fileYName;
                                         $fullNewDirAndFileName = $sGameDir . $fullFileName;
                                         $fullOldDirAndFileName = $sOverlayDir. "/" . $dirMain1Name . "/"  . $dirZoomName . "/" . $dirXName . "/" . $fileYName;
-                                        $filePath = $intGameID . "/" . $fullFileName;
-                                        $query3 = "INSERT INTO media SET game_id = {$intGameID}, name = '{$fullFileName}', file_path = '{$filePath}'";
+                                        $filePath = $gameId . "/" . $fullFileName;
+                                        $query3 = "INSERT INTO media SET game_id = {$gameId}, name = '{$fullFileName}', file_path = '{$filePath}'";
                                         $rsResult3 = Module::query($query3);
                                         if (mysql_error()) return new returnData(3, NULL, "SQL Error inserting Media: ". $query3);   
 
@@ -371,7 +369,7 @@ class Overlays extends Module
         }
 
 
-        $query5 = "UPDATE overlays SET file_uploaded = 1 WHERE overlay_id = {$overlayId} and game_id = {$intGameID}";
+        $query5 = "UPDATE overlays SET file_uploaded = 1 WHERE overlay_id = {$overlayId} and game_id = {$gameId}";
         $rsResult5 = Module::query($query5);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error setting zip file uploaded flag: ". $query5);  
 
@@ -395,9 +393,9 @@ class Overlays extends Module
     }
 
     //to test: http://dev.arisgames.org/server/json.php/v1.overlays.unzipOverlay/3279/arisd1a796a25517386d80a8da5a91a05a61.zip
-    public function unzipOverlay($intGameID, $origFile)
+    public function unzipOverlay($gameId, $origFile)
     { 
-        $sGameDir = "/var/www/html/server/gamedata/{$intGameID}/";
+        $sGameDir = "/var/www/html/server/gamedata/{$gameId}/";
         $sOverlayDir = $sGameDir;
         $fullFile = $sOverlayDir . $origFile;
         $zip = zip_open($fullFile); 
@@ -444,7 +442,7 @@ class Overlays extends Module
     }
 
     //to test: http://dev.arisgames.org/server/json.php/v1.overlays.createTiles/3069/0/MapOutline.png/43.0401/43.0445/-89.2458/-89.2333
-    public function createTiles($intGameID, $intOverlayID, $imageFileName, $minLat, $maxLat, $minLon, $maxLon)
+    public function createTiles($gameId, $intOverlayID, $imageFileName, $minLat, $maxLat, $minLon, $maxLon)
     {
         // see https://developers.google.com/kml/articles/raster for details on gdal commands
 
@@ -452,7 +450,7 @@ class Overlays extends Module
         // -- gdalinfo $imageFileName 
         // -- look for Upper Left ( 0.0, 0.0)  and Lower Right   (21600.0, 10800.0)
         // ----- need to figure out where to send the output and how to parse it
-        $sGameDir = "/var/www/html/server/gamedata/{$intGameID}/";
+        $sGameDir = "/var/www/html/server/gamedata/{$gameId}/";
         $sOverlayDir = "{$sGameDir}MapOverlays/{$intOverlayID}/";
         $cmd = "gdalinfo {$sGameDir}{$imageFileName}";
         $exit = exec($cmd,$fileInfo, $stderr);  

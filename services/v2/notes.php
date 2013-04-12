@@ -442,17 +442,22 @@ class Notes extends Module
         return new returnData(0);
     }
 
-    //Returns new id
-    function addTagToGame($gameId, $tag)
+    function addTagToGame($gameId, $tag, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $query = "INSERT INTO game_tags (tag, game_id, player_created) VALUES ('{$tag}', '{$gameId}', 0)";
         Module::query($query);
         return new returnData(0, mysql_insert_id());
     }
 
     //If author created, demotes to player created. completely wipes if player created. player created tags cannot exist if not instantiated at least once.
-    function deleteTagFromGame($gameId, $tagId)
+    function deleteTagFromGame($gameId, $tagId, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $query = "SELECT * FROM game_tags WHERE tag_id = '{$tagId}'"; 
         $result = Module::query($query);
         $tag = mysql_fetch_object($result);
@@ -519,8 +524,8 @@ class Notes extends Module
         else
             return new returnData(1, "Error- Invalid Game Id: ".$gameId);
 
-        $prefix = Module::getPrefix($gameId);
-        if (!$prefix) return new returnData(1, "Error- Invalid Game Id: ".$gameId);
+        if (!Module::query("SELECT * FROM games WHERE game_id = '{$gameId}'")) 
+            return new returnData(1, "Error- Invalid Game Id: ".$gameId);
 
         $notes = array();
         $query = "SELECT note_id, owner_id FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = 0";

@@ -3,15 +3,15 @@ require_once("module.php");
 
 class PlayerStateChanges extends Module
 {	
-    public function getPlayerStateChangesForObject($intGameID, $strEventType, $strEventDetail)
+    public function getPlayerStateChangesForObject($gameId, $strEventType, $strEventDetail, $editorId, $editorToken)
     {
-        $prefix = Module::getPrefix($intGameID);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
         if (!$this->isValidEventType($strEventType)) return new returnData(4, NULL, "Invalid event type");
 
         $query = "SELECT * FROM player_state_changes
-            WHERE game_id = {$prefix} AND event_type = '{$strEventType}' and event_detail = '{$strEventDetail}'";
+            WHERE game_id = {$gameId} AND event_type = '{$strEventType}' and event_detail = '{$strEventDetail}'";
 
         $rsResult = Module::query($query);
 
@@ -19,12 +19,9 @@ class PlayerStateChanges extends Module
         return new returnData(0, $rsResult);
     }
 
-    public function getPlayerStateChange($intGameID, $intPlayerStateChangeID)
+    public function getPlayerStateChange($gameId, $intPlayerStateChangeID)
     {
-        $prefix = Module::getPrefix($intGameID);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
-        $query = "SELECT * FROM player_state_changes WHERE game_id = {$prefix} AND id = {$intPlayerStateChangeID} LIMIT 1";
+        $query = "SELECT * FROM player_state_changes WHERE game_id = {$gameId} AND id = {$intPlayerStateChangeID} LIMIT 1";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -35,12 +32,12 @@ class PlayerStateChanges extends Module
         return new returnData(0, $row);	
     }
 
-    public function createPlayerStateChange($intGameID, $strEventType, $intEventDetail, 
-            $strActionType, $strActionDetail, $intActionAmount)
+    public function createPlayerStateChange($gameId, $strEventType, $intEventDetail, 
+            $strActionType, $strActionDetail, $intActionAmount, $editorId, $editorToken)
     {
-        $prefix = Module::getPrefix($intGameID);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+            
         //test the object type 
         if (!$this->isValidEventType($strEventType)) return new returnData(4, NULL, "Invalid event type");
 
@@ -50,7 +47,7 @@ class PlayerStateChanges extends Module
 
         $query = "INSERT INTO player_state_changes 
             (game_id, event_type, event_detail, action, action_detail, action_amount)
-            VALUES ('{$prefix}','{$strEventType}','{$intEventDetail}','{$strActionType}','{$strActionDetail}','{$intActionAmount}')";
+            VALUES ('{$gameId}','{$strEventType}','{$intEventDetail}','{$strActionType}','{$strActionDetail}','{$intActionAmount}')";
 
 
         Module::query($query);
@@ -59,11 +56,11 @@ class PlayerStateChanges extends Module
         return new returnData(0, mysql_insert_id());
     }
 
-    public function updatePlayerStateChange($intGameID, $intPlayerStateChangeID, $strEventType, 
-            $intEventDetail, $strActionType, $strActionDetail, $intActionAmount)
+    public function updatePlayerStateChange($gameId, $intPlayerStateChangeID, $strEventType, 
+            $intEventDetail, $strActionType, $strActionDetail, $intActionAmount, $editorId, $editorToken)
     {
-        $prefix = Module::getPrefix($intGameID);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
         //test the object type 
         if (!$this->isValidEventType($strEventType)) return new returnData(4, NULL, "Invalid object type");
@@ -80,7 +77,7 @@ class PlayerStateChanges extends Module
                        action = '{$strActionType}',
                        action_detail = '{$strActionDetail}',
                        action_amount = '{$intActionAmount}'
-                           WHERE game_id = '{$prefix}' AND id = '{$intPlayerStateChangeID}'";
+                           WHERE game_id = '{$gameId}' AND id = '{$intPlayerStateChangeID}'";
 
 
         Module::query($query);
@@ -91,12 +88,12 @@ class PlayerStateChanges extends Module
         else return new returnData(0, FALSE);
     }
 
-    public function deletePlayerStateChange($intGameID, $intPlayerStateChangeID)
+    public function deletePlayerStateChange($gameId, $intPlayerStateChangeID, $editorId, $editorToken)
     {
-        $prefix = Module::getPrefix($intGameID);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
-        $query = "DELETE FROM player_state_changes WHERE game_id = {$prefix} AND id = {$intPlayerStateChangeID}";
+        $query = "DELETE FROM player_state_changes WHERE game_id = {$gameId} AND id = {$intPlayerStateChangeID}";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -110,11 +107,8 @@ class PlayerStateChanges extends Module
 
     }
 
-    public function deletePlayerStateChangesThatRefrenceObject($intGameID, $strObjectType, $intObjectId)
+    public function deletePlayerStateChangesThatRefrenceObject($gameId, $strObjectType, $intObjectId)
     {
-        $prefix = Module::getPrefix($intGameID);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
         $whereClause = '';
 
         switch ($strObjectType) {
@@ -133,14 +127,11 @@ class PlayerStateChanges extends Module
         }
 
         //Delete the Locations and related QR Codes
-        $query = "DELETE FROM player_state_changes WHERE game_id = {$prefix} AND {$whereClause}";
+        $query = "DELETE FROM player_state_changes WHERE game_id = {$gameId} AND {$whereClause}";
 
         Module::query($query);
 
-
-
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
-
 
         if (mysql_affected_rows()) {
             return new returnData(0, TRUE);

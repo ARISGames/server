@@ -21,7 +21,7 @@ abstract class Utils
         $r = mysql_query($query);
         if(mysql_error()) 
         {
-            Utils::serverErrorLog("Error With Request:\n"."http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]"."\nQuery:\n".$query."\nError: ".mysql_error());
+            Utils::serverErrorLog("Error!"."\nQuery:\n".$query."\nError: ".mysql_error());
             return false;
         }
         return $r;
@@ -97,7 +97,7 @@ abstract class Utils
     protected function serverErrorLog($message)
     {
         $errorLogFile = fopen(Config::serverErrorLog, "a");
-        $errorData = date('c').":\n".$message."\n\n";
+        $errorData = date('c').":\nRequest:\n"."http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]"."\n".$message."\n\n";
         fwrite($errorLogFile, $errorData);
         fclose($errorLogFile);
     }

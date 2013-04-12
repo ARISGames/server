@@ -6,12 +6,9 @@ require_once("playerStateChanges.php");
 
 class Nodes extends Module
 {	
-    public function getNodes($intGameId)
+    public function getNodes($gameId)
     {
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
-        $query = "SELECT game_nodes.*, game_npc_conversations.npc_id, game_npcs.name FROM (SELECT * FROM nodes WHERE game_id = '{$prefix}') AS game_nodes LEFT JOIN (SELECT * FROM npc_conversations WHERE game_id = '{$prefix}') AS game_npc_conversations ON game_nodes.node_id = game_npc_conversations.node_id LEFT JOIN (SELECT * FROM npcs WHERE game_id = '{$prefix}') AS game_npcs ON game_npc_conversations.npc_id = game_npcs.npc_id ORDER BY npc_id DESC";
+        $query = "SELECT game_nodes.*, game_npc_conversations.npc_id, game_npcs.name FROM (SELECT * FROM nodes WHERE game_id = '{$gameId}') AS game_nodes LEFT JOIN (SELECT * FROM npc_conversations WHERE game_id = '{$gameId}') AS game_npc_conversations ON game_nodes.node_id = game_npc_conversations.node_id LEFT JOIN (SELECT * FROM npcs WHERE game_id = '{$gameId}') AS game_npcs ON game_npc_conversations.npc_id = game_npcs.npc_id ORDER BY npc_id DESC";
         //^ Where mysql boys become mysql men //calm down- that's literally just two joins.
         $rsResult = Module::query($query);
 
@@ -20,12 +17,9 @@ class Nodes extends Module
 
     }
 
-    public function getNode($intGameId, $intNodeID)
+    public function getNode($gameId, $intNodeID)
     {
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
-        $query = "SELECT * FROM nodes WHERE game_id = {$prefix} AND node_id = {$intNodeID} LIMIT 1";
+        $query = "SELECT * FROM nodes WHERE game_id = {$gameId} AND node_id = {$intNodeID} LIMIT 1";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -36,12 +30,15 @@ class Nodes extends Module
         return new returnData(0, $node);
     }
 
-    public function createNode($intGameId, $strTitle, $strText, $intMediaID, $intIconMediaID,
+    public function createNode($gameId, $strTitle, $strText, $intMediaID, $intIconMediaID,
             $strOpt1Text, $intOpt1NodeID, 
             $strOpt2Text, $intOpt2NodeID,
             $strOpt3Text, $intOpt3NodeID,
-            $strQACorrectAnswer, $intQAIncorrectNodeID, $intQACorrectNodeID)
+            $strQACorrectAnswer, $intQAIncorrectNodeID, $intQACorrectNodeID, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $strTitle = addslashes($strTitle);	
         $strText = addslashes($strText);	
         $strOpt1Text = addslashes($strOpt1Text);	
@@ -49,7 +46,6 @@ class Nodes extends Module
         $strOpt3Text = addslashes($strOpt3Text);	
         $strQACorrectAnswer = addslashes($strQACorrectAnswer);		
 
-        $prefix = Module::getPrefix($intGameId);
         $query = "INSERT INTO nodes 
             (game_id, title, text, media_id, icon_media_id,
              opt1_text, opt1_node_id, 
@@ -58,7 +54,7 @@ class Nodes extends Module
              require_answer_string, 
              require_answer_incorrect_node_id, 
              require_answer_correct_node_id)
-            VALUES ('{$prefix}', '{$strTitle}', '{$strText}', '{$intMediaID}', '{$intIconMediaID}',
+            VALUES ('{$gameId}', '{$strTitle}', '{$strText}', '{$intMediaID}', '{$intIconMediaID}',
                     '{$strOpt1Text}', '{$intOpt1NodeID}',
                     '{$strOpt2Text}','{$intOpt2NodeID}',
                     '{$strOpt3Text}','{$intOpt3NodeID}',
@@ -73,21 +69,21 @@ class Nodes extends Module
         return new returnData(0, mysql_insert_id());
     }
 
-    public function updateNode($intGameId, $intNodeID, $strTitle, $strText, $intMediaID, $intIconMediaID,
+    public function updateNode($gameId, $intNodeID, $strTitle, $strText, $intMediaID, $intIconMediaID,
             $strOpt1Text, $intOpt1NodeID, 
             $strOpt2Text, $intOpt2NodeID,
             $strOpt3Text, $intOpt3NodeID,
-            $strQACorrectAnswer, $intQAIncorrectNodeID, $intQACorrectNodeID)
+            $strQACorrectAnswer, $intQAIncorrectNodeID, $intQACorrectNodeID, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $strTitle = addslashes($strTitle);	
         $strText = addslashes($strText);	
         $strOpt1Text = addslashes($strOpt1Text);	
         $strOpt2Text = addslashes($strOpt2Text);
         $strOpt3Text = addslashes($strOpt3Text);	
         $strQACorrectAnswer = addslashes($strQACorrectAnswer);
-
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
 
         $query = "UPDATE nodes 
@@ -99,7 +95,7 @@ class Nodes extends Module
                 require_answer_string = '{$strQACorrectAnswer}', 
                 require_answer_incorrect_node_id = '{$intQAIncorrectNodeID}', 
                 require_answer_correct_node_id = '{$intQACorrectNodeID}'
-                    WHERE game_id = {$prefix} AND node_id = '{$intNodeID}'";
+                    WHERE game_id = {$gameId} AND node_id = '{$intNodeID}'";
 
         Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);	
@@ -108,31 +104,25 @@ class Nodes extends Module
         else return new returnData(0, FALSE, "Success Running:" . $query);
     }
 
-    public function deleteNodesReferencedByObject($intGameId, $type, $intNpcId)
+    public function deleteNodesReferencedByObject($gameId, $type, $intNpcId)
     {
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
-        $query = "SELECT node_id FROM npc_conversations WHERE game_id = {$intGameId} AND npc_id = {$intNpcId}";
+        $query = "SELECT node_id FROM npc_conversations WHERE game_id = {$gameId} AND npc_id = {$intNpcId}";
         $result = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
         while($nid = mysql_fetch_object($result))
-            Nodes::deleteNode($intGameId, $nid->node_id);
+            Nodes::deleteNode($gameId, $nid->node_id);
 
         return new returnData(0);
     }
 
-    public function deleteNode($intGameId, $intNodeID)
+    public function deleteNode($gameId, $intNodeID)
     {
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        Locations::deleteLocationsForObject($gameId, 'Node', $intNodeID);
+        Requirements::deleteRequirementsForRequirementObject($gameId, 'Node', $intNodeID);
+        PlayerStateChanges::deletePlayerStateChangesThatRefrenceObject($gameId, 'Node', $intNodeID);
 
-        Locations::deleteLocationsForObject($intGameId, 'Node', $intNodeID);
-        Requirements::deleteRequirementsForRequirementObject($intGameId, 'Node', $intNodeID);
-        PlayerStateChanges::deletePlayerStateChangesThatRefrenceObject($intGameId, 'Node', $intNodeID);
-
-        $query = "DELETE FROM nodes WHERE game_id = {$prefix} AND node_id = {$intNodeID}";
+        $query = "DELETE FROM nodes WHERE game_id = {$gameId} AND node_id = {$intNodeID}";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");

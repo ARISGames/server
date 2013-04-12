@@ -7,12 +7,9 @@ require_once("playerStateChanges.php");
 
 class Npcs extends Module
 {
-    public function getNpcs($intGameId)
+    public function getNpcs($gameId)
     {
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
-        $query = "SELECT * FROM npcs WHERE game_id = {$prefix}";
+        $query = "SELECT * FROM npcs WHERE game_id = {$gameId}";
 
         $rsResult = Module::query($query);
 
@@ -20,12 +17,9 @@ class Npcs extends Module
         return new returnData(0, $rsResult);	
     }
 
-    public function getNpc($intGameId, $intNpcID)
+    public function getNpc($gameId, $intNpcID)
     {
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
-        $query = "SELECT * FROM npcs WHERE game_id = {$prefix} AND npc_id = {$intNpcID} LIMIT 1";
+        $query = "SELECT * FROM npcs WHERE game_id = {$gameId} AND npc_id = {$intNpcID} LIMIT 1";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -36,18 +30,15 @@ class Npcs extends Module
         return new returnData(0, $npc);		
     }
 
-    public function getNpcWithConversationsForPlayer($intGameId, $intNpcID, $intPlayerID)
+    public function getNpcWithConversationsForPlayer($gameId, $intNpcID, $intPlayerID)
     {
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
         //get the npc
-        $npcReturnData = Npcs::getNpc($intGameId, $intNpcID);
+        $npcReturnData = Npcs::getNpc($gameId, $intNpcID);
         if ($npcReturnData->returnCode > 0) return $npcReturnData;
         $npc = $npcReturnData->data;
 
         //get the options for this npc and player
-        $conversationsReturnData = Npcs::getConversationsForPlayer($intGameId, $intNpcID, $intPlayerID);
+        $conversationsReturnData = Npcs::getConversationsForPlayer($gameId, $intNpcID, $intPlayerID);
         if ($npcReturnData->returnCode > 0) return $optionsReturnData;
         $conversationsArray = $conversationsReturnData->data;
 
@@ -56,21 +47,24 @@ class Npcs extends Module
         return new returnData(0, $npc);
     }
 
-    public function getNpcConversationsForPlayerAfterViewingNode($intGameId, $intNpcID, $intPlayerID, $intNodeID)
+    public function getNpcConversationsForPlayerAfterViewingNode($gameId, $intNpcID, $intPlayerID, $intNodeID)
     {	
         //update the player log
-        Players::nodeViewed($intGameId, $intPlayerID, $intNodeID);
+        Players::nodeViewed($gameId, $intPlayerID, $intNodeID);
 
         //get the options for this npc and player
-        $conversationsReturnData = Npcs::getConversationsForPlayer($intGameId, $intNpcID, $intPlayerID);
+        $conversationsReturnData = Npcs::getConversationsForPlayer($gameId, $intNpcID, $intPlayerID);
         if ($npcReturnData->returnCode > 0) return $optionsReturnData;
         $conversationsArray = $conversationsReturnData->data;
 
         return new returnData(0, $conversationsArray);	
     }
 
-    public function createNpc($gameID, $name, $description, $greeting, $closing, $mediaID, $iconMediaID)
+    public function createNpc($gameId, $name, $description, $greeting, $closing, $mediaID, $iconMediaID, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $greeting = str_replace("“", "\"", $greeting);
         $greeting = str_replace("”", "\"", $greeting);
         $closing = str_replace("“", "\"", $closing);
@@ -80,12 +74,9 @@ class Npcs extends Module
         $greeting = addslashes($greeting);	
         $closing = addslashes($closing);
 
-        $prefix = Module::getPrefix($gameID);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
         $query = "INSERT INTO npcs 
             (game_id, name, description, text, closing, media_id, icon_media_id)
-            VALUES ({$prefix}, '{$name}', '{$description}', '{$greeting}', '{$closing}','{$mediaID}','{$iconMediaID}')";
+            VALUES ({$gameId}, '{$name}', '{$description}', '{$greeting}', '{$closing}','{$mediaID}','{$iconMediaID}')";
 
 
         Module::query($query);
@@ -94,9 +85,12 @@ class Npcs extends Module
         return new returnData(0, mysql_insert_id());		
     }
 
-    public function updateNpc($gameID, $npcID, 
-            $name, $description, $greeting, $closing, $mediaID, $iconMediaID)
+    public function updateNpc($gameId, $npcID, 
+            $name, $description, $greeting, $closing, $mediaID, $iconMediaID, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $greeting = str_replace("“", "\"", $greeting);
         $greeting = str_replace("”", "\"", $greeting);
         $closing = str_replace("“", "\"", $closing);
@@ -106,14 +100,11 @@ class Npcs extends Module
         $greeting = addslashes($greeting);			
         $closing = addslashes($closing);			
 
-        $prefix = Module::getPrefix($gameID);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");		
-
         $query = "UPDATE npcs 
             SET name = '{$name}', description = '{$description}',
                 text = '{$greeting}', closing = '{$closing}', 
                 media_id = '{$mediaID}', icon_media_id = '{$iconMediaID}'
-                    WHERE npc_id = '{$npcID}' AND game_id = {$prefix}";
+                    WHERE npc_id = '{$npcID}' AND game_id = {$gameId}";
 
 
         Module::query($query);
@@ -123,24 +114,21 @@ class Npcs extends Module
         else return new returnData(0, FALSE, "");
     }
 
-    public function deleteNpc($intGameId, $intNpcID)
+    public function deleteNpc($gameId, $intNpcID)
     {
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");		
+        Locations::deleteLocationsForObject($gameId, 'Npc', $intNpcID);
+        Requirements::deleteRequirementsForRequirementObject($gameId, 'Npc', $intNpcID);
+        PlayerStateChanges::deletePlayerStateChangesThatRefrenceObject($gameId, 'Npc', $intNpcID);
+        Nodes::deleteNodesReferencedByObject($gameId, 'Npc', $intNpcID);
 
-        Locations::deleteLocationsForObject($intGameId, 'Npc', $intNpcID);
-        Requirements::deleteRequirementsForRequirementObject($intGameId, 'Npc', $intNpcID);
-        PlayerStateChanges::deletePlayerStateChangesThatRefrenceObject($intGameId, 'Npc', $intNpcID);
-        Nodes::deleteNodesReferencedByObject($intGameId, 'Npc', $intNpcID);
-
-        $query = "DELETE FROM npcs WHERE npc_id = {$intNpcID} AND game_id = {$intGameId}";
+        $query = "DELETE FROM npcs WHERE npc_id = {$intNpcID} AND game_id = {$gameId}";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
         $hasDeletedNPC = mysql_affected_rows();
 
-        $query = "DELETE FROM npc_conversations WHERE npc_id = {$intNpcID} AND game_id = {$intGameId}";
+        $query = "DELETE FROM npc_conversations WHERE npc_id = {$intNpcID} AND game_id = {$gameId}";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -151,17 +139,13 @@ class Npcs extends Module
 
     }	
 
-    public function createConversation($intGameId, $intNpcID, $intNodeID, $strText)
+    public function createConversation($gameId, $intNpcID, $intNodeID, $strText)
     {
         $strText = addslashes($strText);	
 
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");		
-
         $query = "INSERT INTO npc_conversations 
             (game_id, npc_id, node_id, text)
-            VALUES ({$prefix}, '{$intNpcID}', '{$intNodeID}', '{$strText}')";
-
+            VALUES ({$gameId}, '{$intNpcID}', '{$intNodeID}', '{$strText}')";
 
         Module::query($query);
 
@@ -170,12 +154,9 @@ class Npcs extends Module
         return new returnData(0, mysql_insert_id());		
     }
 
-    public function getConversations($intGameId, $intNpcID)
+    public function getConversations($gameId, $intNpcID)
     {
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");		
-
-        $query = "SELECT * FROM npc_conversations WHERE game_id = {$prefix} AND npc_id = '{$intNpcID}' ORDER BY sort_index";
+        $query = "SELECT * FROM npc_conversations WHERE game_id = {$gameId} AND npc_id = '{$intNpcID}' ORDER BY sort_index";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -183,20 +164,17 @@ class Npcs extends Module
         return new returnData(0, $rsResult);		
     }	
 
-    public function getConversationsForPlayer($intGameId, $intNpcID, $intPlayerID)
+    public function getConversationsForPlayer($gameId, $intNpcID, $intPlayerID)
     {
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");		
-
-        $conversationsReturnData= Npcs::getConversations($intGameId, $intNpcID);	
+        $conversationsReturnData= Npcs::getConversations($gameId, $intNpcID);	
         $conversations = $conversationsReturnData->data;
 
         $conversationsWithRequirementsMet = array();
 
         while ($conversation = mysql_fetch_array($conversations))
         {
-            if (Module::objectMeetsRequirements ($prefix, $intPlayerID, 'Node',  $conversation['node_id']) ) {
-                $query = "SELECT * FROM player_log WHERE game_id = '{$intGameId}' AND player_id = '{$intPlayerID}' AND event_type = '".Module::kLOG_VIEW_NODE."' AND event_detail_1 = '".$conversation['node_id']."' AND deleted = '0'";
+            if (Module::objectMeetsRequirements ($gameId, $intPlayerID, 'Node',  $conversation['node_id']) ) {
+                $query = "SELECT * FROM player_log WHERE game_id = '{$gameId}' AND player_id = '{$intPlayerID}' AND event_type = '".Module::kLOG_VIEW_NODE."' AND event_detail_1 = '".$conversation['node_id']."' AND deleted = '0'";
                 $result = Module::query($query);
                 if(mysql_num_rows($result) > 0) $conversation['has_viewed'] = true;
                 else $conversation['has_viewed'] = false;
@@ -207,16 +185,13 @@ class Npcs extends Module
         return new returnData(0, $conversationsWithRequirementsMet);
     }	
 
-    public function updateConversation($intGameId, $intConverationID, $intNewNPC, $intNewNode, $strNewText)
+    public function updateConversation($gameId, $intConverationID, $intNewNPC, $intNewNode, $strNewText)
     {
         $strText = addslashes($strText);	
 
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
         $query = "UPDATE npc_conversations 
             SET npc_id = '{$intNewNPC}', node_id = '{$intNewNode}', text = '{$strNewText}'
-            WHERE game_id = {$prefix} AND conversation_id = {$intConverationID}";
+            WHERE game_id = {$gameId} AND conversation_id = {$intConverationID}";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -225,14 +200,11 @@ class Npcs extends Module
         else return new returnData(0, FALSE);
     }	
 
-    public function getReferrers($intGameId, $intNpcID)
+    public function getReferrers($gameId, $intNpcID)
     {
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
         //Find locations
         $query = "SELECT location_id FROM locations WHERE 
-            type  = 'Npc' and type_id = {$intNpcID} AND game_id = {$prefix}";
+            type  = 'Npc' and type_id = {$intNpcID} AND game_id = {$gameId}";
         $rsLocations = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error in Locations query");
 
@@ -244,12 +216,9 @@ class Npcs extends Module
         return new returnData(0,$referrers);
     }	
 
-    public function deleteConversation($intGameId, $intConverationID)
+    public function deleteConversation($gameId, $intConverationID)
     {
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
-        $query = "DELETE FROM npc_conversations WHERE game_id = {$prefix} AND conversation_id = {$intConverationID}";
+        $query = "DELETE FROM npc_conversations WHERE game_id = {$gameId} AND conversation_id = {$intConverationID}";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(1, NULL, "SQL Error");
@@ -258,13 +227,11 @@ class Npcs extends Module
         else return new returnData(2, 'invalid conversation id');
     }	
 
-    public function getNpcsInfoForGameIdFormattedForArisConvoOutput($intGameId)
+    public function getNpcsInfoForGameIdFormattedForArisConvoOutput($gameId)
     {
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
         $characters = array();
 
-        $query = "SELECT * FROM npcs WHERE game_id = {$prefix}";
+        $query = "SELECT * FROM npcs WHERE game_id = {$gameId}";
         $npcs = Module::query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error);
 
@@ -283,21 +250,21 @@ class Npcs extends Module
             $scripts[] = $script;
 
             //Convos
-            $query = "SELECT * FROM npc_conversations WHERE game_id = {$prefix} AND npc_id = '{$npc->npc_id}'";
+            $query = "SELECT * FROM npc_conversations WHERE game_id = {$gameId} AND npc_id = '{$npc->npc_id}'";
             $convos = Module::query($query);
             if (mysql_error()) return new returnData(1, NULL, mysql_error);
             while($convo = mysql_fetch_object($convos))
             {
                 $script = new stdClass();
                 $script->option = $convo->text;
-                $query = "SELECT * FROM nodes WHERE game_id = {$prefix} AND node_id = '{$convo->node_id}'";
+                $query = "SELECT * FROM nodes WHERE game_id = {$gameId} AND node_id = '{$convo->node_id}'";
                 $nodeRow = Module::query($query);
                 if (mysql_error()) return new returnData(1, NULL, mysql_error);
                 $node = mysql_fetch_object($nodeRow);
                 $script->content = $node->text;
 
                 $requirements = array();
-                $query = "SELECT * FROM requirements WHERE content_type = 'Node' AND content_id = '{$node->node_id}' AND game_id = {$prefix}";
+                $query = "SELECT * FROM requirements WHERE content_type = 'Node' AND content_id = '{$node->node_id}' AND game_id = {$gameId}";
                 $reqs = Module::query($query);
                 if (mysql_error()) return new returnData(1, NULL, mysql_error);
                 while($reqObj = mysql_fetch_object($reqs))
@@ -313,7 +280,7 @@ class Npcs extends Module
                 $script->req = $requirements;
 
                 $exchanges = array();
-                $query = "SELECT * FROM player_state_changes WHERE event_type = 'VIEW_NODE' AND event_detail = '{$node->node_id}' AND game_id = {$prefix}";
+                $query = "SELECT * FROM player_state_changes WHERE event_type = 'VIEW_NODE' AND event_detail = '{$node->node_id}' AND game_id = {$gameId}";
                 $exchngs = Module::query($query);
                 if (mysql_error()) return new returnData(1, NULL, mysql_error);
                 while($exchangeObj = mysql_fetch_object($exchngs))

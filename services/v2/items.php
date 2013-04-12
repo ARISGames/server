@@ -66,8 +66,11 @@ class Items extends Module
         return new returnData(0, $item);
     }
 
-    public static function createItem($gameId, $name, $description, $iconMediaId, $mediaId, $droppable, $destroyable, $tradeable, $attribute, $maxQuantityInPlayerInventory, $weight, $url, $type)
+    public static function createItem($gameId, $name, $description, $iconMediaId, $mediaId, $droppable, $destroyable, $tradeable, $attribute, $maxQuantityInPlayerInventory, $weight, $url, $type, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $name = addslashes($name);	
         $description = addslashes($description);	
 
@@ -95,8 +98,11 @@ class Items extends Module
     }
 
     public static function updateItem($gameId, $itemId, $name, $description, 
-            $iconMediaId, $mediaId, $droppable, $destroyable, $tradeable, $attribute, $maxQuantityInPlayerInventory, $weight, $url, $type)
+            $iconMediaId, $mediaId, $droppable, $destroyable, $tradeable, $attribute, $maxQuantityInPlayerInventory, $weight, $url, $type, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $name = addslashes($name);	
         $description = addslashes($description);	
 
@@ -192,15 +198,21 @@ class Items extends Module
         return new returnData(0, $ts);
     }
 
-    public static function addItemTag($gameId, $tag)
+    public static function addItemTag($gameId, $tag, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $query = "INSERT INTO game_object_tags (game_id, tag) VALUES ('{$gameId}', '{$tag}');";
         Module::query($query);
         return new returnData(0, mysql_insert_id());
     }
 
-    public static function deleteTag($gameId, $tagId)
+    public static function deleteTag($gameId, $tagId, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $query = "DELETE FROM object_tags WHERE tag_id = '{$tagId}'";
         Module::query($query);
         $query = "DELETE FROM game_object_tags WHERE tag_id = '{$tagId}'";
@@ -208,15 +220,21 @@ class Items extends Module
         return new returnData(0);
     }
 
-    public static function tagItem($gameId, $itemId, $tagId)
+    public static function tagItem($gameId, $itemId, $tagId, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $query = "INSERT INTO object_tags (object_type, object_id, tag_id) VALUES ('ITEM', '{$itemId}', '{$tagId}');";
         Module::query($query);
         return new returnData(0);
     }
 
-    public static function untagItem($gameId, $itemId, $tagId)
+    public static function untagItem($gameId, $itemId, $tagId, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $query = "DELETE FROM object_tags WHERE object_type = 'ITEM' AND object_id = '{$itemId}' AND tag_id = '{$tagId}';";
         Module::query($query);
         return new returnData(0);

@@ -51,8 +51,10 @@ class Spawnables extends Module
         return new returnData(0);
     }
 
-    public static function deleteSpawnablesOfObject($gameId, $type, $typeId)
+    public static function deleteSpawnablesOfObject($gameId, $type, $typeId, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
         if($spawnableId = Spawnables::hasSpawnable($gameId, $type, $typeId))
             Spawnables::deleteSpawnable($spawnableId);
@@ -60,8 +62,11 @@ class Spawnables extends Module
     }
 
     //Optionally by spawnableId or by gameId, type, and typeId
-    public static function updateSpawnable($spawnableId = 0, $gameId, $type, $typeId, $locationName, $amount, $minArea, $maxArea, $amountRestriction, $locationBoundType, $lat, $lon, $spawnProbability, $spawnRate, $deleteWhenViewed, $timeToLive, $errorRange, $forceView, $hidden, $allowQuickTravel, $wiggle, $active, $showTitle)
+    public static function updateSpawnable($spawnableId = 0, $gameId, $type, $typeId, $locationName, $amount, $minArea, $maxArea, $amountRestriction, $locationBoundType, $lat, $lon, $spawnProbability, $spawnRate, $deleteWhenViewed, $timeToLive, $errorRange, $forceView, $hidden, $allowQuickTravel, $wiggle, $active, $showTitle, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         if($spawnableId == 0)
             $query = "UPDATE spawnables SET location_name = '$locationName', amount = $amount, min_area = $minArea, max_area = $maxArea, amount_restriction = '{$amountRestriction}', location_bound_type = '{$locationBoundType}', latitude = $lat, longitude = $lon, spawn_probability = $spawnProbability, spawn_rate = $spawnRate, delete_when_viewed = $deleteWhenViewed, time_to_live = $timeToLive, error_range = $errorRange, force_view = $forceView, hidden = $hidden, allow_quick_travel = $allowQuickTravel, wiggle = $wiggle, show_title = $showTitle, active = $active WHERE game_id = $gameId AND type = '{$type}' AND type_id = $typeId";
         else
@@ -70,8 +75,11 @@ class Spawnables extends Module
         return new returnData(0);
     }
 
-    public static function createSpawnableForObject($gameId, $type, $typeId)
+    public static function createSpawnableForObject($gameId, $type, $typeId, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         switch ($type) {
             case 'Item':
                 $query = "SELECT name as title FROM items WHERE game_id = {$gameId} AND item_id = {$typeId} LIMIT 1";
