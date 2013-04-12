@@ -294,7 +294,7 @@ class EditorFoldersAndContent extends Module
         $content = @mysql_fetch_object($contentQueryResult);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
-        Spawnables::deleteSpawnablesOfObject($gameId, $content->content_type, $content->content_id);
+        Spawnables::deleteSpawnablesOfObject($gameId, $content->content_type, $content->content_id, $editorId, $editorToken);
 
         //Delete the content record
         $query = "DELETE FROM folder_contents WHERE object_content_id = {$intContentID} AND game_id = '{$gameId}'";
@@ -302,12 +302,12 @@ class EditorFoldersAndContent extends Module
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
         //Delete the object
-        if ($content->content_type == "Node") Nodes::deleteNode($gameId, $content->content_id);
-        else if ($content->content_type == "Item") Items::deleteItem($gameId, $content->content_id);
-        else if ($content->content_type == "Npc") Npcs::deleteNpc($gameId, $content->content_id);
-        else if ($content->content_type == "WebPage") WebPages::deleteWebPage($gameId, $content->content_id);
-        else if ($content->content_type == "AugBubble") AugBubbles::deleteAugBubble($gameId, $content->content_id);
-        else if ($content->content_type == "PlayerNote") Notes::deleteNote($content->content_id);
+        if ($content->content_type == "Node") Nodes::deleteNode($gameId, $content->content_id, $editorId, $editorToken);
+        else if ($content->content_type == "Item") Items::deleteItem($gameId, $content->content_id, $editorId, $editorToken);
+        else if ($content->content_type == "Npc") Npcs::deleteNpc($gameId, $content->content_id, $editorId, $editorToken);
+        else if ($content->content_type == "WebPage") WebPages::deleteWebPage($gameId, $content->content_id, $editorId, $editorToken);
+        else if ($content->content_type == "AugBubble") AugBubbles::deleteAugBubble($gameId, $content->content_id, $editorId, $editorToken);
+        else if ($content->content_type == "PlayerNote") Notes::deleteNote($content->content_id, $editorId, $editorToken);
 
         if (mysql_affected_rows()) return new returnData(0);
         else return new returnData(2, 'invalid folder id');

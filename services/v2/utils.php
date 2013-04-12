@@ -31,7 +31,7 @@ abstract class Utils
     {
         if($r = Utils::query($query))
             return mysql_fetch_object($r);
-        return stdClass();
+        return new stdClass();
     }
 
     public function queryArray($query)
