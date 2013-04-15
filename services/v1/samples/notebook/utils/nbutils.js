@@ -8,11 +8,11 @@ var K_POPULARITY_SORT = 2;
 function callService(serviceName, callback, GETparams, POSTparams)
 {
     var url;
-    if(GETparams) url = '../../../../json.php/v1.'+serviceName+GETparams;
-    else url = '../../../../json.php/v1.'+serviceName;
+    //if(GETparams) url = '../../../../json.php/v1.'+serviceName+GETparams;
+    //else url = '../../../../json.php/v1.'+serviceName;
 	
-	//if(GETparams) url = 'http://arisgames.org/server/json.php/v1.'+serviceName+GETparams;
-    //else url = 'http://arisgames.org/server/json.php/v1.'+serviceName;
+    if(GETparams) url = 'http://arisgames.org/server/json.php/v1.'+serviceName+GETparams;
+    else url = 'http://arisgames.org/server/json.php/v1.'+serviceName;
 	
 
     var request = new XMLHttpRequest();
