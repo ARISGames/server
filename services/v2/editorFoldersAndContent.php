@@ -30,12 +30,119 @@ class EditorFoldersAndContent extends Module
         $rsContents = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error:". mysql_error());
 
-        //Walk the rs adding the corresponding name and icon and saving to a new array
-        $arrayContents = array();
+        //Get all media
+        $media = array();
+        $result = Module::query("SELECT * FROM media WHERE game_id = ".$gameId." OR game_id = 0");
+        while($m = mysql_fetch_object($result))
+        {
+            $media[$m->media_id] = $m;
+            $media[$m->media_id]->file_name = $m->file_path;
+            $media[$m->media_id]->url_path = Config::gamedataWWWPath . "/" . Config::gameMediaSubdir;
+            if($media[$m->media_id]->is_icon)
+                $media[$m->media_id]->type = 'Icon';
+            else
+                $media[$m->media_id]->type = 'Media';
+            if($media[$m->media_id]->game_id == 0)
+                $media[$m->media_id]->is_default = 1;
+            else
+                $media[$m->media_id]->is_default = 0;
+        }
 
-        while ($content = mysql_fetch_object($rsContents)) {
-            //Save the modified copy to the array
-            $arrayContents[] = self::hydrateContent($content, $gameId);
+        //Get the Flat object data
+        $nodes = array();
+        $result = Module::query("SELECT * FROM nodes WHERE game_id = ".$gameId);
+        while($n = mysql_fetch_object($result))
+            $nodes[$n->node_id] = $n;
+
+        $items = array();
+        $result = Module::query("SELECT * FROM items WHERE game_id = ".$gameId);
+        while($i = mysql_fetch_object($result))
+            $items[$i->item_id] = $i;
+
+        $npcs = array();
+        $result = Module::query("SELECT * FROM npcs WHERE game_id = ".$gameId);
+        while($n = mysql_fetch_object($result))
+            $npcs[$n->npc_id] = $n;
+
+        $webpages = array();
+        $result = Module::query("SELECT * FROM web_pages WHERE game_id = ".$gameId);
+        while($w = mysql_fetch_object($result))
+            $webpages[$w->web_page_id] = $w;
+
+        $augbubbles = array();
+        $result = Module::query("SELECT * FROM aug_bubbles WHERE game_id = ".$gameId);
+        while($a = mysql_fetch_object($result))
+            $augbubbles[$a->aug_bubble_id] = $a;
+
+        $notes = array();
+        $result = Module::query("SELECT * FROM notes WHERE game_id = ".$gameId);
+        while($n = mysql_fetch_object($result))
+            $notes[$n->note_id] = $n;
+
+        $arrayContents = array();
+        while ($content = mysql_fetch_object($rsContents))
+        {
+            switch($content->content_type)
+            {
+                case 'Node':
+                    $content->name          = $nodes[$content->content_id]->title;
+                    $content->icon_media_id = $nodes[$content->content_id]->icon_media_id;
+                    if(!$content->icon_media_id) $content->icon_media_id = 3;
+                    $content->icon_media    = $media[$nodes[$content->content_id]->icon_media_id];
+                    $content->media_id      = $nodes[$content->content_id]->media_id;
+                    if(!$content->media_id) $content->media_id = 0;
+                    $content->media         = $media[$nodes[$content->content_id]->media_id];
+                    $content->is_spawnable  = Spawnables::hasActiveSpawnable($gameId, 'Node', $content->content_id);
+                    break;
+                case 'Item':
+                    $content->name          = $items[$content->content_id]->name;
+                    $content->icon_media_id = $items[$content->content_id]->icon_media_id;
+                    if(!$content->icon_media_id) $content->icon_media_id = 2;
+                    $content->icon_media    = $media[$items[$content->content_id]->icon_media_id];
+                    $content->media_id      = $items[$content->content_id]->media_id;
+                    if(!$content->media_id) $content->media_id = 0;
+                    $content->media         = $media[$items[$content->content_id]->media_id];
+                    $content->is_spawnable  = Spawnables::hasActiveSpawnable($gameId, 'Item', $content->content_id);
+                    break;
+                case 'Npc':
+                    $content->name          = $npcs[$content->content_id]->name;
+                    $content->icon_media_id = $npcs[$content->content_id]->icon_media_id;
+                    if(!$content->icon_media_id) $content->icon_media_id = 1;
+                    $content->icon_media    = $media[$npcs[$content->content_id]->icon_media_id];
+                    $content->media_id      = $npcs[$content->content_id]->media_id;
+                    if(!$content->media_id) $content->media_id = 0;
+                    $content->media         = $media[$npcs[$content->content_id]->media_id];
+                    $content->is_spawnable  = Spawnables::hasActiveSpawnable($gameId, 'Npc', $content->content_id);
+                    break;
+                case 'WebPage':
+                    $content->name          = $webpages[$content->content_id]->name;
+                    $content->icon_media_id = $webpages[$content->content_id]->icon_media_id;
+                    if(!$content->icon_media_id) $content->icon_media_id = 4;
+                    $content->icon_media    = $media[$webpages[$content->content_id]->icon_media_id];
+                    $content->media_id      = 0;
+                    //$content->media         = $media[$webpages[$content->content_id]->media_id];
+                    $content->is_spawnable  = Spawnables::hasActiveSpawnable($gameId, 'WebPage', $content->content_id);
+                    break;
+                case 'AugBubble':
+                    $content->name          = $augbubbles[$content->content_id]->name;
+                    $content->icon_media_id = $augbubbles[$content->content_id]->icon_media_id;
+                    //if(!$content->icon_media_id) $content->icon_media_id = 4;
+                    //$content->icon_media    = $media[$augbubbles[$content->content_id]->icon_media_id];
+                    $content->media_id      = 0;
+                    //$content->media         = $media[$augbubbles[$content->content_id]->media_id];
+                    $content->is_spawnable  = Spawnables::hasActiveSpawnable($gameId, 'AugBubble', $content->content_id);
+                    break;
+                case 'PlayerNote':
+                    $content->name          = $notes[$content->content_id]->title;
+                    //$content->icon_media_id = $notes[$content->content_id]->icon_media_id;
+                    //if(!$content->icon_media_id) $content->icon_media_id = 4;
+                    //$content->icon_media    = $media[$notes[$content->content_id]->icon_media_id];
+                    $content->media_id      = 0;
+                    //$content->media         = $media[$notes[$content->content_id]->media_id];
+                    //$content->is_spawnable  = Spawnables::hasActiveSpawnable($gameId, 'PlayerNote', $content->content_id);
+                    break;
+            }
+            $arrayContents[] = $content;
         }
 
         //fake out amfphp to package this array as a flex array collection
@@ -43,6 +150,8 @@ class EditorFoldersAndContent extends Module
                 'source' => $arrayContents);
 
         $foldersAndContents = (object) array('folders' => $folders, 'contents' => $arrayCollectionContents);
+
+        //Module::serverErrorLog($foldersAndContents);
         return new returnData(0, $foldersAndContents);
     }
 
@@ -124,39 +233,44 @@ class EditorFoldersAndContent extends Module
         return new returnData(0);
     }
 
-    private function hydrateContent($folderContentObject, $gameId) {
-        $content = $folderContentObject;
-
-        if ($content->content_type == 'Node') {
-            //Fetch the corresponding node
+    private function hydrateContent($content, $gameId)
+    {
+        if ($content->content_type == 'Node')
+        {
             $contentDetails = Nodes::getNode($gameId,$content->content_id)->data;
             $content->name = $contentDetails->title;
         }
-        else if ($content->content_type == 'Item') {
+        else if ($content->content_type == 'Item')
+        {
             $contentDetails = Items::getItem($gameId,$content->content_id)->data;
             $content->name = $contentDetails->name;
         }
-        else if ($content->content_type == 'Npc') {
+        else if ($content->content_type == 'Npc')
+        {
             $contentDetails = Npcs::getNpc($gameId,$content->content_id)->data;
             $content->name = $contentDetails->name;
         }
-        else if ($content->content_type == 'WebPage') {
+        else if ($content->content_type == 'WebPage')
+        {
             $contentDetails = WebPages::getWebPage($gameId,$content->content_id)->data;
             $content->name = $contentDetails->name;
             $content->media = NULL;
             $content->media_id = NULL;
         }
-        else if ($content->content_type == 'AugBubble') {
+        else if ($content->content_type == 'AugBubble')
+        {
             $contentDetails = AugBubbles::getAugBubble($gameId,$content->content_id)->data;
             $content->name = $contentDetails->name;
             $content->media = NULL;
             $content->media_id = NULL;
         }
-        else if ($content->content_type == 'CustomMap') {
+        else if ($content->content_type == 'CustomMap')
+        {
             $contentDetails = Overlays::getOverlay($gameId,$content->content_id)->data;
             $content->name = $contentDetails->name;
         }
-        else if ($content->content_type == 'PlayerNote') {
+        else if ($content->content_type == 'PlayerNote')
+        {
             $contentDetails = Notes::getNoteById($content->content_id)->data;
             $content->name = $contentDetails->title;
             $content->icon_media_id = 5;
