@@ -283,14 +283,10 @@ function Model()
         this.mapNoteViewContainer = document.getElementById('map_note_view_container');
         this.mapNoteViewContainer.addEventListener('click', function(e) { e.stopPropagation(); });
         this.mapNoteViewCloseButton = new ActionButton(document.getElementById('map_note_view_close_button'), controller.hideMapNoteView);
-        this.createNoteViewContainer = document.getElementById('create_note_view_container');
         this.listNoteViewContainer = document.getElementById('list_note_view_container');
         this.constructNoteView = document.getElementById('note_view_construct');
-		this.constructNoteCreateView = document.getElementById('note_create_view_construct');
         this.defaultNoteView = document.getElementById('note_view_default');
-		this.defaultNoteCreateView = document.getElementById('note_create_view_default');
         this.noteView = new NoteView(this.defaultNoteView, null);
-		this.noteCreateView = new NoteCreateView(this.defaultNoteCreateView);
 
         //Map
         this.map = document.getElementById('map');
@@ -299,7 +295,7 @@ function Model()
         this.gmap = new google.maps.Map(this.map, myOptions);
 		
 		// marker clusterer
-		var mcOptions = {styles: [{
+		var mcOptions = {gridSize: 20, styles: [{
 			height: 57,
 			url: "./images/speechBubble_cluster_large.png",
 			width: 52,
@@ -335,7 +331,7 @@ function Model()
 			fontFamily: "Helvetica, Arial"
 			}]};
 		this.markerclusterer = new MarkerClusterer(this.gmap,[],mcOptions);
-		this.markerclusterer.setMinimumClusterSize(3)
+		this.markerclusterer.setMinimumClusterSize(6)
 		
     };
 
