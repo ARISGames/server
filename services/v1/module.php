@@ -224,6 +224,7 @@ abstract class Module extends Utils
                 SET latitude = '{$floatLat}', longitude = '{$floatLong}'
                 WHERE location_id = {$existingNote->location_id} AND game_id = '{$gameId}'";
             Module::query($query);
+            $obj = Module::queryObject("SELECT title, owner_id FROM notes WHERE note_id = '{$noteId}'");
         }
         else
         {
