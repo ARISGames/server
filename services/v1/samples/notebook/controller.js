@@ -146,28 +146,6 @@ function Controller()
         }
     };
 
- 	this.noteCreate = function() 
-    {
-        var html = model.views.constructNoteCreateView.cloneNode(true);
-        model.views.noteCreateView = new NoteCreateView(html);
-        model.views.mapNoteViewContainer.innerHTML = '';
-        model.views.listNoteViewContainer.innerHTML = '';
-        if(model.views.mapLayoutButton.selected)
-        {
-            //model.views.mapNoteViewContainer.appendChild(model.views.mapNoteViewCloseButton.html);
-            model.views.mapNoteViewContainer.appendChild(model.views.noteCreateView.html);
-            model.views.mapNoteViewContainer.style.display = 'block';
-            setTimeout(function() { model.views.mapLayout.addEventListener('click', controller.hideMapNoteView, false); }, 100); //timeout to disallow imediate hiding
-        }
-        /*if(model.views.listLayoutButton.selected) 
-        {
-            model.views.listNoteViewContainer.appendChild(model.views.noteView.html);
-            if(model.views.contributorSortButton.selected) for(var i = 0; i < model.views.contributorNoteCells.length; i++) model.views.contributorNoteCells[i].deselect();
-            if(model.views.tagSortButton.selected) for(var i = 0; i < model.views.tagNoteCells.length; i++) model.views.tagNoteCells[i].deselect();
-            if(model.views.popularitySortButton.selected) for(var i = 0; i < model.views.popularNoteCells.length; i++) model.views.popularNoteCells[i].deselect();
-        }*/
-    };
-	
 	
     this.populateModel = function(gameData)
     {
@@ -590,11 +568,6 @@ function Controller()
         model.views.mapLayout.removeEventListener('click', controller.hideMapNoteView, false);
     }
     
-    this.hideCreateNoteView = function()
-    {
-        model.views.createNoteViewContainer.style.display = 'none';
-        model.views.createNoteViewContainer.innerHTML = '';
-    }
 	
 	this.repopulateAll = function()
 	{
@@ -616,84 +589,6 @@ function Controller()
         this.populateNotesByContributor();
         this.populateNotesByTag();
         this.populateNotesByPopularity();
-	}
-	
-	
-	this.createNewNote = function()
-	{
-	
-		//var args = {gameId: 3290, playerId: 8090};
-    	var gameId = '3290';//model.gameId;
-		var playerId = '8090';//model.playerId;		
-    	callService("notes.createNewNoteStartIncomplete", this.newNoteCreated, "/"+ gameId + "/" + playerId, false);
-	}
-	
-	this.newNoteCreated = function(returnString)
-	{
-		// set note Id
-		var startJson = returnString.indexOf("{");
-		var jsonString = returnString.substr(startJson);
-		var obj = JSON.parse(jsonString);
-		
-		var noteId = obj.data;
-		console.log("New note created. id: " + noteId);
-	
-		model.currentNote.noteId = noteId;
-	}
-	
-	this.updateNoteLocation = function(noteId, lat, lon) 
-	{
-    	var gameId = 3290; //model.gameId;
-    	var getString = "/"+ gameId + "/" + noteId + "/" + lat + "/" + lon;
-		callService("notes.updateLocation", function(){}, getString, false);
-	}
-	
-	this.addContentToNote = function(noteId, filename, type, text, title)
-	{
-		
-		var gameId = 3290; //model.gameId;
-    	var playerId = 8090; //model.playerId;
-		
-		if (type == "TEXT") {
-			var getString = "/"+ noteId + "/" + gameId + "/" + playerId + "/0/" + type + "/" + text;
-			callService("notes.addContentToNote", function(){}, getString, false);	
-		} else {
-		
-			var getString = "/"+ gameId + "/" + noteId + "/" + playerId + "/" + filename + "/" + type;
-			callService("notes.addContentToNoteFromFileName", function(){}, getString, false);	
-		}
-		
-    	
-	}
-	
-	this.updateNote = function(noteId, title) 
-	{
-		var getString = "/"+ noteId + "/" + title + "/true/true";
-		
-    	callService("notes.updateNote", function(){}, getString, false);
-	}
-	
-	this.addCommentToNote = function(noteId, comment)
-	{
-			
-		var gameId = 3290; //model.gameId;
-    	var playerId = 8090; //model.playerId;
-		var getString = "/"+ gameId + "/" + playerId + "/" + noteId + "/" + title;
-    	callService("notes.addCommentToNote", function(){}, getString, false);
-	}
-		
-	this.addTagToNote = function(noteId, tag)
-	{
-		//function addTagToNote($noteId, $gameId, $tag)
-		var gameId = 3290; //model.gameId;;
-		var getString = "/"+ noteId + "/" + gameId + "/" + tag ;
-		callService("notes.addTagToNote", function(){}, getString, false);
-	}
-	
-	this.deleteNote = function(noteId)
-	{
-		var getString = "/"+ noteId;
-		callService("notes.deleteNote", function(){}, getString, false);
 	}
 	
 	

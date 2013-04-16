@@ -20,10 +20,6 @@
 window.addEventListener('load', pageLoad, false);
 
 
-$(function() {
-    //$( "#map_note_view_container").draggable();
-});
-
 //Defining here to make available to everyone
 var model;
 var controller;
@@ -118,8 +114,6 @@ function finishLoadGame(responseText)
 
 <div id='content'>
 <span> Search: <input id='filterbox' type='text' /></span>
-<button onClick="JavaScript:controller.noteCreate()">Create New Note</button>
-
     <div id='header_selector_box'>
         <div id='header_selector_layout' class='header_selector_row'>
             <div id='header_selector_layout_map' class='header_selector_row_button header_selector_layout_row_button'>Map</div>
@@ -144,7 +138,6 @@ function finishLoadGame(responseText)
         </div>
         <div id='map'></div>
         <div id='map_note_view_container' class='note_view_container'></div>
-        <div id='create_note_view_container' class='note_view_container'></div>
     </div>
     <div id='list_layout' class='layout'>
         <div id='list_filter_selector_box' class='filter_selector_box'>
@@ -186,28 +179,6 @@ function finishLoadGame(responseText)
     <div id='note_view_default' class='note_view'>
         Click a note to display
     </div>
-    
-    <!-- Create Note -->
-    <div id='note_create_view_construct' class='note_create_view'>
-        <div id='note_create_view_image_construct' class='note_create_view_image'>Image:</div>
-        <div id='note_create_view_audio_construct' class='note_create_view_audio'>Audio:</div>
-        <div id='note_create_view_caption_construct' class='note_create_view_caption'>Caption:</div>
-        <div id='note_create_view_location_construct' class='note_create_view_location'>Location:</div>
-        <div id='note_create_view_tags_construct' class='note_create_view_tags'>Tags:</div>
-        <div id='note_create_view_submit_construct' class='note_create_view_submit'>Submit:</div>
-    </div>
-    
-    <div id='note_create_view_default' class='note_create_view'>
-        <div id='note_create_view_image_construct' class='note_create_view_image'>Image:</div>
-        <div id='note_create_view_audio_construct' class='note_create_view_audio'>Audio:</div>
-        <div id='note_create_view_caption_construct' class='note_create_view_caption'>Caption:</div>
-        <div id='note_create_view_location_construct' class='note_create_view_location'>Location:</div>
-        <div id='note_create_view_tags_construct' class='note_create_view_tags'>Tags:</div>
-        <div id='note_create_view_submit_construct' class='note_create_view_submit'>Submit:</div>
-    </div>
-    <!--<div id='note_create_view_default' class='note_create_view'>
-        Click a note to display
-    </div>-->
 
     <div id='map_note_view_close_button' class='map_note_view_close_button cell_button'>X</div>
     <!-- Note Content Cell -->
