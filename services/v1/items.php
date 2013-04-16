@@ -8,23 +8,9 @@ require_once("editorFoldersAndContent.php");
 
 class Items extends Module
 {
-
-
-    /**
-     * Gets the items within a game
-     * @param integer $gameID The game identifier
-     * @return returnData
-     * @returns a returnData object containing an array of items
-     * @see returnData
-     */
     public static function getItems($gameId)
     {
-
-        $prefix = Module::getPrefix($gameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
-
-        $query = "SELECT * FROM items WHERE game_id = '{$prefix}'";
+        $query = "SELECT * FROM items WHERE game_id = '{$gameId}'";
 
         $rsResult = Module::query($query);
 
@@ -32,21 +18,8 @@ class Items extends Module
         return new returnData(0, $rsResult);
     }
 
-    /**
-     * Gets the items within a player's inventory
-     *
-     * @param integer $gameID The game identifier
-     * @param integer $playerId The player identifier
-     * @return returnData
-     * @returns a returnData object containing an array of items
-     * @see returnData
-     */
     public static function getItemsForPlayer($gameId, $playerId)
     {
-
-        $prefix = Module::getPrefix($gameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
         $query = "SELECT game_items.*, game_player_items.qty, game_player_items.viewed FROM (SELECT * FROM items WHERE game_id = {$gameId}) AS game_items JOIN (SELECT * FROM player_items WHERE game_id = {$gameId} AND player_id = $playerId) AS game_player_items ON game_items.item_id = game_player_items.item_id";
 
         $rsResult = Module::query($query);
@@ -55,24 +28,13 @@ class Items extends Module
         return new returnData(0, $rsResult);
     }	
 
-    /**
-     * Gets the qty of an item in th eplayer's inventory
-     *
-     * @param Object $obj is an object with the gameId, playerId and itemId
-     * @return returnData
-     * @returns the qty of the item
-     */
     public static function getItemCountForPlayer($obj)
     {
         $gameId = $obj['gameId'];
         $playerId = $obj['playerId'];
         $itemId = $obj['itemId'];
 
-        $prefix = Module::getPrefix($gameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
-
-        $query = "SELECT qty FROM player_items WHERE player_id = $playerId AND item_id = $itemId AND game_id = '{$prefix}'";
+        $query = "SELECT qty FROM player_items WHERE player_id = $playerId AND item_id = $itemId AND game_id = '{$gameId}'";
 
         $rsResult = Module::query($query);
         if (!$rsResult) return new returnData(0, NULL);
@@ -81,21 +43,8 @@ class Items extends Module
         return new returnData(0, $row[0]);
     }
 
-    /**
-     * Gets the Attributes for a player
-     *
-     * @param integer $gameID The game identifier
-     * @param integer $playerId The player identifier
-     * @return returnData
-     * @returns a returnData object containing an array of items
-     * @see returnData
-     */
     public static function getAttributesForPlayer($gameId, $playerId)
     {
-
-        $prefix = Module::getPrefix($gameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
         $query = "SELECT game_items.*, game_player_items.qty FROM (SELECT * FROM items WHERE game_id = {$gameId} AND is_attribute = '1') AS game_items JOIN (SELECT * FROM player_items WHERE game_id = {$gameId} AND player_id = $playerId) AS game_player_items ON game_items.item_id = game_player_items.item_id";
 
         $rsResult = Module::query($query);
@@ -104,23 +53,9 @@ class Items extends Module
         return new returnData(0, $rsResult);
     }
 
-
-    /**
-     * Gets a single item from a game
-     *
-     * @param integer $gameID The game identifier
-     * @param integer $itemId The item identifier
-     * @return returnData
-     * @returns a returnData object containing an items
-     * @see returnData
-     */
     public static function getItem($gameId, $itemId)
     {
-
-        $prefix = Module::getPrefix($gameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
-        $query = "SELECT * FROM items WHERE item_id = {$itemId} AND game_id = '{$prefix}' LIMIT 1";
+        $query = "SELECT * FROM items WHERE item_id = {$itemId} AND game_id = '{$gameId}' LIMIT 1";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -129,31 +64,15 @@ class Items extends Module
         if (!$item) return new returnData(2, NULL, "invalid item id");
 
         return new returnData(0, $item);
-
     }
 
-    /**
-     * Gets a single item from a game
-     * 
-     * @param integer $gameId The game identifier
-     * @param string $name The name
-     * @param string $description The html formatted description
-     * @param integer $iconMediaId The item's media identifier
-     * @param integer $mediaId The item's icon media identifier
-     * @param bool $droppable 1 if this item can be dropped, 0 if not 
-     * @param bool $destroyable 1 if this item can be detroyed, 0 if not
-     * @param integer $maxQuantityInPlayerInventory The maximum amount of this item a player can have in their inventory
-     * @return returnData
-     * @returns a returnData object containing the new item identifier
-     * @see returnData
-     */
-    public static function createItem($gameId, $name, $description, $iconMediaId, $mediaId, $droppable, $destroyable, $tradeable, $attribute, $maxQuantityInPlayerInventory, $weight, $url, $type)
+    public static function createItem($gameId, $name, $description, $iconMediaId, $mediaId, $droppable, $destroyable, $tradeable, $attribute, $maxQuantityInPlayerInventory, $weight, $url, $type, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $name = addslashes($name);	
         $description = addslashes($description);	
-
-        $prefix = Module::getPrefix($gameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
         $query = "INSERT INTO items 
             (game_id, name, description, icon_media_id, media_id, dropable, destroyable, tradeable, is_attribute, max_qty_in_inventory, weight, url, type)
@@ -178,31 +97,14 @@ class Items extends Module
         return new returnData(0, mysql_insert_id());
     }
 
-    /**
-     * Updates an item's properties
-     *
-     * @param integer $gameId The game identifier
-     * @param integer $itemId The item identifier
-     * @param string $name The new name
-     * @param string $description The new html formatted description
-     * @param integer $iconMediaId The new icon media identifier
-     * @param integer $mediaId The new media identifier
-     * @param bool $droppable 1 if this item can be dropped, 0 if not 
-     * @param bool $destroyable 1 if this item can be detroyed, 0 if not
-     * @param integer $maxQuantityInPlayerInventory The new maximum quantity of this itema player may hold
-     * @return returnData
-     * @returns a returnData object containing a TRUE if an change was made, FALSE otherwise
-     * @see returnData
-     */
     public static function updateItem($gameId, $itemId, $name, $description, 
-            $iconMediaId, $mediaId, $droppable, $destroyable, $tradeable, $attribute, $maxQuantityInPlayerInventory, $weight, $url, $type)
+            $iconMediaId, $mediaId, $droppable, $destroyable, $tradeable, $attribute, $maxQuantityInPlayerInventory, $weight, $url, $type, $editorId, $editorToken)
     {
-        $prefix = Module::getPrefix($gameId);
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
         $name = addslashes($name);	
         $description = addslashes($description);	
-
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
         $query = "UPDATE items 
             SET name = '{$name}', 
@@ -217,7 +119,7 @@ class Items extends Module
                 weight = '{$weight}',
                 url = '{$url}',
                 type = '{$type}'
-                    WHERE item_id = '{$itemId}' AND game_id = '{$prefix}'";
+                    WHERE item_id = '{$itemId}' AND game_id = '{$gameId}'";
 
 
         Module::query($query);
@@ -229,41 +131,22 @@ class Items extends Module
 
     }
 
-
-    /**
-     * Deletes an Item from a game, removing any refrence made to it in the rest of the game
-     *
-     * When this service runs, locations, requirements, playerStatechanges and player inventories
-     * are updated to remove any refrence to the deleted item.
-     *
-     * @param integer $gameId The game identifier
-     * @param integer $itemId The item identifier
-     * @return returnData
-     * @returns a returnData object containing a TRUE if an change was made, FALSE otherwise
-     * @see returnData
-     */
     public static function deleteItem($gameId, $itemId)
     {
-        $prefix = Module::getPrefix($gameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
         Locations::deleteLocationsForObject($gameId, 'Item', $itemId);
         Requirements::deleteRequirementsForRequirementObject($gameId, 'Item', $itemId);
         PlayerStateChanges::deletePlayerStateChangesThatRefrenceObject($gameId, 'Item', $itemId);
-        Module::removeItemFromAllPlayerInventories($prefix, $itemId );
+        Module::removeItemFromAllPlayerInventories($gameId, $itemId );
 
-        $query = "DELETE FROM items WHERE item_id = {$itemId} AND game_id = '{$prefix}'";
+        $query = "DELETE FROM items WHERE item_id = {$itemId} AND game_id = '{$gameId}'";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
-        if (mysql_affected_rows()) {
+        if(mysql_affected_rows())
             return new returnData(0, TRUE);
-        }
-        else {
+        else
             return new returnData(0, FALSE);
-        }
-
     }	
 
     public static function commitTradeTransaction($gameId, $pOneId, $pTwoId, $giftsFromPOneJSON, $giftsFromPTwoJSON)
@@ -315,15 +198,21 @@ class Items extends Module
         return new returnData(0, $ts);
     }
 
-    public static function addItemTag($gameId, $tag)
+    public static function addItemTag($gameId, $tag, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $query = "INSERT INTO game_object_tags (game_id, tag) VALUES ('{$gameId}', '{$tag}');";
         Module::query($query);
         return new returnData(0, mysql_insert_id());
     }
 
-    public static function deleteTag($gameId, $tagId)
+    public static function deleteTag($gameId, $tagId, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $query = "DELETE FROM object_tags WHERE tag_id = '{$tagId}'";
         Module::query($query);
         $query = "DELETE FROM game_object_tags WHERE tag_id = '{$tagId}'";
@@ -331,25 +220,25 @@ class Items extends Module
         return new returnData(0);
     }
 
-    public static function tagItem($gameId, $itemId, $tagId)
+    public static function tagItem($gameId, $itemId, $tagId, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $query = "INSERT INTO object_tags (object_type, object_id, tag_id) VALUES ('ITEM', '{$itemId}', '{$tagId}');";
         Module::query($query);
         return new returnData(0);
     }
 
-    public static function untagItem($gameId, $itemId, $tagId)
+    public static function untagItem($gameId, $itemId, $tagId, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $query = "DELETE FROM object_tags WHERE object_type = 'ITEM' AND object_id = '{$itemId}' AND tag_id = '{$tagId}';";
         Module::query($query);
         return new returnData(0);
     }
-
-
-
-
-
-
 
     // \/ \/ \/ BACKPACK FUNCTIONS \/ \/ \/
 

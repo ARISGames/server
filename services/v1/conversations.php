@@ -6,26 +6,13 @@ require_once("playerStateChanges.php");
 
 class Conversations extends Module
 {	
-
-    /**
-     * Fetch all conversations for an npc, including node information
-     *
-     * @param integer $gameId The game identifier
-     * @param integer $npcId The game identifier
-     * @return returnData
-     * @returns a returnData object containing an array of conversations with embedded node info
-     * @see returnData
-     */
     public function getConversationsWithNodeForNpc($gameId, $npcId)
     {
-        $prefix = Module::getPrefix($gameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
         $query = "SELECT game_npc_conversations.*, game_nodes.* 
             FROM 
-            (SELECT npc_conversations.*, npc_conversations.text AS conversation_text FROM npc_conversations WHERE game_id = {$prefix} AND npc_id = {$npcId}) AS game_npc_conversations 
+            (SELECT npc_conversations.*, npc_conversations.text AS conversation_text FROM npc_conversations WHERE game_id = {$gameId} AND npc_id = {$npcId}) AS game_npc_conversations 
             JOIN 
-            (SELECT * FROM nodes WHERE game_id = {$prefix}) AS game_nodes 
+            (SELECT * FROM nodes WHERE game_id = {$gameId}) AS game_nodes 
             ON 
             game_npc_conversations.node_id = game_nodes.node_id 
             ORDER BY sort_index";
@@ -35,49 +22,39 @@ class Conversations extends Module
         return new returnData(0, $rsResult);	
     }
 
-    public function swapSortIndex($gameId, $npcId, $a, $b){
-        $prefix = Module::getPrefix($gameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
+    public function swapSortIndex($gameId, $npcId, $a, $b, $editorId, $editorToken)
+    {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
-        $query = "SELECT * FROM npc_conversations WHERE game_id = {$prefix} AND npc_id = '{$npcId}' AND (conversation_id = '{$a}' OR conversation_id = '{$b}')";
+        $query = "SELECT * FROM npc_conversations WHERE game_id = {$gameId} AND npc_id = '{$npcId}' AND (conversation_id = '{$a}' OR conversation_id = '{$b}')";
         $result = Module::query($query);
         $convos = array();
         while($convo = mysql_fetch_object($result)){
             $convos[$convo->conversation_id] = $convo;
         }
 
-        $query = "UPDATE npc_conversations SET sort_index = '{$convos[$a]->sort_index}' WHERE game_id = '{$prefix}' AND conversation_id = '{$b}'";
+        $query = "UPDATE npc_conversations SET sort_index = '{$convos[$a]->sort_index}' WHERE game_id = '{$gameId}' AND conversation_id = '{$b}'";
         Module::query($query);
-        $query = "UPDATE npc_conversations SET sort_index = '{$convos[$b]->sort_index}' WHERE game_id = '{$prefix}' AND conversation_id = '{$a}'";
+        $query = "UPDATE npc_conversations SET sort_index = '{$convos[$b]->sort_index}' WHERE game_id = '{$gameId}' AND conversation_id = '{$a}'";
         Module::query($query);
 
         return new returnData(0);
     }
 
-    /**
-     * Create a conversation and related node for an npc
-     *
-     * @param integer $gameId The game identifier
-     * @param integer $npcId The game identifier
-     * @param string $conversationText The conversation link text as wit will appear to the player
-     * @param string $nodeText The node script
-
-     * @return returnData
-     * @returns a returnData object containing the newly created conversation_id and node_id
-     * @see returnData
-     */
-    public function createConversationWithNode($gameId, $npcId, $conversationText, $nodeText, $index)
+    public function createConversationWithNode($gameId, $npcId, $conversationText, $nodeText, $index, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
         $conversationText = addslashes($conversationText);	
         $nodeText = addslashes($nodeText);
-        $prefix = Module::getPrefix($gameId);
 
         $nodeText = str_replace("“", "\"", $nodeText);
         $nodeText = str_replace("”", "\"", $nodeText);
 
         $query = "INSERT INTO nodes (game_id, text)
-            VALUES ('{$prefix}','{$nodeText}')";
+            VALUES ('{$gameId}','{$nodeText}')";
 
         Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);	
@@ -86,7 +63,7 @@ class Conversations extends Module
 
 
         $query = "INSERT INTO npc_conversations (npc_id, game_id, node_id, text, sort_index)
-            VALUES ('{$npcId}','{$prefix}','{$newNodeId}','{$conversationText}','{$index}')";
+            VALUES ('{$npcId}','{$gameId}','{$newNodeId}','{$conversationText}','{$index}')";
         Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);	
 
@@ -98,28 +75,15 @@ class Conversations extends Module
 
     }
 
-
-
-    /**
-     * Update a conversation and related node for an npc
-     *
-     * @param integer $gameId The game identifier
-     * @param integer $conversationId The conversation identifier
-     * @param string $conversationText The conversation link text as wit will appear to the player
-     * @param string $nodeText The node script
-
-     * @return returnData
-     * @returns a returnData object
-     * @see returnData
-     */
-    public function updateConversationWithNode($gameId, $conversationId, $conversationText, $nodeText, $index)
+    public function updateConversationWithNode($gameId, $conversationId, $conversationText, $nodeText, $index, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
         $conversationText = addslashes($conversationText);	
         $nodeText = addslashes($nodeText);
-        $prefix = Module::getPrefix($gameId);
 
-        $query = "SELECT node_id FROM npc_conversations WHERE game_id = '{$prefix}' AND conversation_id = {$conversationId} LIMIT 1";
+        $query = "SELECT node_id FROM npc_conversations WHERE game_id = '{$gameId}' AND conversation_id = {$conversationId} LIMIT 1";
         $nodeIdRs = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);			
         $nodeIdObject = @mysql_fetch_object($nodeIdRs);
@@ -129,38 +93,23 @@ class Conversations extends Module
         $nodeText = str_replace("“", "\"", $nodeText);
         $nodeText = str_replace("”", "\"", $nodeText);
 
-        $query = "UPDATE nodes SET text = '{$nodeText}', title = '{$conversationText}' WHERE game_id = '{$prefix}' AND node_id = {$nodeId}";
+        $query = "UPDATE nodes SET text = '{$nodeText}', title = '{$conversationText}' WHERE game_id = '{$gameId}' AND node_id = {$nodeId}";
         Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);	
 
-
-        $query = "UPDATE npc_conversations SET text = '{$conversationText}', sort_index = '{$index}' WHERE game_id = '{$prefix}' AND conversation_id = {$conversationId}";
+        $query = "UPDATE npc_conversations SET text = '{$conversationText}', sort_index = '{$index}' WHERE game_id = '{$gameId}' AND conversation_id = {$conversationId}";
         Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);	
-
 
         return new returnData(0, TRUE);
-
     }	
 
-
-    /**
-     * Delete a specific conversation and related node
-     *
-     * @param integer $gameId The game identifier
-     * @param integer $conversationId The conversation identifier
-     *     
-     * @return returnData
-     * @returns a returnData object
-     * @see returnData
-     */	
-
-    public function deleteConversationWithNode($gameId, $conversationId)
+    public function deleteConversationWithNode($gameId, $conversationId, $editorId, $editorToken)
     {
-        $prefix = Module::getPrefix($gameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
-        $query = "SELECT node_id FROM npc_conversations WHERE game_id = '{$prefix}' AND conversation_id = {$conversationId} LIMIT 1";
+        $query = "SELECT node_id FROM npc_conversations WHERE game_id = '{$gameId}' AND conversation_id = {$conversationId} LIMIT 1";
         $nodeIdRs = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);			
         $nodeIdObject = @mysql_fetch_object($nodeIdRs);
@@ -169,7 +118,7 @@ class Conversations extends Module
 
         Nodes::deleteNode($gameId, $nodeId);
 
-        $query = "DELETE FROM npc_conversations WHERE game_id = '{$prefix}' AND conversation_id = {$conversationId}";
+        $query = "DELETE FROM npc_conversations WHERE game_id = '{$gameId}' AND conversation_id = {$conversationId}";
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 

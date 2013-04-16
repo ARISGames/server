@@ -1,21 +1,11 @@
 <?php
 require_once("module.php");
 
-
 class Quests extends Module
 {	
-
-    /**
-     * Fetch all Quests
-     * @returns the quests
-     */
-    public function getQuests($intGameId)
+    public function getQuests($gameId)
     {
-
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
-        $query = "SELECT * FROM quests WHERE game_id = {$prefix} ORDER BY sort_index";
+        $query = "SELECT * FROM quests WHERE game_id = {$gameId} ORDER BY sort_index";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -23,17 +13,9 @@ class Quests extends Module
         return new returnData(0, $rsResult);
     }
 
-    /**
-     * Fetch all Quests for a paticular player
-     * @returns a returnData object with two arrays, active and completed
-     */
-    public function getQuestsForPlayer($intGameId,$intPlayerID)
+    public function getQuestsForPlayer($gameId,$intPlayerID)
     {
-
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
-        $query = "SELECT * FROM quests WHERE game_id = {$prefix} ORDER BY sort_index";
+        $query = "SELECT * FROM quests WHERE game_id = {$gameId} ORDER BY sort_index";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -43,14 +25,14 @@ class Quests extends Module
 
         //Walk the rs add each quest to the correct array
         while ($quest = mysql_fetch_object($rsResult)) {
-            $display = Module::objectMeetsRequirements ($prefix, $intPlayerID, "QuestDisplay", $quest->quest_id);
-            $complete = Module::playerHasLog($prefix, $intPlayerID, Module::kLOG_COMPLETE_QUEST, $quest->quest_id);
+            $display = Module::objectMeetsRequirements ($gameId, $intPlayerID, "QuestDisplay", $quest->quest_id);
+            $complete = Module::playerHasLog($gameId, $intPlayerID, Module::kLOG_COMPLETE_QUEST, $quest->quest_id);
 
             if ($display && !$complete) $activeQuests[] = $quest;
             if ($display && $complete) $completedQuests[] = $quest;
         }	
 
-        $query = "SELECT count(quest_id) as `count` FROM (SELECT * FROM quests WHERE game_id = {$prefix}) AS game_quests";
+        $query = "SELECT count(quest_id) as `count` FROM (SELECT * FROM quests WHERE game_id = {$gameId}) AS game_quests";
         $countRs = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
         $count = @mysql_fetch_object($countRs);
@@ -60,18 +42,9 @@ class Quests extends Module
         return new returnData(0, $quests);
     }	
 
-
-    /**
-     * Fetch a specific event
-     * @returns a single event
-     */
-    public function getQuest($intGameId, $intQuestID)
+    public function getQuest($gameId, $intQuestID)
     {
-
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
-        $query = "SELECT * FROM quests WHERE game_id = {$prefix} AND quest_id = {$intQuestID} LIMIT 1";
+        $query = "SELECT * FROM quests WHERE game_id = {$gameId} AND quest_id = {$intQuestID} LIMIT 1";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -83,23 +56,18 @@ class Quests extends Module
 
     }
 
-    /**
-     * Create an Event
-     * @returns the new eventID on success
-     */
-    public function createQuest($intGameId, $strName, $strIncompleteDescription, $strCompleteDescription, $boolFullScreenNotification, $intActiveMediaId = 0, $intCompleteMediaId = 0, $intActiveIconMediaId = 0, $intCompleteIconMediaID = 0, $exitToTab = 'NONE', $index = 0)
+    public function createQuest($gameId, $strName, $strIncompleteDescription, $strCompleteDescription, $boolFullScreenNotification, $intActiveMediaId, $intCompleteMediaId, $intActiveIconMediaId, $intCompleteIconMediaID, $exitToTab, $index, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
         $strName = addslashes($strName);	
         $strIncompleteDescription = addslashes($strIncompleteDescription);	
         $strCompleteDescription = addslashes($strCompleteDescription);	
 
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
         $query = "INSERT INTO quests 
             (game_id, name, description, text_when_complete, sort_index, exit_to_tab, full_screen_notify)
-            VALUES ('{$prefix}','{$strName}','{$strIncompleteDescription}','{$strCompleteDescription}','{$index}','{$exitToTab}','{$boolFullScreenNotification}')";
+            VALUES ('{$gameId}','{$strName}','{$strIncompleteDescription}','{$strCompleteDescription}','{$index}','{$exitToTab}','{$boolFullScreenNotification}')";
 
 
         Module::query($query);
@@ -108,20 +76,14 @@ class Quests extends Module
         return new returnData(0, mysql_insert_id());
     }
 
-
-
-    /**
-     * Update a specific Event
-     * @returns true if edit was done, false if no changes were made
-     */
-    public function updateQuest($intGameId, $intQuestID, $strName, $strIncompleteDescription, $strCompleteDescription, $boolFullScreenNotification, $intActiveMediaId = 0, $intCompleteMediaId = 0, $intActiveIconMediaId = 0, $intCompleteIconMediaID = 0, $exitToTab = 'NONE', $index = 0)
+    public function updateQuest($gameId, $intQuestID, $strName, $strIncompleteDescription, $strCompleteDescription, $boolFullScreenNotification, $intActiveMediaId, $intCompleteMediaId, $intActiveIconMediaId, $intCompleteIconMediaID, $exitToTab, $index, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $strName = addslashes($strName);	
         $strIncompleteDescription = addslashes($strIncompleteDescription);	
         $strCompleteDescription = addslashes($strCompleteDescription);	
-
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
 
         $query = "UPDATE quests 
             SET 
@@ -131,8 +93,7 @@ class Quests extends Module
                  sort_index = '{$index}',
                  exit_to_tab = '{$exitToTab}',
                  full_screen_notify = '{$boolFullScreenNotification}'
-                     WHERE game_id = {$prefix} AND quest_id = '{$intQuestID}'";
-
+                     WHERE game_id = {$gameId} AND quest_id = '{$intQuestID}'";
 
         Module::query($query);
 
@@ -141,50 +102,39 @@ class Quests extends Module
         if (mysql_affected_rows()) return new returnData(0, TRUE);
         else return new returnData(0, FALSE);
 
-
     }
 
-
-    /**
-     * Delete an Event
-     * @returns true if delete was done, false if no changes were made
-     */
-    public function deleteQuest($intGameId, $intQuestID)
+    public function deleteQuest($gameId, $intQuestID, $editorId, $editorToken)
     {
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
-        $query = "DELETE FROM quests WHERE game_id = {$prefix} AND quest_id = {$intQuestID}";
+        $query = "DELETE FROM quests WHERE game_id = {$gameId} AND quest_id = {$intQuestID}";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
-        if (mysql_affected_rows()) {
-            return new returnData(0, TRUE);
-        }
-        else {
-            return new returnData(2, NULL, 'invalid event id');
-        }
-
+        if (mysql_affected_rows()) return new returnData(0, TRUE);
+        else                       return new returnData(2, NULL, 'invalid event id');
     }	
 
-    public function swapSortIndex($gameId, $a, $b){
-        $prefix = Module::getPrefix($gameId);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
+    public function swapSortIndex($gameId, $a, $b, $editorId, $editorToken)
+    {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
-        $query = "SELECT * FROM quests WHERE game_id = {$prefix} AND (quest_id = '{$a}' OR quest_id = '{$b}')";
+        $query = "SELECT * FROM quests WHERE game_id = {$gameId} AND (quest_id = '{$a}' OR quest_id = '{$b}')";
         $result = Module::query($query);
-        $quests = array();
-        while($quest = mysql_fetch_object($result)){
-            $quests[$quest->quest_id] = $quest;
-        }
 
-        $query = "UPDATE quests SET sort_index = '{$quests[$a]->sort_index}' WHERE game_id = {$prefix} AND quest_id = '{$b}'";
+        $quests = array();
+        while($quest = mysql_fetch_object($result))
+            $quests[$quest->quest_id] = $quest;
+
+        $query = "UPDATE quests SET sort_index = '{$quests[$a]->sort_index}' WHERE game_id = {$gameId} AND quest_id = '{$b}'";
         Module::query($query);
-        $query = "UPDATE quests SET sort_index = '{$quests[$b]->sort_index}' WHERE game_id = {$prefix} AND quest_id = '{$a}'";
+        $query = "UPDATE quests SET sort_index = '{$quests[$b]->sort_index}' WHERE game_id = {$gameId} AND quest_id = '{$a}'";
         Module::query($query);
 
         return new returnData(0);
     }
-
 }

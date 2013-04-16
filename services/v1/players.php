@@ -6,14 +6,8 @@ require_once("media.php");
 
 class Players extends Module
 {	
-
-    /**
-     * Create a new Player
-     * @returns player id
-     */
     public function createPlayer($strNewUserName, $strPassword, $strFirstName, $strLastName, $strEmail, $strGroup = '')
     {
-
         $strNewUserName = addslashes($strNewUserName);	
         $strFirstName = addslashes($strFirstName);	
         $strLastName = addslashes($strLastName);	
@@ -44,10 +38,6 @@ class Players extends Module
         return new returnData(0);
     }
 
-    /**
-     * Create a new Player
-     * @returns player id
-     */
     public function deletePlayer($strUserName, $strPassword)
     {
         $strUserName = addslashes($strUserName);	
@@ -59,10 +49,6 @@ class Players extends Module
         return new returnData(0);
     }
 
-    /**
-     * Login
-     * @returns player id in data for success, null otherwise
-     */
     public function loginPlayer($strUser,$strPassword)
     {
         $query = "SELECT * FROM players 
@@ -89,19 +75,6 @@ class Players extends Module
         return new returnData(0, $player);
     }
 
-    /* stolen from http://www.lateralcode.com/creating-a-random-string-with-php/ */
-    public function rand_string( $length ) 
-    {
-        $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";  
-
-        $size = strlen( $chars );
-        for( $i = 0; $i < $length; $i++ ) {
-            $str .= $chars[ rand( 0, $size - 1 ) ];
-        }
-
-        return $str;
-    }
-
     public function createPlayerAndGetLoginPlayerObject($strGroup)
     {
         $newPlayer->returnCode = 1;
@@ -118,14 +91,10 @@ class Players extends Module
         return new returnData(1, NULL, 'error...');
     }
 
-    /**
-     * updates the player's last game
-     * @returns a returnData object, result code 0 on success
-     */
-    public function updatePlayerLastGame($intPlayerID, $intGameID)
+    public function updatePlayerLastGame($intPlayerID, $gameId)
     {
         $query = "UPDATE players
-            SET last_game_id = '{$intGameID}'
+            SET last_game_id = '{$gameId}'
             WHERE player_id = {$intPlayerID}";
 
         Module::query($query);
@@ -162,10 +131,6 @@ class Players extends Module
         return new returnData(0);
     }
 
-    /**
-     * getPlayers
-     * @returns all ARIS players
-     */
     public function getPlayers()
     {
         $query = "SELECT player_id, user_name, latitude, longitude FROM players";
@@ -174,28 +139,20 @@ class Players extends Module
         return new returnData(0, $rs);
     }
 
-    /**
-     * getPlayersForGame
-     * @returns players with this game id
-     */
-    public function getPlayersForGame($intGameID)
+    public function getPlayersForGame($gameId)
     {
         $query = "SELECT player_id, user_name, latitude, longitude FROM players 
-            WHERE last_game_id = '{$intGameID}'";
+            WHERE last_game_id = '{$gameId}'";
 
         $rs = Module::query($query);
         return new returnData(0, $rs);
     }
 
-    /**
-     * getOtherPlayersForGame
-     * @returns players with this game id
-     */
-    public function getOtherPlayersForGame($intGameID, $intPlayerID)
+    public function getOtherPlayersForGame($gameId, $intPlayerID)
     {
         $timeLimitInMinutes = 20;
 
-        $query = "SELECT p.player_id, p.user_name, p.latitude, p.longitude, pl.timestamp FROM (SELECT * FROM players WHERE players.show_on_map = '1' AND players.last_game_id = '{$intGameID}' AND players.player_id != '{$intPlayerID}') as p JOIN (SELECT * FROM player_log WHERE player_log.game_id = '{$intGameID}' AND player_log.timestamp > DATE_SUB( NOW(), INTERVAL $timeLimitInMinutes MINUTE )) as pl ON p.player_id = pl.player_id WHERE (p.latitude != 0 OR p.longitude != 0) GROUP BY p.player_id;";
+        $query = "SELECT p.player_id, p.user_name, p.latitude, p.longitude, pl.timestamp FROM (SELECT * FROM players WHERE players.show_on_map = '1' AND players.last_game_id = '{$gameId}' AND players.player_id != '{$intPlayerID}') as p JOIN (SELECT * FROM player_log WHERE player_log.game_id = '{$gameId}' AND player_log.timestamp > DATE_SUB( NOW(), INTERVAL $timeLimitInMinutes MINUTE )) as pl ON p.player_id = pl.player_id WHERE (p.latitude != 0 OR p.longitude != 0) GROUP BY p.player_id;";
 
         $rs = Module::query($query);
 
@@ -208,37 +165,29 @@ class Players extends Module
         return new returnData(0, $array);
     }
 
-
-    /**
-     * Start Over a Game for a Player by deleting all items and logs
-     * @returns returnData with data=true if changes were made
-     */
-    public function startOverGameForPlayer($intGameID, $intPlayerID)
+    public function startOverGameForPlayer($gameId, $intPlayerID)
     {	
-        $prefix = Module::getPrefix($intGameID);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
-        $query = "DELETE FROM player_items WHERE player_id = '{$intPlayerID}' AND game_id = {$prefix}";		
+        $query = "DELETE FROM player_items WHERE player_id = '{$intPlayerID}' AND game_id = {$gameId}";		
         Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
         $query = "UPDATE player_log
             SET deleted = 1
-            WHERE player_id = '{$intPlayerID}' AND game_id = '{$intGameID}'";		
+            WHERE player_id = '{$intPlayerID}' AND game_id = '{$gameId}'";		
             Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
-        $gameReturnData = Games::getGame($intGameID);
+        $gameReturnData = Games::getGame($gameId);
         $game = $gameReturnData->data;
         if ($game->delete_player_locations_on_reset) {
 
-            $query = "SELECT item_id FROM items WHERE game_id = {$prefix} AND creator_player_id = {$intPlayerID}";	
+            $query = "SELECT item_id FROM items WHERE game_id = {$gameId} AND creator_player_id = {$intPlayerID}";	
             $itemsRs = Module::query($query);
             if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
             while ($item = @mysql_fetch_object($itemsRs)) {			
                 $query = "DELETE FROM locations
-                    WHERE game_id = {$prefix} AND locations.type = 'Item' 
+                    WHERE game_id = {$gameId} AND locations.type = 'Item' 
                     AND locations.type_id = '{$item->item_id}'";
                 Module::query($query);
             }	
@@ -248,85 +197,63 @@ class Players extends Module
         else return new returnData(0, FALSE);
     }	
 
-    /**
-     * updates the lat/long for the player record
-     * @returns players with this game id
-     */
-    public function updatePlayerLocation($intPlayerID, $intGameID, $floatLat, $floatLong)
+    public function updatePlayerLocation($intPlayerID, $gameId, $floatLat, $floatLong)
     {
-        Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_MOVE, $floatLat, $floatLong);
+        Module::processGameEvent($intPlayerID, $gameId, Module::kLOG_MOVE, $floatLat, $floatLong);
         if (mysql_affected_rows()) return new returnData(0, TRUE);
         else return new returnData(0, FALSE);
     }
 
-
-
-    /**
-     * Player Viewed a Node, exectute it's actions
-     * @returns returnData with data=true if a player state change was made
-     */
-    public function nodeViewed($intGameID, $intPlayerID, $intNodeID, $intLocationID = 0)
+    public function nodeViewed($gameId, $intPlayerID, $intNodeID, $intLocationID = 0)
     {	
-        $prefix = Module::getPrefix($intGameID);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
-        //Module::applyPlayerStateChanges($prefix, $intPlayerID, Module::kLOG_VIEW_NODE, $intNodeID); //Was causing duplicate playerStateChanges (changed 5/23/12 Phil)
-        Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_NODE, $intNodeID, $intLocationID);
+        //Module::applyPlayerStateChanges($gameId, $intPlayerID, Module::kLOG_VIEW_NODE, $intNodeID); //Was causing duplicate playerStateChanges (changed 5/23/12 Phil)
+        Module::processGameEvent($intPlayerID, $gameId, Module::kLOG_VIEW_NODE, $intNodeID, $intLocationID);
 
         return new returnData(0, TRUE);
     }
 
-    /**
-     * Sets the item quantity for a specific item for a plyer.  (Sets an absolute amount, regardless fo current item quantity.
-     */
-    public function setItemCountForPlayerJSON($obj) {
-        $intGameId = $obj['gameId'];
+    public function setItemCountForPlayerJSON($obj)
+    {
+        $gameId = $obj['gameId'];
         $intItemID = $obj['itemId'];
         $intPlayerID = $obj['playerId'];
         $qty = $obj['qty'];
 
-        Module::setItemCountForPlayer($intGameId, $intItemID, $intPlayerID, $qty);
+        Module::setItemCountForPlayer($gameId, $intItemID, $intPlayerID, $qty);
     }
 
-    public function setItemCountForPlayer($intGameId, $intItemID, $intPlayerID, $qty)
+    public function setItemCountForPlayer($gameId, $intItemID, $intPlayerID, $qty)
     {
-        $rData = Module::setItemCountForPlayer($intGameId, $intItemID, $intPlayerID, $qty);
+        $rData = Module::setItemCountForPlayer($gameId, $intItemID, $intPlayerID, $qty);
         if(!$rData->returnCode)
             return new returnData(0, $rData);
         else
             return $rData;
     }
 
-    public function giveItemToPlayer($intGameId, $intItemID, $intPlayerID, $qtyToGive=1) 
+    public function giveItemToPlayer($gameId, $intItemID, $intPlayerID, $qtyToGive=1) 
     {
-        $rData = Module::giveItemToPlayer($intGameId, $intItemID, $intPlayerID, $qtyToGive=1);
+        $rData = Module::giveItemToPlayer($gameId, $intItemID, $intPlayerID, $qtyToGive=1);
         if(!$rData->returnCode)
             return new returnData(0, $rData);
         else
             return $rData;
     }
 
-    public function takeItemFromPlayer($intGameId, $intItemID, $intPlayerID, $qtyToGive=1) 
+    public function takeItemFromPlayer($gameId, $intItemID, $intPlayerID, $qtyToGive=1) 
     {
-        $rData = Module::takeItemFromPlayer($intGameId, $intItemID, $intPlayerID, $qtyToGive=1);
+        $rData = Module::takeItemFromPlayer($gameId, $intItemID, $intPlayerID, $qtyToGive=1);
         if(!$rData->returnCode)
             return new returnData(0, $rData);
         else
             return $rData;
     }
 
-    /**
-     * Player Viewed an Item, exectute it's actions
-     * @returns returnData with data=true if a player state change was made
-     */
-    public function itemViewed($intGameID, $intPlayerID, $intItemID, $intLocationID = 0)
+    public function itemViewed($gameId, $intPlayerID, $intItemID, $intLocationID = 0)
     {
-        $prefix = Module::getPrefix($intGameID);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
+        Module::processGameEvent($intPlayerID, $gameId, Module::kLOG_VIEW_ITEM, $intItemID, $intLocationID);
 
-        Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_ITEM, $intItemID, $intLocationID);
-
-        $query = "UPDATE player_items SET viewed = 1 WHERE game_id = {$intGameID} AND player_id = {$intPlayerID} AND item_id = {$intItemID}";
+        $query = "UPDATE player_items SET viewed = 1 WHERE game_id = {$gameId} AND player_id = {$intPlayerID} AND item_id = {$intItemID}";
 
 
         Module::query($query);
@@ -338,49 +265,30 @@ class Players extends Module
         return new returnData(0, TRUE);
     }
 
-    public function npcViewed($intGameID, $intPlayerID, $intNpcID, $intLocationID = 0)
+    public function npcViewed($gameId, $intPlayerID, $intNpcID, $intLocationID = 0)
     {	
-        $prefix = Module::getPrefix($intGameID);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
-        Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_NPC, $intNpcID, $intLocationID);
+        Module::processGameEvent($intPlayerID, $gameId, Module::kLOG_VIEW_NPC, $intNpcID, $intLocationID);
 
         return new returnData(0, TRUE);
     }
 
-    public function webPageViewed($intGameID, $intPlayerID, $intWebPageID, $intLocationID = 0)
+    public function webPageViewed($gameId, $intPlayerID, $intWebPageID, $intLocationID = 0)
     {	
-        $prefix = Module::getPrefix($intGameID);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
-        Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_WEBPAGE, $intWebPageID, $intLocationID);
+        Module::processGameEvent($intPlayerID, $gameId, Module::kLOG_VIEW_WEBPAGE, $intWebPageID, $intLocationID);
 
         return new returnData(0, TRUE);
     }
 
-    public function augBubbleViewed($intGameID, $intPlayerID, $intAugBubbleID, $intLocationID = 0)
+    public function augBubbleViewed($gameId, $intPlayerID, $intAugBubbleID, $intLocationID = 0)
     {	
-        $prefix = Module::getPrefix($intGameID);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
-        Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_AUGBUBBLE, $intAugBubbleID, $intLocationID);
+        Module::processGameEvent($intPlayerID, $gameId, Module::kLOG_VIEW_AUGBUBBLE, $intAugBubbleID, $intLocationID);
 
         return new returnData(0, TRUE);
     }
 
-
-
-    /**
-     * Removes an Item from the Map and Gives it to the Player
-     * @returns returnData with data=true if changes were made
-     */
-    public function pickupItemFromLocation($intGameID, $intPlayerID, $intItemID, $intLocationID, $qty=1)
+    public function pickupItemFromLocation($gameId, $intPlayerID, $intItemID, $intLocationID, $qty=1)
     {	
-
-        $prefix = Module::getPrefix($intGameID);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
-        $query = "SELECT item_qty from locations WHERE game_id = {$prefix} AND location_id = $intLocationID";
+        $query = "SELECT item_qty from locations WHERE game_id = {$gameId} AND location_id = $intLocationID";
         $result = Module::query($query);
         $loc = mysql_fetch_object($result);
 
@@ -389,101 +297,60 @@ class Players extends Module
                 return new returnData(0, FALSE, "Location has qty 0");
             }
 
-            $qtyGiven = Module::giveItemToPlayer($prefix, $intItemID, $intPlayerID, $loc->item_qty);
-            Module::decrementItemQtyAtLocation($prefix, $intLocationID, $qtyGiven); 
+            $qtyGiven = Module::giveItemToPlayer($gameId, $intItemID, $intPlayerID, $loc->item_qty);
+            Module::decrementItemQtyAtLocation($gameId, $intLocationID, $qtyGiven); 
 
             return new returnData(0, $qtyGiven, "Location has qty 0");
         }
 
-        $qtyGiven = Module::giveItemToPlayer($prefix, $intItemID, $intPlayerID, $qty);
-        Module::decrementItemQtyAtLocation($prefix, $intLocationID, $qtyGiven); 
+        $qtyGiven = Module::giveItemToPlayer($gameId, $intItemID, $intPlayerID, $qty);
+        Module::decrementItemQtyAtLocation($gameId, $intLocationID, $qtyGiven); 
 
         return new returnData(0, TRUE);
 
     }
 
-    /**
-     * Removes an Item from the players Inventory and Places it on the map
-     * @returns returnData with data=true if changes were made
-     */
-    public function dropItem($intGameID, $intPlayerID, $intItemID, $floatLat, $floatLong, $qty=1)
+    public function dropItem($gameId, $intPlayerID, $intItemID, $floatLat, $floatLong, $qty=1)
     {
-        $prefix = Module::getPrefix($intGameID);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
-        Module::takeItemFromPlayer($prefix, $intItemID, $intPlayerID, $qty);
-        Module::giveItemToWorld($prefix, $intItemID, $floatLat, $floatLong, $qty);
+        Module::takeItemFromPlayer($gameId, $intItemID, $intPlayerID, $qty);
+        Players::giveItemToWorld($gameId, $intItemID, $floatLat, $floatLong, $qty);
 
         return new returnData(0, FALSE);
     }		
 
-    /**
-     *Places Note On Map
-     * @returns returnData with data=true if changes were made
-     */
-    public function dropNote($intGameID, $intPlayerID, $noteID, $floatLat, $floatLong)
+    public function dropNote($gameId, $intPlayerID, $noteID, $floatLat, $floatLong)
     {
-        $prefix = Module::getPrefix($intGameID);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
-        Module::giveNoteToWorld($prefix, $noteID, $floatLat, $floatLong);
+        Module::giveNoteToWorld($gameId, $noteID, $floatLat, $floatLong);
 
         return new returnData(0, FALSE);
     }	
 
-    /**
-     * Removes an Item from the players Inventory
-     * @returns returnData with data=true if changes were made
-     */
-    public function destroyItem($intGameID, $intPlayerID, $intItemID, $qty=1)
+    public function destroyItem($gameId, $intPlayerID, $intItemID, $qty=1)
     {
-        $prefix = Module::getPrefix($intGameID);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
-        Module::takeItemFromPlayer($prefix, $intItemID, $intPlayerID, $qty);
-        Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_DESTROY_ITEM, $intItemID, $qty);
+        Module::takeItemFromPlayer($gameId, $intItemID, $intPlayerID, $qty);
+        Module::processGameEvent($intPlayerID, $gameId, Module::kLOG_DESTROY_ITEM, $intItemID, $qty);
 
         return new returnData(0, FALSE);
     }		
 
-    /**
-     * Log that player viewed the map
-     * @returns Always returns 0
-     */
-    public function mapViewed($intGameID, $intPlayerID)
+    public function mapViewed($gameId, $intPlayerID)
     {
-        Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_MAP);
-        return new returnData(0, FALSE);
-
-    }
-
-    /**
-     * Log that player viewed the quests
-     * @returns Always returns 0
-     */	
-    public function questsViewed($intGameID, $intPlayerID)
-    {
-        $prefix = Module::getPrefix($intGameID);
-        if (!$prefix) return new returnData(1, NULL, "invalid game id");
-
-        Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_QUESTS);
+        Module::processGameEvent($intPlayerID, $gameId, Module::kLOG_VIEW_MAP);
         return new returnData(0, FALSE);
     }
 
-    /**
-     * Log that player viewed the inventory
-     * @returns Always returns 0
-     */	
-    public function inventoryViewed($intGameID, $intPlayerID)
+    public function questsViewed($gameId, $intPlayerID)
     {
-        Module::processGameEvent($intPlayerID, $intGameID, Module::kLOG_VIEW_INVENTORY);
+        Module::processGameEvent($intPlayerID, $gameId, Module::kLOG_VIEW_QUESTS);
+        return new returnData(0, FALSE);
+    }
+
+    public function inventoryViewed($gameId, $intPlayerID)
+    {
+        Module::processGameEvent($intPlayerID, $gameId, Module::kLOG_VIEW_INVENTORY);
         return new returnData(0, FALSE);
     }			
 
-    /**
-     * Toggles whether player should be shown on Map
-     * @returns Always returns 0
-     */
     function setShowPlayerOnMap($playerId, $spom)
     {
         $query = "UPDATE players SET show_on_map = '{$spom}' WHERE player_id = '{$playerId}'";
@@ -491,12 +358,8 @@ class Players extends Module
         return new returnData(0);
     }
 
-    /**
-     * Reset and email editor a new password
-     * @returns 0 on success
-     */
-    public function resetAndEmailNewPassword($strEmail) {
-
+    public function resetAndEmailNewPassword($strEmail)
+    {
         $amppos = strrpos($strEmail, "@");
         if($amppos === false) {
             $query2 = "SELECT * FROM players WHERE user_name = '{$strEmail}'";   
@@ -520,10 +383,6 @@ class Players extends Module
         else return new returnData(5, NULL, "Mail could not be sent");
     }
 
-    /**
-     * Change an Player's PAssword
-     * @returns 0 on success, 4 bad editorID or password
-     */
     public function changePassword($intPlayerID, $strOldPassword, $strNewPassword)
     {	
         if ($strOldPassword == $strNewPassword) return new returnData(0, NULL);
@@ -532,7 +391,6 @@ class Players extends Module
             SET password = MD5('{$strNewPassword}')
             WHERE password = MD5('{$strOldPassword}')
             AND player_id = {$intPlayerID}";
-
 
         Module::query($query);
 
@@ -565,9 +423,6 @@ class Players extends Module
             $gameId = intval($gameId);
         else
             return new returnData(1, "Error- Empty Game ".$gameId);
-
-        $prefix = Module::getPrefix($gameId);
-        if (!$prefix) return new returnData(1, "Error- Invalid Game Id");
 
         $game = Games::getDetailedGameInfo($gameId);
         if(is_null($playerArray))
@@ -794,9 +649,6 @@ class Players extends Module
         else
             return new returnData(1, "Error- Empty Game ".$gameId);
 
-        $prefix = Module::getPrefix($gameId);
-        if (!$prefix) return new returnData(1, "Error- Invalid Game Id");
-
         $query = "SELECT * FROM player_log WHERE game_id = '{$gameId}' AND timestamp BETWEEN '{$startDate}' AND '{$endDate}'";
         $result = Module::query($query);
 
@@ -805,6 +657,45 @@ class Players extends Module
             $log[] = $entry;
 
         return new returnData(0,$log);
+    }
+
+    protected function giveItemToWorld($gameId, $intItemID, $floatLat, $floatLong, $intQty = 1)
+    {
+        //Find any items on the map nearby
+        $clumpingRangeInMeters = 10;
+
+        $query = "SELECT *,((ACOS(SIN($floatLat * PI() / 180) * SIN(latitude * PI() / 180) + 
+            COS($floatLat * PI() / 180) * COS(latitude * PI() / 180) * 
+            COS(($floatLong - longitude) * PI() / 180)) * 180 / PI()) * 60 * 1.1515) * 1609.344
+            AS `distance`, location_id 
+            FROM locations 
+            WHERE type = 'item' AND type_id = '{$intItemID}' AND game_id = '{$gameId}'
+            HAVING distance<= {$clumpingRangeInMeters}
+        ORDER BY distance ASC"; 	
+            $result = Module::query($query);
+
+        if ($closestLocationWithinClumpingRange = @mysql_fetch_object($result)) {
+            //We have a match
+
+            $query = "UPDATE locations
+                SET item_qty = item_qty + {$intQty}
+            WHERE location_id = {$closestLocationWithinClumpingRange->location_id} AND game_id = '{$gameId}'";
+            Module::query($query);
+        }
+        else {
+
+            $itemName = $this->getItemName($gameId, $intItemID);
+            $error = 100; //Use 100 meters
+            $icon_media_id = $this->getItemIconMediaId($gameId, $intItemID); //Set the map icon = the item's icon
+
+            $query = "INSERT INTO locations (game_id, name, type, type_id, icon_media_id, latitude, longitude, error, item_qty)
+                VALUES ('{$gameId}', '{$itemName}','Item','{$intItemID}', '{$icon_media_id}', '{$floatLat}','{$floatLong}', '{$error}','{$intQty}')";
+            Module::query($query);
+
+            $newId = mysql_insert_id();
+            //Create a coresponding QR Code
+            QRCodes::createQRCode($gameId, "Location", $newId, '');
+        }
     }
 }
 ?>

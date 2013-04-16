@@ -63,22 +63,18 @@ class Notes extends Module
         $contentId = mysql_insert_id();
 
         Module::processGameEvent($playerId, $gameId, Module::kLOG_UPLOAD_MEDIA_ITEM, $contentId, $lat, $lon);
-        if($type == "PHOTO"){
+        if($type == "PHOTO")
             Module::processGameEvent($playerId, $gameId, Module::kLOG_UPLOAD_MEDIA_ITEM_IMAGE, $contentId, $lat, $lon);
-        }
-        else if($type == "AUDIO"){
+        else if($type == "AUDIO")
             Module::processGameEvent($playerId, $gameId, Module::kLOG_UPLOAD_MEDIA_ITEM_AUDIO, $contentId, $lat, $lon);
-        }
-        else if($type == "VIDEO"){
+        else if($type == "VIDEO")
             Module::processGameEvent($playerId, $gameId, Module::kLOG_UPLOAD_MEDIA_ITEM_VIDEO, $contentId, $lat, $lon);
-        }
         return new returnData(0, $contentId);
     }
 
     function addContentToNoteFromFileName($gameId, $noteId, $playerId, $filename, $type, $name="playerUploadedContent")
     {
-        if(!$name)
-            $name = date("Y-m-d H:i:s");
+        if(!$name) $name = date("Y-m-d H:i:s");
         $newMediaResultData = Media::createMedia($gameId, $name, $filename, 0);
         $newMediaId = $newMediaResultData->data->media_id;
 
@@ -446,17 +442,22 @@ class Notes extends Module
         return new returnData(0);
     }
 
-    //Returns new id
-    function addTagToGame($gameId, $tag)
+    function addTagToGame($gameId, $tag, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $query = "INSERT INTO game_tags (tag, game_id, player_created) VALUES ('{$tag}', '{$gameId}', 0)";
         Module::query($query);
         return new returnData(0, mysql_insert_id());
     }
 
     //If author created, demotes to player created. completely wipes if player created. player created tags cannot exist if not instantiated at least once.
-    function deleteTagFromGame($gameId, $tagId)
+    function deleteTagFromGame($gameId, $tagId, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $query = "SELECT * FROM game_tags WHERE tag_id = '{$tagId}'"; 
         $result = Module::query($query);
         $tag = mysql_fetch_object($result);
@@ -523,8 +524,8 @@ class Notes extends Module
         else
             return new returnData(1, "Error- Invalid Game Id: ".$gameId);
 
-        $prefix = Module::getPrefix($gameId);
-        if (!$prefix) return new returnData(1, "Error- Invalid Game Id: ".$gameId);
+        if (!Module::query("SELECT * FROM games WHERE game_id = '{$gameId}'")) 
+            return new returnData(1, "Error- Invalid Game Id: ".$gameId);
 
         $notes = array();
         $query = "SELECT note_id, owner_id FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = 0";

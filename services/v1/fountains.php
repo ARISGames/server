@@ -3,8 +3,11 @@ require_once("module.php");
 
 class Fountains extends Module
 {
-    public static function createFountain($gameId, $type, $locationId, $spawnProbability, $spawnRate, $maxAmount)
+    public static function createFountain($gameId, $type, $locationId, $spawnProbability, $spawnRate, $maxAmount, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         if($type == '') $type = 'Location';
 
         if($fountainId = Fountains::hasFountain($gameId, $locationId))
@@ -34,8 +37,11 @@ class Fountains extends Module
         else return false;
     }
 
-    public static function deleteFountain($fountainId)
+    public static function deleteFountain($fountainId, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $query = "UPDATE fountains SET active = 0 WHERE fountain_id = $fountainId";
         Module::query($query);
         /*
