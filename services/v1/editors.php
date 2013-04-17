@@ -22,6 +22,12 @@ class Editors extends Module
         else return new returnData(4, NULL, "Bad Username or Password");
     }
 
+    public function getEditorsWithEmail($email)
+    {
+        $eArray = Module::queryArray("SELECT editor_id, email FROM editors WHERE email LIKE '".$email."'");
+        return new returnData(0,$eArray);
+    }
+
     public function createEditor($strUser, $strPassword, $strEmail, $strComments)
     {	
         $query = "SELECT editor_id FROM editors WHERE name = '{$strUser}' LIMIT 1";
