@@ -244,6 +244,40 @@ abstract class Module extends Utils
         Module::processGameEvent($obj->owner_id, $gameId, Module::kLOG_DROP_NOTE, $noteId, $floatLat, $floatLong);
     }
 
+    public static function saveContentNoAuthentication($gameId, $intObjectContentID, $intFolderID, $strContentType, $intContentID, $intSortOrder)
+    {
+        if ($intObjectContentID) {
+            //This is an update
+            $query = "UPDATE folder_contents
+                SET 
+                folder_id = '{$intFolderID}',
+                          content_type = '{$strContentType}',
+                          content_id = '{$intContentID}',
+                          previous_id = '{$intSortOrder}'
+                              WHERE 
+                              object_content_id = {$intObjectContentID} AND
+                              game_id = {$gameId}
+            ";
+
+            Module::query($query);
+            if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
+            else return new returnData(0, NULL, NULL);
+        }	
+        else {		
+            //This is an insert
+            $query = "INSERT INTO folder_contents 
+                (game_id, folder_id, content_type, content_id, previous_id)
+                VALUES 
+                ('{$gameId}','{$intFolderID}', '{$strContentType}', '{$intContentID}', '{$intSortOrder}')";
+
+            Module::query($query);
+            $newContentID = mysql_insert_id();
+
+            if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
+            else return new returnData(0, $newContentID, NULL);
+        }
+    }
+
     protected function metersBetweenLatLngs($lat1, $lon1, $lat2, $lon2)
     { 
         $theta = $lon1 - $lon2; 

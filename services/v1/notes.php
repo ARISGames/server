@@ -16,7 +16,7 @@ class Notes extends Module
         Module::query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         $nId = mysql_insert_id();
-        EditorFoldersAndContent::saveContent($gameId, false, 0, 'PlayerNote', $nId, 0);
+        Module::saveContentNoAuthentication($gameId, false, 0, 'PlayerNote', $nId, 0);
         Module::processGameEvent($playerId, $gameId, Module::kLOG_GET_NOTE, $nId);
         Players::dropNote($gameId, $playerId, $nId, $lat, $lon);
         return new returnData(0, $nId);
@@ -28,7 +28,7 @@ class Notes extends Module
         Module::query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         $nId = mysql_insert_id();
-        EditorFoldersAndContent::saveContent($gameId, false, 0, 'PlayerNote', $nId, 0);
+        Module::saveContentNoAuthentication($gameId, false, 0, 'PlayerNote', $nId, 0);
         Module::processGameEvent($playerId, $gameId, Module::kLOG_GET_NOTE, $nId);
         Players::dropNote($gameId, $playerId, $nId, $lat, $lon);
         return new returnData(0, $nId);
