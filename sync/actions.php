@@ -101,7 +101,7 @@ class Sync {
 	  $out = array();
 	  $result = $games->getGame($id);
 	  $fullGame = $games->getFullGameObject($id, $player_id);
-	  $maps = $this->get_maps($id);
+	  //$maps = $this->get_maps($id);
 	  /*
 	  if ($id === 173) {
 	    $latitude = 42.375;
@@ -122,7 +122,7 @@ class Sync {
 	   $maps[] = array('media_id' => $map_file->media_id, 'latitude' => $latitude, 'longitude' => $longitude, 'zoom' => $zoom);
  	  }	  
  	  */
-	  $fullGame->maps = $maps;
+	  //$fullGame->maps = $maps;
 	  $out['game'] = $fullGame;
 	  
     $sql = "SELECT player_id, user_name, latitude, longitude FROM players WHERE player_id = '$player_id'";
@@ -187,13 +187,6 @@ class Sync {
 	   $out['tabs'][] = $tab;
  	  }
  	  
- 	  // media
-	  /*
-	  $out['media'] = array();
-	  while ($media = mysql_fetch_object($result->data)) {
-	    $out['media'][] = $media;
-	  }
-	  */
 	  // items for player
 	  $result = $items->getItemsForPlayer($id, $player_id);
 	  $out['player_items'] = array();
@@ -223,10 +216,25 @@ class Sync {
 	  $out['player_state_changes'] = array();
 	  while ($state_change = mysql_fetch_object($result)) {
 		  $out['player_state_changes'][] = $state_change;
-	  }	  
+	  }
+	  
+	  // overlays
+	  $overlays = new Overlays();
+	  $result = mysql_query("SELECT * FROM overlays WHERE game_id = '$id' ORDER BY overlay_id");
+	  $overlays = array();
+	  while ($overlay = mysql_fetch_object($result)) {
+		  $overlays[] = $overlay;
+	  }
+	  foreach ($overlays as $overlay) {
+    	  $result = mysql_query("SELECT * FROM overlay_tiles WHERE overlay_id = {$overlay->overlay_id} ORDER BY zoom, x, y");
+    	  $overlay->tiles = array();
+    	  while ($tile = mysql_fetch_object($result)) {
+        	  $overlay->tiles[] = $tile;
+    	  }
+	  }
+	  $out['overlays'] = $overlays;
 	  
 	  return $out;
   }
-
 }
 
