@@ -424,7 +424,9 @@ class Players extends Module
         else
             return new returnData(1, "Error- Empty Game ".$gameId);
 
-        $game = Games::getDetailedGameInfo($gameId);
+        if(($game = Games::getDetailedGameInfo($gameId)) == "Invalid Game Id")
+            return new returnData(1, "Error- Empty Game ".$gameId);
+
         if(is_null($playerArray))
         {
             $game->backpacks =  Players::getAllPlayerDataBP($gameId, $getItems, $getAttributes, $getNotes);
