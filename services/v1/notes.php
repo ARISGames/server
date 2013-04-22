@@ -561,7 +561,7 @@ class Notes extends Module
 
     private static function getDetailedFullNoteObject($noteId, $playerId=0)
     {
-        $query = "SELECT note_id, game_id, owner_id, title, public_to_map, public_to_notebook FROM notes WHERE note_id = '{$noteId}'";
+        $query = "SELECT note_id, game_id, owner_id, title, public_to_map, public_to_notebook, created FROM notes WHERE note_id = '{$noteId}'";
         $result = Module::query($query);
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
         if($note = mysql_fetch_object($result))

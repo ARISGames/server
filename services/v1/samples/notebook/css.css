@@ -284,7 +284,7 @@ div
     right:15%;
     max-height:110%;
     background-color:white;
-    width:45%;
+    /*width:45%;*/
 }
 
 #create_note_view_container
@@ -378,10 +378,12 @@ div
 
 .note_media
 {
-    width:80%;
-    margin:.5% 10%;
+    height:75%; /* help the note fit not overflow the window*/
+    margin:.5% .5%;/* changed*/
 }
 
 .hidden { visibility: hidden; display: none;}
 .unhidden { visibility: visible; display: block;}
+
+
 
