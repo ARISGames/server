@@ -11,7 +11,6 @@ include ('media.php');
 header('HTTP/1.1 200 OK');
 header('Status: 200 OK');
 
-
 $form = '
 <html><body>
 <form action="' . $_SERVER['PHP_SELF'] . '" 
@@ -24,7 +23,6 @@ method="post">
 
 if (!$_FILES['file']) die ($form);
 
-
 $media = new Media();
 
 //Check for Errors
@@ -34,18 +32,13 @@ if(isset($_POST['gameID']) ) $_POST['path'] = $_POST['gameID']; // for legacy us
 $gameMediaDirectory = $media->getMediaDirectory($_POST['path'])->data;
 
 $pathInfo = '';
-if (@$_REQUEST['fileName']) {
-    //We are coming from the iPhone Client
-    $pathInfo = pathinfo($_REQUEST['fileName']);
-}
-else {
-    //We are coming from the form
-    $pathInfo = pathinfo($_FILES['file']['name']);
-}
+if (@$_REQUEST['fileName']) $pathInfo = pathinfo($_REQUEST['fileName']);   //We are coming from the iPhone Client
+else                        $pathInfo = pathinfo($_FILES['file']['name']); //We are coming from the form
 
 $newMediaFileName = 'aris' . md5( date("YmdGisu") . substr((string)microtime(),2,6) . strtolower($_FILES['file']['name'])) . '.' . strtolower($pathInfo['extension']);
-if ($pathInfo['extension'] == '')
-$newMediaFileName = $newMediaFileName . 'jpg';    // blobs from YOI map in jpg form aren't coming through with file a extension.  This is a band-aid.
+
+if ($pathInfo['extension'] == '') $newMediaFileName = $newMediaFileName . 'jpg';    // blobs from YOI map in jpg form aren't coming through with file a extension.  This is a band-aid.
+
 $newMediaFilePath = $gameMediaDirectory ."/". $newMediaFileName;
 
 if (!move_uploaded_file( $_FILES['file']['tmp_name'], $newMediaFilePath))

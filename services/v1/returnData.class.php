@@ -6,14 +6,15 @@
    2-
    3-SQL error
  */
-class ReturnData {
 
+class ReturnData
+{
     public $data;
     public $returnCode;
     public $returnCodeDescription;
 
-
-    public function ReturnData($returnCode, $data = NULL, $returnCodeDescription=NULL){
+    public function ReturnData($returnCode, $data = NULL, $returnCodeDescription=NULL)
+    {
         $this->data = $data;
         $this->returnCode = $returnCode;
         $this->returnCodeDescription = $returnCodeDescription;

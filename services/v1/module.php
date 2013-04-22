@@ -1,9 +1,9 @@
 <?php
-require_once('../../config.class.php');
+require_once('utils.php');
 require_once('returnData.class.php');
-require_once('qrcodes.php');
+require_once('../../config.class.php');
 
-abstract class Module
+abstract class Module extends Utils
 {
     //constants for player_log table enums
     const kLOG_LOGIN = 'LOGIN';
@@ -76,152 +76,40 @@ abstract class Module
     //constants for note icon id
     const kPLAYER_NOTE_DEFAULT_ICON = '94';
 
-    public function findLowestIdFromTable($tableName, $idColumnName)
+    public function authenticateEditor($editorId, $token, $permissionReq)
     {
-        $query = "
-            SELECT  $idColumnName
-            FROM    (
-                    SELECT  1 AS $idColumnName
-                    ) q1
-            WHERE   NOT EXISTS
-            (
-             SELECT  1
-             FROM    $tableName
-             WHERE   $idColumnName = 1
-            )
-            UNION ALL
-            SELECT  *
-            FROM    (
-                    SELECT  $idColumnName + 1
-                    FROM    $tableName t
-                    WHERE   NOT EXISTS
-                    (
-                     SELECT  1
-                     FROM    $tableName ti
-                     WHERE   ti.$idColumnName = t.$idColumnName + 1
-                    )
-                    ORDER BY
-                    $idColumnName
-                    LIMIT 1
-                    ) q2
-            ORDER BY
-            $idColumnName
-            LIMIT 1
-            ";
-        if($result = Module::query($query))
-        {
-            if($lowestNonUsedId = mysql_fetch_object($result)->media_id)
-                return $lowestNonUsedId;
-        }
-        else
-        {
-            //Just going to use the next auto_increment id...
-            $query = "SELECT MAX($idColumnName) as 'nextAIID' FROM $tableName";
-            $result = Module::query($query);
-            if($nextAutoIncrementId = mysql_fetch_object($result)->nextAIID)
-                return $nextAutoIncrementId;
-        }
-        return null;
+        $permissionReq = addslashes($permissionReq);
+        $token         = addslashes($token);
+
+        $e = Utils::queryObject("SELECT ".$permissionReq."_token FROM editors WHERE editor_id = ".$editorId." LIMIT 1");
+        if($e && $e->{$permissionReq."_token"} == $token)
+            return true;
+
+        Utils::serverErrorLog("Failed Editor Authentication!");
+        return false;
+    }
+    public function authenticateGameEditor($gameId, $editorId, $token, $permissionReq)
+    {
+        $permissionReq = addslashes($permissionReq);
+        $token         = addslashes($token);
+
+        $ge = Utils::queryObject("SELECT ".$permissionReq."_token FROM (SELECT editor_id FROM game_editors WHERE game_id = ".$gameId." AND editor_id = ".$editorId." LIMIT 1) as ges LEFT JOIN editors ON ges.editor_id = editors.editor_id LIMIT 1");
+        if($ge && $ge->{$permissionReq."_token"} == $token)
+            return true;
+
+        Utils::serverErrorLog("Failed Game Editor Authentication!");
+        return false;
     }
 
     public function Module()
     {
-        $this->conn = @mysql_connect(Config::dbHost, Config::dbUser, Config::dbPass);
-        if (!$this->conn) {
-            Module::serverErrorLog("Problem Connecting to MySQL: " . mysql_error());
-            if(Config::adminEmail) Module::sendEmail(Config::adminEmail,"ARIS Server Error", mysql_error());
-        }
-        mysql_select_db (Config::dbSchema);
-        Module::query("set names utf8");
-        Module::query("set charset utf8");
+        Utils::connect();
     }	
 
-    public function query($query)
+    protected function giveItemToPlayer($gameId, $intItemID, $intPlayerID, $qtyToGive=1)
     {
-        $r = mysql_query($query);
-        if(mysql_error()) 
-        {
-
-            Module::serverErrorLog("Error With Request:\n"."http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]"."\nQuery:\n".$query."\nError: ".mysql_error());
-            return false;
-        }
-        return $r;
-    }
-
-    public function queryObject($query)
-    {
-        if($r = Module::query($query))
-        {
-            $o = mysql_fetch_object($r);
-            return $o;
-        }
-        return stdClass();
-    }
-
-    public function queryArray($query)
-    {
-        if($r = Module::query($query))
-        {
-            $a = array();
-            while($o = mysql_fetch_object($r)) 
-                $a[] = $o;
-            return $a;
-        }
-        return array();
-    }
-
-    /**
-     * Fetch the prefix of a game
-     * @returns a prefix string without the trailing _
-     */
-    protected function getPrefix($intGameID) {	
-        //Lookup game information
-        $query = "SELECT prefix FROM games WHERE game_id = '{$intGameID}' LIMIT 1";
-        $rsResult = Module::query($query);
-        if (mysql_num_rows($rsResult) < 1) return FALSE;
-        $gameRecord = mysql_fetch_array($rsResult);
-        return substr($gameRecord['prefix'],0,strlen($gameRecord['prefix'])-1);
-
-    }
-
-    /**
-     * Fetch the GameID from a prefix
-     * @returns a gameID int
-     */
-    protected function getGameIdFromPrefix($strPrefix)
-    {	
-        //Lookup game information
-        $query = "SELECT game_id FROM games WHERE prefix= '{$strPrefix}_'";
-        $rsResult = Module::query($query);
-        if (mysql_num_rows($rsResult) < 1) return FALSE;
-        $gameRecord = mysql_fetch_array($rsResult);
-        return $gameRecord['game_id'];
-    }	
-
-    /*
-     * Converts meters to degrees (lat/lon)
-     */
-    protected function mToDeg($meters)
-    {
-        //Ridiculous approximation, but fine for most cases
-        return $meters*6/500000;
-    }
-
-    /*
-     * Converts degrees (lat/lon) to meters
-     */
-    protected function degToM($degrees)
-    {
-        //Ridiculous approximation, but fine for most cases
-        return 500000*$degrees;
-    }
-
-    /**
-     * Adds the specified item to the specified player. Returns the actual number added after concidering item max
-     */
-    protected function giveItemToPlayer($intGameId, $intItemID, $intPlayerID, $qtyToGive=1) {
-        $currentQty = Module::itemQtyInPlayerInventory($intGameId, $intPlayerID, $intItemID);
-        $item = Items::getItem($intGameId, $intItemID)->data;
+        $currentQty = Module::itemQtyInPlayerInventory($gameId, $intPlayerID, $intItemID);
+        $item = Items::getItem($gameId, $intItemID)->data;
         $maxQty = $item->max_qty_in_inventory; 
 
         if ($currentQty + $qtyToGive > $maxQty  && $maxQty != -1)
@@ -229,14 +117,14 @@ abstract class Module
 
         if ($qtyToGive < 1) return 0;
         else {
-            Module::adjustQtyForPlayerItem($intGameId, $intItemID, $intPlayerID, $qtyToGive);
+            Module::adjustQtyForPlayerItem($gameId, $intItemID, $intPlayerID, $qtyToGive);
 
             //check log if item has already been viewed. If yes, set item to viewed in database
-            $query = "SELECT * FROM player_log WHERE game_id = {$intGameId} AND player_id = {$intPlayerID} AND event_type = 'VIEW_ITEM' AND event_detail_1 = {$intItemID} AND deleted = 0;";
+            $query = "SELECT * FROM player_log WHERE game_id = {$gameId} AND player_id = {$intPlayerID} AND event_type = 'VIEW_ITEM' AND event_detail_1 = {$intItemID} AND deleted = 0;";
             $result = Module::query($query);
             while(mysql_fetch_object($result))
             {
-                $query2 = "UPDATE player_items SET viewed = 1 WHERE game_id = {$intGameId} AND player_id = {$intPlayerID} AND item_id = {$intItemID}";
+                $query2 = "UPDATE player_items SET viewed = 1 WHERE game_id = {$gameId} AND player_id = {$intPlayerID} AND item_id = {$intItemID}";
                 Module::query($query2);
                 break;
             }
@@ -245,14 +133,11 @@ abstract class Module
         }
     }
 
-    /**
-     * Sets the item count for specified item and player. Returns the actual number added after considering item max
-     */
-    protected function setItemCountForPlayer($intGameId, $intItemID, $intPlayerID, $qty) {
-        $currentQty = Module::itemQtyInPlayerInventory($intGameId, $intPlayerID, $intItemID);
-        $item = Items::getItem($intGameId, $intItemID)->data;
+    protected function setItemCountForPlayer($gameId, $intItemID, $intPlayerID, $qty)
+    {
+        $currentQty = Module::itemQtyInPlayerInventory($gameId, $intPlayerID, $intItemID);
+        $item = Items::getItem($gameId, $intItemID)->data;
         $maxQty = $item->max_qty_in_inventory; 
-
 
         if ($qty > $maxQty  && $maxQty != -1)
             $qty =  $maxQty;
@@ -260,35 +145,28 @@ abstract class Module
         if ($qty < 0) return 0;
         else {
             $amountToAdjust = $qty - $currentQty;
-            Module::adjustQtyForPlayerItem($intGameId, $intItemID, $intPlayerID, $amountToAdjust);
+            Module::adjustQtyForPlayerItem($gameId, $intItemID, $intPlayerID, $amountToAdjust);
             return $qty;
         }
     }
 
-    /**
-     * Removes the specified item from the user.
-     * Removes the specified item from the user.
-     */ 
-    protected function takeItemFromPlayer($intGameId, $intItemID, $intPlayerID, $qtyToTake=1) {
-        Module::adjustQtyForPlayerItem($intGameId, $intItemID, $intPlayerID, -$qtyToTake);
+    protected function takeItemFromPlayer($gameId, $intItemID, $intPlayerID, $qtyToTake=1)
+    {
+        Module::adjustQtyForPlayerItem($gameId, $intItemID, $intPlayerID, -$qtyToTake);
     }
 
-    /**
-     * Removes the specified item from the user.
-     */ 
-    protected function removeItemFromAllPlayerInventories($intGameId, $intItemID ) {
+    protected function removeItemFromAllPlayerInventories($gameId, $intItemID)
+    {
         $query = "DELETE FROM player_items 
-            WHERE item_id = {$intItemID} AND game_id = '{$intGameId}'";
+            WHERE item_id = {$intItemID} AND game_id = '{$gameId}'";
         $result = Module::query($query);
     }
 
-    /**
-     * Updates the qty a player has of an item 
-     */ 
-    protected function adjustQtyForPlayerItem($intGameId, $intItemID, $intPlayerID, $amountOfAdjustment) {
+    protected function adjustQtyForPlayerItem($gameId, $intItemID, $intPlayerID, $amountOfAdjustment)
+    {
         //Get any existing record
         $query = "SELECT * FROM player_items 
-            WHERE player_id = $intPlayerID AND item_id = $intItemID AND game_id = '{$intGameId}' LIMIT 1";
+            WHERE player_id = $intPlayerID AND item_id = $intItemID AND game_id = '{$gameId}' LIMIT 1";
         $result = Module::query($query);
 
         if ($existingPlayerItem = @mysql_fetch_object($result)) {
@@ -296,22 +174,21 @@ abstract class Module
             $newQty = $existingPlayerItem->qty + $amountOfAdjustment;
             if ($newQty < 1) {
                 $query = "DELETE FROM player_items 
-                    WHERE player_id = $intPlayerID AND item_id = $intItemID AND game_id = '{$intGameId}'";
+                    WHERE player_id = $intPlayerID AND item_id = $intItemID AND game_id = '{$gameId}'";
                 Module::query($query);
             }
             else {
                 //Update the qty
                 $query = "UPDATE player_items 
                     SET qty = $newQty
-                    WHERE player_id = $intPlayerID AND item_id = $intItemID AND game_id = '{$intGameId}'";
+                    WHERE player_id = $intPlayerID AND item_id = $intItemID AND game_id = '{$gameId}'";
                 Module::query($query);
             }
         }
-        else if ($amountOfAdjustment > 0) {
-            //Create a record
-
+        else if ($amountOfAdjustment > 0)
+        {
             $query = "INSERT INTO player_items 
-                (game_id,player_id, item_id, qty) VALUES ({$intGameId},$intPlayerID, $intItemID, $amountOfAdjustment)
+                (game_id,player_id, item_id, qty) VALUES ({$gameId},$intPlayerID, $intItemID, $amountOfAdjustment)
                 ON duplicate KEY UPDATE item_id = $intItemID";
             Module::query($query);
         }
@@ -321,84 +198,36 @@ abstract class Module
         }
 
         if($amountOfAdjustment > 0)
-            Module::processGameEvent($intPlayerID, $intGameId, Module::kLOG_PICKUP_ITEM, $intItemID, $amountOfAdjustment);
+            Module::processGameEvent($intPlayerID, $gameId, Module::kLOG_PICKUP_ITEM, $intItemID, $amountOfAdjustment);
         else
-            Module::processGameEvent($intPlayerID, $intGameId, Module::kLOG_DROP_ITEM, $intItemID, -1*$amountOfAdjustment);
+            Module::processGameEvent($intPlayerID, $gameId, Module::kLOG_DROP_ITEM, $intItemID, -1*$amountOfAdjustment);
     }
 
-
-    /**
-     * Decrement the item_qty at the specified location by the specified amount, default of 1
-     */ 
-    protected function decrementItemQtyAtLocation($intGameId, $intLocationID, $intQty = 1) {
+    protected function decrementItemQtyAtLocation($gameId, $intLocationID, $intQty = 1)
+    {
         //If this location has a null item_qty, decrementing it will still be a null
         $query = "UPDATE locations 
             SET item_qty = item_qty-{$intQty}
-        WHERE location_id = '{$intLocationID}' AND item_qty > 0 AND game_id = '{$intGameId}'";
+        WHERE location_id = '{$intLocationID}' AND item_qty > 0 AND game_id = '{$gameId}'";
         Module::query($query);    	
     }
 
-
-    /**
-     * Adds an item to Locations at the specified latitude, longitude
-     */ 
-    protected function giveItemToWorld($intGameId, $intItemID, $floatLat, $floatLong, $intQty = 1) {
-        //Find any items on the map nearby
-        $clumpingRangeInMeters = 10;
-
-        $query = "SELECT *,((ACOS(SIN($floatLat * PI() / 180) * SIN(latitude * PI() / 180) + 
-            COS($floatLat * PI() / 180) * COS(latitude * PI() / 180) * 
-            COS(($floatLong - longitude) * PI() / 180)) * 180 / PI()) * 60 * 1.1515) * 1609.344
-            AS `distance`, location_id 
-            FROM locations 
-            WHERE type = 'item' AND type_id = '{$intItemID}' AND game_id = '{$intGameId}'
-            HAVING distance<= {$clumpingRangeInMeters}
-        ORDER BY distance ASC"; 	
-            $result = Module::query($query);
-
-        if ($closestLocationWithinClumpingRange = @mysql_fetch_object($result)) {
-            //We have a match
-
-            $query = "UPDATE locations
-                SET item_qty = item_qty + {$intQty}
-            WHERE location_id = {$closestLocationWithinClumpingRange->location_id} AND game_id = '{$intGameId}'";
-            Module::query($query);
-        }
-        else {
-
-            $itemName = $this->getItemName($intGameId, $intItemID);
-            $error = 100; //Use 100 meters
-            $icon_media_id = $this->getItemIconMediaId($intGameId, $intItemID); //Set the map icon = the item's icon
-
-            $query = "INSERT INTO locations (game_id, name, type, type_id, icon_media_id, latitude, longitude, error, item_qty)
-                VALUES ('{$intGameId}', '{$itemName}','Item','{$intItemID}', '{$icon_media_id}', '{$floatLat}','{$floatLong}', '{$error}','{$intQty}')";
-            Module::query($query);
-
-            $newId = mysql_insert_id();
-            //Create a coresponding QR Code
-            QRCodes::createQRCode($intGameId, "Location", $newId, '');
-        }
-    }
-
-
-    /**
-     * Adds a note to Locations at the specified latitude, longitude
-     */ 
-    protected function giveNoteToWorld($intGameId, $noteId, $floatLat, $floatLong) {
-
-        $query = "SELECT * FROM locations WHERE type = 'PlayerNote' AND type_id = '{$noteId}' AND game_id = '{$intGameId}'";	
+    protected function giveNoteToWorld($gameId, $noteId, $floatLat, $floatLong)
+    {
+        $query = "SELECT * FROM locations WHERE type = 'PlayerNote' AND type_id = '{$noteId}' AND game_id = '{$gameId}'";	
         $result = Module::query($query);
 
-        if ($existingNote = @mysql_fetch_object($result)) {
+        if ($existingNote = @mysql_fetch_object($result))
+        {
             //We have a match
-
             $query = "UPDATE locations
                 SET latitude = '{$floatLat}', longitude = '{$floatLong}'
-                WHERE location_id = {$existingNote->location_id} AND game_id = '{$intGameId}'";
+                WHERE location_id = {$existingNote->location_id} AND game_id = '{$gameId}'";
             Module::query($query);
+            $obj = Module::queryObject("SELECT title, owner_id FROM notes WHERE note_id = '{$noteId}'");
         }
-        else {
-
+        else
+        {
             $error = 100; //Use 100 meters
             $query = "SELECT title, owner_id FROM notes WHERE note_id = '{$noteId}'";
             $result = Module::query($query);
@@ -406,18 +235,51 @@ abstract class Module
             $title = $obj->title;
 
             $query = "INSERT INTO locations (game_id, name, type, type_id, icon_media_id, latitude, longitude, error, item_qty, hidden, force_view, allow_quick_travel)
-                VALUES ('{$intGameId}', '{$title}','PlayerNote','{$noteId}', ".Module::kPLAYER_NOTE_DEFAULT_ICON.", '{$floatLat}','{$floatLong}', '{$error}','1',0,0,0)";
+                VALUES ('{$gameId}', '{$title}','PlayerNote','{$noteId}', ".Module::kPLAYER_NOTE_DEFAULT_ICON.", '{$floatLat}','{$floatLong}', '{$error}','1',0,0,0)";
             Module::query($query);
 
             $newId = mysql_insert_id();
-            //Create a coresponding QR Code
-            QRCodes::createQRCode($intGameId, "Location", $newId, '');
         }
-        Module::processGameEvent($obj->owner_id, $intGameId, Module::kLOG_UPLOAD_MEDIA_ITEM, $noteId, $floatLat, $floatLong);
-        Module::processGameEvent($obj->owner_id, $intGameId, Module::kLOG_DROP_NOTE, $noteId, $floatLat, $floatLong);
+        Module::processGameEvent($obj->owner_id, $gameId, Module::kLOG_UPLOAD_MEDIA_ITEM, $noteId, $floatLat, $floatLong);
+        Module::processGameEvent($obj->owner_id, $gameId, Module::kLOG_DROP_NOTE, $noteId, $floatLat, $floatLong);
     }
 
-    protected function metersBetweenLatLngs($lat1, $lon1, $lat2, $lon2) { 
+    public static function saveContentNoAuthentication($gameId, $intObjectContentID, $intFolderID, $strContentType, $intContentID, $intSortOrder)
+    {
+        if ($intObjectContentID) {
+            //This is an update
+            $query = "UPDATE folder_contents
+                SET 
+                folder_id = '{$intFolderID}',
+                          content_type = '{$strContentType}',
+                          content_id = '{$intContentID}',
+                          previous_id = '{$intSortOrder}'
+                              WHERE 
+                              object_content_id = {$intObjectContentID} AND
+                              game_id = {$gameId}
+            ";
+
+            Module::query($query);
+            if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
+            else return new returnData(0, NULL, NULL);
+        }	
+        else {		
+            //This is an insert
+            $query = "INSERT INTO folder_contents 
+                (game_id, folder_id, content_type, content_id, previous_id)
+                VALUES 
+                ('{$gameId}','{$intFolderID}', '{$strContentType}', '{$intContentID}', '{$intSortOrder}')";
+
+            Module::query($query);
+            $newContentID = mysql_insert_id();
+
+            if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
+            else return new returnData(0, $newContentID, NULL);
+        }
+    }
+
+    protected function metersBetweenLatLngs($lat1, $lon1, $lat2, $lon2)
+    { 
         $theta = $lon1 - $lon2; 
         $dist = sin(deg2rad($lat1)) * sin(deg2rad($lat2)) +  cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * cos(deg2rad($theta)); 
         $dist = acos($dist); 
@@ -443,51 +305,37 @@ abstract class Module
         return $locObj;
     }
 
-    /**
-     * Checks if a record Exists
-     **/
-    protected function recordExists($strPrefix, $strTable, $intRecordID){
+    protected function recordExists($gameId, $strTable, $intRecordID)
+    {
         $key = substr($strTable, 0, strlen($strTable)-1);
-        $query = "SELECT * FROM {$strTable} WHERE {$key} = $intRecordID AND game_id = '{$strPrefix}'";
+        $query = "SELECT * FROM {$strTable} WHERE {$key} = $intRecordID AND game_id = '{$gameId}'";
         $rsResult = Module::query($query);
         if (mysql_error()) return FALSE;
         if (mysql_num_rows($rsResult) < 1) return FALSE;
         return true;
     }
 
-    /**
-     * Looks up an item name
-     **/
-    protected function getItemName($strPrefix, $intItemID){
-        $query = "SELECT name FROM items WHERE item_id = $intItemID AND game_id = '{$strPrefix}'";
+    protected function getItemName($gameId, $intItemID)
+    {
+        $query = "SELECT name FROM items WHERE item_id = $intItemID AND game_id = '{$gameId}'";
         $rsResult = Module::query($query);		
         $row = @mysql_fetch_array($rsResult);	
         return $row['name'];
     }
 
-    /**
-     * Looks up an item icon media id
-     **/
-    protected function getItemIconMediaId($strPrefix, $intItemID){
-        $query = "SELECT name FROM items WHERE item_id = $intItemID AND game_id = '{$strPrefix}'";
+    protected function getItemIconMediaId($gameId, $intItemID)
+    {
+        $query = "SELECT name FROM items WHERE item_id = $intItemID AND game_id = '{$gameId}'";
         $rsResult = Module::query($query);		
         $row = @mysql_fetch_array($rsResult);	
         return $row['icon_media_id'];
     }   
 
-    /** 
-     * playerHasLog
-     *
-     * Checks if the specified user has the specified log event in the game
-     *
-     * @return boolean
-     */
-    protected function playerHasLog($strPrefix, $intPlayerID, $strEventType, $strEventDetail) {
-        $intGameID = Module::getGameIdFromPrefix($strPrefix);
-
+    protected function playerHasLog($gameId, $intPlayerID, $strEventType, $strEventDetail)
+    {
         $query = "SELECT 1 FROM player_log 
             WHERE player_id = '{$intPlayerID}' AND
-            game_id = '{$intGameID}' AND
+            game_id = '{$gameId}' AND
             event_type = '{$strEventType}' AND
             event_detail_1 = '{$strEventDetail}' AND
             deleted = 0
@@ -498,62 +346,37 @@ abstract class Module
         else return false;	
     }
 
-
-    /**
-     * Checks if a player has an item with a minimum quantity
-     *
-     * @param integer $gameId The game identifier
-     * @param integer $playerID The player identifier
-     * @param integer $itemId The item identifier
-     * @param integer $minItemQuantity The minimum quantity to qualify, 1 if unspecified
-     * @return bool
-     * @returns TRUE if the player has >= the minimum quantity, FALSE otherwise
-     */     
-    protected function playerHasItem($gameID, $playerID, $itemID, $minItemQuantity) {
+    protected function playerHasItem($gameID, $playerID, $itemID, $minItemQuantity)
+    {
         if (!$minItemQuantity) $minItemQuantity = 1;
         $qty = Module::itemQtyInPlayerInventory($gameID, $playerID, $itemID);
         if ($qty >= $minItemQuantity) return TRUE;
         else return false;
     }		
 
-    protected function playerHasTaggedItem($gameID, $playerID, $tagID, $minItemQuantity) {
+    protected function playerHasTaggedItem($gameID, $playerID, $tagID, $minItemQuantity)
+    {
         if (!$minItemQuantity) $minItemQuantity = 1;
         $qty = Module::itemTagQtyInPlayerInventory($gameID, $playerID, $tagID);
         if ($qty >= $minItemQuantity) return TRUE;
         else return false;
     }		
 
-    /**
-     * Checks the quantity a player has of an item in their inventory
-     *
-     * @param integer $gameId The game identifier
-     * @param integer $playerId The player identifier
-     * @param integer $itemId The item identifier
-     * @return integer
-     * @returns the quantity of the item in the player's inventory
-     */       
-    protected function itemQtyInPlayerInventory($gameId, $playerId, $itemId) {
-        $prefix = Module::getPrefix($gameId);
-        if (!$prefix) return FALSE;
-
+    protected function itemQtyInPlayerInventory($gameId, $playerId, $itemId)
+    {
         $query = "SELECT qty FROM player_items 
             WHERE player_id = '{$playerId}' 
             AND item_id = '{$itemId}' AND game_id = '{$gameId}' LIMIT 1";
 
         $rsResult = Module::query($query);
         $playerItem = mysql_fetch_object($rsResult);
-        if ($playerItem) {
-            return $playerItem->qty;
-        }
-        else {
-            return 0;
-        }
+
+        if ($playerItem) return $playerItem->qty;
+        else             return 0;
     }	    
 
-    protected function itemTagQtyInPlayerInventory($gameId, $playerId, $tagId) {
-        $prefix = Module::getPrefix($gameId);
-        if (!$prefix) return FALSE;
-
+    protected function itemTagQtyInPlayerInventory($gameId, $playerId, $tagId)
+    {
         $query = "SELECT object_id FROM object_tags WHERE tag_id = '{$tagId}' AND object_type = 'ITEM'";
         $result = Module::query($query);
         $qty = 0;
@@ -562,71 +385,52 @@ abstract class Module
         return $qty;
     }	    
 
-    /** 
-     * playerHasUploadedMedia
-     *
-     * Checks if the specified user has uploaded media near the specified location.
-     * NOTE- $mediaType should be Module::kLOG_UPLOAD_MEDIA_ITEM_IMAGE, Module::kLOG_UPLOAD_MEDIA_ITEM_AUDIO, Module::kLOG_UPLOAD_MEDIA_ITEM_VIDEO, or just
-     * Module::kLOG_UPLOAD_MEDIA_ITEM for any
-     * @return boolean
-     */
-
-    //Spelled 'distAnce' wrong in function name and variable name... afraid to change it... the repercussions could be ASTRONOMICAL.
-    protected function playerHasUploadedMediaItemWithinDistence($intGameID, $intPlayerID, $dblLatitude, $dblLongitude, $dblDistenceInMeters, $qty, $mediaType) 
+    protected function playerHasUploadedMediaItemWithinDistance($gameId, $intPlayerID, $dblLatitude, $dblLongitude, $dblDistanceInMeters, $qty, $mediaType) 
     {
-        $prefix = Module::getPrefix($intGameID);
-        if (!$prefix) return false;
-
-        if($dblLatitude == "" || $dblLongitude == "" || $dblDistenceInMeters == "") return false; //MySQL Math segment freaks out if there is nothing in them ('0' is ok)
+        if($dblLatitude == "" || $dblLongitude == "" || $dblDistanceInMeters == "") return false; //MySQL Math segment freaks out if there is nothing in them ('0' is ok)
         $query = "SELECT game_items.*
-            FROM player_log, (SELECT * FROM items WHERE game_id = '{$intGameID}') AS game_items
+            FROM player_log, (SELECT * FROM items WHERE game_id = '{$gameId}') AS game_items
             WHERE 
             player_log.player_id = '{$intPlayerID}' AND
-            player_log.game_id = '{$intGameID}' AND
+            player_log.game_id = '{$gameId}' AND
             player_log.event_type = '". $mediaType ."' AND
             player_log.event_detail_1 = game_items.item_id AND
             player_log.deleted = 0 AND
 
             (((acos(sin(({$dblLatitude}*pi()/180)) * sin((origin_latitude*pi()/180))+cos(({$dblLatitude}*pi()/180)) * 
                     cos((origin_latitude*pi()/180)) * 
-                    cos((({$dblLongitude} - origin_longitude)*pi()/180))))*180/pi())*60*1.1515*1.609344*1000) < {$dblDistenceInMeters}";
+                    cos((({$dblLongitude} - origin_longitude)*pi()/180))))*180/pi())*60*1.1515*1.609344*1000) < {$dblDistanceInMeters}";
         $rsResult = Module::query($query);
         if (mysql_error()) return false;
         if (@mysql_num_rows($rsResult) >= $qty) return true;
 
 
         if($mediaType == Module::kLOG_UPLOAD_MEDIA_ITEM)
-            $query = "SELECT * FROM note_content LEFT JOIN notes ON note_content.note_id = notes.note_id LEFT JOIN (SELECT * FROM locations WHERE game_id = '{$intGameID}') AS game_locations ON notes.note_id = game_locations.type_id WHERE owner_id = '{$intPlayerID}'";
+            $query = "SELECT * FROM note_content LEFT JOIN notes ON note_content.note_id = notes.note_id LEFT JOIN (SELECT * FROM locations WHERE game_id = '{$gameId}') AS game_locations ON notes.note_id = game_locations.type_id WHERE owner_id = '{$intPlayerID}'";
         else if($mediaType == Module::kLOG_UPLOAD_MEDIA_ITEM_IMAGE)
-            $query = "SELECT * FROM note_content LEFT JOIN notes ON note_content.note_id = notes.note_id LEFT JOIN (SELECT * FROM locations WHERE game_id = '{$intGameID}') AS game_locations ON notes.note_id = game_locations.type_id WHERE owner_id = '{$intPlayerID}' AND note_content.type='PHOTO'";
+            $query = "SELECT * FROM note_content LEFT JOIN notes ON note_content.note_id = notes.note_id LEFT JOIN (SELECT * FROM locations WHERE game_id = '{$gameId}') AS game_locations ON notes.note_id = game_locations.type_id WHERE owner_id = '{$intPlayerID}' AND note_content.type='PHOTO'";
         else if($mediaType == Module::kLOG_UPLOAD_MEDIA_ITEM_AUDIO)
-            $query = "SELECT * FROM note_content LEFT JOIN notes ON note_content.note_id = notes.note_id LEFT JOIN (SELECT * FROM locations WHERE game_id = '{$intGameID}') AS game_locations ON notes.note_id = game_locations.type_id WHERE owner_id = '{$intPlayerID}' AND note_content.type='AUDIO'";
+            $query = "SELECT * FROM note_content LEFT JOIN notes ON note_content.note_id = notes.note_id LEFT JOIN (SELECT * FROM locations WHERE game_id = '{$gameId}') AS game_locations ON notes.note_id = game_locations.type_id WHERE owner_id = '{$intPlayerID}' AND note_content.type='AUDIO'";
         else if($mediaType == Module::kLOG_UPLOAD_MEDIA_ITEM_VIDEO)
-            $query = "SELECT * FROM note_content LEFT JOIN notes ON note_content.note_id = notes.note_id LEFT JOIN (SELECT * FROM locations WHERE game_id = '{$intGameID}') AS game_locations ON notes.note_id = game_locations.type_id WHERE owner_id = '{$intPlayerID}' AND note_content.type='VIDEO'";
+            $query = "SELECT * FROM note_content LEFT JOIN notes ON note_content.note_id = notes.note_id LEFT JOIN (SELECT * FROM locations WHERE game_id = '{$gameId}') AS game_locations ON notes.note_id = game_locations.type_id WHERE owner_id = '{$intPlayerID}' AND note_content.type='VIDEO'";
         $queryappendation = "AND (((acos(sin(({$dblLatitude}*pi()/180)) * sin((game_locations.latitude*pi()/180))+cos(({$dblLatitude}*pi()/180)) * 
             cos((game_locations.latitude*pi()/180)) * 
-            cos((({$dblLongitude} - game_locations.longitude)*pi()/180))))*180/pi())*60*1.1515*1.609344*1000) < {$dblDistenceInMeters}";
+            cos((({$dblLongitude} - game_locations.longitude)*pi()/180))))*180/pi())*60*1.1515*1.609344*1000) < {$dblDistanceInMeters}";
         $result = Module::query($query.$queryappendation);
         if (mysql_num_rows($result) >= $qty) return true;
         else return false;
     }	    
 
-    protected function playerHasNote($intGameID, $intPlayerID, $qty)
+    protected function playerHasNote($gameId, $intPlayerID, $qty)
     {
-        $prefix = Module::getPrefix($intGameID);
-        if (!$prefix) return FALSE;
-
         $query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerID}' AND parent_note_id = 0 AND incomplete = '0'";
         $result = Module::query($query);
         if (mysql_num_rows($result) >= $qty) return true;
         return false;
     }
 
-    protected function playerHasNoteWithTag($intGameID, $intPlayerID, $tag, $qty)
+    protected function playerHasNoteWithTag($gameId, $intPlayerID, $tag, $qty)
     {
-        $prefix = Module::getPrefix($intGameID);
-        if (!$prefix) return FALSE;
-
         $query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerID}' AND parent_note_id = 0 AND incomplete = '0'";
         $result = Module::query($query);
         $num = 0;
@@ -641,28 +445,23 @@ abstract class Module
         else
             return false;
     }
-    protected function playerHasNoteWithComments($intGameID, $intPlayerID, $qty)
-    {
-        $prefix = Module::getPrefix($intGameID);
-        if (!$prefix) return FALSE;
 
-        $query = "SELECT note_id FROM notes WHERE game_id = '{$intGameID}' AND owner_id = '{$intPlayerID}' AND incomplete = '0'";
+    protected function playerHasNoteWithComments($gameId, $intPlayerID, $qty)
+    {
+        $query = "SELECT note_id FROM notes WHERE game_id = '{$gameId}' AND owner_id = '{$intPlayerID}' AND incomplete = '0'";
         $result = Module::query($query);
         while($note_id = mysql_fetch_object($result))
         {
-            $query = "SELECT note_id FROM notes WHERE game_id = '{$intGameID}' AND parent_note_id = '{$note_id->note_id}'";
+            $query = "SELECT note_id FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = '{$note_id->note_id}'";
             $res = Module::query($query);
             if (@mysql_num_rows($res) >= $qty) return true;
         }
         return false;
     }
 
-    protected function playerHasNoteWithLikes($intGameID, $intPlayerID, $qty)
+    protected function playerHasNoteWithLikes($gameId, $intPlayerID, $qty)
     {
-        $prefix = Module::getPrefix($intGameID);
-        if (!$prefix) return FALSE;
-
-        $query = "SELECT note_id FROM notes WHERE game_id = '{$intGameID}' AND owner_id = '{$intPlayerID}' AND incomplete = '0'";
+        $query = "SELECT note_id FROM notes WHERE game_id = '{$gameId}' AND owner_id = '{$intPlayerID}' AND incomplete = '0'";
         $result = Module::query($query);
         while($note_id = mysql_fetch_object($result))
         {
@@ -673,31 +472,22 @@ abstract class Module
         return false;
     }
 
-    protected function PlayerHasGivenNoteComments($intGameID, $intPlayerID, $qty)
+    protected function PlayerHasGivenNoteComments($gameId, $intPlayerID, $qty)
     {
-        $prefix = Module::getPrefix($intGameID);
-        if (!$prefix) return FALSE;
-
         $query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerID}' AND parent_note_id != 0";
         $result = Module::query($query);
         if (@mysql_num_rows($result) >= $qty) return true;
         return false;
     }
 
-    /** 
-     * objectMeetsRequirements
-     *
-     * Checks all requirements for the specified object for the specified user
-     * @return boolean
-     */	
-    protected function objectMeetsRequirements ($strPrefix, $intPlayerID, $strObjectType, $intObjectID) {		
-
+    protected function objectMeetsRequirements ($gameId, $intPlayerID, $strObjectType, $intObjectID)
+    {		
         //Fetch the requirements
         $query = "SELECT requirement,
             requirement_detail_1,requirement_detail_2,requirement_detail_3,requirement_detail_4,
             boolean_operator, not_operator
                 FROM requirements 
-                WHERE content_type = '{$strObjectType}' AND content_id = '{$intObjectID}' AND game_id = '{$strPrefix}'";
+                WHERE content_type = '{$strObjectType}' AND content_id = '{$intObjectID}' AND game_id = '{$gameId}'";
         $rsRequirments = Module::query($query);
 
         $andsMet = FALSE;
@@ -710,126 +500,102 @@ abstract class Module
             switch ($requirement['requirement']) {
                 //Log related
                 case Module::kREQ_PLAYER_VIEWED_ITEM:
-                    $requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_ITEM, 
+                    $requirementMet = Module::playerHasLog($gameId, $intPlayerID, Module::kLOG_VIEW_ITEM, 
                             $requirement['requirement_detail_1']);
                     break;
                 case Module::kREQ_PLAYER_VIEWED_NODE:
-                    $requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NODE, 
+                    $requirementMet = Module::playerHasLog($gameId, $intPlayerID, Module::kLOG_VIEW_NODE, 
                             $requirement['requirement_detail_1']);
                     break;
                 case Module::kREQ_PLAYER_VIEWED_NPC:
-                    $requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_NPC, 
+                    $requirementMet = Module::playerHasLog($gameId, $intPlayerID, Module::kLOG_VIEW_NPC, 
                             $requirement['requirement_detail_1']);
                     break;
                 case Module::kREQ_PLAYER_VIEWED_WEBPAGE:
-                    $requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_WEBPAGE, 
+                    $requirementMet = Module::playerHasLog($gameId, $intPlayerID, Module::kLOG_VIEW_WEBPAGE, 
                             $requirement['requirement_detail_1']);
                     break;
                 case Module::kREQ_PLAYER_VIEWED_AUGBUBBLE:
-                    $requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_VIEW_AUGBUBBLE, 
+                    $requirementMet = Module::playerHasLog($gameId, $intPlayerID, Module::kLOG_VIEW_AUGBUBBLE, 
                             $requirement['requirement_detail_1']);
                     break;
                 case Module::kREQ_PLAYER_HAS_RECEIVED_INCOMING_WEBHOOK:
-                    $requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_RECEIVE_WEBHOOK, 
+                    $requirementMet = Module::playerHasLog($gameId, $intPlayerID, Module::kLOG_RECEIVE_WEBHOOK, 
                             $requirement['requirement_detail_1']);
                     break;
                     //Inventory related	
                 case Module::kREQ_PLAYER_HAS_ITEM:
-                    $requirementMet = Module::playerHasItem($strPrefix, $intPlayerID, 
+                    $requirementMet = Module::playerHasItem($gameId, $intPlayerID, 
                             $requirement['requirement_detail_1'], $requirement['requirement_detail_2']);
                     break;
                 case Module::kREQ_PLAYER_HAS_TAGGED_ITEM:
-                    $requirementMet = Module::playerHasTaggedItem($strPrefix, $intPlayerID,
+                    $requirementMet = Module::playerHasTaggedItem($gameId, $intPlayerID,
                             $requirement['requirement_detail_1'], $requirement['requirement_detail_2']);
                     break;
                     //Data Collection
                 case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM:
-                    $requirementMet = Module::playerHasUploadedMediaItemWithinDistence($strPrefix, $intPlayerID, 
+                    $requirementMet = Module::playerHasUploadedMediaItemWithinDistance($gameId, $intPlayerID, 
                             $requirement['requirement_detail_3'], $requirement['requirement_detail_4'], 
                             $requirement['requirement_detail_1'], $requirement['requirement_detail_2'], Module::kLOG_UPLOAD_MEDIA_ITEM);
                     break;
                 case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO:
-                    $requirementMet = Module::playerHasUploadedMediaItemWithinDistence($strPrefix, $intPlayerID, 
+                    $requirementMet = Module::playerHasUploadedMediaItemWithinDistance($gameId, $intPlayerID, 
                             $requirement['requirement_detail_3'], $requirement['requirement_detail_4'], 
                             $requirement['requirement_detail_1'], $requirement['requirement_detail_2'], Module::kLOG_UPLOAD_MEDIA_ITEM_AUDIO);
                     break;
                 case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO:
-                    $requirementMet = Module::playerHasUploadedMediaItemWithinDistence($strPrefix, $intPlayerID, 
+                    $requirementMet = Module::playerHasUploadedMediaItemWithinDistance($gameId, $intPlayerID, 
                             $requirement['requirement_detail_3'], $requirement['requirement_detail_4'], 
                             $requirement['requirement_detail_1'], $requirement['requirement_detail_2'], Module::kLOG_UPLOAD_MEDIA_ITEM_VIDEO);
                     break;
                 case Module::kREQ_PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE:
-                    $requirementMet = Module::playerHasUploadedMediaItemWithinDistence($strPrefix, $intPlayerID, 
+                    $requirementMet = Module::playerHasUploadedMediaItemWithinDistance($gameId, $intPlayerID, 
                             $requirement['requirement_detail_3'], $requirement['requirement_detail_4'], 
                             $requirement['requirement_detail_1'], $requirement['requirement_detail_2'], Module::kLOG_UPLOAD_MEDIA_ITEM_IMAGE);
                     break;
                 case Module::kREQ_PLAYER_HAS_COMPLETED_QUEST:
-                    $requirementMet = Module::playerHasLog($strPrefix, $intPlayerID, Module::kLOG_COMPLETE_QUEST, 
+                    $requirementMet = Module::playerHasLog($gameId, $intPlayerID, Module::kLOG_COMPLETE_QUEST, 
                             $requirement['requirement_detail_1']);
                     break;
                 case Module::kREQ_PLAYER_HAS_NOTE:
-                    $requirementMet = Module::playerHasNote($strPrefix, $intPlayerID, $requirement['requirement_detail_2']);
+                    $requirementMet = Module::playerHasNote($gameId, $intPlayerID, $requirement['requirement_detail_2']);
                     break;
                 case Module::kREQ_PLAYER_HAS_NOTE_WITH_TAG:
-                    $requirementMet = Module::playerHasNoteWithTag($strPrefix, $intPlayerID, $requirement['requirement_detail_1'], $requirement['requirement_detail_2']);
+                    $requirementMet = Module::playerHasNoteWithTag($gameId, $intPlayerID, $requirement['requirement_detail_1'], $requirement['requirement_detail_2']);
                     break;
                 case Module::kREQ_PLAYER_HAS_NOTE_WITH_LIKES:
-                    $requirementMet = Module::playerHasNoteWithLikes($strPrefix, $intPlayerID, $requirement['requirement_detail_2']);
+                    $requirementMet = Module::playerHasNoteWithLikes($gameId, $intPlayerID, $requirement['requirement_detail_2']);
                     break;
                 case Module::kREQ_PLAYER_HAS_NOTE_WITH_COMMENTS:
-                    $requirementMet = Module::playerHasNoteWithComments($strPrefix, $intPlayerID, $requirement['requirement_detail_2']);
+                    $requirementMet = Module::playerHasNoteWithComments($gameId, $intPlayerID, $requirement['requirement_detail_2']);
                     break;
                 case Module::kREQ_PLAYER_HAS_GIVEN_NOTE_COMMENTS:
-                    $requirementMet = Module::playerHasGivenNoteComments($strPrefix, $intPlayerID, $requirement['requirement_detail_2']);
+                    $requirementMet = Module::playerHasGivenNoteComments($gameId, $intPlayerID, $requirement['requirement_detail_2']);
                     break;
-
             }//switch
 
             //Account for the 'NOT's
             if($requirement['not_operator'] == "NOT") $requirementMet = !$requirementMet;
 
-            if ($requirement['boolean_operator'] == "AND" && $requirementMet == FALSE) {
-                return FALSE;
-            }
-
-            if ($requirement['boolean_operator'] == "AND" && $requirementMet == TRUE) {
-                $andsMet = TRUE;
-            }
-
-            if ($requirement['boolean_operator'] == "OR" && $requirementMet == TRUE){
-                return TRUE;
-            }
-
-            if ($requirement['boolean_operator'] == "OR" && $requirementMet == FALSE){
-                $requirementsMet = FALSE;
-            }
+            if ($requirement['boolean_operator'] == "AND" && $requirementMet == FALSE) return FALSE;
+            if ($requirement['boolean_operator'] == "AND" && $requirementMet == TRUE)  $andsMet = TRUE;
+            if ($requirement['boolean_operator'] == "OR"  && $requirementMet == TRUE)  return TRUE;
+            if ($requirement['boolean_operator'] == "OR"  && $requirementMet == FALSE) $requirementsMet = FALSE;
         }
 
-        if (!$requirementsExist) {
-            return TRUE;
-        }
-        if ($andsMet) {
-            return TRUE;
-        }
-        else {
-            return FALSE;
-        }
+        if (!$requirementsExist) return TRUE;
+        if ($andsMet)            return TRUE;
+        else                     return FALSE;
     }	
 
-
-    /** 
-     * applyPlayerStateChanges
-     *
-     * Applies any state changes for the given object
-     * @return boolean. True if a change was made, false otherwise
-     */	
-    protected function applyPlayerStateChanges($strPrefix, $intPlayerID, $strEventType, $strEventDetail) {	
+    protected function applyPlayerStateChanges($gameId, $intPlayerID, $strEventType, $strEventDetail)
+    {	
         $changeMade = FALSE;
 
         //Fetch the state changes
         $query = "SELECT * FROM player_state_changes 
             WHERE event_type = '{$strEventType}'
-            AND event_detail = '{$strEventDetail}' AND game_id = '{$strPrefix}'";
+            AND event_detail = '{$strEventDetail}' AND game_id = '{$gameId}'";
 
         $rsStateChanges = Module::query($query);
 
@@ -839,12 +605,12 @@ abstract class Module
             switch ($stateChange['action']) {
                 case Module::kPSC_GIVE_ITEM:
                     //echo 'Running a GIVE_ITEM';
-                    Module::giveItemToPlayer($strPrefix, $stateChange['action_detail'], $intPlayerID,$stateChange['action_amount']);
+                    Module::giveItemToPlayer($gameId, $stateChange['action_detail'], $intPlayerID,$stateChange['action_amount']);
                     $changeMade = TRUE;
                     break;
                 case Module::kPSC_TAKE_ITEM:
                     //echo 'Running a TAKE_ITEM';
-                    Module::takeItemFromPlayer($strPrefix, $stateChange['action_detail'], $intPlayerID,$stateChange['action_amount']);
+                    Module::takeItemFromPlayer($gameId, $stateChange['action_detail'], $intPlayerID,$stateChange['action_amount']);
                     $changeMade = TRUE;
                     break;
             }
@@ -856,7 +622,6 @@ abstract class Module
     /*
      * All Events are to come through this gateway-
      * Takes events and appends them to the log, completes quests, and fires off webhooks accordingly
-     * EVENT_PIPELINE_START
      */
     public function processGameEvent($playerId, $gameId, $eventType, $eventDetail1='N/A', $eventDetail2='N/A', $eventDetail3='N/A', $eventDetail4='N/A')
     {
@@ -888,29 +653,26 @@ abstract class Module
         }
 
         //Clean up spawnables that ought to be removed after viewing
-        $shouldCheckSpawnablesForDeletion = false;
+        $shouldCheckSpawnablesForDeletion = true;
         switch($eventType)
         {
             case Module::kLOG_VIEW_ITEM:
                 $type = "Item";
-                $shouldCheckSpawnablesForDeletion = true;
                 break;
             case Module::kLOG_VIEW_NODE:
                 $type = "Node";
-                $shouldCheckSpawnablesForDeletion = true;
                 break;
             case Module::kLOG_VIEW_NPC:
                 $type = "Npc";
-                $shouldCheckSpawnablesForDeletion = true;
                 break;
             case Module::kLOG_VIEW_WEBPAGE:
                 $type = "WebPage";
-                $shouldCheckSpawnablesForDeletion = true;
                 break;
             case Module::kLOG_VIEW_AUGBUBBLE:
                 $type = "AugBubble";
-                $shouldCheckSpawnablesForDeletion = true;
                 break;
+            default:
+                $shouldCheckSpawnablesForDeletion = false;
         }
         if($shouldCheckSpawnablesForDeletion)
         {
@@ -925,21 +687,12 @@ abstract class Module
         }
     }
 
-    /*
-     * Simply a cleaner standin for a query inserting into the player log
-     * EVENT_PIPELINE
-     */
     protected function appendLog($playerId, $gameId, $eventType, $eventDetail1='N/A', $eventDetail2='N/A', $eventDetail3='N/A')
     {
         $query = "INSERT INTO player_log (player_id, game_id, event_type, event_detail_1, event_detail_2, event_detail_3) VALUES ({$playerId},{$gameId},'{$eventType}','{$eventDetail1}','{$eventDetail2}','{$eventDetail3}')";
-
         Module::query($query);
     }
 
-    /*
-     * Returns an array of unfinished quests
-     * EVENT_PIPELINE
-     */
     protected function getUnfinishedQuests($playerId, $gameId)
     {
         //Get all quests for game
@@ -973,10 +726,6 @@ abstract class Module
         return $unfinishedQuests;	
     }
 
-    /*
-     * Returns an array of unfired webhooks
-     * EVENT_PIPELINE
-     */
     protected function getUnfiredWebhooks($playerId, $gameId)
     {
         //Get all webhooks for game
@@ -1008,29 +757,18 @@ abstract class Module
         return $unfiredWebhooks;	
     }
 
-    /*
-     * Returns whether a player has completed a quest
-     * EVENT_PIPELINE
-     */
     protected function questIsCompleted($playerId, $gameId, $questId)
     {
         return Module::objectMeetsRequirements($gameId, $playerId, 'QuestComplete', $questId);
     }
 
-    /*
-     * Returns whether a webhook ought to be fired
-     * EVENT_PIPELINE
-     */
     protected function hookShouldBeFired($playerId, $gameId, $webhookId)
     {
         return Module::objectMeetsRequirements($gameId, $playerId, 'OutgoingWebhook', $webhookId);
     }
 
-    /*
-     * Sends off webhook
-     * EVENT_PIPELINE
-     */
-    protected function fireOffWebHook($playerId, $gameId, $webHookId){
+    protected function fireOffWebHook($playerId, $gameId, $webHookId)
+    {
         Module::appendLog($playerId, $gameId, "SEND_WEBHOOK", $webHookId);
 
         $query = "SELECT * FROM web_hooks WHERE web_hook_id = '{$webHookId}' LIMIT 1";
@@ -1041,46 +779,5 @@ abstract class Module
         $url = $webHook->url . "?hook=" . $name . "&wid=" . $webHook->web_hook_id . "&gameid=" . $gameId . "&playerid=" . $playerId; 
         @file_get_contents($url);
     }
-
-    /**
-     * Add a row to the server error log
-     * @returns void
-     */
-    protected function serverErrorLog($message)
-    {
-        $errorLogFile = fopen(Config::serverErrorLog, "a");
-        $errorData = date('c').":\n".$message."\n\n";
-        fwrite($errorLogFile, $errorData);
-        fclose($errorLogFile);
-    }
-
-    /**
-     * Sends an Email
-     * @returns 0 on success
-     */
-    protected function sendEmail($to, $subject, $body) {
-        include_once('../../libraries/phpmailer/class.phpmailer.php');
-
-        if (empty($to)) {
-            return false;
-        }
-
-        $mail = new phpmailer;
-        $mail->PluginDir = '../../libraries/phpmailer';      // plugin directory (eg smtp plugin)
-
-        $mail->CharSet = 'UTF-8';
-        $mail->Subject = substr(stripslashes($subject), 0, 900);
-        $mail->From = 'noreply@arisgames.org';
-        $mail->FromName = 'ARIS Mailer';
-
-        $mail->AddAddress($to, 'ARIS Author');
-        $mail->MsgHTML($body);
-
-
-        $mail->WordWrap = 79;                               // set word wrap
-
-        if ($mail->Send()) return true;
-        else return false;
-
-    }
 }
+?>
