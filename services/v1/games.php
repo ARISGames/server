@@ -615,8 +615,8 @@ class Games extends Module
 
         Module::serverErrorLog("Duplicating Game Id:".$gameId);
 
-        $g = Module::queryObject("SELECT * FROM games WHERE game_id = {$gameId} LIMIT 1");
-        if (!$g) return new returnData(2, NULL, "invalid game id");
+        $game = Module::queryObject("SELECT * FROM games WHERE game_id = {$gameId} LIMIT 1");
+        if (!$game) return new returnData(2, NULL, "invalid game id");
 
         $compatibleName = false;
         $appendNo = 1;
@@ -640,7 +640,7 @@ class Games extends Module
                 $game->map_type, $game->show_player_location,
                 $game->full_quick_travel,
                 $game->inventory_weight_cap, $game->allow_trading, 
-                $editorId, $editorToken);
+                $editorId, $editorToken)->data;
 
         //Remove the tabs created by createGame
         Module::query("DELETE FROM game_tab_data WHERE game_id = {$newGameId}");
