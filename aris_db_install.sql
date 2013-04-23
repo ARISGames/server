@@ -156,6 +156,7 @@ CREATE TABLE `editors` (
   `comments` tinytext NOT NULL,
   `updated` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   `created` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `read_write_token` varchar(64) NOT NULL,
   PRIMARY KEY (`editor_id`),
   UNIQUE KEY `unique_name` (`name`),
   UNIQUE KEY `unique_email` (`email`),
