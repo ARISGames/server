@@ -17,8 +17,8 @@ class EditorFoldersAndContent extends Module
 
     public function getFoldersAndContent($gameId, $editorId, $editorToken)
     {
-        //if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
-            //return new returnData(6, NULL, "Failed Authentication");
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
         //Get the folders
         $query = "SELECT * FROM folders WHERE game_id = '{$gameId}'";
@@ -41,7 +41,7 @@ class EditorFoldersAndContent extends Module
             if($media[$m->media_id]->is_icon)
                 $media[$m->media_id]->type = 'Icon';
             else
-                $media[$m->media_id]->type = 'Media';
+                $media[$m->media_id]->type = 'Image';
             if($media[$m->media_id]->game_id == 0)
                 $media[$m->media_id]->is_default = 1;
             else
