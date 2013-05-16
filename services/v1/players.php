@@ -123,7 +123,7 @@ class Players extends Module
 
     function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
     {
-        if($mediaId != 0)
+        if($mediaId > 0)
             $query = "UPDATE players SET display_name = '{$name}', media_id = {$mediaId} WHERE player_id = {$playerId}";
         else
             $query = "UPDATE players SET display_name = '{$name}' WHERE player_id = {$playerId}";

@@ -89,7 +89,15 @@ class Media extends Module
 
     public function createMedia($gameId, $strName, $strFileName, $boolIsIcon)
     {
-        if($gameId == 'player') $gameId = '';//gameId column = int, so this will conform for sql query
+        if($gameId == "player")
+        {
+            $gameId = 0;
+            $strFileName = "player/".$strFileName;
+        }
+        else
+        {
+            $strFileName = $gameId."/".$strFileName;
+        }
 
         $strName = addslashes($strName);
 
@@ -98,15 +106,15 @@ class Media extends Module
 
         $query = "INSERT INTO media 
             (game_id, name, file_path, is_icon)
-            VALUES ('{$gameId}','{$strName}', '".$gameId."/".$strFileName."',{$boolIsIcon})";
+            VALUES ('{$gameId}','{$strName}', '".$strFileName."',{$boolIsIcon})";
 
         Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error:".mysql_error());
 
         $media->media_id = mysql_insert_id();
         $media->name = $strName;
-        $media->file_path = $gameId."/".$strFileName;
-        $media->file_name = $gameId."/".$strFileName; //this is for legacy reasons... Phil 10/12/2012
+        $media->file_path = $strFileName;
+        $media->file_name = $strFileName; //this is for legacy reasons... Phil 10/12/2012
         $media->is_icon = $boolIsIcon;
         $media->url_path = Config::gamedataWWWPath . "/" . Config::gameMediaSubdir;
 
