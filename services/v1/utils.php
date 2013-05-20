@@ -3,7 +3,7 @@ require_once('../../config.class.php');
 
 abstract class Utils
 {
-    public function connect()
+    protected function connect()
     {
         $this->conn = @mysql_connect(Config::dbHost, Config::dbUser, Config::dbPass);
         if (!$this->conn)
@@ -16,7 +16,7 @@ abstract class Utils
         Utils::query("set charset utf8");
     }
 
-    public function query($query)
+    protected function query($query)
     {
         $r = mysql_query($query);
         if(mysql_error()) 
@@ -27,14 +27,14 @@ abstract class Utils
         return $r;
     }
 
-    public function queryObject($query)
+    protected function queryObject($query)
     {
         if($r = Utils::query($query))
             return mysql_fetch_object($r);
         return new stdClass();
     }
 
-    public function queryArray($query)
+    protected function queryArray($query)
     {
         if($r = Utils::query($query))
         {
@@ -46,7 +46,7 @@ abstract class Utils
         return array();
     }
 
-    public function findLowestAvailableIdFromTable($tableName, $idColumnName)
+    protected function findLowestAvailableIdFromTable($tableName, $idColumnName)
     {
         $query = "
             SELECT  $idColumnName
@@ -136,7 +136,7 @@ abstract class Utils
     }
 
     /* stolen from http://www.lateralcode.com/creating-a-random-string-with-php/ */
-    public function rand_string($length) 
+    protected function rand_string($length) 
     {
         $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";  
         $size = strlen($chars);
