@@ -1,0 +1,203 @@
+<<<<<<< HEAD
+Installing and using your own ARIS Server
+
+
+
+INSTALLING THE SERVER
+
+1. Checkout the "server" derectory and it's contents to your web server, renaming it whatever you wish. 
+For this example we will say you called it "aris_server" and it is available at http://myserver.com/aris_server
+
+	svn checkout https://arisgames.googlecode.com/svn/trunk/server aris_server
+
+2. Create a schema in your database for ARIS to use and assign it a username and password. 
+For this example we will say you called the schema "aris_schema" and game it the user "aris_username"
+
+3. Copy aris_server/services/aris/config.class.template to aris_server/services/aris/config.class
+
+4. Edit config.class to match your database configuration from above.
+
+5. Import the aris_server/aris_db_install.sql file into your new schema. 
+
+	mysql -u aris_username -p aris_schema < aris_db_install
+
+6. Run the DB update script to make sure everything is up to snuff (this might produce a lot of errors, but you shouldn't need to mind them.
+
+	http://myserver.com/aris_server/json.php/aris_1_5.games.upgradeGameDatabases/0
+
+7. Set file permissions so that the web server can write to the gamedata directory
+
+	chmod -R apache:apache aris_server
+	chmod -R 775 aris_server
+	chmod -R u+s gamedata
+ 
+
+BUILDING THE CLIENT
+
+You really shouldn't need to rebuild the client unless you want to change the default server it points to. 
+
+That is done by editing the root.plist file in the Settings Bundle.
+=======
+Setup Guide for ARIS Server
+
+This guide will explain in detail how to setup an ARIS server.
+More information about ARIS can be found at http://arisgames.org.
+
+This server serves two functions: 
+- to allow for the creation and editing of ARIS games
+- to serve as a gateway for the clients (mobile devices) playing an ARIS game.  
+
+This guide is broken up into two parts: the server setup and the editor setup.
+
+
+The server:
+
+The main components of the server:
+- Apache webserver: this utilizes PHP to communicate with the clients.
+- AMFPHP: the go between for the clients, editor and the server.
+- MySQL: the database where game, editor and player data is stored.
+
+Implementation for the server:
+(Note: any OS should work, and these versions are the ones used in this example)
+- CentOS 5.9
+- MySQL 5.0.95
+- Apache 2
+- PHP 5.1.6
+
+Server setup notes:
+- All server functions used by ARIS can be tested in the service browser.  
+  Changes made in the service browser will be reflected in the database, so use at your own risk!
+- This guide assumes you are using some flavor of linux; if not, adjust the commands accordingly.
+
+Server setup guide:
+1. Install the required packages:
+   [root@aris]# yum install mysql mysql-server httpd php subversion
+
+
+2. Create the MySQL database for ARIS:
+   [root@aris]# service mysqld start
+   [root@aris]# mysql -u root
+   mysql>create database aris;
+   mysql>use mysql;
+   
+
+mysql>INSERT INTO user (Host,User,Password) VALUES('%','aris','yourpassword'));
+   mysql>grant usage on *.* to 'aris'@'localhost' identified by 'yourpassword';
+   mysql>flush privileges;
+
+
+3. Create the directories used by the webserver:
+   [root@aris]# mkdir /var/www/html/server
+   [root@aris]# cd /var/www/html/server
+
+
+4. Use subversion to obtain the current server package from ARIS's repository:
+   [root@aris]# svn checkout https://arisgames.googlecode.com/svn/trunk/server .
+
+
+5. Copy ~server/config.class.php.template to ~server/config.class.php and edit as follows:
+   (mySQLBinPath variable may differ depending on your system)
+   ...
+   const dbUser = 'aris';
+   const dbPass = 'yourpassword';
+   const dbSchema = 'aris';
+   const dbHost = 'localhost';
+   const adminEmail = 'youremail@yourdomain.com'; //This address will be notified of server errors
+   const WWWPath           = 'http://yourdomain.com';
+   const serverWWWPath     = 'http://yourdomain.com/';
+   const gamedataWWWPath   = 'http://yourdomain.com/server/gamedata';
+   const playerdataWWWPath = 'http://yourdomain.com/server/playerdata';
+   const gamedataFSPath    = '/var/www/html/server/gamedata'; //Make Sure this directory is writable
+   const playerdataFSPath  = '/var/www/html/server/playerdata'; //Make Sure this directory is writable
+   const serverErrorLog    = '/var/log/httpd/aris_error_log'; //Make sure this file is writable
+   const gameMediaSubdir   = ''; //if this is used, you must include the trailing slash
+   const mysqlBinPath      = '/usr/bin';
+   ...
+
+
+6. Import aris_db_install.sql into the database:
+   [root@aris]# mysql .u aris .p aris < aris_db_install.sql
+   
+   
+7. Enable 'pass by referencing' for PHP:
+   In /etc/php.ini, find the line 'allow_call_time_pass_reference = Off'
+   Change this to 'On'
+
+
+8. Set file permissions for the server directories:
+   [root@aris]# cd /var/www/html/
+   [root@aris]# chown .R apache.apache server
+   [root@aris]# chmod .R 775 server
+   [root@aris]# chmod .R u+s server/gamedata
+
+
+9. Ensure both httpd and mysqld are started:
+   [root@aris]# service httpd restart
+   [root@aris]# chkconfig httpd on
+   [root@aris]# service mysqld restart
+   [root@aris]# chkconfig mysqld on
+
+10. The service browser can be used to test the server, and is accessible at:
+   http://yourdomain.com/server/browser/
+
+
+
+
+The editor:
+
+The main components of the editor:
+- main.html: this page executes the flex-based editor in a web browser.
+- MySQL: the database where game, editor and player data is stored.
+
+Implementation for the editor:
+- Flash-enabled web browser
+- Flashbuilder 4.7
+
+Editor setup notes:
+- Update(4/30/2013) Editor cannot be run from a webserver due to deprecated Google Map Flash API key.
+  Unless you already have a Flash API key, you will only be able to get the editor to compile and run locally.
+- We used Flashbuilder 4.7 to compile the Flex project, but FlexSDK would work as well.
+
+Editor setup guide:
+1. Use subversion to obtain the current flexEditor directory from ARIS's repository:
+   [root@aris]# svn co https://arisgames.googlecode.com/svn/trunk/flexEditor
+
+
+2. In Flashbuilder, create a new Flex project
+ 
+
+3. Choose a name for your project and under 'Flex SDK version' select Flex 3.6A
+   (although any 3.x version should work)
+ 
+
+4. Add the files you downloaded from the ARIS flexEditor repository to the project
+ 
+
+5. The main mxml file from the ARIS respository is named 'main.mxml'.
+   In the src directory of the flex project, remove 'YourProjectName.mxml'.
+   Rename 'main.mxml' to 'YourProjectName.mxml'.
+ 
+
+6. Verify that 'services-config.xml' is inside the src/ directory of the project.
+ 
+
+7. In the same window, right-click 'Flex 3.6A' and select 'Properties'.
+   Then select 'Flex Compiler' from the list on the left panel.
+   Add '-services services-config.xml' to the 'Additional compiler arguments'.
+ 
+
+8. Now open org.arisgames.editor/util/AppConstants.as, and alter the following:
+      APPLICATION_ENVIRONMENT_ROOT_URL
+   This variable should be set to 'http://yourdomain.com/server'.
+
+
+9. Edit src/services-config.xml on  line 22 so it points to your server:
+   ...
+   <endpoint uri="http://yourdomain.com/server/gateway.php" ...
+   ...
+
+
+10. Now  you need only change the output directory in the project settings.
+    This is where the editor will be compiled to.
+
+>>>>>>> 05382678dc4a0a491d32fd0ea8c71c8ed1bd25c1
