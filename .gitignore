@@ -1,0 +1,8 @@
+config.class.php
+gamedata/*
+!gamedata/0
+!gamedata/player
+gamedata/player/*
+services/v1/samples/yoimap
+.AppleDouble
+.DS_Store
