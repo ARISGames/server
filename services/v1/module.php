@@ -76,7 +76,12 @@ abstract class Module extends Utils
     //constants for note icon id
     const kPLAYER_NOTE_DEFAULT_ICON = '94';
 
-    public function authenticateEditor($editorId, $token, $permissionReq)
+    public function Module()
+    {
+        Utils::connect();
+    }	
+
+    protected function authenticateEditor($editorId, $token, $permissionReq)
     {
         $permissionReq = addslashes($permissionReq);
         $token         = addslashes($token);
@@ -88,7 +93,8 @@ abstract class Module extends Utils
         Utils::serverErrorLog("Failed Editor Authentication!");
         return false;
     }
-    public function authenticateGameEditor($gameId, $editorId, $token, $permissionReq)
+
+    protected function authenticateGameEditor($gameId, $editorId, $token, $permissionReq)
     {
         $permissionReq = addslashes($permissionReq);
         $token         = addslashes($token);
@@ -100,11 +106,6 @@ abstract class Module extends Utils
         Utils::serverErrorLog("Failed Game Editor Authentication!");
         return false;
     }
-
-    public function Module()
-    {
-        Utils::connect();
-    }	
 
     protected function giveItemToPlayer($gameId, $intItemID, $intPlayerID, $qtyToGive=1)
     {
@@ -244,7 +245,7 @@ abstract class Module extends Utils
         Module::processGameEvent($obj->owner_id, $gameId, Module::kLOG_DROP_NOTE, $noteId, $floatLat, $floatLong);
     }
 
-    public static function saveContentNoAuthentication($gameId, $intObjectContentID, $intFolderID, $strContentType, $intContentID, $intSortOrder)
+    protected static function saveContentNoAuthentication($gameId, $intObjectContentID, $intFolderID, $strContentType, $intContentID, $intSortOrder)
     {
         if ($intObjectContentID) {
             //This is an update
@@ -623,7 +624,7 @@ abstract class Module extends Utils
      * All Events are to come through this gateway-
      * Takes events and appends them to the log, completes quests, and fires off webhooks accordingly
      */
-    public function processGameEvent($playerId, $gameId, $eventType, $eventDetail1='N/A', $eventDetail2='N/A', $eventDetail3='N/A', $eventDetail4='N/A')
+    protected function processGameEvent($playerId, $gameId, $eventType, $eventDetail1='N/A', $eventDetail2='N/A', $eventDetail3='N/A', $eventDetail4='N/A')
     {
         //Module::serverErrorLog("Module::processGameEvent: playerId:$playerId, gameId:$gameId, eventType:$eventType, eventDetail1:$eventDetail1, eventDetail2:$eventDetail2, eventDetail3:$eventDetail3, eventDetail4:$eventDetail4");
         Module::appendLog($playerId, $gameId, $eventType, $eventDetail1, $eventDetail2, $eventDetail3);
