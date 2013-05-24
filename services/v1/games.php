@@ -2,6 +2,7 @@
 require_once("module.php");
 require_once("media.php");
 require_once("quests.php");
+require_once("conversations.php");
 
 class Games extends Module
 {	
@@ -610,9 +611,13 @@ class Games extends Module
 
     public function duplicateGame($gameId, $editorId, $editorToken)
     {
+
+	set_time_limit(300);
+
         if(!Module::authenticateEditor($editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
+	Conversations::searchGameForErrors($gameId);
         Module::serverErrorLog("Duplicating Game Id:".$gameId);
 
         $game = Module::queryObject("SELECT * FROM games WHERE game_id = {$gameId} LIMIT 1");
