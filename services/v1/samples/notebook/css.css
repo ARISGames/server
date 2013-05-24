@@ -4,6 +4,11 @@ div
     /*border:solid black 1px;*/
 }
 
+body
+{
+	min-width:900px;
+}
+
 #message
 {
     display:block;
