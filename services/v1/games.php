@@ -256,6 +256,8 @@ class Games extends Module
                     NOW())";
 
         Module::query($query);
+        Module::serverErrorLog("Debugging Duplicate Game: $query");
+
         if (mysql_error())  return new returnData(6, NULL, "cannot create game record using SQL: $query");
         $newGameId = mysql_insert_id();
 
@@ -835,6 +837,15 @@ class Games extends Module
 
             $query = "UPDATE spawnables SET type_id = {$newId} WHERE game_id = '{$newGameId}' AND type = 'Node' AND type_id = {$row->node_id}";
             Module::query($query);
+
+            if ($row->node_id == $game->on_launch_node_id) {
+                $query = "UPDATE games SET on_launch_node_id = {$newId} WHERE game_id = '{$newGameId}'";
+                Module::query($query);
+            }
+            if ($row->node_id == $game->game_complete_node_id) {
+                $query = "UPDATE games SET game_complete_node_id = {$newId} WHERE game_id = '{$newGameId}'";
+                Module::query($query);
+            }
         }
 
         $newItemIds = array();
