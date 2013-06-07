@@ -18,6 +18,20 @@ class Games extends Module
         return new returnData(0, $game);
     }
 
+    public function getLogsForGame($gameId, $lastLogId)
+    {
+
+	$timeLimitInMinutes = 20;
+
+	$query;
+        if($lastLogId == 0) $query = "SELECT * FROM player_log WHERE game_id = '{$gameId}' AND deleted = 0 AND timestamp >= (CURDATE() - INTERVAL '{$timeLimitInMinutes}' MINUTE)";
+	else $query = "SELECT * FROM player_log WHERE game_id = '{$gameId}' AND deleted = 0 AND id > '{$lastLogId}'";
+        $result = Module::query($query);
+
+        if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+        return new returnData(0, $result);	
+    }
+
     public function getGamesForPlayerAtLocation($playerId, $latitude, $longitude, $maxDistance=99999999, $locational, $includeGamesinDevelopment)
     {
         if ($includeGamesinDevelopment) $query = "

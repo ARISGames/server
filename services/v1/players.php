@@ -152,7 +152,7 @@ class Players extends Module
     {
         $timeLimitInMinutes = 20;
 
-        $query = "SELECT p.player_id, p.user_name, p.latitude, p.longitude, pl.timestamp FROM (SELECT * FROM players WHERE players.show_on_map = '1' AND players.last_game_id = '{$gameId}' AND players.player_id != '{$intPlayerID}') as p JOIN (SELECT * FROM player_log WHERE player_log.game_id = '{$gameId}' AND player_log.timestamp > DATE_SUB( NOW(), INTERVAL $timeLimitInMinutes MINUTE )) as pl ON p.player_id = pl.player_id WHERE (p.latitude != 0 OR p.longitude != 0) GROUP BY p.player_id;";
+        $query = "SELECT p.player_id, p.media_id, p.user_name, p.display_name, pl.event_detail_1 as 'latitude', pl.event_detail_2 as 'longitude', pl.timestamp FROM (SELECT player_id, event_detail_1, event_detail_2, timestamp FROM player_log WHERE game_id = '{$gameId}' AND event_type = 'MOVE' AND deleted = 0  AND timestamp >= (CURDATE() - INTERVAL '{$timeLimitInMinutes}' MINUTE) GROUP BY player_id ORDER BY timestamp DESC) AS pl JOIN (SELECT * FROM players WHERE players.player_id != '{$intPlayerID}' AND players.show_on_map = '1')  AS p ON pl.player_id = p.player_id";
 
         $rs = Module::query($query);
 

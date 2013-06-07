@@ -14,7 +14,7 @@ class Locations extends Module
         return new returnData(0, $rsResult);	
     }
 
-    public function getAllImageMatchEntriesForLocation($gameId, $intLocationID)
+   public function getAllImageMatchEntriesForLocation($gameId, $intLocationID)
     {
         $query = "SELECT match_media_id FROM qrcodes WHERE game_id = {$gameId} AND link_id = {$intLocationID}";
         $result = Module::query($query);
