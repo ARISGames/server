@@ -699,5 +699,86 @@ class Players extends Module
             QRCodes::createQRCode($gameId, "Location", $newId, '');
         }
     }
+
+    public function getReadablePlayerLogsForGame($gameId, $minutes)
+    {
+        $logs = Module::queryArray("SELECT players.user_name, players.display_name, pl.timestamp, pl.event_type, pl.event_detail_1, pl.event_detail_2 FROM (SELECT * FROM player_log WHERE game_id = $gameId AND (timestamp BETWEEN NOW() - INTERVAL $minutes MINUTE AND NOW()) AND event_type != 'MOVE') AS pl LEFT JOIN players ON pl.player_id = players.player_id");
+        for($i = 0; $i < count($logs); $i++)
+        {
+            switch($logs[$i]->event_type)
+            {
+                case 'LOGIN': //ignore
+                    break;
+                case 'MOVE': //ignore
+                    break;
+                case 'PICKUP_ITEM':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT name FROM items WHERE game_id = $gameId AND item_id = ".$logs[$i]->event_detail_1)->name;
+                    break;
+                case 'DROP_ITEM':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT name FROM items WHERE game_id = $gameId AND item_id = ".$logs[$i]->event_detail_1)->name;
+                    break;
+                case 'DROP_NOTE':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT title FROM notes WHERE game_id = $gameId AND note_id = ".$logs[$i]->event_detail_1)->title;
+                    break;
+                case 'DESTROY_ITEM':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT name FROM items WHERE game_id = $gameId AND item_id = ".$logs[$i]->event_detail_1)->name;
+                    break;
+                case 'VIEW_ITEM':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT name FROM items WHERE game_id = $gameId AND item_id = ".$logs[$i]->event_detail_1)->name;
+                    break;
+                case 'VIEW_NODE':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT name FROM nodes WHERE game_id = $gameId AND node_id = ".$logs[$i]->event_detail_1)->name;
+                    break;
+                case 'VIEW_NPC':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT name FROM npcs WHERE game_id = $gameId AND npc_id = ".$logs[$i]->event_detail_1)->name;
+                    break;
+                case 'VIEW_WEBPAGE':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT name FROM web_pages WHERE game_id = $gameId AND web_page_id = ".$logs[$i]->event_detail_1)->name;
+                    break;
+                case 'VIEW_AUGBUBBLE':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT name FROM aug_bubbles WHERE game_id = $gameId AND aug_bubble_id = ".$logs[$i]->event_detail_1)->name;
+                    break;
+                case 'VIEW_MAP': //no event details
+                    break;
+                case 'VIEW_QUESTS': //no event details
+                    break;
+                case 'VIEW_INVENTORY': //no event details
+                    break;
+                case 'ENTER_QRCODE': //no event details
+                    break;
+                case 'UPLOAD_MEDIA_ITEM': //no event details
+                    break;
+                case 'UPLOAD_MEDIA_ITEM_IMAGE': //no event details
+                    break;
+                case 'UPLOAD_MEDIA_ITEM_AUDIO': //no event details
+                    break;
+                case 'UPLOAD_MEDIA_ITEM_VIDEO': //no event details
+                    break;
+                case 'RECEIVE_WEBHOOK': //no event details
+                    break;
+                case 'SEND_WEBHOOK': //no event details
+                    break;
+                case 'COMPLETE_QUEST':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT name FROM quests WHERE game_id = $gameId AND quest_id = ".$logs[$i]->event_detail_1)->name;
+                    break;
+                case 'GET_NOTE':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT title FROM notes WHERE game_id = $gameId AND note_id = ".$logs[$i]->event_detail_1)->title;
+                    break;
+                case 'GIVE_NOTE_LIKE':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT title FROM notes WHERE game_id = $gameId AND note_id = ".$logs[$i]->event_detail_1)->title;
+                    break;
+                case 'GET_NOTE_LIKE':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT title FROM notes WHERE game_id = $gameId AND note_id = ".$logs[$i]->event_detail_1)->title;
+                    break;
+                case 'GIVE_NOTE_COMMENT':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT title FROM notes WHERE game_id = $gameId AND note_id = ".$logs[$i]->event_detail_1)->title;
+                    break;
+                case 'GET_NOTE_COMMENT':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT title FROM notes WHERE game_id = $gameId AND note_id = ".$logs[$i]->event_detail_1)->title;
+                    break;
+            }
+        }
+        return new returnData(0, $logs);
+    }
 }
 ?>
