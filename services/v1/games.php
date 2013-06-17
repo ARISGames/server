@@ -633,7 +633,8 @@ class Games extends Module
         if(!Module::authenticateEditor($editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
-	Conversations::searchGameForErrors($gameId);
+	$errorString = Conversations::searchGameForErrors($gameId);
+	if($errorString) return new returnData(3, NULL, $errorString);
         Module::serverErrorLog("Duplicating Game Id:".$gameId);
 
         $game = Module::queryObject("SELECT * FROM games WHERE game_id = {$gameId} LIMIT 1");
@@ -1181,9 +1182,9 @@ class Games extends Module
         return $game;
     }
 
-    public function getReadablePlayerLogsForGame($gameId, $minutes)
+    public function getReadablePlayerLogsForGame($gameId, $seconds)
     {
-        $logs = Module::queryArray("SELECT players.user_name, players.display_name, pl.timestamp, pl.event_type, pl.event_detail_1, pl.event_detail_2 FROM (SELECT * FROM player_log WHERE game_id = $gameId AND (timestamp BETWEEN NOW() - INTERVAL $minutes MINUTE AND NOW()) AND event_type != 'MOVE') AS pl LEFT JOIN players ON pl.player_id = players.player_id");
+        $logs = Module::queryArray("SELECT players.user_name, players.display_name, pl.timestamp, pl.event_type, pl.event_detail_1, pl.event_detail_2 FROM (SELECT * FROM player_log WHERE game_id = $gameId AND (timestamp BETWEEN NOW() - INTERVAL $seconds SECOND AND NOW()) AND event_type != 'MOVE') AS pl LEFT JOIN players ON pl.player_id = players.player_id");
         for($i = 0; $i < count($logs); $i++)
         {
             switch($logs[$i]->event_type)
