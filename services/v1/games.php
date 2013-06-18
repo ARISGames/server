@@ -625,9 +625,11 @@ class Games extends Module
         if(!Module::authenticateEditor($editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
-	$errorString = Conversations::searchGameForErrors($gameId);
-	if($errorString) return new returnData(3, NULL, $errorString);
-        Module::serverErrorLog("Duplicating Game Id:".$gameId);
+	//Add back in when requirements not being deleted is fixed, recheck for other issues
+	//$errorString = Conversations::searchGameForErrors($gameId);
+	//if($errorString) return new returnData(3, NULL, $errorString);
+        
+	Module::serverErrorLog("Duplicating Game Id:".$gameId);
 
         $game = Module::queryObject("SELECT * FROM games WHERE game_id = {$gameId} LIMIT 1");
         if (!$game) return new returnData(2, NULL, "invalid game id");
