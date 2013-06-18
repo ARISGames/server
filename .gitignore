@@ -2,6 +2,7 @@ config.class.php
 gamedata/*
 !gamedata/0
 !gamedata/player
+gamedata/0/aris*
 gamedata/player/*
 gamedataNFS
 newTest/human/results.txt
