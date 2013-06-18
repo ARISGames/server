@@ -634,7 +634,7 @@ class Games extends Module
             return new returnData(6, NULL, "Failed Authentication");
 
 	$errorString = Conversations::searchGameForErrors($gameId);
-	if($errorString) return new returnData(3, NULL. $errorString);
+	if($errorString) return new returnData(3, NULL, $errorString);
         Module::serverErrorLog("Duplicating Game Id:".$gameId);
 
         $game = Module::queryObject("SELECT * FROM games WHERE game_id = {$gameId} LIMIT 1");
