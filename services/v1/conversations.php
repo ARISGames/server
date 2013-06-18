@@ -129,9 +129,6 @@ class Conversations extends Module
 
 	public function searchGameForErrors($gid){
 
-
-	Module::serverErrorLog("Started game check method");
-
 		//     $query = "SELECT name FROM games WHERE game_id = {$gid}";
 		//     $name = Module::query($query);
 
@@ -202,7 +199,7 @@ class Conversations extends Module
 			}
 		}
 
-		$query = "SELECT * FROM {$gid}_player_state_changes";
+		$query = "SELECT * FROM player_state_changes";
 		$resultMain = Module::query($query);
 		while($resultMain && $row = mysql_fetch_object($resultMain)){ 
 			if($row->event_type == "VIEW_ITEM"){
@@ -257,7 +254,7 @@ class Conversations extends Module
 			}
 		}
 
-		$query = "SELECT * FROM node WHERE game_id = {$gid}s";
+		$query = "SELECT * FROM nodes WHERE game_id = {$gid}";
 		$result = Module::query($query);
 		while($result && $row = mysql_fetch_object($result)) {
 			if($row->text){
@@ -287,7 +284,5 @@ class Conversations extends Module
 				}
 			}
 		}  
-
-	Module::serverErrorLog("Finished game check method");
 	}
 }
