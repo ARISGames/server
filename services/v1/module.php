@@ -134,6 +134,12 @@ abstract class Module extends Utils
         }
     }
 
+    protected function getPlayerCountForGame($gameId)
+    {
+        $countObj = Module::queryObject("SELECT COUNT(DISTINCT player_id) AS count FROM player_log WHERE game_id = $gameId AND timestamp BETWEEN DATE_SUB(NOW(), INTERVAL 20 MINUTE) AND NOW()");
+        return new returnData(0, $countObj);
+    }
+
     protected function setItemCountForPlayer($gameId, $intItemID, $intPlayerID, $qty)
     {
         $currentQty = Module::itemQtyInPlayerInventory($gameId, $intPlayerID, $intItemID);
