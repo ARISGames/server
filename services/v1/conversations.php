@@ -129,25 +129,28 @@ class Conversations extends Module
 
 	public function searchGameForErrors($gid){
 
+
+	Module::serverErrorLog("Started game check method");
+
 		//     $query = "SELECT name FROM games WHERE game_id = {$gid}";
-		//     $name = mysql_query($query);
+		//     $name = Module::query($query);
 
 		//return "\nLooking for problems in {$name}\nNote: This check does not quarantee there are no errors in your game, but only checks for a few common mistakes.\n";	
 
 		$query = "SELECT * FROM requirements WHERE game_id = {$gid}";
-		$resultMain = mysql_query($query);
+		$resultMain = Module::query($query);
 		while($resultMain && $row = mysql_fetch_object($resultMain)){ 
 			if(!$row->requirement_detail_1){
 				if($row->requirement == "PLAYER_HAS_ITEM" || $row->requirement == "PLAYER_VIEWED_ITEM"){
 					if(!($row->content_type == "Node")) return "\nThere is a requirement of a {$row->content_type} with id: {$row->content_id} that doesn't specify which item the player needs to have/have viewed.\n";	
 					else{
-						$scriptTitle = mysql_query("SELECT title FROM nodes WHERE game_id = {$gid} AND node_id = {$row->content_id}");
+						$scriptTitle = Module::query("SELECT title FROM nodes WHERE game_id = {$gid} AND node_id = {$row->content_id}");
 						return "\nThere is a requirement of a {$row->content_type} with the title of {$scriptTitle} that doesn't specify which item the player needs to have/have viewed.\n";	
 					}
 					if(!$row->requirement_detail_2 && $row->requirement == "Player_HAS_ITEM"){
 						if(!($row->content_type == "Node")) return "\nThere is a requirement of a {$row->content_type} with id: {$row->content_id} that requires the player has a certain item, but not the quantity of that item needed.\n";	
 						else{
-							$scriptTitle = mysql_query("SELECT title FROM nodes WHERE game_id = {$gid} AND node_id = {$row->content_id}");
+							$scriptTitle = Module::query("SELECT title FROM nodes WHERE game_id = {$gid} AND node_id = {$row->content_id}");
 							return "\nThere is a requirement of a {$row->content_type} with the title of {$scriptTitle} that requires that the player has a certain item, but not the quantity of that item neeeded.\n";	
 						}
 					}
@@ -155,21 +158,21 @@ class Conversations extends Module
 				else if($row->requirement == "PLAYER_VIEWED_NODE"){
 					if(!($row->content_type == "Node")) return "\nThere is a requirement of a {$row->content_type} with id: {$row->content_id} that doesn't specify which node the player needed to view in order to satisfy that requirement.\n";	
 					else{
-						$scriptTitle = mysql_query("SELECT title FROM nodes WHERE game_id = {$gid} AND node_id = {$row->content_id}");
+						$scriptTitle = Module::query("SELECT title FROM nodes WHERE game_id = {$gid} AND node_id = {$row->content_id}");
 						return "\nThere is a requirement of a {$row->content_type} with the title of  {$scriptTitle} that doesn't specify which node the player needed to view in order to satisfy that requirement.\n";	
 					}
 				}
 				else if($row->requirement == "PLAYER_VIEWED_NPC"){
 					if(!($row->content_type == "Node")) return "\nThere is a requirement of a {$row->content_type} with id: {$row->content_id} that doesn't specify which character the player needed to view in order to satisfy that requirement.\n";	
 					else{
-						$scriptTitle = mysql_query("SELECT title FROM nodes WHERE game_id = {$gid} AND node_id = {$row->content_id}");
+						$scriptTitle = Module::query("SELECT title FROM nodes WHERE game_id = {$gid} AND node_id = {$row->content_id}");
 						return "\nThere is a requirement of a {$row->content_type} with the title of {$scriptTitle} that doesn't specify which character the player needed to view in order to satisfy that requirement.\n";	
 					}
 				}
 				else if($row->requirement == "PLAYER_VIEWED_WEBPAGE"){
 					if(!($row->content_type == "Node")) return "\nThere is a requirement of a {$row->content_type} with id: {$row->content_id} that doesn't specify which web page the player needed to view in order to satisfy that requirement.\n";	
 					else{
-						$scriptTitle = mysql_query("SELECT title FROM nodes WHERE game_id = {$gid} AND node_id = {$row->content_id}");
+						$scriptTitle = Module::query("SELECT title FROM nodes WHERE game_id = {$gid} AND node_id = {$row->content_id}");
 						return "\nThere is a requirement of a {$row->content_type} with the title of {$scriptTitle} that doesn't specify which web page the player needed to view in order to satisfy that requirement.\n";	
 					}
 
@@ -177,21 +180,21 @@ class Conversations extends Module
 				else if($row->requirement == "PLAYER_VIEWED_AUGBUBBLE"){
 					if(!($row->content_type == "Node")) return "\nThere is a requirement of a {$row->content_type} with id: {$row->content_id} that doesn't specify which panoramic the player needed to view in order to satisfy that requirement.\n";
 					else{
-						$scriptTitle = mysql_query("SELECT title FROM nodes WHERE game_id = {$gid} AND node_id = {$row->content_id}");
+						$scriptTitle = Module::query("SELECT title FROM nodes WHERE game_id = {$gid} AND node_id = {$row->content_id}");
 						return "\nThere is a requirement of a {$row->content_type} with the title of {$scriptTitle} that doesn't specify which panoramic the player needed to view in order to satisfy that requirement.\n";
 					}
 				}
 				else if($row->requirement == "PLAYER_HAS_COMPLETED_QUEST"){
 					if(!($row->content_type == "Node")) return "\nThere is a requirement of a {$row->content_type} with id: {$row->content_id} that doesn't specify which quest the player needed to complete in order to satisfy that requirement.\n";	
 					else{
-						$scriptTitle = mysql_query("SELECT title FROM {$gid}_nodes WHERE node_id = {$row->content_id}");
+						$scriptTitle = Module::query("SELECT title FROM {$gid}_nodes WHERE node_id = {$row->content_id}");
 						return "\nThere is a requirement of a {$row->content_type} with the title of {$scriptTitle} that doesn't specify which quest the player needed to complete in order to satisfy that requirement.\n";	
 					}
 				}
 				else if($row->requirement == "PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK"){
 					if(!($row->content_type == "Node")) return "\nThere is a requirement of a {$row->content_type} with id: {$row->content_id} that doesn't specify which incoming web hook the player needed to receive in order to satisfy that requirement.\n";	
 					else{
-						$scriptTitle = mysql_query("SELECT title FROM {$gid}_nodes WHERE node_id = {$row->content_id}");
+						$scriptTitle = Module::query("SELECT title FROM {$gid}_nodes WHERE node_id = {$row->content_id}");
 						return "\nThere is a requirement of a {$row->content_type} with the title of {$scriptTitle} that doesn't specify which incoming web hook the player needed to receive in order to satisfy that requirement.\n";	
 					}
 
@@ -200,7 +203,7 @@ class Conversations extends Module
 		}
 
 		$query = "SELECT * FROM {$gid}_player_state_changes";
-		$resultMain = mysql_query($query);
+		$resultMain = Module::query($query);
 		while($resultMain && $row = mysql_fetch_object($resultMain)){ 
 			if($row->event_type == "VIEW_ITEM"){
 				if(!$row->action_detail){
@@ -212,11 +215,11 @@ class Conversations extends Module
 			}
 			else if($row->event_type == "VIEW_NODE"){
 				if(!$row->action_detail){
-					$scriptTitle = mysql_query("SELECT title FROM nodes WHERE game_id = {$gid} AND node_id = {$row->event_detail}");
+					$scriptTitle = Module::query("SELECT title FROM nodes WHERE game_id = {$gid} AND node_id = {$row->event_detail}");
 					return "\nThere is a node with the title of {$scriptTitle} that doesn't specify what item to give or take when viewed.\n";	
 				}
 				if(!$row->action_amount){
-					$scriptTitle = mysql_query("SELECT title FROM nodes WHERE game_id = {$gid} AND node_id = {$row->event_detail}");
+					$scriptTitle = Module::query("SELECT title FROM nodes WHERE game_id = {$gid} AND node_id = {$row->event_detail}");
 					return "\nThere is a node with the title of {$scriptTitle} that doesn't specify what quantity of an item to give or take when viewed.\n";	
 				}
 			}
@@ -255,7 +258,7 @@ class Conversations extends Module
 		}
 
 		$query = "SELECT * FROM node WHERE game_id = {$gid}s";
-		$result = mysql_query($query);
+		$result = Module::query($query);
 		while($result && $row = mysql_fetch_object($result)) {
 			if($row->text){
 				$inputString = $row->text;
@@ -267,7 +270,7 @@ class Conversations extends Module
 		}
 
 		$query = "SELECT * FROM npcs WHERE game_id = {$gid}";
-		$result = mysql_query($query);
+		$result = Module::query($query);
 		while($result && $row = mysql_fetch_object($result)) {
 			if($row->text){
 				$inputString = $row->text;
@@ -284,6 +287,7 @@ class Conversations extends Module
 				}
 			}
 		}  
-	}
 
+	Module::serverErrorLog("Finished game check method");
+	}
 }
