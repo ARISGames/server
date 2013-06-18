@@ -210,20 +210,12 @@ class Games extends Module
     {
         if(!Module::authenticateEditor($editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
+        $games = Module::queryArray("SELECT games.* FROM (SELECT * FROM game_editors WHERE editor_id = '$editorId') as ge LEFT JOIN games ON ge.game_id = games.game_id");
 
-        $query = "SELECT super_admin FROM editors 
-            WHERE editor_id = '$editorId' LIMIT 1";
-        $editor = mysql_fetch_array(Module::query($query));
+        for($i = 0; $i < count($games); $i++)
+            $games[$i]->num_players = Module::getPlayerCountForGame($games[$i]->game_id)->data->count;
 
-        if ($editor['super_admin'] == 1)
-            $query = "SELECT * FROM games";
-        else
-            $query = "SELECT g.* from games g, game_editors ge 
-                WHERE g.game_id = ge.game_id AND ge.editor_id = '$editorId'";
-
-        $rs = Module::query($query);
-        if (mysql_error())  return new returnData(3, NULL, 'SQL error');
-        return new returnData(0, $rs, NULL);		
+        return new returnData(0, $games, NULL);		
     }
 
     public function createGame($name, $description, 
@@ -633,9 +625,11 @@ class Games extends Module
         if(!Module::authenticateEditor($editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
-	$errorString = Conversations::searchGameForErrors($gameId);
-	if($errorString) return new returnData(3, NULL, $errorString);
-        Module::serverErrorLog("Duplicating Game Id:".$gameId);
+	//Add back in when requirements not being deleted is fixed, recheck for other issues
+	//$errorString = Conversations::searchGameForErrors($gameId);
+	//if($errorString) return new returnData(3, NULL, $errorString);
+        
+	Module::serverErrorLog("Duplicating Game Id:".$gameId);
 
         $game = Module::queryObject("SELECT * FROM games WHERE game_id = {$gameId} LIMIT 1");
         if (!$game) return new returnData(2, NULL, "invalid game id");
@@ -1209,7 +1203,7 @@ class Games extends Module
                     $logs[$i]->event_detail_1 = Module::queryObject("SELECT name FROM items WHERE game_id = $gameId AND item_id = ".$logs[$i]->event_detail_1)->name;
                     break;
                 case 'VIEW_NODE':
-                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT name FROM nodes WHERE game_id = $gameId AND node_id = ".$logs[$i]->event_detail_1)->name;
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT title FROM nodes WHERE game_id = $gameId AND node_id = ".$logs[$i]->event_detail_1)->name;
                     break;
                 case 'VIEW_NPC':
                     $logs[$i]->event_detail_1 = Module::queryObject("SELECT name FROM npcs WHERE game_id = $gameId AND npc_id = ".$logs[$i]->event_detail_1)->name;
