@@ -14,7 +14,7 @@ class Locations extends Module
         return new returnData(0, $rsResult);	
     }
 
-    public function getAllImageMatchEntriesForLocation($gameId, $intLocationID)
+   public function getAllImageMatchEntriesForLocation($gameId, $intLocationID)
     {
         $query = "SELECT match_media_id FROM qrcodes WHERE game_id = {$gameId} AND link_id = {$intLocationID}";
         $result = Module::query($query);
@@ -240,14 +240,15 @@ class Locations extends Module
         }
 
         //Get all spawned locations (needs separate calculations, as requirements are not associated with each location)
-        $query = "SELECT * FROM spawnables WHERE game_id = ".$gameId." AND active = 1";
-        $results = Module::query($query);
-        while($spawnable = mysql_fetch_object($results)){
+        $spawnables = Module::queryArray("SELECT * FROM spawnables WHERE game_id = ".$gameId." AND active = 1");
+        for($i = 0; $i < count($spawnables); $i++)
+        {
+            $spawnable = $spawnables[$i];
 
             //If spawnable and object it links to meet requirments, add it to the array
-
             //Does it Exist?
-            switch ($spawnable->type) {
+            switch ($spawnable->type)
+            {
                 case 'Item':
                     $query = "SELECT name as title, icon_media_id FROM items WHERE game_id = {$gameId} AND item_id = {$spawnable->type_id} LIMIT 1";
                     break;
@@ -263,40 +264,27 @@ class Locations extends Module
                 case 'AugBubble':
                     $query = "SELECT name as title, icon_media_id FROM aug_bubbles WHERE aug_bubble_id = {$spawnable->type_id} LIMIT 1";
                     break;
-                case 'PlayerNote':
-                    $query = "SELECT public_to_map FROM notes WHERE note_id = {$spawnable->type_id} LIMIT 1";
+                default:
+                    continue;
                     break;
             }
 
-            $rsObject = Module::query($query);
-            $object = @mysql_fetch_object($rsObject);
-            if (!$object) {
-                continue;
-            }
+            $object = Module::queryObject($query);
+            if(!$object) continue;
             $spawnable->icon_media_id = $object->icon_media_id;
             $spawnable->title = $object->title;
 
             //Does it meet it's requirements?
-            if (!$this->objectMeetsRequirements ($gameId, $intPlayerID, 'Spawnable', $spawnable->spawnable_id)) {
-                continue;
-            }
-            else{
-            }
-
+            if(!$this->objectMeetsRequirements($gameId, $intPlayerID, 'Spawnable', $spawnable->spawnable_id)) continue;
 
             //Create spawnables
             if($spawnable->location_bound_type == 'PLAYER')
             {
-                if($lat == 0 && $lon == 0)
+                //Find player location from log and set lat and lon accordingly
+                if($lat == 0 && $lon == 0 && $obj = Module::queryObject("SELECT event_detail_1, event_detail_2 FROM player_log WHERE player_id = $intPlayerID AND (game_id = $gameId OR game_id = 0) AND event_type = 'MOVE' AND deleted = 0 ORDER BY timestamp DESC LIMIT 1"))
                 {
-                    //Find player location from log and set lat and lon accordingly
-                    $query = "SELECT event_detail_1, event_detail_2 FROM player_log WHERE player_id = $intPlayerID AND (game_id = $gameId OR game_id = 0) AND event_type = 'MOVE' AND deleted = 0 ORDER BY timestamp DESC LIMIT 1";
-                    $result = Module::query($query);
-                    if($obj = mysql_fetch_object($result))
-                    {
-                        $lat = $obj->event_detail_1;
-                        $lon = $obj->event_detail_2;
-                    }
+                    $lat = $obj->event_detail_1;
+                    $lon = $obj->event_detail_2;
                 }
             }
             else if($spawnable->location_bound_type == 'LOCATION')
@@ -310,19 +298,16 @@ class Locations extends Module
                 //Special case for calculating max on a per_player basis with a set spawn location
                 if($spawnable->location_bound_type == 'LOCATION')
                 {
-                    $query = "SELECT DISTINCT player_id FROM player_log WHERE game_id = {$gameId}  AND deleted = 0 AND timestamp >= NOW() - INTERVAL 20 MINUTE";
-                    $result = Module::query($query);
+                    $result = Module::query("SELECT DISTINCT player_id FROM player_log WHERE game_id = $gameId AND deleted = 0 AND timestamp >= NOW() - INTERVAL 20 MINUTE");
                     $spawnable->amount *= mysql_num_rows($result);
                 }
                 $radius = Module::mToDeg($spawnable->max_area);
-                $query = "SELECT * FROM locations WHERE game_id = {$gameId} AND type = '".$spawnable->type."' AND type_id = ".$spawnable->type_id." AND latitude < ". ($lat+$radius) ." AND latitude > ". ($lat-$radius) ." AND longitude < ". ($lon+$radius) ." AND longitude > ". ($lon-$radius);
-                $result = Module::query($query);
+                $result = Module::query("SELECT * FROM locations WHERE game_id = $gameId AND type = '".$spawnable->type."' AND type_id = ".$spawnable->type_id." AND latitude < ".($lat+$radius)." AND latitude > ".($lat-$radius)." AND longitude < ".($lon+$radius)." AND longitude > ".($lon-$radius));
                 $numLocs = mysql_num_rows($result);
             }
             else if($spawnable->amount_restriction == 'TOTAL')
             {
-                $query = "SELECT * FROM locations WHERE game_id = {$gameId} AND type = '".$spawnable->type."' AND type_id = ".$spawnable->type_id;
-                $result = Module::query($query);
+                $result = Module::query("SELECT * FROM locations WHERE game_id = {$gameId} AND type = '".$spawnable->type."' AND type_id = ".$spawnable->type_id);
                 $numLocs = mysql_num_rows($result);
             }
 

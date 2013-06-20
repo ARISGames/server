@@ -53,7 +53,18 @@ class Media extends Module
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
         $mediaRow = mysql_fetch_object($rsResult);
-        if (!$mediaRow) return new returnData(2, NULL, "No matching media");
+        if (!$mediaRow) //return new returnData(2, NULL, "No matching media");
+	{
+		$mediaItem = new stdClass;
+        	$mediaItem->media_id = $intMediaID;
+        	$mediaItem->name = "Default NPC";
+        	$mediaItem->file_path = "0/npc.png";
+        	$mediaItem->file_name = "0/npc.png";
+        	$mediaItem->url_path = Config::gamedataWWWPath . "/" . Config::gameMediaSubdir;
+		$mediaItem->type = Media::getMediaType($mediaItem->file_path);
+		$mediaItem->is_default = 1;
+        	return new returnData(0, $mediaItem);
+	}
 
         $mediaItem = new stdClass;
         $mediaItem->media_id = $mediaRow->media_id;

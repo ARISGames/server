@@ -18,6 +18,20 @@ class Games extends Module
         return new returnData(0, $game);
     }
 
+    public function getLogsForGame($gameId, $lastLogId)
+    {
+
+	$timeLimitInMinutes = 20;
+
+	$query;
+        if($lastLogId == 0) $query = "SELECT * FROM player_log WHERE game_id = '{$gameId}' AND deleted = 0 AND timestamp >= (CURDATE() - INTERVAL '{$timeLimitInMinutes}' MINUTE)";
+	else $query = "SELECT * FROM player_log WHERE game_id = '{$gameId}' AND deleted = 0 AND id > '{$lastLogId}'";
+        $result = Module::query($query);
+
+        if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+        return new returnData(0, $result);	
+    }
+
     public function getGamesForPlayerAtLocation($playerId, $latitude, $longitude, $maxDistance=99999999, $locational, $includeGamesinDevelopment)
     {
         if ($includeGamesinDevelopment) $query = "
@@ -196,20 +210,12 @@ class Games extends Module
     {
         if(!Module::authenticateEditor($editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
+        $games = Module::queryArray("SELECT games.* FROM (SELECT * FROM game_editors WHERE editor_id = '$editorId') as ge LEFT JOIN games ON ge.game_id = games.game_id");
 
-        $query = "SELECT super_admin FROM editors 
-            WHERE editor_id = '$editorId' LIMIT 1";
-        $editor = mysql_fetch_array(Module::query($query));
+        for($i = 0; $i < count($games); $i++)
+            $games[$i]->num_players = Module::getPlayerCountForGame($games[$i]->game_id)->data->count;
 
-        if ($editor['super_admin'] == 1)
-            $query = "SELECT * FROM games";
-        else
-            $query = "SELECT g.* from games g, game_editors ge 
-                WHERE g.game_id = ge.game_id AND ge.editor_id = '$editorId'";
-
-        $rs = Module::query($query);
-        if (mysql_error())  return new returnData(3, NULL, 'SQL error');
-        return new returnData(0, $rs, NULL);		
+        return new returnData(0, $games, NULL);		
     }
 
     public function createGame($name, $description, 
@@ -619,8 +625,11 @@ class Games extends Module
         if(!Module::authenticateEditor($editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
-	Conversations::searchGameForErrors($gameId);
-        Module::serverErrorLog("Duplicating Game Id:".$gameId);
+	//Add back in when requirements not being deleted is fixed, recheck for other issues
+	//$errorString = Conversations::searchGameForErrors($gameId);
+	//if($errorString) return new returnData(3, NULL, $errorString);
+        
+	Module::serverErrorLog("Duplicating Game Id:".$gameId);
 
         $game = Module::queryObject("SELECT * FROM games WHERE game_id = {$gameId} LIMIT 1");
         if (!$game) return new returnData(2, NULL, "invalid game id");
@@ -1165,6 +1174,87 @@ class Games extends Module
         $game->authors = $auth;
 
         return $game;
+    }
+
+    public function getReadablePlayerLogsForGame($gameId, $seconds)
+    {
+        $logs = Module::queryArray("SELECT players.user_name, players.display_name, pl.timestamp, pl.event_type, pl.event_detail_1, pl.event_detail_2 FROM (SELECT * FROM player_log WHERE game_id = $gameId AND (timestamp BETWEEN NOW() - INTERVAL $seconds SECOND AND NOW()) AND event_type != 'MOVE') AS pl LEFT JOIN players ON pl.player_id = players.player_id");
+        for($i = 0; $i < count($logs); $i++)
+        {
+            switch($logs[$i]->event_type)
+            {
+                case 'LOGIN': //ignore
+                    break;
+                case 'MOVE': //ignore
+                    break;
+                case 'PICKUP_ITEM':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT name FROM items WHERE game_id = $gameId AND item_id = ".$logs[$i]->event_detail_1)->name;
+                    break;
+                case 'DROP_ITEM':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT name FROM items WHERE game_id = $gameId AND item_id = ".$logs[$i]->event_detail_1)->name;
+                    break;
+                case 'DROP_NOTE':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT title FROM notes WHERE game_id = $gameId AND note_id = ".$logs[$i]->event_detail_1)->title;
+                    break;
+                case 'DESTROY_ITEM':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT name FROM items WHERE game_id = $gameId AND item_id = ".$logs[$i]->event_detail_1)->name;
+                    break;
+                case 'VIEW_ITEM':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT name FROM items WHERE game_id = $gameId AND item_id = ".$logs[$i]->event_detail_1)->name;
+                    break;
+                case 'VIEW_NODE':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT title FROM nodes WHERE game_id = $gameId AND node_id = ".$logs[$i]->event_detail_1)->name;
+                    break;
+                case 'VIEW_NPC':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT name FROM npcs WHERE game_id = $gameId AND npc_id = ".$logs[$i]->event_detail_1)->name;
+                    break;
+                case 'VIEW_WEBPAGE':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT name FROM web_pages WHERE game_id = $gameId AND web_page_id = ".$logs[$i]->event_detail_1)->name;
+                    break;
+                case 'VIEW_AUGBUBBLE':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT name FROM aug_bubbles WHERE game_id = $gameId AND aug_bubble_id = ".$logs[$i]->event_detail_1)->name;
+                    break;
+                case 'VIEW_MAP': //no event details
+                    break;
+                case 'VIEW_QUESTS': //no event details
+                    break;
+                case 'VIEW_INVENTORY': //no event details
+                    break;
+                case 'ENTER_QRCODE': //no event details
+                    break;
+                case 'UPLOAD_MEDIA_ITEM': //no event details
+                    break;
+                case 'UPLOAD_MEDIA_ITEM_IMAGE': //no event details
+                    break;
+                case 'UPLOAD_MEDIA_ITEM_AUDIO': //no event details
+                    break;
+                case 'UPLOAD_MEDIA_ITEM_VIDEO': //no event details
+                    break;
+                case 'RECEIVE_WEBHOOK': //no event details
+                    break;
+                case 'SEND_WEBHOOK': //no event details
+                    break;
+                case 'COMPLETE_QUEST':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT name FROM quests WHERE game_id = $gameId AND quest_id = ".$logs[$i]->event_detail_1)->name;
+                    break;
+                case 'GET_NOTE':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT title FROM notes WHERE game_id = $gameId AND note_id = ".$logs[$i]->event_detail_1)->title;
+                    break;
+                case 'GIVE_NOTE_LIKE':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT title FROM notes WHERE game_id = $gameId AND note_id = ".$logs[$i]->event_detail_1)->title;
+                    break;
+                case 'GET_NOTE_LIKE':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT title FROM notes WHERE game_id = $gameId AND note_id = ".$logs[$i]->event_detail_1)->title;
+                    break;
+                case 'GIVE_NOTE_COMMENT':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT title FROM notes WHERE game_id = $gameId AND note_id = ".$logs[$i]->event_detail_1)->title;
+                    break;
+                case 'GET_NOTE_COMMENT':
+                    $logs[$i]->event_detail_1 = Module::queryObject("SELECT title FROM notes WHERE game_id = $gameId AND note_id = ".$logs[$i]->event_detail_1)->title;
+                    break;
+            }
+        }
+        return new returnData(0, $logs);
     }
 }
 ?>

@@ -107,7 +107,7 @@ class AugBubbles extends Module
         return new returnData(0);
     }
 
-    public static function updateAugBubbleMediaIndex($intAugId, $intMediaId, $stringName, $intGameId, $intIndex, $editorId, $editorToken)
+    public static function updateAugBubbleMediaIndex($intAugId, $intMediaId, $stringName, $gameId, $intIndex, $editorId, $editorToken)
     {
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
@@ -121,7 +121,7 @@ class AugBubbles extends Module
            }
          */
 
-        $query = "INSERT INTO aug_bubble_media (aug_bubble_id, media_id, text, game_id) VALUES ('{$intAugId}', '{$intMediaId}', '{$stringName}', '{$intGameId}')";
+        $query = "INSERT INTO aug_bubble_media (aug_bubble_id, media_id, text, game_id) VALUES ('{$intAugId}', '{$intMediaId}', '{$stringName}', '{$gameId}')";
         Module::query($query);
 
         if (mysql_error()) return new returnData(1, NULL, mysql_error());
