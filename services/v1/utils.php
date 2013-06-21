@@ -12,8 +12,6 @@ abstract class Utils
 			if(Config::adminEmail) Utils::sendEmail(Config::adminEmail,"ARIS Server Error", mysql_error());
 		}
 		mysql_select_db(Config::dbSchema);
-		Utils::query("set names utf8");
-		Utils::query("set charset utf8");
 	}
 
 	protected function query($query)
