@@ -46,11 +46,21 @@ class Media extends Module
     public function getMediaObject($gameId, $intMediaID)
     {
         //apparently, "is_numeric(NAN)" returns 'true'. NAN literally means "Not A Number". Think about that one for a sec.
-        if(!$intMediaID || !is_numeric($intMediaID) || $intMediaID == NAN) return new returnData(2, NULL, "No matching media");
+        if(!$intMediaID || !is_numeric($intMediaID) || $intMediaID == NAN) //return new returnData(2, NULL, "No matching media");
+	{
+		$mediaItem = new stdClass;
+        	$mediaItem->media_id = $intMediaID;
+        	$mediaItem->name = "Default NPC";
+        	$mediaItem->file_path = "0/npc.png";
+        	$mediaItem->file_name = "0/npc.png";
+        	$mediaItem->url_path = Config::gamedataWWWPath . "/" . Config::gameMediaSubdir;
+		$mediaItem->type = Media::getMediaType($mediaItem->file_path);
+		$mediaItem->is_default = 1;
+        	return new returnData(0, $mediaItem);
+	}
 
         $query = "SELECT * FROM media WHERE media_id = {$intMediaID} LIMIT 1";
         $rsResult = Module::query($query);
-        if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
         $mediaRow = mysql_fetch_object($rsResult);
         if (!$mediaRow) //return new returnData(2, NULL, "No matching media");
