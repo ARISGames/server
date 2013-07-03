@@ -180,6 +180,62 @@ class Notes extends Module
         return new returnData(0, $notes);
     }
 
+    function getNextSetOfTopNotesForGame($gameId, $playerId,$notesAlreadyFetched, $numberToFetch)
+    {
+        $query = "SELECT notes.note_id, COUNT(note_likes.note_id) AS likes FROM notes LEFT JOIN note_likes ON notes.note_id = note_likes.note_id WHERE notes.game_id = '{$gameId}' AND notes.parent_note_id = '0' AND (notes.public_to_notebook = '1' OR notes.public_to_map = '1') GROUP BY notes.note_id ORDER BY likes DESC, notes.created DESC LIMIT {$notesAlreadyFetched}, {$numberToFetch}";
+        $result = Module::query($query);
+        if (mysql_error()) return new returnData(1, NULL, mysql_error());
+
+        $notes = array();
+        while($note = mysql_fetch_object($result))
+        {
+            $notes[] = Notes::getFullNoteObject($note->note_id, $playerId);
+        }
+        return new returnData(0, $notes);
+    }
+
+    function getNextSetOfPopularNotesForGame($gameId, $playerId,$notesAlreadyFetched, $numberToFetch)
+    {
+        $query = "SELECT notes.note_id, COUNT(note_likes.note_id) AS likes FROM notes LEFT JOIN note_likes ON notes.note_id = note_likes.note_id WHERE notes.game_id = '{$gameId}' AND notes.parent_note_id = '0' AND (notes.public_to_notebook = '1' OR notes.public_to_map = '1') GROUP BY notes.note_id ORDER BY likes DESC, notes.created DESC LIMIT {$notesAlreadyFetched}, {$numberToFetch}";
+        $result = Module::query($query);
+        if (mysql_error()) return new returnData(1, NULL, mysql_error());
+
+        $notes = array();
+        while($note = mysql_fetch_object($result))
+        {
+            $notes[] = Notes::getFullNoteObject($note->note_id, $playerId);
+        }
+        return new returnData(0, $notes);
+    }
+
+    function getNextSetOfRecentNotesForGame($gameId, $playerId,$notesAlreadyFetched, $numberToFetch)
+    {
+        $query = "SELECT note_id FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = '0' AND (public_to_notebook = '1' OR public_to_map = '1') ORDER BY created DESC LIMIT {$notesAlreadyFetched}, {$numberToFetch}";
+        $result = Module::query($query);
+        if (mysql_error()) return new returnData(1, NULL, mysql_error());
+
+        $notes = array();
+        while($note = mysql_fetch_object($result))
+        {
+            $notes[] = Notes::getFullNoteObject($note->note_id, $playerId);
+        }
+        return new returnData(0, $notes);
+    }
+
+    function getNextSetOfPlayerNotesForGame($gameId, $playerId,$notesAlreadyFetched, $numberToFetch)
+    {
+        $query = "SELECT note_id FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = '0' AND (public_to_notebook = '1' OR public_to_map = '1') AND owner_id = '{$playerId}' ORDER BY created DESC LIMIT {$notesAlreadyFetched}, {$numberToFetch}";
+        $result = Module::query($query);
+        if (mysql_error()) return new returnData(1, NULL, mysql_error());
+
+        $notes = array();
+        while($note = mysql_fetch_object($result))
+        {
+            $notes[] = Notes::getFullNoteObject($note->note_id, $playerId);
+        }
+        return new returnData(0, $notes);
+    }
+
     //Gets an individual's notes. 
     function getNotesForPlayer($playerId, $gameId)
     {
@@ -305,6 +361,15 @@ class Notes extends Module
         $liked = mysql_fetch_object($result);
         return $liked->liked;
     }
+
+    function playerLikedObject($playerId, $noteId)
+    {
+        $query = "SELECT COUNT(*) as liked FROM note_likes WHERE player_id = '{$playerId}' AND note_id = '{$noteId}' LIMIT 1";
+        $result = Module::query($query);
+        $liked = mysql_fetch_object($result);
+	return new returnData(0, $liked);
+    }
+
 
     function noteDropped($noteId, $gameId)
     {
