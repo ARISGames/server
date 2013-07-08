@@ -76,6 +76,12 @@ abstract class Module extends Utils
     //constants for note icon id
     const kPLAYER_NOTE_DEFAULT_ICON = '94';
 
+    //constants for note share table
+    const kSHARE_FACEBOOK  = 'FACEBOOK';
+    const kSHARE_TWITTER   = 'TWITTER';
+    const kSHARE_PINTEREST = 'PINTEREST';
+    const kSHARE_EMAIL     = 'EMAIL'; 
+
     public function Module()
     {
         Utils::connect();
