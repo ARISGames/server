@@ -581,6 +581,8 @@ class Locations extends Module
             ON locations.game_id = qrcodes.game_id AND locations.location_id = qrcodes.link_id
             WHERE locations.type = '{$strObjectType}' AND locations.type_id = '{$intObjectId}' AND qrcodes.link_type = 'Location'";
 
+        if($strObjectType == "PlayerNote") //Notes have no qr code so above join will fail
+            $query = "DELETE FROM locations WHERE game_id = '{$gameId}' AND type = '{$strObjectType}' AND type_id = '{$intObjectId}'";
 
         Module::query($query);
 
