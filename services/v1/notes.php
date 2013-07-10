@@ -209,9 +209,15 @@ class Notes extends Module
 		return new returnData(0, $notes);
 	}
 
-	function getNextSetOfRecentNotesForGame($playerId, $gameId, $notesAlreadyFetched, $numberToFetch)
+	function getNextSetOfRecentNotesForGame($playerId, $gameId, $notesAlreadyFetched, $numberToFetch, $date)
 	{
-		$query = "SELECT note_id FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = '0' AND (public_to_notebook = '1' OR public_to_map = '1') ORDER BY created DESC LIMIT {$notesAlreadyFetched}, {$numberToFetch}";
+		if(!$date)
+			$query = "SELECT note_id FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = '0' AND (public_to_notebook = '1' OR public_to_map = '1') AND created < NOW() ORDER BY created DESC LIMIT {$notesAlreadyFetched}, {$numberToFetch}";
+		else
+		{
+			$date = strtotime($date);
+			$query = "SELECT note_id FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = '0' AND (public_to_notebook = '1' OR public_to_map = '1') AND UNIX_TIMESTAMP(created) < {$date} ORDER BY created DESC LIMIT {$notesAlreadyFetched}, {$numberToFetch}";
+		}
 		$result = Module::query($query);
 		if (mysql_error()) return new returnData(1, NULL, mysql_error());
 
@@ -412,27 +418,27 @@ class Notes extends Module
 
 	function deleteNote($noteId)
 	{
-	    //If noteId is 0, it will rather elegantly delete EVERYTHING in the note database 
-	    //becasue 0 is used for the parent_id of all new notes
-	    if($noteId == 0) return new returnData(0);
+		//If noteId is 0, it will rather elegantly delete EVERYTHING in the note database 
+		//becasue 0 is used for the parent_id of all new notes
+		if($noteId == 0) return new returnData(0);
 
-	    $noteObj = Module::queryObject("SELECT * FROM notes WHERE note_id = '{$noteId}' LIMIT 1");
+		$noteObj = Module::queryObject("SELECT * FROM notes WHERE note_id = '{$noteId}' LIMIT 1");
 
-	    Module::query("DELETE FROM note_tags WHERE note_id = '{$noteId}'");
-	    Module::query("DELETE FROM note_likes WHERE note_id = '{$noteId}'");
-	    Module::query("DELETE FROM note_flags WHERE note_id = '{$noteId}'");
-	    Module::query("DELETE FROM note_shares WHERE note_id = '{$noteId}'");
-	    Module::query("DELETE FROM folder_contents WHERE game_id = {$noteObj->game_id} AND content_type = 'PlayerNote' AND content_id = '{$noteId}'");
-	    Module::query("DELETE FROM note_content WHERE note_id = '{$noteId}'");
-	    Module::query("DELETE FROM note_tags WHERE note_id = '{$noteId}'");
-	    Module::query("DELETE FROM note_likes WHERE note_id = '{$noteId}'");
-            Module::query("DELETE FROM notes WHERE note_id = '{$noteId}'");
-		
-	    Locations::deleteLocationsForObject($noteObj->game_id, "PlayerNote", $noteId);
-	    $result = Module::query("SELECT note_id FROM notes WHERE parent_note_id = '{$noteId}'");
-	    while($commentNote = mysql_fetch_object($result)) Notes::deleteNote($commentNote->note_id);
+		Module::query("DELETE FROM note_tags WHERE note_id = '{$noteId}'");
+		Module::query("DELETE FROM note_likes WHERE note_id = '{$noteId}'");
+		Module::query("DELETE FROM note_flags WHERE note_id = '{$noteId}'");
+		Module::query("DELETE FROM note_shares WHERE note_id = '{$noteId}'");
+		Module::query("DELETE FROM folder_contents WHERE game_id = {$noteObj->game_id} AND content_type = 'PlayerNote' AND content_id = '{$noteId}'");
+		Module::query("DELETE FROM note_content WHERE note_id = '{$noteId}'");
+		Module::query("DELETE FROM note_tags WHERE note_id = '{$noteId}'");
+		Module::query("DELETE FROM note_likes WHERE note_id = '{$noteId}'");
+		Module::query("DELETE FROM notes WHERE note_id = '{$noteId}'");
 
-	    return new returnData(0);
+		Locations::deleteLocationsForObject($noteObj->game_id, "PlayerNote", $noteId);
+		$result = Module::query("SELECT note_id FROM notes WHERE parent_note_id = '{$noteId}'");
+		while($commentNote = mysql_fetch_object($result)) Notes::deleteNote($commentNote->note_id);
+
+		return new returnData(0);
 	}
 
 	//Gets all tags in game (NOT note/tag pairs), regardless of how created
