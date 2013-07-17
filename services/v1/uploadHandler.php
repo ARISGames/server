@@ -7,6 +7,7 @@
 set_time_limit(0);
 
 include ('media.php');
+include ('../../../scratch/wideimage/WideImage.php');
 
 header('HTTP/1.1 200 OK');
 header('Status: 200 OK');
@@ -35,14 +36,18 @@ $pathInfo = '';
 if (@$_REQUEST['fileName']) $pathInfo = pathinfo($_REQUEST['fileName']);   //We are coming from the iPhone Client
 else                        $pathInfo = pathinfo($_FILES['file']['name']); //We are coming from the form
 
-$newMediaFileName = 'aris' . md5( date("YmdGisu") . substr((string)microtime(),2,6) . strtolower($_FILES['file']['name'])) . '.' . strtolower($pathInfo['extension']);
+$md5 = md5(date("YmdGisu").substr((string)microtime(),2,6).strtolower($_FILES['file']['name']));
+$ext = ($pathInfo['extension'] != '') ? strtolower($pathInfo['extension']) : 'jpg';
+$newMediaFileName     = 'aris'.$md5.'.'    .$ext;
+$resizedMediaFileName = 'aris'.$md5.'_128.'.$ext;
 
-if ($pathInfo['extension'] == '') $newMediaFileName = $newMediaFileName . 'jpg';    // blobs from YOI map in jpg form aren't coming through with file a extension.  This is a band-aid.
+if(!move_uploaded_file( $_FILES['file']['tmp_name'], $gameMediaDirectory."/".$newMediaFileName))
+die("error moving file");
 
-$newMediaFilePath = $gameMediaDirectory ."/". $newMediaFileName;
-
-if (!move_uploaded_file( $_FILES['file']['tmp_name'], $newMediaFilePath))
-die ("error moving file");
+$img = WideImage::load($gameMediaDirectory."/".$newMediaFileName);
+$img = $img->resize(128, 128, 'outside');
+$img = $img->crop('center','center',128,128);
+$img->saveToFile($gameMediaDirectory."/".$resizedMediaFileName);
 
 //echo "data=$newMediaFileName&returnCode=0&returnCodeDescription=Success";
 echo $newMediaFileName;

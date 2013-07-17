@@ -30,6 +30,7 @@ class Media extends Module
             $mediaItem['name'] = $mediaRow['name'];
             $mediaItem['file_path'] = $mediaRow['file_path'];
             $mediaItem['file_name'] = $mediaRow['file_path']; //this is for legacy reasons... Phil 10/12/2012
+            $mediaItem['thumb_file_path'] = substr($mediaRow['file_path'],0,strrpos($mediaRow['file_path'],'.')).'_128'.substr($mediaRow['file_path'],strrpos($mediaRow['file_path'],'.'));
             $mediaItem['url_path'] = Config::gamedataWWWPath . "/" . Config::gameMediaSubdir;
 
             if ($mediaRow['is_icon'] == '1') $mediaItem['type'] = self::MEDIA_ICON;
@@ -53,6 +54,7 @@ class Media extends Module
         	$mediaItem->name = "Default NPC";
         	$mediaItem->file_path = "0/npc.png";
         	$mediaItem->file_name = "0/npc.png";
+                $mediaItem->thumb_file_path = "0/npc.png";
         	$mediaItem->url_path = Config::gamedataWWWPath . "/" . Config::gameMediaSubdir;
 		$mediaItem->type = Media::getMediaType($mediaItem->file_path);
 		$mediaItem->is_default = 1;
@@ -70,6 +72,7 @@ class Media extends Module
         	$mediaItem->name = "Default NPC";
         	$mediaItem->file_path = "0/npc.png";
         	$mediaItem->file_name = "0/npc.png";
+                $mediaItem->thumb_file_path = "0/npc.png";
         	$mediaItem->url_path = Config::gamedataWWWPath . "/" . Config::gameMediaSubdir;
 		$mediaItem->type = Media::getMediaType($mediaItem->file_path);
 		$mediaItem->is_default = 1;
@@ -81,6 +84,7 @@ class Media extends Module
         $mediaItem->name = $mediaRow->name;
         $mediaItem->file_path = $mediaRow->file_path;
         $mediaItem->file_name = $mediaRow->file_path; //this is for legacy reasons... Phil 10/12/2012
+        $mediaItem->thumb_file_path = substr($mediaRow->file_path,0,strrpos($mediaRow->file_path,'.')).'_128'.substr($mediaRow->file_path,strrpos($mediaRow->file_path,'.'));
 
         $mediaItem->url_path = Config::gamedataWWWPath . "/" . Config::gameMediaSubdir;
 
@@ -136,6 +140,7 @@ class Media extends Module
         $media->name = $strName;
         $media->file_path = $strFileName;
         $media->file_name = $strFileName; //this is for legacy reasons... Phil 10/12/2012
+        $media->thumb_file_path = substr($strFileName,0,strrpos($strFileName,'.')).'_128'.substr($strFileName,strrpos($strFileName,'.'));
         $media->is_icon = $boolIsIcon;
         $media->url_path = Config::gamedataWWWPath . "/" . Config::gameMediaSubdir;
 
