@@ -1,0 +1,20 @@
+Note: Doesn't work with quotes in the workbench, but aris_db_install.sql has slanted quotes
+
+CREATE TABLE 'note_flags' (
+	'player_id' int(10) unsigned NOT NULL DEFAULT '0', 
+	'note_id'   int(10) unsigned NOT NULL DEFAULT '0',
+	'created'   timestamp 	     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	PRIMARY KEY ('player_id', 'note_id')
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE TABLE 'note_shares' (
+	'share_id'  int(10) unsigned NOT NULL AUTO_INCREMENT,
+	'player_id'  int(10) unsigned NOT NULL DEFAULT '0', 
+	'note_id'    int(10) unsigned NOT NULL DEFAULT '0',
+	'share_type' enum('FACEBOOK', 'TWITTER', 'PINTEREST', 'EMAIL') COLLATE utf8_unicode_ci DEFAULT NULL,
+	'created'    timestamp 	     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	PRIMARY KEY ('share_id')
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+ALTER TABLE players ADD 'curator'     tinyint(1) unsigned NOT NULL DEFAULT '0'
+ALTER TABLE players ADD 'facebook_id' int(11)    unsigned NOT NULL DEFAULT '0'
