@@ -1,19 +1,14 @@
 <?php
 
+ini_set('display_errors', 'On');
+error_reporting(E_ALL);
 
+$version = "v1";
 
-
-
-$version = 'v1';
-
-require_once('../config.class.php');
-chdir("../services/{$version}");
-
-
-require_once("module.php");
+require_once('/var/www/html/server/config.class.php');
+require_once("/var/www/html/server/services/{$version}/module.php");
 
 /*
-
 url for image: http://maps.googleapis.com/maps/api/staticmap?center=42.375,-72.516546&zoom=16&size=1024x1024&maptype=roadmap&sensor=false&scale=2
 
 google api zoom => iphone scale
@@ -24,20 +19,15 @@ google api zoom => iphone scale
 
 */
 
-
-class ModuleExt extends Module {
-	public function getPrefix($gameId) {
-		return Module::getPrefix($gameId);
-	}
-}
 class Sync {
-  
+ 
   function __construct() {
   }
-  
 
   public function  get_media_info($id, $game_id) {
-    require_once("./media.php");
+
+ $version = "v1";
+    require_once("/var/www/html/server/services/{$version}/media.php");
     
     $media = new Media();
     $media_info = @$media->getMediaObject($game_id, $id);
@@ -90,12 +80,13 @@ class Sync {
   }
   
   public function get_all($id, $player_id) {
-    require_once("./games.php");
-    require_once("./quests.php");
-    require_once("./items.php");
-    require_once("./locations.php");
-    require_once("./npcs.php");
-    
+
+ $version = "v1";
+    require_once("/var/www/html/server/services/{$version}/games.php");
+    require_once("/var/www/html/server/services/{$version}/quests.php");
+    require_once("/var/www/html/server/services/{$version}/items.php");
+    require_once("/var/www/html/server/services/{$version}/locations.php");
+    require_once("/var/www/html/server/services/{$version}/npcs.php");
     
     $games = new Games();
 	  $out = array();
@@ -165,7 +156,6 @@ class Sync {
 	  }
 	
 	  //print_r(Config::dbUser);
-	  $prefix = ModuleExt::getPrefix($id);
 	  $sql = "SELECT * FROM requirements WHERE game_id = '$id'";
 	  $result = mysql_query($sql);
 	  $out['requirements'] = array();
@@ -238,3 +228,4 @@ class Sync {
   }
 }
 
+?>

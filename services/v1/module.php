@@ -1,7 +1,7 @@
 <?php
 require_once('utils.php');
 require_once('returnData.class.php');
-require_once('../../config.class.php');
+require_once('/var/www/html/server/config.class.php');
 
 abstract class Module extends Utils
 {

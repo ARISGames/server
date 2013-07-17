@@ -216,7 +216,7 @@ class Notes extends Module
 		else
 		{
 			$date = strtotime($date);
-			$query = "SELECT note_id FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = '0' AND (public_to_notebook = '1' OR public_to_map = '1') AND UNIX_TIMESTAMP(created) < {$date} ORDER BY created DESC LIMIT {$notesAlreadyFetched}, {$numberToFetch}";
+			$query = "SELECT note_id FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = '0' AND (public_to_notebook = '1' OR public_to_map = '1') AND UNIX_TIMESTAMP(created) < {$date} ORDER BY created DESC LIMIT {$numberToFetch}";
 		}
 		$result = Module::query($query);
 		if (mysql_error()) return new returnData(1, NULL, mysql_error());

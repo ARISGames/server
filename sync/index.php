@@ -1,7 +1,13 @@
 <?php
-require_once('/Users/mglumac/Development/arisgames/server/sync' . '/../services/v1' . '/../../config.class.php');
+ini_set('display_errors', 'On');
+error_reporting(E_ALL);
+$version = "v1";
 
-require_once('actions.php');
+require_once("actions.php");
+require_once('/var/www/html/server/config.class.php');
+require_once("/var/www/html/server/services/{$version}/module.php");
+
+//'/Users/mglumac/Development/arisgames/server/sync' .
 
 /*
 /    [action] => get_media_info
@@ -39,7 +45,6 @@ $_REQUEST['player_id'] = 98;
 */
 
 $action = $_REQUEST['action'];
-
 switch ($action) {
   case 'get_media_info':
     $id = $_REQUEST['id'];
@@ -52,8 +57,8 @@ switch ($action) {
   case 'get_all':
     $id = $_REQUEST['id'];
     $player_id = $_REQUEST['player_id'];
-    $sync = new Sync();
-    $info = $sync->get_all($id, $player_id);
+    $actions = new Sync();
+    $info = $actions->get_all($id, $player_id);
     $data = json_encode($info);
     header("Content-Length: " . strlen($data));
     echo $data;
@@ -63,3 +68,5 @@ switch ($action) {
     echo json_encode(array('error' => 'Unknown action: ' . $action));
     break;
 }
+
+?>
