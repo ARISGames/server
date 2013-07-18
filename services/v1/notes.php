@@ -473,7 +473,7 @@ class Notes extends Module
 	//	player_created = 0 (0 means tag created by game author, 1 means created by some player, and is instantiated at least once in a note in game)
 	function getGameTags($gameId)
 	{
-		$query = "SELECT tag_id, tag, player_created from game_tags WHERE game_id = '{$gameId}'";
+		$query = "SELECT tag_id, tag, player_created, media_id from game_tags WHERE game_id = '{$gameId}'";
 		$result = Module::query($query);
 		$tags = array();
 		while($tag = mysql_fetch_object($result))	
