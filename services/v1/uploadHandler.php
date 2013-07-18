@@ -7,7 +7,7 @@
 set_time_limit(0);
 
 include ('media.php');
-include ('../../../scratch/wideimage/WideImage.php');
+include ('../../libraries/wideimage/WideImage.php');
 
 header('HTTP/1.1 200 OK');
 header('Status: 200 OK');
