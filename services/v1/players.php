@@ -525,9 +525,15 @@ class Players extends Module
 		$backpack->owner->player_id = $playerId;
 		$playerpic = Media::getMediaObject('player', $name->media_id)->data;
 		if($playerpic)
-			$backpack->owner->player_pic_url = $playerpic->url_path.$playerpic->file_path;
+                {
+			$backpack->owner->player_pic_url       = $playerpic->url_path.$playerpic->file_path;
+			$backpack->owner->player_pic_thumb_url = $playerpic->url_path.$playerpic->thumb_file_path;
+                }
 		else
-			$backpack->owner->player_pic_url = null;
+                {
+			$backpack->owner->player_pic_url       = null;
+			$backpack->owner->player_pic_thumb_url = null;
+                }
 
 		/* ATTRIBUTES */
 		//Module::serverErrorLog('Attributes    Start: '.date_format(date_create(), 'H:i:s:u'));

@@ -250,8 +250,16 @@ class Items extends Module
         $result = Module::query($query);
         $contents = array();
         while($content = mysql_fetch_object($result)) {
-            if($content->media_url) $content->media_url = Config::gamedataWWWPath . '/' . $content->media_url;
-            if($content->icon_url) $content->icon_url = Config::gamedataWWWPath . '/' . $content->icon_url;
+            if($content->media_url)
+            {
+                $content->media_url       = Config::gamedataWWWPath . '/' . $content->media_url;
+                $content->media_thumb_url = substr($content-media_url,0,strrpos($content-media_url,'.')).'_128'.substr($content-media_url,strrpos($content-media_url,'.'));
+            }
+            if($content->icon_url)
+            {
+                $content->icon_url = Config::gamedataWWWPath . '/' . $content->icon_url;
+                $content->icon_thumb_url = substr($content-icon_url,0,strrpos($content-icon_url,'.')).'_128'.substr($content-icon_url,strrpos($content-icon_url,'.'));
+            }
             $content->tags = Items::getItemTags($content->item_id)->data;
             $contents[] = $content;
         }
@@ -266,8 +274,16 @@ class Items extends Module
         $result = Module::query($query);
         $contents = array();
         while($content = mysql_fetch_object($result)){
-            if($content->media_url) $content->media_url = Config::gamedataWWWPath . '/' . $content->media_url;
-            if($content->icon_url) $content->icon_url = Config::gamedataWWWPath . '/' . $content->icon_url;
+            if($content->media_url)
+            {
+                $content->media_url = Config::gamedataWWWPath . '/' . $content->media_url;
+                $content->media_thumb_url = substr($content-media_url,0,strrpos($content-media_url,'.')).'_128'.substr($content-media_url,strrpos($content-media_url,'.'));
+            }
+            if($content->icon_url)
+            {
+                $content->icon_url = Config::gamedataWWWPath . '/' . $content->icon_url;
+                $content->icon_thumb_url = substr($content-icon_url,0,strrpos($content-icon_url,'.')).'_128'.substr($content-icon_url,strrpos($content-icon_url,'.'));
+            }
             $content->tags = Items::getItemTags($content->item_id)->data;
             $contents[] = $content;
         }
