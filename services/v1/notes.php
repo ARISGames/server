@@ -1,4 +1,8 @@
 <?php
+
+//ini_set('display_errors', 'On');
+//error_reporting(E_ALL);
+
 require_once("module.php");
 require_once("media.php");
 require_once("games.php");
@@ -180,44 +184,78 @@ class Notes extends Module
 		return new returnData(0, $notes);
 	}
 
-	function getNextSetOfTopNotesForGame($playedId, $gameId, $notesAlreadyFetched, $numberToFetch)
+	function getNotesWithAttributes($json)
 	{
 
-		$query = "SELECT n.note_id FROM (SELECT * FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = '0' AND (public_to_notebook = '1' OR public_to_map = '1')) AS n LEFT JOIN note_likes ON n.note_id = note_likes.note_id LEFT JOIN (SELECT * FROM players WHERE curator = '1') AS p ON note_likes.player_id = p.player_id GROUP BY n.note_id ORDER BY COUNT(note_likes.note_id) DESC, n.created DESC LIMIT {$notesAlreadyFetched}, {$numberToFetch}";
-		$result = Module::query($query);
-		if (mysql_error()) return new returnData(1, NULL, mysql_error());
+		$gameId       = $json["gameId"];
+		$playerId     = $json["playerId"];
 
-		$notes = array();
-		while($note = mysql_fetch_object($result))
+		$searchType   = $json["searchType"];
+		$tagIds       = $json["tagIds"];
+		$searchTerms  = $json["searchTerms"];
+		$date         = $json["date"];
+		$lastLocation = $json["lastLocation"];	
+		$noteCount    = $json["noteCount"];
+
+		$notesName   = "result_notes";
+		$notesSelect = "";
+
+		if(count($tagIds) > 0)
 		{
-			$notes[] = Notes::getFullNoteObject($note->note_id, $playerId);
+			$tagsJoin = " INNER JOIN (SELECT * FROM note_tags WHERE tag_id = {$tagIds[0]}";
+			for($i = 1; $i < count($tagIds); ++$i)
+			{
+				$tagsJoin .= " OR tag_id = {$tagIds[$i]}";
+			}
+			$tagsJoin .= ") AS selectedTags ON {$notesName}.note_id = selectedTags.note_id";
 		}
-		return new returnData(0, $notes);
-	}
 
-	function getNextSetOfPopularNotesForGame($playerId, $gameId, $notesAlreadyFetched, $numberToFetch)
-	{
-		$query = "SELECT parent_notes.note_id FROM (SELECT * FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = '0' AND (public_to_notebook = '1' OR public_to_map = '1')) AS parent_notes LEFT JOIN note_likes ON parent_notes.note_id = note_likes.note_id LEFT JOIN note_shares ON parent_notes.note_id = note_shares.note_id LEFT JOIN notes AS note_comments ON parent_notes.note_id = note_comments.note_id GROUP BY parent_notes.note_id ORDER BY (COUNT(note_likes.note_id) + COUNT(note_shares.note_id) + COUNT(note_comments.note_id)) DESC, parent_notes.created DESC LIMIT {$notesAlreadyFetched}, {$numberToFetch}";
-		$result = Module::query($query);
-		if (mysql_error()) return new returnData(1, NULL, mysql_error());
-
-		$notes = array();
-		while($note = mysql_fetch_object($result))
+		if(count($searchTerms) > 0)
 		{
-			$notes[] = Notes::getFullNoteObject($note->note_id, $playerId);
+			$searchTermsJoin = " INNER JOIN (SELECT * FROM note_content WHERE type = 'TEXT'";
+			for($i = 0; $i < count($searchTerms); ++$i)
+			{
+				$searchTermsJoin .= " AND text LIKE '%{$searchTerms[$i]}%'";
+			} 	
+			$searchTermsJoin .= ") AS textWithTerms ON {$notesName}.note_id = textWithTerms.note_id";
 		}
-		return new returnData(0, $notes);
-	}
 
-	function getNextSetOfRecentNotesForGame($playerId, $gameId, $notesAlreadyFetched, $numberToFetch, $date)
-	{
-		if(!$date)
-			$query = "SELECT note_id FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = '0' AND (public_to_notebook = '1' OR public_to_map = '1') AND created < NOW() ORDER BY created DESC LIMIT {$notesAlreadyFetched}, {$numberToFetch}";
-		else
+		switch($searchType)
+		{	
+			case 0:
+				$searchSort  = " LEFT JOIN note_likes ON {$notesName}.note_id = note_likes.note_id LEFT JOIN (SELECT player_id FROM players WHERE curator = '1') AS curators ON note_likes.player_id = curators.player_id GROUP BY {$notesName}.note_id ORDER BY COUNT(curators.player_id) DESC, {$notesName}.created DESC";
+				break;
+			case 1:
+				$searchSort  = " LEFT JOIN note_likes ON {$notesName}.note_id = note_likes.note_id LEFT JOIN note_shares ON {$notesName}.note_id = note_shares.note_id LEFT JOIN notes AS note_comments ON {$notesName}.note_id = note_comments.note_id GROUP BY {$notesName}.note_id ORDER BY (COUNT(note_likes.note_id) + COUNT(note_shares.note_id) + COUNT(note_comments.note_id)) DESC, {$notesName}.created DESC";
+				break;
+			case 2:
+				$searchSort  = " ORDER BY {$notesName}.created DESC";
+				break;
+			case 3:
+				$notesSelect .= " AND owner_id = {$playerId}";
+				$searchSort  = " ORDER BY {$notesName}.created DESC";
+				break;
+
+		}
+
+		if($date)
 		{
 			$date = strtotime($date);
-			$query = "SELECT note_id FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = '0' AND (public_to_notebook = '1' OR public_to_map = '1') AND UNIX_TIMESTAMP(created) < {$date} ORDER BY created DESC LIMIT {$numberToFetch}";
+			$notesSelect  .= " AND UNIX_TIMESTAMP(created) < {$date}";
+			if($noteCount) 
+				$limitString = " LIMIT {$noteCount}";
+		}	
+		else
+		{
+			if($lastLocation && $noteCount)
+				$limitString = " LIMIT {$lastLocation}, {$noteCount}";
+			else if($lastLocaion && !$noteCount)
+				$limitString = " OFFSET {$lastLocation}";
+			else if(!$lastLocation && $noteCount)
+				$limitString = " LIMIT {$noteCount}";
 		}
+
+		$query = "SELECT {$notesName}.note_id FROM (SELECT note_id, created FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = '0' AND (public_to_notebook = '1' OR public_to_map = '1'){$notesSelect}) AS {$notesName}{$tagsJoin}{$searchTermsJoin}{$searchSort}{$limitString}"; 
 		$result = Module::query($query);
 		if (mysql_error()) return new returnData(1, NULL, mysql_error());
 
@@ -227,20 +265,7 @@ class Notes extends Module
 			$notes[] = Notes::getFullNoteObject($note->note_id, $playerId);
 		}
 		return new returnData(0, $notes);
-	}
 
-	function getNextSetOfPlayerNotesForGame($playerId, $gameId, $notesAlreadyFetched, $numberToFetch)
-	{
-		$query = "SELECT note_id FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = '0' AND (public_to_notebook = '1' OR public_to_map = '1') AND owner_id = '{$playerId}' ORDER BY created DESC LIMIT {$notesAlreadyFetched}, {$numberToFetch}";
-		$result = Module::query($query);
-		if (mysql_error()) return new returnData(1, NULL, mysql_error());
-
-		$notes = array();
-		while($note = mysql_fetch_object($result))
-		{
-			$notes[] = Notes::getFullNoteObject($note->note_id, $playerId);
-		}
-		return new returnData(0, $notes);
 	}
 
 	//Gets an individual's notes. 
@@ -740,6 +765,7 @@ class Notes extends Module
 		while($content = mysql_fetch_object($result))
 		{
 			$content->media_url = Config::gamedataWWWPath . '/' . $content->file_path;
+                        $content->media_thumb_url = substr($content->media_url,0,strrpos($content->media_url,'.')).'_128'.substr($content->media_url,strrpos($content-media_url,'.'));
 			$contents[] = $content;
 		}
 		return $contents;
