@@ -18,3 +18,4 @@ CREATE TABLE 'note_shares' (
 
 ALTER TABLE players ADD 'curator'     tinyint(1) unsigned NOT NULL DEFAULT '0'
 ALTER TABLE players ADD 'facebook_id' int(11)    unsigned NOT NULL DEFAULT '0'
+ALTER TABLE game_tags ADD 'media_id' int(11)     unsigned NOT NULL DEFAULT '0'
