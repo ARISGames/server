@@ -56,7 +56,7 @@ if($ext == "jpg" || $ext == "png" || $ext == "gif")
 }
 else if($ext == "mp4")
 {
-    $ffmpeg = '../../libraries/ffmpeg';  //THIS IS WRONG UNTIL COMPILED!!!
+    $ffmpeg = '../../libraries/ffmpeg';
     $videoFilePath      = $gameMediaDirectory."/".$newMediaFileName; 
     $tempImageFilePath  = $gameMediaDirectory."/temp_".$resizedMediaFileName; 
     $imageFilePath      = $gameMediaDirectory."/".$resizedMediaFileName; 
