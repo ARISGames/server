@@ -39,15 +39,39 @@ else                        $pathInfo = pathinfo($_FILES['file']['name']); //We 
 $md5 = md5(date("YmdGisu").substr((string)microtime(),2,6).strtolower($_FILES['file']['name']));
 $ext = ($pathInfo['extension'] != '') ? strtolower($pathInfo['extension']) : 'jpg';
 $newMediaFileName     = 'aris'.$md5.'.'    .$ext;
-$resizedMediaFileName = 'aris'.$md5.'_128.'.$ext;
+if($ext == "jpg" || $ext == "png" || $ext == "gif")
+    $resizedMediaFileName = 'aris'.$md5.'_128.'.$ext;
+else
+    $resizedMediaFileName = 'aris'.$md5.'_128.jpg';
 
 if(!move_uploaded_file( $_FILES['file']['tmp_name'], $gameMediaDirectory."/".$newMediaFileName))
 die("error moving file");
 
-$img = WideImage::load($gameMediaDirectory."/".$newMediaFileName);
-$img = $img->resize(128, 128, 'outside');
-$img = $img->crop('center','center',128,128);
-$img->saveToFile($gameMediaDirectory."/".$resizedMediaFileName);
+if($ext == "jpg" || $ext == "png" || $ext == "gif")
+{
+    $img = WideImage::load($gameMediaDirectory."/".$newMediaFileName);
+    $img = $img->resize(128, 128, 'outside');
+    $img = $img->crop('center','center',128,128);
+    $img->saveToFile($gameMediaDirectory."/".$resizedMediaFileName);
+}
+else if($ext == "mp4")
+{
+    $ffmpeg = '../../libraries/ffmpeg';  //THIS IS WRONG UNTIL COMPILED!!!
+    $videoFilePath      = $gameMediaDirectory."/".$newMediaFileName; 
+    $tempImageFilePath  = $gameMediaDirectory."/temp_".$resizedMediaFileName; 
+    $imageFilePath      = $gameMediaDirectory."/".$resizedMediaFileName; 
+    $cmd = "$ffmpeg -i $videoFilePath 2>&1"; 
+    $thumbTime = 1;
+    if(preg_match('/Duration: ((\d+):(\d+):(\d+))/s', shell_exec($cmd), $videoLength))
+        $thumbTime = (($videoLength[2] * 3600) + ($videoLength[3] * 60) + $videoLength[4])/2; 
+    $cmd = "$ffmpeg -i $videoFilePath -deinterlace -an -ss $thumbTime -t 00:00:01 -r 1 -y -vcodec mjpeg -f mjpeg $tempImageFilePath 2>&1"; 
+    shell_exec($cmd);
+
+    $img = WideImage::load($tempImageFilePath);
+    $img = $img->resize(128, 128, 'outside');
+    $img = $img->crop('center','center',128,128);
+    $img->saveToFile($imageFilePath);
+}
 
 //echo "data=$newMediaFileName&returnCode=0&returnCodeDescription=Success";
 echo $newMediaFileName;

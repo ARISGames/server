@@ -253,7 +253,7 @@ class Items extends Module
             if($content->media_url)
             {
                 $content->media_url       = Config::gamedataWWWPath . '/' . $content->media_url;
-                $content->media_thumb_url = substr($content-media_url,0,strrpos($content-media_url,'.')).'_128'.substr($content-media_url,strrpos($content-media_url,'.'));
+                $content->media_thumb_url = substr($content->media_url,0,strrpos($content->media_url,'.')).'_128'.substr($content->media_url,strrpos($content->media_url,'.'));
             }
             if($content->icon_url)
             {
@@ -277,7 +277,7 @@ class Items extends Module
             if($content->media_url)
             {
                 $content->media_url = Config::gamedataWWWPath . '/' . $content->media_url;
-                $content->media_thumb_url = substr($content-media_url,0,strrpos($content-media_url,'.')).'_128'.substr($content-media_url,strrpos($content-media_url,'.'));
+                $content->media_thumb_url = substr($content->media_url,0,strrpos($content->media_url,'.')).'_128'.substr($content->media_url,strrpos($content->media_url,'.'));
             }
             if($content->icon_url)
             {
