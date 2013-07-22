@@ -155,10 +155,10 @@ class EditorFoldersAndContent extends Module
         return new returnData(0, $foldersAndContents);
     }
 
-    public function getContent($gameId, $intObjectContentID)
+    public function getContent($gameId, $intObjectContentId)
     {
         //Get the Contents with some of the content's data
-        $query = "SELECT * FROM folder_contents WHERE game_id = '{$gameId}' AND object_content_id = '{$intObjectContentID}' LIMIT 1";
+        $query = "SELECT * FROM folder_contents WHERE game_id = '{$gameId}' AND object_content_id = '{$intObjectContentId}' LIMIT 1";
         $rsContents = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error:". mysql_error());
 
@@ -308,24 +308,24 @@ class EditorFoldersAndContent extends Module
         return $content;
     }
 
-    public function saveFolder($gameId, $intFolderID, $strName, $intParentID, $intSortOrder, $boolIsOpen, $editorId, $editorToken)
+    public function saveFolder($gameId, $intFolderId, $strName, $intParentId, $intSortOrder, $boolIsOpen, $editorId, $editorToken)
     {
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
         $strName = addslashes($strName);	
 
-        if ($intFolderID) {
+        if ($intFolderId) {
             //This is an update
 
             $query = "UPDATE folders
                 SET 
                 name = '{$strName}',
-                     parent_id = '{$intParentID}',
+                     parent_id = '{$intParentId}',
                      previous_id = '{$intSortOrder}',
                      is_open = '{$boolIsOpen}'
                          WHERE 
-                         folder_id = {$intFolderID} AND
+                         folder_id = {$intFolderId} AND
                          game_id = '{$gameId}'
                          ";
 
@@ -337,30 +337,30 @@ class EditorFoldersAndContent extends Module
             //This is an insert
 
             $query = "INSERT INTO folders (game_id, name, parent_id, previous_id, is_open)
-                VALUES ('{$gameId}','{$strName}', '{$intParentID}', '{$intSortOrder}', '{$boolIsOpen}')";
+                VALUES ('{$gameId}','{$strName}', '{$intParentId}', '{$intSortOrder}', '{$boolIsOpen}')";
 
             Module::query($query);
-            $newFolderID = mysql_insert_id();
+            $newFolderId = mysql_insert_id();
 
             if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
-            else return new returnData(0, $newFolderID, NULL);
+            else return new returnData(0, $newFolderId, NULL);
         }
     }
 
-    public static function saveContent($gameId, $intObjectContentID, $intFolderID, $strContentType, $intContentID, $intSortOrder, $editorId, $editorToken)
+    public static function saveContent($gameId, $intObjectContentId, $intFolderId, $strContentType, $intContentId, $intSortOrder, $editorId, $editorToken)
     {
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
-        return Module::saveContentNoAuthentication($gameId, $intObjectContentID, $intFolderID, $strContentType, $intContentID, $intSortOrder);
+        return Module::saveContentNoAuthentication($gameId, $intObjectContentId, $intFolderId, $strContentType, $intContentId, $intSortOrder);
     }
 
-    public function deleteFolder($gameId, $intFolderID, $editorId, $editorToken)
+    public function deleteFolder($gameId, $intFolderId, $editorId, $editorToken)
     {
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
-        $query = "DELETE FROM folders WHERE folder_id = {$intFolderID} AND game_id = '{$gameId}'";
+        $query = "DELETE FROM folders WHERE folder_id = {$intFolderId} AND game_id = '{$gameId}'";
         Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
@@ -368,13 +368,13 @@ class EditorFoldersAndContent extends Module
         else return new returnData(2, 'invalid folder id');
     }	
 
-    public static function deleteContent($gameId, $intContentID, $editorId, $editorToken)
+    public static function deleteContent($gameId, $intContentId, $editorId, $editorToken)
     {
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
         //Lookup the object
-        $query = "SELECT content_type,content_id FROM folder_contents WHERE object_content_id = {$intContentID} AND game_id = '{$gameId}' LIMIT 1";
+        $query = "SELECT content_type,content_id FROM folder_contents WHERE object_content_id = {$intContentId} AND game_id = '{$gameId}' LIMIT 1";
         $contentQueryResult = Module::query($query);
         $content = @mysql_fetch_object($contentQueryResult);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -382,7 +382,7 @@ class EditorFoldersAndContent extends Module
         Spawnables::deleteSpawnablesOfObject($gameId, $content->content_type, $content->content_id, $editorId, $editorToken);
 
         //Delete the content record
-        $query = "DELETE FROM folder_contents WHERE object_content_id = {$intContentID} AND game_id = '{$gameId}'";
+        $query = "DELETE FROM folder_contents WHERE object_content_id = {$intContentId} AND game_id = '{$gameId}'";
         Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 

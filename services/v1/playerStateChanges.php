@@ -19,9 +19,9 @@ class PlayerStateChanges extends Module
         return new returnData(0, $rsResult);
     }
 
-    public function getPlayerStateChange($gameId, $intPlayerStateChangeID)
+    public function getPlayerStateChange($gameId, $intPlayerStateChangeId)
     {
-        $query = "SELECT * FROM player_state_changes WHERE game_id = {$gameId} AND id = {$intPlayerStateChangeID} LIMIT 1";
+        $query = "SELECT * FROM player_state_changes WHERE game_id = {$gameId} AND id = {$intPlayerStateChangeId} LIMIT 1";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -56,7 +56,7 @@ class PlayerStateChanges extends Module
         return new returnData(0, mysql_insert_id());
     }
 
-    public function updatePlayerStateChange($gameId, $intPlayerStateChangeID, $strEventType, 
+    public function updatePlayerStateChange($gameId, $intPlayerStateChangeId, $strEventType, 
             $intEventDetail, $strActionType, $strActionDetail, $intActionAmount, $editorId, $editorToken)
     {
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
@@ -77,7 +77,7 @@ class PlayerStateChanges extends Module
                        action = '{$strActionType}',
                        action_detail = '{$strActionDetail}',
                        action_amount = '{$intActionAmount}'
-                           WHERE game_id = '{$gameId}' AND id = '{$intPlayerStateChangeID}'";
+                           WHERE game_id = '{$gameId}' AND id = '{$intPlayerStateChangeId}'";
 
 
         Module::query($query);
@@ -88,12 +88,12 @@ class PlayerStateChanges extends Module
         else return new returnData(0, FALSE);
     }
 
-    public function deletePlayerStateChange($gameId, $intPlayerStateChangeID, $editorId, $editorToken)
+    public function deletePlayerStateChange($gameId, $intPlayerStateChangeId, $editorId, $editorToken)
     {
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
-        $query = "DELETE FROM player_state_changes WHERE game_id = {$gameId} AND id = {$intPlayerStateChangeID}";
+        $query = "DELETE FROM player_state_changes WHERE game_id = {$gameId} AND id = {$intPlayerStateChangeId}";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");

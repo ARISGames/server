@@ -129,11 +129,11 @@ class Players extends Module
 		return new returnData(1, NULL, 'error...');
 	}
 
-	public function updatePlayerLastGame($intPlayerID, $gameId)
+	public function updatePlayerLastGame($intPlayerId, $gameId)
 	{
 		$query = "UPDATE players
 			SET last_game_id = '{$gameId}'
-			WHERE player_id = {$intPlayerID}";
+			WHERE player_id = {$intPlayerId}";
 
 		Module::query($query);
 
@@ -186,11 +186,11 @@ class Players extends Module
 		return new returnData(0, $rs);
 	}
 
-	public function getOtherPlayersForGame($gameId, $intPlayerID)
+	public function getOtherPlayersForGame($gameId, $intPlayerId)
 	{
 		$timeLimitInMinutes = 20;
 
-		$query = "SELECT p.player_id, p.media_id, p.user_name, p.display_name, pl.event_detail_1 as 'latitude', pl.event_detail_2 as 'longitude', pl.timestamp FROM (SELECT player_id, event_detail_1, event_detail_2, timestamp FROM player_log WHERE game_id = '{$gameId}' AND event_type = 'MOVE' AND deleted = 0  AND timestamp >= (CURDATE() - INTERVAL '{$timeLimitInMinutes}' MINUTE) GROUP BY player_id ORDER BY timestamp DESC) AS pl JOIN (SELECT * FROM players WHERE players.player_id != '{$intPlayerID}' AND players.show_on_map = '1')  AS p ON pl.player_id = p.player_id";
+		$query = "SELECT p.player_id, p.media_id, p.user_name, p.display_name, pl.event_detail_1 as 'latitude', pl.event_detail_2 as 'longitude', pl.timestamp FROM (SELECT player_id, event_detail_1, event_detail_2, timestamp FROM player_log WHERE game_id = '{$gameId}' AND event_type = 'MOVE' AND deleted = 0  AND timestamp >= (CURDATE() - INTERVAL '{$timeLimitInMinutes}' MINUTE) GROUP BY player_id ORDER BY timestamp DESC) AS pl JOIN (SELECT * FROM players WHERE players.player_id != '{$intPlayerId}' AND players.show_on_map = '1')  AS p ON pl.player_id = p.player_id";
 
 		$rs = Module::query($query);
 
@@ -203,15 +203,15 @@ class Players extends Module
 		return new returnData(0, $array);
 	}
 
-	public function startOverGameForPlayer($gameId, $intPlayerID)
+	public function startOverGameForPlayer($gameId, $intPlayerId)
 	{	
-		$query = "DELETE FROM player_items WHERE player_id = '{$intPlayerID}' AND game_id = {$gameId}";		
+		$query = "DELETE FROM player_items WHERE player_id = '{$intPlayerId}' AND game_id = {$gameId}";		
 		Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
 		$query = "UPDATE player_log
 			SET deleted = 1
-			WHERE player_id = '{$intPlayerID}' AND game_id = '{$gameId}'";		
+			WHERE player_id = '{$intPlayerId}' AND game_id = '{$gameId}'";		
 			Module::query($query);
 		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
@@ -219,7 +219,7 @@ class Players extends Module
 		$game = $gameReturnData->data;
 		if ($game->delete_player_locations_on_reset) {
 
-			$query = "SELECT item_id FROM items WHERE game_id = {$gameId} AND creator_player_id = {$intPlayerID}";	
+			$query = "SELECT item_id FROM items WHERE game_id = {$gameId} AND creator_player_id = {$intPlayerId}";	
 			$itemsRs = Module::query($query);
 			if (mysql_error()) return new returnData(3, NULL, "SQL Error");
 
@@ -235,17 +235,17 @@ class Players extends Module
 		else return new returnData(0, FALSE);
 	}	
 
-	public function updatePlayerLocation($intPlayerID, $gameId, $floatLat, $floatLong)
+	public function updatePlayerLocation($intPlayerId, $gameId, $floatLat, $floatLong)
 	{
-		Module::processGameEvent($intPlayerID, $gameId, Module::kLOG_MOVE, $floatLat, $floatLong);
+		Module::processGameEvent($intPlayerId, $gameId, Module::kLOG_MOVE, $floatLat, $floatLong);
 		if (mysql_affected_rows()) return new returnData(0, TRUE);
 		else return new returnData(0, FALSE);
 	}
 
-	public function nodeViewed($gameId, $intPlayerID, $intNodeID, $intLocationID = 0)
+	public function nodeViewed($gameId, $intPlayerId, $intNodeId, $intLocationId = 0)
 	{	
-		//Module::applyPlayerStateChanges($gameId, $intPlayerID, Module::kLOG_VIEW_NODE, $intNodeID); //Was causing duplicate playerStateChanges (changed 5/23/12 Phil)
-		Module::processGameEvent($intPlayerID, $gameId, Module::kLOG_VIEW_NODE, $intNodeID, $intLocationID);
+		//Module::applyPlayerStateChanges($gameId, $intPlayerId, Module::kLOG_VIEW_NODE, $intNodeId); //Was causing duplicate playerStateChanges (changed 5/23/12 Phil)
+		Module::processGameEvent($intPlayerId, $gameId, Module::kLOG_VIEW_NODE, $intNodeId, $intLocationId);
 
 		return new returnData(0, TRUE);
 	}
@@ -253,45 +253,45 @@ class Players extends Module
 	public function setItemCountForPlayerJSON($obj)
 	{
 		$gameId = $obj['gameId'];
-		$intItemID = $obj['itemId'];
-		$intPlayerID = $obj['playerId'];
+		$intItemId = $obj['itemId'];
+		$intPlayerId = $obj['playerId'];
 		$qty = $obj['qty'];
 
-		Module::setItemCountForPlayer($gameId, $intItemID, $intPlayerID, $qty);
+		Module::setItemCountForPlayer($gameId, $intItemId, $intPlayerId, $qty);
 	}
 
-	public function setItemCountForPlayer($gameId, $intItemID, $intPlayerID, $qty)
+	public function setItemCountForPlayer($gameId, $intItemId, $intPlayerId, $qty)
 	{
-		$rData = Module::setItemCountForPlayer($gameId, $intItemID, $intPlayerID, $qty);
+		$rData = Module::setItemCountForPlayer($gameId, $intItemId, $intPlayerId, $qty);
 		if(!$rData->returnCode)
 			return new returnData(0, $rData);
 		else
 			return $rData;
 	}
 
-	public function giveItemToPlayer($gameId, $intItemID, $intPlayerID, $qtyToGive=1) 
+	public function giveItemToPlayer($gameId, $intItemId, $intPlayerId, $qtyToGive=1) 
 	{
-		$rData = Module::giveItemToPlayer($gameId, $intItemID, $intPlayerID, $qtyToGive=1);
+		$rData = Module::giveItemToPlayer($gameId, $intItemId, $intPlayerId, $qtyToGive=1);
 		if(!$rData->returnCode)
 			return new returnData(0, $rData);
 		else
 			return $rData;
 	}
 
-	public function takeItemFromPlayer($gameId, $intItemID, $intPlayerID, $qtyToGive=1) 
+	public function takeItemFromPlayer($gameId, $intItemId, $intPlayerId, $qtyToGive=1) 
 	{
-		$rData = Module::takeItemFromPlayer($gameId, $intItemID, $intPlayerID, $qtyToGive=1);
+		$rData = Module::takeItemFromPlayer($gameId, $intItemId, $intPlayerId, $qtyToGive=1);
 		if(!$rData->returnCode)
 			return new returnData(0, $rData);
 		else
 			return $rData;
 	}
 
-	public function itemViewed($gameId, $intPlayerID, $intItemID, $intLocationID = 0)
+	public function itemViewed($gameId, $intPlayerId, $intItemId, $intLocationId = 0)
 	{
-		Module::processGameEvent($intPlayerID, $gameId, Module::kLOG_VIEW_ITEM, $intItemID, $intLocationID);
+		Module::processGameEvent($intPlayerId, $gameId, Module::kLOG_VIEW_ITEM, $intItemId, $intLocationId);
 
-		$query = "UPDATE player_items SET viewed = 1 WHERE game_id = {$gameId} AND player_id = {$intPlayerID} AND item_id = {$intItemID}";
+		$query = "UPDATE player_items SET viewed = 1 WHERE game_id = {$gameId} AND player_id = {$intPlayerId} AND item_id = {$intItemId}";
 
 
 		Module::query($query);
@@ -303,30 +303,30 @@ class Players extends Module
 		return new returnData(0, TRUE);
 	}
 
-	public function npcViewed($gameId, $intPlayerID, $intNpcID, $intLocationID = 0)
+	public function npcViewed($gameId, $intPlayerId, $intNpcId, $intLocationId = 0)
 	{	
-		Module::processGameEvent($intPlayerID, $gameId, Module::kLOG_VIEW_NPC, $intNpcID, $intLocationID);
+		Module::processGameEvent($intPlayerId, $gameId, Module::kLOG_VIEW_NPC, $intNpcId, $intLocationId);
 
 		return new returnData(0, TRUE);
 	}
 
-	public function webPageViewed($gameId, $intPlayerID, $intWebPageID, $intLocationID = 0)
+	public function webPageViewed($gameId, $intPlayerId, $intWebPageId, $intLocationId = 0)
 	{	
-		Module::processGameEvent($intPlayerID, $gameId, Module::kLOG_VIEW_WEBPAGE, $intWebPageID, $intLocationID);
+		Module::processGameEvent($intPlayerId, $gameId, Module::kLOG_VIEW_WEBPAGE, $intWebPageId, $intLocationId);
 
 		return new returnData(0, TRUE);
 	}
 
-	public function augBubbleViewed($gameId, $intPlayerID, $intAugBubbleID, $intLocationID = 0)
+	public function augBubbleViewed($gameId, $intPlayerId, $intAugBubbleId, $intLocationId = 0)
 	{	
-		Module::processGameEvent($intPlayerID, $gameId, Module::kLOG_VIEW_AUGBUBBLE, $intAugBubbleID, $intLocationID);
+		Module::processGameEvent($intPlayerId, $gameId, Module::kLOG_VIEW_AUGBUBBLE, $intAugBubbleId, $intLocationId);
 
 		return new returnData(0, TRUE);
 	}
 
-	public function pickupItemFromLocation($gameId, $intPlayerID, $intItemID, $intLocationID, $qty=1)
+	public function pickupItemFromLocation($gameId, $intPlayerId, $intItemId, $intLocationId, $qty=1)
 	{	
-		$query = "SELECT item_qty from locations WHERE game_id = {$gameId} AND location_id = $intLocationID";
+		$query = "SELECT item_qty from locations WHERE game_id = {$gameId} AND location_id = $intLocationId";
 		$result = Module::query($query);
 		$loc = mysql_fetch_object($result);
 
@@ -335,57 +335,57 @@ class Players extends Module
 				return new returnData(0, FALSE, "Location has qty 0");
 			}
 
-			$qtyGiven = Module::giveItemToPlayer($gameId, $intItemID, $intPlayerID, $loc->item_qty);
-			Module::decrementItemQtyAtLocation($gameId, $intLocationID, $qtyGiven); 
+			$qtyGiven = Module::giveItemToPlayer($gameId, $intItemId, $intPlayerId, $loc->item_qty);
+			Module::decrementItemQtyAtLocation($gameId, $intLocationId, $qtyGiven); 
 
 			return new returnData(0, $qtyGiven, "Location has qty 0");
 		}
 
-		$qtyGiven = Module::giveItemToPlayer($gameId, $intItemID, $intPlayerID, $qty);
-		Module::decrementItemQtyAtLocation($gameId, $intLocationID, $qtyGiven); 
+		$qtyGiven = Module::giveItemToPlayer($gameId, $intItemId, $intPlayerId, $qty);
+		Module::decrementItemQtyAtLocation($gameId, $intLocationId, $qtyGiven); 
 
 		return new returnData(0, TRUE);
 
 	}
 
-	public function dropItem($gameId, $intPlayerID, $intItemID, $floatLat, $floatLong, $qty=1)
+	public function dropItem($gameId, $intPlayerId, $intItemId, $floatLat, $floatLong, $qty=1)
 	{
-		Module::takeItemFromPlayer($gameId, $intItemID, $intPlayerID, $qty);
-		Players::giveItemToWorld($gameId, $intItemID, $floatLat, $floatLong, $qty);
+		Module::takeItemFromPlayer($gameId, $intItemId, $intPlayerId, $qty);
+		Players::giveItemToWorld($gameId, $intItemId, $floatLat, $floatLong, $qty);
 
 		return new returnData(0, FALSE);
 	}		
 
-	public function dropNote($gameId, $intPlayerID, $noteID, $floatLat, $floatLong)
+	public function dropNote($gameId, $intPlayerId, $noteId, $floatLat, $floatLong)
 	{
-		Module::giveNoteToWorld($gameId, $noteID, $floatLat, $floatLong);
+		Module::giveNoteToWorld($gameId, $noteId, $floatLat, $floatLong);
 
 		return new returnData(0, FALSE);
 	}	
 
-	public function destroyItem($gameId, $intPlayerID, $intItemID, $qty=1)
+	public function destroyItem($gameId, $intPlayerId, $intItemId, $qty=1)
 	{
-		Module::takeItemFromPlayer($gameId, $intItemID, $intPlayerID, $qty);
-		Module::processGameEvent($intPlayerID, $gameId, Module::kLOG_DESTROY_ITEM, $intItemID, $qty);
+		Module::takeItemFromPlayer($gameId, $intItemId, $intPlayerId, $qty);
+		Module::processGameEvent($intPlayerId, $gameId, Module::kLOG_DESTROY_ITEM, $intItemId, $qty);
 
 		return new returnData(0, FALSE);
 	}		
 
-	public function mapViewed($gameId, $intPlayerID)
+	public function mapViewed($gameId, $intPlayerId)
 	{
-		Module::processGameEvent($intPlayerID, $gameId, Module::kLOG_VIEW_MAP);
+		Module::processGameEvent($intPlayerId, $gameId, Module::kLOG_VIEW_MAP);
 		return new returnData(0, FALSE);
 	}
 
-	public function questsViewed($gameId, $intPlayerID)
+	public function questsViewed($gameId, $intPlayerId)
 	{
-		Module::processGameEvent($intPlayerID, $gameId, Module::kLOG_VIEW_QUESTS);
+		Module::processGameEvent($intPlayerId, $gameId, Module::kLOG_VIEW_QUESTS);
 		return new returnData(0, FALSE);
 	}
 
-	public function inventoryViewed($gameId, $intPlayerID)
+	public function inventoryViewed($gameId, $intPlayerId)
 	{
-		Module::processGameEvent($intPlayerID, $gameId, Module::kLOG_VIEW_INVENTORY);
+		Module::processGameEvent($intPlayerId, $gameId, Module::kLOG_VIEW_INVENTORY);
 		return new returnData(0, FALSE);
 	}			
 
@@ -421,18 +421,18 @@ class Players extends Module
 		else return new returnData(5, NULL, "Mail could not be sent");
 	}
 
-	public function changePassword($intPlayerID, $strOldPassword, $strNewPassword)
+	public function changePassword($intPlayerId, $strOldPassword, $strNewPassword)
 	{	
 		if ($strOldPassword == $strNewPassword) return new returnData(0, NULL);
 
 		$query = "UPDATE players 
 			SET password = MD5('{$strNewPassword}')
 			WHERE password = MD5('{$strOldPassword}')
-			AND player_id = {$intPlayerID}";
+			AND player_id = {$intPlayerId}";
 
 		Module::query($query);
 
-		if (mysql_affected_rows() < 1) return new returnData(4, NULL, 'No players exist with matching ID and password');
+		if (mysql_affected_rows() < 1) return new returnData(4, NULL, 'No players exist with matching Id and password');
 		return new returnData(0, NULL);
 	}	
 
@@ -517,7 +517,7 @@ class Players extends Module
 		$query = "SELECT user_name, display_name, group_name, media_id FROM players WHERE player_id = '{$playerId}'";
 		$result = Module::query($query);
 		$name = mysql_fetch_object($result);
-		if(!$name) return "Invalid Player ID";
+		if(!$name) return "Invalid Player Id";
 		$backpack->owner = new stdClass();
 		$backpack->owner->user_name = $name->user_name;
 		$backpack->owner->display_name = $name->display_name;
@@ -705,7 +705,7 @@ class Players extends Module
 		return new returnData(0,$log);
 	}
 
-	protected function giveItemToWorld($gameId, $intItemID, $floatLat, $floatLong, $intQty = 1)
+	protected function giveItemToWorld($gameId, $intItemId, $floatLat, $floatLong, $intQty = 1)
 	{
 		//Find any items on the map nearby
 		$clumpingRangeInMeters = 10;
@@ -715,7 +715,7 @@ class Players extends Module
 			COS(($floatLong - longitude) * PI() / 180)) * 180 / PI()) * 60 * 1.1515) * 1609.344
 			AS `distance`, location_id 
 			FROM locations 
-			WHERE type = 'item' AND type_id = '{$intItemID}' AND game_id = '{$gameId}'
+			WHERE type = 'item' AND type_id = '{$intItemId}' AND game_id = '{$gameId}'
 			HAVING distance<= {$clumpingRangeInMeters}
 		ORDER BY distance ASC"; 	
 			$result = Module::query($query);
@@ -730,12 +730,12 @@ class Players extends Module
 		}
 		else {
 
-			$itemName = $this->getItemName($gameId, $intItemID);
+			$itemName = $this->getItemName($gameId, $intItemId);
 			$error = 100; //Use 100 meters
-			$icon_media_id = $this->getItemIconMediaId($gameId, $intItemID); //Set the map icon = the item's icon
+			$icon_media_id = $this->getItemIconMediaId($gameId, $intItemId); //Set the map icon = the item's icon
 
 			$query = "INSERT INTO locations (game_id, name, type, type_id, icon_media_id, latitude, longitude, error, item_qty)
-				VALUES ('{$gameId}', '{$itemName}','Item','{$intItemID}', '{$icon_media_id}', '{$floatLat}','{$floatLong}', '{$error}','{$intQty}')";
+				VALUES ('{$gameId}', '{$itemName}','Item','{$intItemId}', '{$icon_media_id}', '{$floatLat}','{$floatLong}', '{$error}','{$intQty}')";
 			Module::query($query);
 
 			$newId = mysql_insert_id();

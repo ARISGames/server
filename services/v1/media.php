@@ -44,13 +44,13 @@ class Media extends Module
         return $returnData;
     }
 
-    public function getMediaObject($gameId, $intMediaID)
+    public function getMediaObject($gameId, $intMediaId)
     {
         //apparently, "is_numeric(NAN)" returns 'true'. NAN literally means "Not A Number". Think about that one for a sec.
-        if(!$intMediaID || !is_numeric($intMediaID) || $intMediaID == NAN) //return new returnData(2, NULL, "No matching media");
+        if(!$intMediaId || !is_numeric($intMediaId) || $intMediaId == NAN) //return new returnData(2, NULL, "No matching media");
 	{
 		$mediaItem = new stdClass;
-        	$mediaItem->media_id = $intMediaID;
+        	$mediaItem->media_id = $intMediaId;
         	$mediaItem->name = "Default NPC";
         	$mediaItem->file_path = "0/npc.png";
         	$mediaItem->file_name = "0/npc.png";
@@ -61,14 +61,14 @@ class Media extends Module
         	return new returnData(0, $mediaItem);
 	}
 
-        $query = "SELECT * FROM media WHERE media_id = {$intMediaID} LIMIT 1";
+        $query = "SELECT * FROM media WHERE media_id = {$intMediaId} LIMIT 1";
         $rsResult = Module::query($query);
 
         $mediaRow = mysql_fetch_object($rsResult);
         if (!$mediaRow) //return new returnData(2, NULL, "No matching media");
 	{
 		$mediaItem = new stdClass;
-        	$mediaItem->media_id = $intMediaID;
+        	$mediaItem->media_id = $intMediaId;
         	$mediaItem->name = "Default NPC";
         	$mediaItem->file_path = "0/npc.png";
         	$mediaItem->file_name = "0/npc.png";
@@ -150,7 +150,7 @@ class Media extends Module
         return new returnData(0,$media);
     }
 
-    public function renameMedia($gameId, $intMediaID, $strName, $editorId, $editorToken)
+    public function renameMedia($gameId, $intMediaId, $strName, $editorId, $editorToken)
     {
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
@@ -162,7 +162,7 @@ class Media extends Module
         //Update this record
         $query = "UPDATE media 
             SET name = '{$strName}' 
-            WHERE media_id = '{$intMediaID}' and game_id = '{$gameId}'";
+            WHERE media_id = '{$intMediaId}' and game_id = '{$gameId}'";
 
         Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -171,13 +171,13 @@ class Media extends Module
         else return new returnData(0, FALSE);	
     }
 
-    public function deleteMedia($gameId, $intMediaID, $editorId, $editorToken)
+    public function deleteMedia($gameId, $intMediaId, $editorId, $editorToken)
     {
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
         $query = "SELECT * FROM media 
-            WHERE media_id = {$intMediaID}";
+            WHERE media_id = {$intMediaId}";
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error:". mysql_error());
 
@@ -186,7 +186,7 @@ class Media extends Module
 
         //Delete the Record
         $query = "DELETE FROM media 
-            WHERE media_id = {$intMediaID}";
+            WHERE media_id = {$intMediaId}";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
@@ -201,14 +201,14 @@ class Media extends Module
         else return new returnData(0, FALSE);	
     }	
 
-    public function getMediaDirectory($gameID)
+    public function getMediaDirectory($gameId)
     {
-        return new returnData(0, Config::gamedataFSPath . "/{$gameID}" . Config::gameMediaSubdir);
+        return new returnData(0, Config::gamedataFSPath . "/{$gameId}" . Config::gameMediaSubdir);
     }
 
-    public function getMediaDirectoryURL($gameID)
+    public function getMediaDirectoryURL($gameId)
     {
-        return new returnData(0, Config::gamedataWWWPath . "/{$gameID}". Config::gameMediaSubdir);
+        return new returnData(0, Config::gamedataWWWPath . "/{$gameId}". Config::gameMediaSubdir);
     }	
 
     public function getMediaType($strMediaFileName)

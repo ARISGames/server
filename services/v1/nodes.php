@@ -17,9 +17,9 @@ class Nodes extends Module
 
     }
 
-    public function getNode($gameId, $intNodeID)
+    public function getNode($gameId, $intNodeId)
     {
-        $query = "SELECT * FROM nodes WHERE game_id = {$gameId} AND node_id = {$intNodeID} LIMIT 1";
+        $query = "SELECT * FROM nodes WHERE game_id = {$gameId} AND node_id = {$intNodeId} LIMIT 1";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -30,11 +30,11 @@ class Nodes extends Module
         return new returnData(0, $node);
     }
 
-    public function createNode($gameId, $strTitle, $strText, $intMediaID, $intIconMediaID,
-            $strOpt1Text, $intOpt1NodeID, 
-            $strOpt2Text, $intOpt2NodeID,
-            $strOpt3Text, $intOpt3NodeID,
-            $strQACorrectAnswer, $intQAIncorrectNodeID, $intQACorrectNodeID, $editorId, $editorToken)
+    public function createNode($gameId, $strTitle, $strText, $intMediaId, $intIconMediaId,
+            $strOpt1Text, $intOpt1NodeId, 
+            $strOpt2Text, $intOpt2NodeId,
+            $strOpt3Text, $intOpt3NodeId,
+            $strQACorrectAnswer, $intQAIncorrectNodeId, $intQACorrectNodeId, $editorId, $editorToken)
     {
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
@@ -54,13 +54,13 @@ class Nodes extends Module
              require_answer_string, 
              require_answer_incorrect_node_id, 
              require_answer_correct_node_id)
-            VALUES ('{$gameId}', '{$strTitle}', '{$strText}', '{$intMediaID}', '{$intIconMediaID}',
-                    '{$strOpt1Text}', '{$intOpt1NodeID}',
-                    '{$strOpt2Text}','{$intOpt2NodeID}',
-                    '{$strOpt3Text}','{$intOpt3NodeID}',
+            VALUES ('{$gameId}', '{$strTitle}', '{$strText}', '{$intMediaId}', '{$intIconMediaId}',
+                    '{$strOpt1Text}', '{$intOpt1NodeId}',
+                    '{$strOpt2Text}','{$intOpt2NodeId}',
+                    '{$strOpt3Text}','{$intOpt3NodeId}',
                     '{$strQACorrectAnswer}', 
-                    '{$intQAIncorrectNodeID}', 
-                    '{$intQACorrectNodeID}')";
+                    '{$intQAIncorrectNodeId}', 
+                    '{$intQACorrectNodeId}')";
 
         Module::query($query);
 
@@ -69,11 +69,11 @@ class Nodes extends Module
         return new returnData(0, mysql_insert_id());
     }
 
-    public function updateNode($gameId, $intNodeID, $strTitle, $strText, $intMediaID, $intIconMediaID,
-            $strOpt1Text, $intOpt1NodeID, 
-            $strOpt2Text, $intOpt2NodeID,
-            $strOpt3Text, $intOpt3NodeID,
-            $strQACorrectAnswer, $intQAIncorrectNodeID, $intQACorrectNodeID, $editorId, $editorToken)
+    public function updateNode($gameId, $intNodeId, $strTitle, $strText, $intMediaId, $intIconMediaId,
+            $strOpt1Text, $intOpt1NodeId, 
+            $strOpt2Text, $intOpt2NodeId,
+            $strOpt3Text, $intOpt3NodeId,
+            $strQACorrectAnswer, $intQAIncorrectNodeId, $intQACorrectNodeId, $editorId, $editorToken)
     {
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
@@ -88,14 +88,14 @@ class Nodes extends Module
 
         $query = "UPDATE nodes 
             SET title = '{$strTitle}', text = '{$strText}',
-                media_id = '{$intMediaID}', icon_media_id = '{$intIconMediaID}',
-                opt1_text = '{$strOpt1Text}', opt1_node_id = '{$intOpt1NodeID}',
-                opt2_text = '{$strOpt2Text}', opt2_node_id = '{$intOpt2NodeID}',
-                opt3_text = '{$strOpt3Text}', opt3_node_id = '{$intOpt3NodeID}',
+                media_id = '{$intMediaId}', icon_media_id = '{$intIconMediaId}',
+                opt1_text = '{$strOpt1Text}', opt1_node_id = '{$intOpt1NodeId}',
+                opt2_text = '{$strOpt2Text}', opt2_node_id = '{$intOpt2NodeId}',
+                opt3_text = '{$strOpt3Text}', opt3_node_id = '{$intOpt3NodeId}',
                 require_answer_string = '{$strQACorrectAnswer}', 
-                require_answer_incorrect_node_id = '{$intQAIncorrectNodeID}', 
-                require_answer_correct_node_id = '{$intQACorrectNodeID}'
-                    WHERE game_id = {$gameId} AND node_id = '{$intNodeID}'";
+                require_answer_incorrect_node_id = '{$intQAIncorrectNodeId}', 
+                require_answer_correct_node_id = '{$intQACorrectNodeId}'
+                    WHERE game_id = {$gameId} AND node_id = '{$intNodeId}'";
 
         Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);	
@@ -116,13 +116,13 @@ class Nodes extends Module
         return new returnData(0);
     }
 
-    public function deleteNode($gameId, $intNodeID)
+    public function deleteNode($gameId, $intNodeId)
     {
-        Locations::deleteLocationsForObject($gameId, 'Node', $intNodeID);
-        Requirements::deleteRequirementsForRequirementObject($gameId, 'Node', $intNodeID);
-        PlayerStateChanges::deletePlayerStateChangesThatRefrenceObject($gameId, 'Node', $intNodeID);
+        Locations::deleteLocationsForObject($gameId, 'Node', $intNodeId);
+        Requirements::deleteRequirementsForRequirementObject($gameId, 'Node', $intNodeId);
+        PlayerStateChanges::deletePlayerStateChangesThatRefrenceObject($gameId, 'Node', $intNodeId);
 
-        $query = "DELETE FROM nodes WHERE game_id = {$gameId} AND node_id = {$intNodeID}";
+        $query = "DELETE FROM nodes WHERE game_id = {$gameId} AND node_id = {$intNodeId}";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");

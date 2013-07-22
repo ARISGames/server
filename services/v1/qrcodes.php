@@ -17,9 +17,9 @@ class QRCodes extends Module
         return new returnData(0, $rsResult);
     }
 
-    public function getQRCode($gameId, $intQRCodeID)
+    public function getQRCode($gameId, $intQRCodeId)
     {
-        $query = "SELECT * FROM qrcodes WHERE game_id = {$gameId} AND qrcode_id = {$intQRCodeID} LIMIT 1";
+        $query = "SELECT * FROM qrcodes WHERE game_id = {$gameId} AND qrcode_id = {$intQRCodeId} LIMIT 1";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -167,7 +167,7 @@ class QRCodes extends Module
         //unlink($strFileName);
     }
 
-    public function getQRCodeNearbyObjectForPlayer($gameId, $strCode, $intPlayerID)
+    public function getQRCodeNearbyObjectForPlayer($gameId, $strCode, $intPlayerId)
     {
         $strCode = urldecode($strCode);	
 
@@ -181,18 +181,18 @@ class QRCodes extends Module
         while($qrcode = @mysql_fetch_object($rsResult)){
             //Check for a valid QR Code
             if (!$qrcode) { 
-                Module::appendLog($intPlayerID, $gameId, Module::kLOG_ENTER_QRCODE, $strCode, 'INVALID');
+                Module::appendLog($intPlayerId, $gameId, Module::kLOG_ENTER_QRCODE, $strCode, 'INVALID');
                 $rData = new returnData(0, NULL, "invalid QRCode code");
             }
 
             //Check the requirements of the QR Code's link object
-            else if (!$this->objectMeetsRequirements ($gameId, $intPlayerID, $qrcode->link_type, $qrcode->link_id)) {
-                Module::appendLog($intPlayerID, $gameId, Module::kLOG_ENTER_QRCODE, $strCode, 'REQS_OR_QTY_NOT_MET');
+            else if (!$this->objectMeetsRequirements ($gameId, $intPlayerId, $qrcode->link_type, $qrcode->link_id)) {
+                Module::appendLog($intPlayerId, $gameId, Module::kLOG_ENTER_QRCODE, $strCode, 'REQS_OR_QTY_NOT_MET');
                 $rData = new returnData(0, $qrcode->fail_text, "QRCode requirements not met");
             }
 
             else{
-                Module::appendLog($intPlayerID, $gameId, Module::kLOG_ENTER_QRCODE, $strCode, 'SUCCESSFUL');
+                Module::appendLog($intPlayerId, $gameId, Module::kLOG_ENTER_QRCODE, $strCode, 'SUCCESSFUL');
 
                 $rData = new returnData(0, $qrcode);
 
@@ -214,7 +214,7 @@ class QRCodes extends Module
 
     }	
 
-    public function createQRCode($gameId, $strLinkType, $intLinkID, $strCode = '', $imageMatchId='0', $errorText="This code doesn't mean anything right now. You should come back later.")
+    public function createQRCode($gameId, $strLinkType, $intLinkId, $strCode = '', $imageMatchId='0', $errorText="This code doesn't mean anything right now. You should come back later.")
     {
         $errorText = addslashes($errorText);
 
@@ -229,7 +229,7 @@ class QRCodes extends Module
 
         $query = "INSERT INTO qrcodes 
             (game_id, link_type, link_id, code, match_media_id, fail_text)
-            VALUES ('{$gameId}','{$strLinkType}','{$intLinkID}','{$strCode}','{$imageMatchId}', '{$errorText}')";
+            VALUES ('{$gameId}','{$strLinkType}','{$intLinkId}','{$strCode}','{$imageMatchId}', '{$errorText}')";
 
         Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error: ". mysql_error());
@@ -237,7 +237,7 @@ class QRCodes extends Module
         return new returnData(0, mysql_insert_id());
     }
 
-    public function updateQRCode($gameId, $intQRCodeID, $strLinkType, $intLinkID, $strCode, $imageMatchId, $errorText="")
+    public function updateQRCode($gameId, $intQRCodeId, $strLinkType, $intLinkId, $strCode, $imageMatchId, $errorText="")
     {
         $strCode = addslashes($strCode);
         $errorText = addslashes($errorText);
@@ -247,11 +247,11 @@ class QRCodes extends Module
         $query = "UPDATE qrcodes
             SET 
             link_type = '{$strLinkType}',
-                      link_id = '{$intLinkID}',
+                      link_id = '{$intLinkId}',
                       code = '{$strCode}',
                       match_media_id = '{$imageMatchId}',
                       fail_text = '{$errorText}'
-                          WHERE game_id = {$gameId} AND qrcode_id = '{$intQRCodeID}'";
+                          WHERE game_id = {$gameId} AND qrcode_id = '{$intQRCodeId}'";
 
 
         Module::query($query);
@@ -263,9 +263,9 @@ class QRCodes extends Module
 
     }
 
-    public function deleteQRCode($gameId, $intQRCodeID)
+    public function deleteQRCode($gameId, $intQRCodeId)
     {
-        $query = "DELETE FROM qrcodes WHERE game_id = {$gameId} AND qrcode_id = {$intQRCodeID}";
+        $query = "DELETE FROM qrcodes WHERE game_id = {$gameId} AND qrcode_id = {$intQRCodeId}";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -278,10 +278,10 @@ class QRCodes extends Module
         }
     }	
 
-    public function deleteQRCodeCodesForLink($gameId, $strLinkType, $intLinkID)
+    public function deleteQRCodeCodesForLink($gameId, $strLinkType, $intLinkId)
     {
         $query = "DELETE FROM qrcodes WHERE game_id = {$gameId} AND
-            link_type = '{$strLinkType}' AND link_id = '{$intLinkID}'";
+            link_type = '{$strLinkType}' AND link_id = '{$intLinkId}'";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
