@@ -377,7 +377,7 @@ class Notes extends Module
 	//	player_created = 0 (if 0, by game author, and potentially used in requirements. if 1, created by some player)
 	function getNoteTags($noteId, $gameId)
 	{
-		$query = "SELECT gt.tag, gt.tag_id, gt.player_created FROM note_tags LEFT JOIN ((SELECT tag, tag_id, player_created FROM game_tags WHERE game_id = '{$gameId}') as gt) ON note_tags.tag_id = gt.tag_id WHERE note_id = '{$noteId}'";
+		$query = "SELECT gt.tag, gt.tag_id, gt.player_created, gt.mediaId FROM note_tags LEFT JOIN ((SELECT tag, tag_id, player_created, mediaId FROM game_tags WHERE game_id = '{$gameId}') as gt) ON note_tags.tag_id = gt.tag_id WHERE note_id = '{$noteId}'";
 		$result = Module::query($query);
 		$tags = array();
 		while($tag = mysql_fetch_object($result))	
@@ -787,7 +787,7 @@ class Notes extends Module
 
 	private static function getNoteTagsAPI($noteId, $gameId)
 	{
-		$query = "SELECT gt.tag, gt.tag_id, gt.player_created FROM note_tags LEFT JOIN ((SELECT tag, tag_id, player_created FROM game_tags WHERE game_id = '{$gameId}') as gt) ON note_tags.tag_id = gt.tag_id WHERE note_id = '{$noteId}'";
+		$query = "SELECT gt.tag, gt.tag_id, gt.player_created, gt.mediaId FROM note_tags LEFT JOIN ((SELECT tag, tag_id, player_created FROM game_tags WHERE game_id = '{$gameId}') as gt) ON note_tags.tag_id = gt.tag_id WHERE note_id = '{$noteId}'";
 		$result = Module::query($query);
 		$tags = array();
 		while($tag = mysql_fetch_object($result))	
