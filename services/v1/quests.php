@@ -53,7 +53,6 @@ class Quests extends Module
         if (!$event) return new returnData(2, NULL, "invalid quest id");
 
         return new returnData(0, $event);
-
     }
 
     public function createQuest($gameId, $strName, $strIncompleteDescription, $strCompleteDescription, $boolFullScreenNotification, $intActiveMediaId, $intCompleteMediaId, $intActiveIconMediaId, $intCompleteIconMediaID, $exitToTab, $index, $editorId, $editorToken)
@@ -92,6 +91,10 @@ class Quests extends Module
                  text_when_complete = '{$strCompleteDescription}',
                  sort_index = '{$index}',
                  exit_to_tab = '{$exitToTab}',
+                 active_media_id = '{$intActiveMediaId}',
+                 complete_media_id = '{$intCompleteMediaId}',
+                 active_icon_media_id = '{$intActiveIconMediaId}',
+                 complete_icon_media_id = '{$intCompleteIconMediaID}',
                  full_screen_notify = '{$boolFullScreenNotification}'
                      WHERE game_id = {$gameId} AND quest_id = '{$intQuestID}'";
 
