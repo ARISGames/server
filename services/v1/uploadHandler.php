@@ -1,4 +1,5 @@
 <?php
+header('Access-Control-Allow-Origin: *');
 /*
  * This file assumes a $_FILES['file'] and a $_POST['path']
  * If called from the iPhone client, the file name is instead passed in $_REQUEST['fileName']
