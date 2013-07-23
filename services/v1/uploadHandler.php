@@ -47,17 +47,17 @@ else
 
 if(
 //Images
-    $ext != "jpg" ||
-    $ext != "png" ||
-    $ext != "gif" ||
+    $ext != "jpg" &&
+    $ext != "png" &&
+    $ext != "gif" &&
 //Movies
-    $ext != "mp4" ||
-    $ext != "mov" ||
-    $ext != "m4v" ||
+    $ext != "mp4" &&
+    $ext != "mov" &&
+    $ext != "m4v" &&
 //Audio
-    $ext != "caf" ||
-    $ext != "mp3" ||
-    $ext != "aac" ||
+    $ext != "caf" &&
+    $ext != "mp3" &&
+    $ext != "aac" &&
     $ext != "m4a"
 )
     die("Invalid filetype");
@@ -93,5 +93,9 @@ else if($ext == "mp4") //only works with mp4
 
 //echo "data=$newMediaFileName&returnCode=0&returnCodeDescription=Success";
 echo $newMediaFileName;
+
+$errorLogFile = fopen('/var/www/html/server/gamedata/aris_error_log.txt', "a");
+fwrite($errorLogFile, "File Uploaded: ".$gameMediaDirectory."/".$newMediaFileName."\n");
+fclose($errorLogFile);
 
 ?>
