@@ -45,6 +45,23 @@ if($ext == "jpg" || $ext == "png" || $ext == "gif")
 else
     $resizedMediaFileName = 'aris'.$md5.'_128.jpg';
 
+if(
+//Images
+    $ext != "jpg" ||
+    $ext != "png" ||
+    $ext != "gif" ||
+//Movies
+    $ext != "mp4" ||
+    $ext != "mov" ||
+    $ext != "m4v" ||
+//Audio
+    $ext != "caf" ||
+    $ext != "mp3" ||
+    $ext != "aac" ||
+    $ext != "m4a"
+)
+    die("Invalid filetype");
+
 if(!move_uploaded_file( $_FILES['file']['tmp_name'], $gameMediaDirectory."/".$newMediaFileName))
 die("error moving file");
 
@@ -55,7 +72,7 @@ if($ext == "jpg" || $ext == "png" || $ext == "gif")
     $img = $img->crop('center','center',128,128);
     $img->saveToFile($gameMediaDirectory."/".$resizedMediaFileName);
 }
-else if($ext == "mp4")
+else if($ext == "mp4") //only works with mp4
 {
     $ffmpeg = '../../libraries/ffmpeg';
     $videoFilePath      = $gameMediaDirectory."/".$newMediaFileName; 
