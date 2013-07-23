@@ -451,16 +451,14 @@ class Players extends Module
 	public static function getPlayerBackpacksFromArray($bpReqObj)
 	{
 		//Module::serverErrorLog('Get Backpacks From Arrays Called: '.date_format(date_create(), 'H:i:s:u')."\n".$bpReqObj);
-		$gameId = $bpReqObj['gameId'];
-		$playerArray = $bpReqObj['playerArray'];
-		$getItems = (isset($bpReqObj['items']) ? $bpReqObj['items'] : true); //Default true
+		$gameId        = $bpReqObj['gameId'];
+		$playerArray   = $bpReqObj['playerArray'];
+		$getItems      = (isset($bpReqObj['items'])      ? $bpReqObj['items']      : true); //Default true
 		$getAttributes = (isset($bpReqObj['attributes']) ? $bpReqObj['attributes'] : true); //Default true
-		$getNotes = (isset($bpReqObj['notes']) ? $bpReqObj['notes'] : true); //Default true
+		$getNotes      = (isset($bpReqObj['notes'])      ? $bpReqObj['notes']      : true); //Default true
 
-		if(is_numeric($gameId))
-			$gameId = intval($gameId);
-		else
-			return new returnData(1, "Error- Empty Game ".$gameId);
+		if(is_numeric($gameId)) $gameId = intval($gameId);
+		else return new returnData(1, "Error- Empty Game ".$gameId);
 
 		if(($game = Games::getDetailedGameInfo($gameId)) == "Invalid Game Id")
 			return new returnData(1, "Error- Empty Game ".$gameId);
@@ -480,10 +478,7 @@ class Players extends Module
 			$game->backpacks = Players::getSinglePlayerDataBP($gameId, intval($playerArray), false, $getItems, $getAttributes, $getNotes);
 			return new returnData(0,$game,true);
 		}
-		else
-		{
-			return new returnData(1, "Error- Invalid Player Array");
-		}
+		else return new returnData(1, "Error- Invalid Player Array");
 	}
 
 	private static function getAllPlayerDataBP($gameId, $getItems = true, $getAttributes = true, $getNotes = true)
@@ -559,11 +554,11 @@ class Players extends Module
 	 */
 	function createPlayerAccountsFromArrays($playerArrays)
 	{		
-		$usernameArray = $playerArrays['userNames'];
-		$passwordArray = $playerArrays['passwords'];
+		$usernameArray  = $playerArrays['userNames'];
+		$passwordArray  = $playerArrays['passwords'];
 		$firstnameArray = $playerArrays['firstNames'];
-		$lastnameArray = $playerArrays['lastNames'];
-		$emailArray = $playerArrays['emails'];
+		$lastnameArray  = $playerArrays['lastNames'];
+		$emailArray     = $playerArrays['emails'];
 
 		if(count($usernameArray) == 0 || $usernameArray[0] == '' || count($usernameArray) != count($passwordArray))
 			return new returnData(1, "", "Bad JSON or userNames and passwords arrays have different sizes");
