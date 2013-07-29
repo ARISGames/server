@@ -95,7 +95,7 @@ else if($ext == "mp4") //only works with mp4
 echo $newMediaFileName;
 
 $errorLogFile = fopen('/var/www/html/server/gamedata/aris_error_log.txt', "a");
-fwrite($errorLogFile, "File Uploaded: ".$gameMediaDirectory."/".$newMediaFileName."\n");
+fwrite($errorLogFile, "File Uploaded: ".$gameMediaDirectory."/".$newMediaFileName."");
 fclose($errorLogFile);
 
 ?>

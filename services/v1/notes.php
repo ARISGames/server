@@ -428,13 +428,7 @@ class Notes extends Module
 
 	function noteDropped($noteId, $gameId)
 	{
-		$query = "SELECT * FROM locations WHERE game_id = {$gameId} AND type='PlayerNote' AND type_id='{$noteId}' LIMIT 1";
-		$result = Module::query($query);
-
-		if(mysql_num_rows($result) > 0)
-			return true;
-		else
-			return false;
+                return Module::queryObject("SELECT * FROM locations WHERE game_id = {$gameId} AND type='PlayerNote' AND type_id='{$noteId}' LIMIT 1");
 	}
 
 	function getNoteLocation($noteId, $gameId)
@@ -721,13 +715,8 @@ class Notes extends Module
 		$result = Module::query($query);
 
 		$notes = array();
-		while($noteId = mysql_fetch_object($result)) {
-			$note = Notes::getDetailedFullNoteObject($noteId->note_id, $playerId);
-			//Phil commented out these lines because they make no sense- notes have no media, their CONTENT does. 6/11
-			//$note->media_url = Media::getMediaDirectoryURL($note->game_id)->data . '/' . $note->media_url;
-			//$note->icon_url = Media::getMediaDirectoryURL(0)->data . '/' . $note->icon_url;
-			$notes[] = $note;
-		}
+		while($noteId = mysql_fetch_object($result))
+		    $notes[] = Notes::getDetailedFullNoteObject($noteId->note_id, $playerId);
 		return $notes;
 	}
 

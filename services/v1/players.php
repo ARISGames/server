@@ -438,67 +438,200 @@ class Players extends Module
 
 	// \/ \/ \/ BACKPACK FUNCTIONS \/ \/ \/
 
-	/**
-	  Gets array of JSON encoded 'web backpacks', containing player information relating to items, attributes, and notes gained throughout a game. For an example of its use, see 'getBackPacksFromArray.html'.
-	  @param: bpReqObj- a JSON encoded object with two fields:
-	  gameId- An integer representing the game_id of the game information desired.
-	  playerArray- Either a JSON encoded array of integer player_ids of all the players whose information is desired, a single integer if only one player's information is desired, or nothing if all player information for an entire game is desired.
-	  @returns: On success, returns JSON encoded game object with a parameter containing an array of player objects with various parameters describing a player's information.
-	  If gameId is empty, returns 'Error- Empty Game' and aborts the function.
-	  If game with gameId does not exist, returns 'Error- Invalid Game Id' and aborts the function.
-	  If playerArray is anything other than the specified options, returns 'Error- Invalid Player Array' and aborts the function.
-	 **/
-	public static function getPlayerBackpacksFromArray($bpReqObj)
-	{
-		//Module::serverErrorLog('Get Backpacks From Arrays Called: '.date_format(date_create(), 'H:i:s:u')."\n".$bpReqObj);
-		$gameId        = $bpReqObj['gameId'];
-		$playerArray   = $bpReqObj['playerArray'];
-		$getItems      = (isset($bpReqObj['items'])      ? $bpReqObj['items']      : true); //Default true
-		$getAttributes = (isset($bpReqObj['attributes']) ? $bpReqObj['attributes'] : true); //Default true
-		$getNotes      = (isset($bpReqObj['notes'])      ? $bpReqObj['notes']      : true); //Default true
+        /**
+          Gets array of JSON encoded 'web backpacks', containing player information relating to items, attributes, and notes gained throughout a game. For an example of its use, see 'getBackPacksFromArray.html'.
+          @param: bpReqObj- a JSON encoded object with two fields:
+          gameId- An integer representing the game_id of the game information desired.
+          playerArray- Either a JSON encoded array of integer player_ids of all the players whose information is desired, a single integer if only one player's information is desired, or nothing if all player information for an entire game is desired.
+          @returns: On success, returns JSON encoded game object with a parameter containing an array of player objects with various parameters describing a player's information.
+          If gameId is empty, returns 'Error- Empty Game' and aborts the function.
+          If game with gameId does not exist, returns 'Error- Invalid Game Id' and aborts the function.
+          If playerArray is anything other than the specified options, returns 'Error- Invalid Player Array' and aborts the function.
+         **/
+        public static function getPlayerBackpacksFromArray($bpReqObj)
+        {
+            //Module::serverErrorLog('Get Backpacks From Arrays Called: '.date_format(date_create(), 'H:i:s:u')."\n".$bpReqObj);
+            $gameId        = $bpReqObj['gameId'];
+            $playerArray   = $bpReqObj['playerArray'];
+            $getItems      = (isset($bpReqObj['items'])      ? $bpReqObj['items']      : true); //Default true
+            $getAttributes = (isset($bpReqObj['attributes']) ? $bpReqObj['attributes'] : true); //Default true
+            $getNotes      = (isset($bpReqObj['notes'])      ? $bpReqObj['notes']      : true); //Default true
 
-		if(is_numeric($gameId)) $gameId = intval($gameId);
-		else return new returnData(1, "Error- Empty Game ".$gameId);
+            if(is_numeric($gameId)) $gameId = intval($gameId);
+            else return new returnData(1, "Error- Empty Game ".$gameId);
 
-		if(($game = Games::getDetailedGameInfo($gameId)) == "Invalid Game Id")
-			return new returnData(1, "Error- Empty Game ".$gameId);
+            if(($game = Games::getDetailedGameInfo($gameId)) == "Invalid Game Id")
+                return new returnData(1, "Error- Empty Game ".$gameId);
 
-		if(is_null($playerArray))
-		{
-			$game->backpacks =  Players::getAllPlayerDataBP($gameId, $getItems, $getAttributes, $getNotes);
-			return new returnData(0,$game);
-		}
-		else if(is_array($playerArray))
-		{
-			$game->backpacks =  Players::getPlayerArrayDataBP($gameId, $playerArray, $getItems, $getAttributes, $getNotes);
-			return new returnData(0,$game);
-		}
-		else if(is_numeric($playerArray))
-		{
-			$game->backpacks = Players::getSinglePlayerDataBP($gameId, intval($playerArray), false, $getItems, $getAttributes, $getNotes);
-			return new returnData(0,$game,true);
-		}
-		else return new returnData(1, "Error- Invalid Player Array");
-	}
+            if(is_null($playerArray))
+            {
+                $game->backpacks = Players::getAllPlayerDataBP($gameId, $getItems, $getAttributes, $getNotes);
+                return new returnData(0,$game);
+            }
+            else if(is_array($playerArray))
+            {
+                $game->backpacks =  Players::getPlayerArrayDataBP($gameId, $playerArray, $getItems, $getAttributes, $getNotes);
+                return new returnData(0,$game);
+            }
+            else if(is_numeric($playerArray))
+            {
+                $game->backpacks = Players::getSinglePlayerDataBP($gameId, intval($playerArray), false, $getItems, $getAttributes, $getNotes);
+                return new returnData(0,$game,true);
+            }
+            else return new returnData(1, "Error- Invalid Player Array");
+        }
 
-	private static function getAllPlayerDataBP($gameId, $getItems = true, $getAttributes = true, $getNotes = true)
-	{
-		$backPacks = array();
-		$query = "SELECT DISTINCT player_id FROM player_log WHERE game_id='{$gameId}' AND player_id != 0";
-		$result = Module::query($query);
-		while($player = mysql_fetch_object($result))
-			$backPacks[] = Players::getSinglePlayerDataBP($gameId, $player->player_id, false, $getItems, $getAttributes, $getNotes);
-		return $backPacks;
-	}
+        private static function getAllPlayerDataBP($gameId, $getItems = true, $getAttributes = true, $getNotes = true)
+        {
+            $result = Module::query("SELECT DISTINCT player_id FROM player_log WHERE game_id='{$gameId}' AND player_id != 0");
+            $players = array();
+            while($player = mysql_fetch_object($result))
+                $players[] = $player->player_id;
+            return Players::getPlayerArrayDataBP($gameId, $players, $getItems, $getAttributes, $getNotes);
+        }
 
-	private static function getPlayerArrayDataBP($gameId, $playerArray, $getItems = true, $getAttributes = true, $getNotes = true)
-	{
-		//Module::serverErrorLog('Get Player Array Data Called: '.date_format(date_create(), 'H:i:s:u')."\n".$playerArray);
-		$backPacks = array();
-		foreach($playerArray as $player)
-			$backPacks[] = Players::getSinglePlayerDataBP($gameId, $player, false, $getItems, $getAttributes, $getNotes);
-		return $backPacks;
-	}
+        private static function getPlayerArrayDataBP($gameId, $playerArray, $getItems = true, $getAttributes = true, $getNotes = true)
+        {
+            Module::serverErrorLog('Get Player Array Data Called: '.date_format(date_create(), 'H:i:s:u')."\n".json_encode($playerArray));
+
+            //preload data into memory for quick re-use
+            $mediaA = Media::getMedia($gameId)->data;
+            $mediaMap = array();
+            $numMedia = count($mediaA); 
+            for($i = 0; $i < $numMedia; $i++)
+                $mediaMap[$mediaA[$i]->media_id] = $mediaA[$i];
+            if($getItems)
+            {
+                $itemsMap = array();
+                $itemsA = Module::queryArray("SELECT * FROM items WHERE game_id = '{$gameId}' AND is_attribute = '0'");
+                $numItems = count($itemsA);
+                for($i = 0; $i < $numItems; $i++)
+                {
+                    $itemsA[$i]->media_url       = $mediaMap[$itemsA[$i]->media_id]->url;
+                    $itemsA[$i]->media_thumb_url = $mediaMap[$itemsA[$i]->media_id]->thumb_url;
+                    $itemsA[$i]->icon_url        = $mediaMap[$itemsA[$i]->icon_media_id]->url;
+                    $itemsA[$i]->icon_thumb_url  = $mediaMap[$itemsA[$i]->icon_media_id]->thumb_url;
+                    $itemsMap[$itemsA[$i]->item_id] = $itemsA[$i];
+                }
+            }
+            if($getAttributes)
+            {
+                $attributesMap = array();
+                $attributesA = Module::queryArray("SELECT * FROM items WHERE game_id = '{$gameId}' AND is_attribute = '1'");
+                $numAttributes = count($attributesA);
+                for($i = 0; $i < $numAttributes; $i++)
+                {
+                    $attributesA[$i]->media_url       = $mediaMap[$attributesA[$i]->media_id]->url;
+                    $attributesA[$i]->media_thumb_url = $mediaMap[$attributesA[$i]->media_id]->thumb_url;
+                    $attributesA[$i]->icon_url        = $mediaMap[$attributesA[$i]->icon_media_id]->url;
+                    $attributesA[$i]->icon_thumb_url  = $mediaMap[$attributesA[$i]->icon_media_id]->thumb_url;
+                    $attributesMap[$attributesA[$i]->media_id] = $attributesA[$i];
+                }
+            }
+            if($getNotes)
+            {
+                $gameTagsMap = array();
+                $gameTagsA = Module::queryArray("SELECT * FROM game_tags WHERE game_id = '{$gameId}'");
+                $numGameTags = count($gameTagsA);
+                for($i = 0; $i < $numGameTags; $i++)
+                    $gameTagsMap[$gameTagsA[$i]->tag_id] = $gameTagsA[$i];
+            }
+        
+            $backpacks = array();
+            $numPlayers = count($playerArray);
+            for($i = 0; $i < $numPlayers; $i++)
+            {
+                $backpack = new stdClass();
+
+                $backpack->owner = Module::queryObject("SELECT player_id, user_name, display_name, group_name, media_id FROM players WHERE player_id = '{$playerArray[$i]}'");
+                if(!$backpack->owner) continue;
+                $playerPic = Media::getMediaObject('player', $backpack->owner->media_id)->data;
+                $backpack->owner->player_pic_url       = $playerPic->url;
+                $backpack->owner->player_pic_thumb_url = $playerPic->thumb_url;
+
+                $media->thumb_file_path = substr($media->file_path,0,strrpos($media->file_path,'.')).'_128'.substr($media->file_path,strrpos($media->file_path,'.'));
+                $media->url_path = Config::gamedataWWWPath . "/" . Config::gameMediaSubdir;
+
+                if($getItems || $getAttributes)
+                {
+                    if($getItems)      $backpack->items      = array();
+                    if($getAttributes) $backpack->attributes = array();
+                    $playerItemData = Module::queryArray("SELECT item_id, qty FROM player_items WHERE game_id = '{$gameId}' AND player_id = '{$playerArray[$i]}'");
+                    $numItems = count($playerItemData);
+
+                    for($j = 0; $j < $numItems; $j++)
+                    {
+                        if($getItems && isset($itemsMap[$playerItemData[$j]->item_id]))
+                        {
+                            $item = $itemsMap[$playerItemData[$j]->item_id];
+                            $item->qty = $playerItemData[$j]->qty;
+                            $backpack->items[] = $item;
+                        }
+                        else if($getAttributes && isset($attributesMap[$playerItemData[$j]->item_id]))
+                        {
+                            $attribute = $attributesMap[$playerItemData[$j]->item_id];//clone $attributesMap[$j];
+                            $attribute->qty = $playerItemData[$j]->qty;
+                            $backpack->attributes[] = $attribute;
+                        }
+                    }
+                }
+
+                if($getNotes)
+                {
+                    $rawNotes = Module::query("SELECT * FROM notes WHERE owner_id = '{$playerArray[$i]}' AND game_id = '{$gameId}' AND parent_note_id = 0 ORDER BY sort_index ASC");
+                    $backpack->notes = array();
+                    while($note = mysql_fetch_object($rawNotes))
+                    {
+                        $rawContent = Module::query("SELECT * FROM note_content WHERE note_id = '{$note->note_id}'");
+                        $note->contents = array();
+                        while($content = mysql_fetch_object($rawContent))
+                        {
+                                $content->media_url       = $mediaMap[$content->media_id]->url;
+                                $content->media_thumb_url = $mediaMap[$content->media_id]->thumb_url;
+                                $note->contents[] = $content;
+                        }
+                        $note->likes = Notes::getNoteLikes($note->note_id);
+                        $note->player_liked = Notes::playerLiked($playerId, $note->note_id);
+
+                        $result = Module::query("SELECT * FROM note_tags WHERE note_id = '{$note->note_id}'");
+                        $note->tags = array();
+                        while($tag = mysql_fetch_object($result))	
+                            $note->tags[] = $gameTagsMap[$tag->tag_id];
+
+                        $note->dropped = 0;
+                        if($location = Notes::noteDropped($note->note_id, $note->game_id))
+                            $note->dropped = 1;
+                        $note->lat = $location ? $location->latitude  : 0;
+                        $note->lon = $location ? $location->longitude : 0;
+
+                        $rawComments = Module::query("SELECT * FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = {$note->note_id} ORDER BY sort_index ASC");
+                        $note->comments = array();
+                        while($comment = mysql_fetch_object($rawComments))
+                        {
+			    $player = Module::queryObject("SELECT user_name, display_name FROM players WHERE player_id = '{$comment->owner_id}' LIMIT 1");
+			    $comment->username = $player->user_name;
+			    $comment->displayname = $player->display_name;
+                            $rawContent = Module::query("SELECT * FROM note_content WHERE note_id = '{$comment->note_id}'");
+                            $comment->contents = array();
+                            while($content = mysql_fetch_object($rawContent))
+                            {
+                                $content->media_url       = $mediaMap[$content->media_id]->url;
+                                $content->media_thumb_url = $mediaMap[$content->media_id]->thumb_url;
+                                $comment->contents[] = $content;
+                            }
+                            $comment->likes = Notes::getNoteLikes($comment->note_id);
+                            $comment->player_liked = Notes::playerLiked($playerId, $comment->note_id);
+                            $note->comments[] = $comment;
+                        }
+
+                        $backpack->notes[] = $note;
+                    }
+                }
+
+                $backpacks[] = $backpack;
+            }
+            return $backpacks;
+        }
 
 	/*
 	 * Gets information for web backpack for any player/game pair
