@@ -5,3 +5,6 @@ CREATE TABLE note_shares (share_id  int(10) unsigned NOT NULL AUTO_INCREMENT, pl
 ALTER TABLE players ADD curator tinyint(1) unsigned NOT NULL DEFAULT 0;
 ALTER TABLE players ADD facebook_id int(11) unsigned NOT NULL DEFAULT 0;
 ALTER TABLE game_tags ADD media_id int(11) unsigned NOT NULL DEFAULT 0;
+
+ALTER TABLE quests DROP COLUMN exit_to_tab;
+ALTER TABLE quests ADD COLUMN go_function ENUM('NONE','NEARBY','MAP','QUESTS','INVENTORY','PLAYER','DECODER','NOTEBOOK','JAVASCRIPT') NOT NULL DEFAULT 'NONE';

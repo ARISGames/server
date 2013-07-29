@@ -55,7 +55,7 @@ class Quests extends Module
         return new returnData(0, $event);
     }
 
-    public function createQuest($gameId, $strName, $strIncompleteDescription, $strCompleteDescription, $boolFullScreenNotification, $intActiveMediaId, $intCompleteMediaId, $intActiveIconMediaId, $intCompleteIconMediaId, $exitToTab, $index, $editorId, $editorToken)
+    public function createQuest($gameId, $strName, $strIncompleteDescription, $strCompleteDescription, $boolFullScreenNotification, $intActiveMediaId, $intCompleteMediaId, $intActiveIconMediaId, $intCompleteIconMediaId, $goFunction, $index, $editorId, $editorToken)
     {
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
@@ -65,8 +65,8 @@ class Quests extends Module
         $strCompleteDescription = addslashes($strCompleteDescription);	
 
         $query = "INSERT INTO quests 
-            (game_id, name, description, text_when_complete, sort_index, exit_to_tab, full_screen_notify)
-            VALUES ('{$gameId}','{$strName}','{$strIncompleteDescription}','{$strCompleteDescription}','{$index}','{$exitToTab}','{$boolFullScreenNotification}')";
+            (game_id, name, description, text_when_complete, sort_index, go_function, full_screen_notify)
+            VALUES ('{$gameId}','{$strName}','{$strIncompleteDescription}','{$strCompleteDescription}','{$index}','{$goFunction}','{$boolFullScreenNotification}')";
 
 
         Module::query($query);
@@ -75,7 +75,7 @@ class Quests extends Module
         return new returnData(0, mysql_insert_id());
     }
 
-    public function updateQuest($gameId, $intQuestId, $strName, $strIncompleteDescription, $strCompleteDescription, $boolFullScreenNotification, $intActiveMediaId, $intCompleteMediaId, $intActiveIconMediaId, $intCompleteIconMediaId, $exitToTab, $index, $editorId, $editorToken)
+    public function updateQuest($gameId, $intQuestId, $strName, $strIncompleteDescription, $strCompleteDescription, $boolFullScreenNotification, $intActiveMediaId, $intCompleteMediaId, $intActiveIconMediaId, $intCompleteIconMediaId, $goFunction, $index, $editorId, $editorToken)
     {
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
@@ -90,7 +90,7 @@ class Quests extends Module
                  description = '{$strIncompleteDescription}',
                  text_when_complete = '{$strCompleteDescription}',
                  sort_index = '{$index}',
-                 exit_to_tab = '{$exitToTab}',
+                 go_function = '{$goFunction}',
                  active_media_id = '{$intActiveMediaId}',
                  complete_media_id = '{$intCompleteMediaId}',
                  active_icon_media_id = '{$intActiveIconMediaId}',
