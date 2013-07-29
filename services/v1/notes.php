@@ -1,7 +1,7 @@
 <?php
 
-//ini_set('display_errors', 'On');
-//error_reporting(E_ALL);
+ini_set('display_errors', 'On');
+error_reporting(E_ALL);
 
 require_once("module.php");
 require_once("media.php");
@@ -184,18 +184,25 @@ class Notes extends Module
 		return new returnData(0, $notes);
 	}
 
+	function addSlashesArrayFriendly($input)
+	{
+		if (is_array($input))
+			return array_map('addSlashes', $input);
+		else
+			return addSlashes($input);
+	}
+
 	function getNotesWithAttributes($json)
 	{
+		$gameId       = Notes::addSlashesArrayFriendly($json["gameId"]);
+		$playerId     = Notes::addSlashesArrayFriendly($json["playerId"]);
 
-		$gameId       = $json["gameId"];
-		$playerId     = $json["playerId"];
-
-		$searchType   = $json["searchType"];
-		$tagIds       = $json["tagIds"];
-		$searchTerms  = $json["searchTerms"];
-		$date         = $json["date"];
-		$lastLocation = $json["lastLocation"];	
-		$noteCount    = $json["noteCount"];
+		$searchType   = Notes::addSlashesArrayFriendly($json["searchType"]);
+		$tagIds       = Notes::addSlashesArrayFriendly($json["tagIds"]);
+		$searchTerms  = Notes::addSlashesArrayFriendly($json["searchTerms"]);
+		$date         = Notes::addSlashesArrayFriendly($json["date"]);
+		$lastLocation = Notes::addSlashesArrayFriendly($json["lastLocation"]);	
+		$noteCount    = Notes::addSlashesArrayFriendly($json["noteCount"]);
 
 		$notesName   = "result_notes";
 		$notesSelect = "";
@@ -765,7 +772,7 @@ class Notes extends Module
 		while($content = mysql_fetch_object($result))
 		{
 			$content->media_url = Config::gamedataWWWPath . '/' . $content->file_path;
-                        $content->media_thumb_url = substr($content->media_url,0,strrpos($content->media_url,'.')).'_128'.substr($content->media_url,strrpos($content-media_url,'.'));
+			$content->media_thumb_url = substr($content->media_url,0,strrpos($content->media_url,'.')).'_128'.substr($content->media_url,strrpos($content-media_url,'.'));
 			$contents[] = $content;
 		}
 		return $contents;
