@@ -582,6 +582,8 @@ class Players extends Module
                     $backpack->notes = array();
                     while($note = mysql_fetch_object($rawNotes))
                     {
+                        $note->username = $backpack->owner->user_name;
+                        if($backpack->owner->display_name && $backpack->owner->display_name != "") $note->username = $backpack->owner->display_name;
                         $rawContent = Module::query("SELECT * FROM note_content WHERE note_id = '{$note->note_id}'");
                         $note->contents = array();
                         while($content = mysql_fetch_object($rawContent))

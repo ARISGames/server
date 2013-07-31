@@ -16,7 +16,7 @@ function compressFile($path, $name)
 //{
 	$cfiles = array();
 	$ufiles = array();
-	$folder = '5252';
+	$folder = '0';
 	$path = $gameDataFolder.$folder."/";
 	if($gamedatadir = opendir($gameDataFolder.$folder))
 	{

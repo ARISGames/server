@@ -720,7 +720,7 @@ class Notes extends Module
 		return $notes;
 	}
 
-	private static function getDetailedFullNoteObject($noteId, $playerId=0)
+	public static function getDetailedFullNoteObject($noteId, $playerId=0)
 	{
 		$query = "SELECT note_id, game_id, owner_id, title, public_to_map, public_to_notebook, created FROM notes WHERE note_id = '{$noteId}'";
 		$result = Module::query($query);
