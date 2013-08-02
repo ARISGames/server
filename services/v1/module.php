@@ -665,7 +665,6 @@ abstract class Module extends Utils
             }
         }
 
-        //Clean up spawnables that ought to be removed after viewing
         $shouldCheckSpawnablesForDeletion = true;
         switch($eventType)
         {
@@ -687,18 +686,23 @@ abstract class Module extends Utils
             default:
                 $shouldCheckSpawnablesForDeletion = false;
         }
-        if($shouldCheckSpawnablesForDeletion)
-        {
-            $query = "SELECT * FROM spawnables WHERE game_id = $gameId AND active = 1 AND type = '$type' AND type_id = $eventDetail1 LIMIT 1";
+
+	if($shouldCheckSpawnablesForDeletion)
+		Module::checkSpawnablesForDeletion($gameId, $eventDetail2, $type, $eventDetail1);
+    }
+
+	protected function checkSpawnablesForDeletion($gameId, $locationId, $type, $typeId)
+{
+        //Clean up spawnables that ought to be removed after viewing
+            $query = "SELECT * FROM spawnables WHERE game_id = $gameId AND active = 1 AND type = '$type' AND type_id = $typeId LIMIT 1";
 
             $result = Module::query($query);
             if(($obj = mysql_fetch_object($result)) && $obj->delete_when_viewed == 1 && $obj->active == 1) 
             {
-                $query = "DELETE locations, qrcodes FROM locations LEFT JOIN qrcodes ON locations.location_id = qrcodes.link_id WHERE location_id = $eventDetail2 AND locations.game_id = '{$gameId}'";
+                $query = "DELETE locations, qrcodes FROM locations LEFT JOIN qrcodes ON locations.location_id = qrcodes.link_id WHERE location_id = $locationId AND locations.game_id = '{$gameId}'";
                 Module::query($query);
             }
-        }
-    }
+}
 
     protected function appendLog($playerId, $gameId, $eventType, $eventDetail1='N/A', $eventDetail2='N/A', $eventDetail3='N/A')
     {

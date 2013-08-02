@@ -287,12 +287,22 @@ class Players extends Module
 			return $rData;
 	}
 
+	public function locationViewed($gameId, $intPlayerId, $intLocationId)
+	{
+               	$query = "SELECT * FROM locations WHERE game_id = $gameId AND location_id = $intLocationId LIMIT 1";
+		$result = Module::query($query);
+		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+		$location = mysql_fetch_object($result);
+		Module::checkSpawnablesForDeletion($gameId, $intLocationId, $location->type, $location->type_id);
+
+		return new returnData(0, TRUE);
+	}
+
 	public function itemViewed($gameId, $intPlayerId, $intItemId, $intLocationId = 0)
 	{
 		Module::processGameEvent($intPlayerId, $gameId, Module::kLOG_VIEW_ITEM, $intItemId, $intLocationId);
 
 		$query = "UPDATE player_items SET viewed = 1 WHERE game_id = {$gameId} AND player_id = {$intPlayerId} AND item_id = {$intItemId}";
-
 
 		Module::query($query);
 
