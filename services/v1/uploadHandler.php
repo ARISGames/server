@@ -54,6 +54,7 @@ if(
     $ext != "mp4" &&
     $ext != "mov" &&
     $ext != "m4v" &&
+    $ext != "3gp" &&
 //Audio
     $ext != "caf" &&
     $ext != "mp3" &&
