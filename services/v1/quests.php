@@ -91,12 +91,14 @@ class Quests extends Module
                  text_when_complete = '{$strCompleteDescription}',
                  sort_index = '{$index}',
                  go_function = '{$goFunction}',
-                 active_media_id = '{$intActiveMediaId}',
-                 complete_media_id = '{$intCompleteMediaId}',
-                 active_icon_media_id = '{$intActiveIconMediaId}',
-                 complete_icon_media_id = '{$intCompleteIconMediaId}',
                  full_screen_notify = '{$boolFullScreenNotification}'
                      WHERE game_id = {$gameId} AND quest_id = '{$intQuestId}'";
+
+                 //removed from query until fully implemented
+                 //active_media_id = '{$intActiveMediaId}',
+                 //complete_media_id = '{$intCompleteMediaId}',
+                 //active_icon_media_id = '{$intActiveIconMediaId}',
+                 //complete_icon_media_id = '{$intCompleteIconMediaId}',
 
         Module::query($query);
 
