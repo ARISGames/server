@@ -573,13 +573,13 @@ class Players extends Module
                     {
                         if($getItems && isset($itemsMap[$playerItemData[$j]->item_id]))
                         {
-                            $item = $itemsMap[$playerItemData[$j]->item_id];
+                            $item = clone $itemsMap[$playerItemData[$j]->item_id];
                             $item->qty = $playerItemData[$j]->qty;
                             $backpack->items[] = $item;
                         }
                         else if($getAttributes && isset($attributesMap[$playerItemData[$j]->item_id]))
                         {
-                            $attribute = $attributesMap[$playerItemData[$j]->item_id];//clone $attributesMap[$j];
+                            $attribute = clone $attributesMap[$playerItemData[$j]->item_id];
                             $attribute->qty = $playerItemData[$j]->qty;
                             $backpack->attributes[] = $attribute;
                         }
