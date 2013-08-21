@@ -513,7 +513,7 @@ class Players extends Module
             if($getItems)
             {
                 $itemsMap = array();
-                $itemsA = Module::queryArray("SELECT * FROM items WHERE game_id = '{$gameId}' AND is_attribute = '0'");
+                $itemsA = Module::queryArray("SELECT * FROM items WHERE game_id = '{$gameId}' AND (is_attribute = '0' OR is_attribute = '')");
                 $numItems = count($itemsA);
                 for($i = 0; $i < $numItems; $i++)
                 {
