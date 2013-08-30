@@ -229,16 +229,16 @@ class Notes extends Module
 
 		switch($searchType)
 		{	
-			case 0:
+			case Module::kTopSearch:
 				$searchSort  = " LEFT JOIN note_likes ON {$notesName}.note_id = note_likes.note_id LEFT JOIN (SELECT player_id FROM players WHERE curator = '1') AS curators ON note_likes.player_id = curators.player_id GROUP BY {$notesName}.note_id ORDER BY COUNT(curators.player_id) DESC, {$notesName}.created DESC";
 				break;
-			case 1:
+			case Module::kPopularSearch:
 				$searchSort  = " LEFT JOIN note_likes ON {$notesName}.note_id = note_likes.note_id LEFT JOIN note_shares ON {$notesName}.note_id = note_shares.note_id LEFT JOIN notes AS note_comments ON {$notesName}.note_id = note_comments.note_id GROUP BY {$notesName}.note_id ORDER BY (COUNT(note_likes.note_id) + COUNT(note_shares.note_id) + COUNT(note_comments.note_id)) DESC, {$notesName}.created DESC";
 				break;
-			case 2:
+			case Module::kRecentSearch:
 				$searchSort  = " ORDER BY {$notesName}.created DESC";
 				break;
-			case 3:
+			case Module::kMineSearch:
 				$notesSelect .= " AND owner_id = {$playerId}";
 				$searchSort  = " ORDER BY {$notesName}.created DESC";
 				break;

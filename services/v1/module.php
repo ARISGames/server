@@ -82,6 +82,12 @@ abstract class Module extends Utils
     const kSHARE_PINTEREST = 'PINTEREST';
     const kSHARE_EMAIL     = 'EMAIL'; 
 
+    //constants for Note Search Types
+    const kTopSearch     = 0;
+    const kPopularSearch = 1;
+    const kRecentSearch  = 2;
+    const kMineSearch    = 3; 
+
     public function Module()
     {
         Utils::connect();
@@ -183,6 +189,7 @@ abstract class Module extends Utils
         $result = Module::query($query);
 
         if ($existingPlayerItem = @mysql_fetch_object($result)) {
+	
             //Check if this change will make the qty go to < 1, if so delete the record
             $newQty = $existingPlayerItem->qty + $amountOfAdjustment;
             if ($newQty < 1) {
@@ -204,10 +211,6 @@ abstract class Module extends Utils
                 (game_id,player_id, item_id, qty) VALUES ({$gameId},$intPlayerId, $intItemId, $amountOfAdjustment)
                 ON duplicate KEY UPDATE item_id = $intItemId";
             Module::query($query);
-        }
-        else 
-        {
-            return;
         }
 
         if($amountOfAdjustment > 0)
