@@ -10,12 +10,28 @@ class Items extends Module
 {
     public static function getItems($gameId)
     {
-        $query = "SELECT * FROM items WHERE game_id = '{$gameId}'";
-
-        $rsResult = Module::query($query);
+        $rsResult = Module::query("SELECT * FROM items WHERE game_id = '{$gameId}'");
 
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
         return new returnData(0, $rsResult);
+    }
+
+    public static function getFullItems($gameId)
+    {
+        $items = Module::queryArray("SELECT * FROM items WHERE game_id = '{$gameId}';");
+        $tags = Module::queryArray("SELECT * FROM (SELECT * FROM object_tags WHERE object_type = 'ITEM') as ot LEFT JOIN (SELECT * FROM game_object_tags WHERE game_id = '{$gameId}') as got ON ot.tag_id = got.tag_id;");
+
+        for($i = 0; $i < count($items); $i++)
+        {
+            $items[$i]->tags = array();
+            for($t = 0; $t < count($tags); $t++)
+            {
+                if($tags[$t]->object_id == $items[$i]->item_id)
+                    $items[$i]->tags[] = $tags[$t]->tag;
+            }
+        }
+
+        return new returnData(0, $items);
     }
 
     public static function getItemsForPlayer($gameId, $playerId)
