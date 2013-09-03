@@ -27,7 +27,7 @@ class Items extends Module
             for($t = 0; $t < count($tags); $t++)
             {
                 if($tags[$t]->object_id == $items[$i]->item_id)
-                    $items[$i]->tags[] = $tags[$t]->tag;
+                    $items[$i]->tags[] = $tags[$t];
             }
         }
 
