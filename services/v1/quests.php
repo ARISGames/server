@@ -90,11 +90,11 @@ class Quests extends Module
                  description = '{$strIncompleteDescription}',
                  text_when_complete = '{$strCompleteDescription}',
                  sort_index = '{$index}',
-                 go_function = '{$goFunction}',
                  full_screen_notify = '{$boolFullScreenNotification}'
                      WHERE game_id = {$gameId} AND quest_id = '{$intQuestId}'";
 
                  //removed from query until fully implemented
+                 //go_function = '{$goFunction}',
                  //active_media_id = '{$intActiveMediaId}',
                  //complete_media_id = '{$intCompleteMediaId}',
                  //active_icon_media_id = '{$intActiveIconMediaId}',
