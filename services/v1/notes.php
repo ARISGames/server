@@ -233,7 +233,7 @@ class Notes extends Module
 				$searchSort  = " LEFT JOIN note_likes ON {$notesName}.note_id = note_likes.note_id LEFT JOIN (SELECT player_id FROM players WHERE curator = '1') AS curators ON note_likes.player_id = curators.player_id GROUP BY {$notesName}.note_id ORDER BY COUNT(curators.player_id) DESC, {$notesName}.created DESC";
 				break;
 			case Module::kPopularSearch:
-				$searchSort  = " LEFT JOIN note_likes ON {$notesName}.note_id = note_likes.note_id LEFT JOIN note_shares ON {$notesName}.note_id = note_shares.note_id LEFT JOIN notes AS note_comments ON {$notesName}.note_id = note_comments.note_id GROUP BY {$notesName}.note_id ORDER BY (COUNT(note_likes.note_id) + COUNT(note_shares.note_id) + COUNT(note_comments.note_id)) DESC, {$notesName}.created DESC";
+				$searchSort  = " LEFT JOIN note_likes ON {$notesName}.note_id = note_likes.note_id LEFT JOIN note_shares ON {$notesName}.note_id = note_shares.note_id LEFT JOIN notes AS note_comments ON {$notesName}.note_id = note_comments.owner_id GROUP BY {$notesName}.note_id ORDER BY (COUNT(note_likes.note_id) + COUNT(note_shares.note_id) + COUNT(note_comments.note_id)) DESC, {$notesName}.created DESC";
 				break;
 			case Module::kRecentSearch:
 				$searchSort  = " ORDER BY {$notesName}.created DESC";
@@ -629,7 +629,7 @@ class Notes extends Module
 			else $typeOfNoteDescription = "Note";
 
 			$subject = "'{$typeOfNoteDescription}' Flagged 3 Times";
-			$body = "Your '{$typeOfNoteDescription}' that had the text: '{$noteContent}' has been flagged 3 times.<br><br>Please be aware of others on this platform. The YOI team has been notified and will be looking into the matter.";
+			$body = "Your '{$typeOfNoteDescription}' that had the text: '{$noteContent}' has been flagged 3 times.<br><br>Please be aware of others on this platform. The Siftr team has been notified and will be looking into the matter.";
 			$playerNotificationSent = Module::sendEmail($email, $subject, $body);
 			$email = "hanshaw@wisc.edu";
 			$subject = "NoteId '{$noteId}' Flagged";
