@@ -19,14 +19,14 @@ class Items extends Module
     public static function getFullItems($gameId)
     {
         $items = Module::queryArray("SELECT * FROM items WHERE game_id = '{$gameId}';");
-        $tags = Module::queryArray("SELECT * FROM (SELECT * FROM object_tags WHERE object_type = 'ITEM') as ot LEFT JOIN (SELECT * FROM game_object_tags WHERE game_id = '{$gameId}') as got ON ot.tag_id = got.tag_id;");
+        $tags = Module::queryArray("SELECT ot.tag_id, ot.object_id, got.media_id, got.tag FROM (SELECT * FROM object_tags WHERE object_type = 'ITEM') as ot LEFT JOIN (SELECT * FROM game_object_tags WHERE game_id = '{$gameId}' AND use_for_sort = '1') as got ON ot.tag_id = got.tag_id;");
 
         for($i = 0; $i < count($items); $i++)
         {
             $items[$i]->tags = array();
             for($t = 0; $t < count($tags); $t++)
             {
-                if($tags[$t]->object_id == $items[$i]->item_id)
+                if($tags[$t]->object_id == $items[$i]->item_id && $tags[$t]->tag != null)
                     $items[$i]->tags[] = $tags[$t];
             }
         }
