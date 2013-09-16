@@ -12,3 +12,6 @@ ALTER TABLE quests ADD COLUMN go_function ENUM('NONE','NEARBY','GPS','QUESTS','I
 ALTER TABLE games ADD COLUMN note_title_behavior ENUM('NONE','FORCE_OVERWRITE') NOT NULL DEFAULT 'FORCE_OVERWRITE';
 
 ALTER TABLE game_object_tags ADD COLUMN media_id int(10) unsigned NOT NULL DEFAULT 0;
+
+ALTER TABLE game_object_tags ADD COLUMN use_for_sort tinyint(1) unsigned NOT NULL DEFAULT 0;
+
