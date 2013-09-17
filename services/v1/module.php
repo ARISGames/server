@@ -189,7 +189,7 @@ abstract class Module extends Utils
         $result = Module::query($query);
 
         if ($existingPlayerItem = @mysql_fetch_object($result)) {
-	
+
             //Check if this change will make the qty go to < 1, if so delete the record
             $newQty = $existingPlayerItem->qty + $amountOfAdjustment;
             if ($newQty < 1) {
@@ -326,8 +326,8 @@ abstract class Module extends Utils
         $key = substr($strTable, 0, strlen($strTable)-1);
         $query = "SELECT * FROM {$strTable} WHERE {$key} = $intRecordId AND game_id = '{$gameId}'";
         $rsResult = Module::query($query);
-        if (mysql_error()) return FALSE;
-        if (mysql_num_rows($rsResult) < 1) return FALSE;
+        if (mysql_error()) return false;
+        if (mysql_num_rows($rsResult) < 1) return false;
         return true;
     }
 
@@ -366,7 +366,7 @@ abstract class Module extends Utils
     {
         if (!$minItemQuantity) $minItemQuantity = 1;
         $qty = Module::itemQtyInPlayerInventory($gameId, $playerId, $itemId);
-        if ($qty >= $minItemQuantity) return TRUE;
+        if ($qty >= $minItemQuantity) return true;
         else return false;
     }		
 
@@ -374,7 +374,7 @@ abstract class Module extends Utils
     {
         if (!$minItemQuantity) $minItemQuantity = 1;
         $qty = Module::itemTagQtyInPlayerInventory($gameId, $playerId, $tagId);
-        if ($qty >= $minItemQuantity) return TRUE;
+        if ($qty >= $minItemQuantity) return true;
         else return false;
     }		
 
@@ -439,7 +439,7 @@ abstract class Module extends Utils
 
     protected function playerHasNote($gameId, $intPlayerId, $qty)
     {
-        $query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerId}' AND parent_note_id = 0 AND incomplete = '0'";
+        $query = "SELECT note_id FROM notes WHERE game_id = '{$gameId}' AND owner_id = '{$intPlayerId}' AND parent_note_id = 0 AND incomplete = '0'";
         $result = Module::query($query);
         if (mysql_num_rows($result) >= $qty) return true;
         return false;
@@ -447,7 +447,7 @@ abstract class Module extends Utils
 
     protected function playerHasNoteWithTag($gameId, $intPlayerId, $tag, $qty)
     {
-        $query = "SELECT note_id FROM notes WHERE owner_id = '{$intPlayerId}' AND parent_note_id = 0 AND incomplete = '0'";
+        $query = "SELECT note_id FROM notes WHERE game_id = '{$gameId}' AND owner_id = '{$intPlayerId}' AND parent_note_id = 0 AND incomplete = '0'";
         $result = Module::query($query);
         $num = 0;
         while($noteobj = mysql_fetch_object($result))
@@ -506,13 +506,13 @@ abstract class Module extends Utils
                 WHERE content_type = '{$strObjectType}' AND content_id = '{$intObjectId}' AND game_id = '{$gameId}'";
         $rsRequirments = Module::query($query);
 
-        $andsMet = FALSE;
-        $requirementsExist = FALSE;
+        $andsMet = false;
+        $requirementsExist = false;
         while ($requirement = mysql_fetch_array($rsRequirments)) {
-            $requirementsExist = TRUE;
+            $requirementsExist = true;
             //Check the requirement
 
-            $requirementMet = FALSE;
+            $requirementMet = false;
             switch ($requirement['requirement']) {
                 //Log related
                 case Module::kREQ_PLAYER_VIEWED_ITEM:
@@ -593,20 +593,20 @@ abstract class Module extends Utils
             //Account for the 'NOT's
             if($requirement['not_operator'] == "NOT") $requirementMet = !$requirementMet;
 
-            if ($requirement['boolean_operator'] == "AND" && $requirementMet == FALSE) return FALSE;
-            if ($requirement['boolean_operator'] == "AND" && $requirementMet == TRUE)  $andsMet = TRUE;
-            if ($requirement['boolean_operator'] == "OR"  && $requirementMet == TRUE)  return TRUE;
-            if ($requirement['boolean_operator'] == "OR"  && $requirementMet == FALSE) $requirementsMet = FALSE;
+            if ($requirement['boolean_operator'] == "AND" && $requirementMet == false) return false;
+            if ($requirement['boolean_operator'] == "AND" && $requirementMet == true)  $andsMet = true;
+            if ($requirement['boolean_operator'] == "OR"  && $requirementMet == true)  return true;
+            if ($requirement['boolean_operator'] == "OR"  && $requirementMet == false) $requirementsMet = false;
         }
 
-        if (!$requirementsExist) return TRUE;
-        if ($andsMet)            return TRUE;
-        else                     return FALSE;
+        if (!$requirementsExist) return true;
+        if ($andsMet)            return true;
+        else                     return false;
     }	
 
     protected function applyPlayerStateChanges($gameId, $intPlayerId, $strEventType, $strEventDetail)
     {	
-        $changeMade = FALSE;
+        $changeMade = false;
 
         //Fetch the state changes
         $query = "SELECT * FROM player_state_changes 
@@ -622,12 +622,12 @@ abstract class Module extends Utils
                 case Module::kPSC_GIVE_ITEM:
                     //echo 'Running a GIVE_ITEM';
                     Module::giveItemToPlayer($gameId, $stateChange['action_detail'], $intPlayerId,$stateChange['action_amount']);
-                    $changeMade = TRUE;
+                    $changeMade = true;
                     break;
                 case Module::kPSC_TAKE_ITEM:
                     //echo 'Running a TAKE_ITEM';
                     Module::takeItemFromPlayer($gameId, $stateChange['action_detail'], $intPlayerId,$stateChange['action_amount']);
-                    $changeMade = TRUE;
+                    $changeMade = true;
                     break;
             }
         }//stateChanges loop
@@ -690,22 +690,22 @@ abstract class Module extends Utils
                 $shouldCheckSpawnablesForDeletion = false;
         }
 
-	if($shouldCheckSpawnablesForDeletion)
-		Module::checkSpawnablesForDeletion($gameId, $eventDetail2, $type, $eventDetail1);
+        if($shouldCheckSpawnablesForDeletion)
+            Module::checkSpawnablesForDeletion($gameId, $eventDetail2, $type, $eventDetail1);
     }
 
-	protected function checkSpawnablesForDeletion($gameId, $locationId, $type, $typeId)
-{
+    protected function checkSpawnablesForDeletion($gameId, $locationId, $type, $typeId)
+    {
         //Clean up spawnables that ought to be removed after viewing
-            $query = "SELECT * FROM spawnables WHERE game_id = $gameId AND active = 1 AND type = '$type' AND type_id = $typeId LIMIT 1";
+        $query = "SELECT * FROM spawnables WHERE game_id = $gameId AND active = 1 AND type = '$type' AND type_id = $typeId LIMIT 1";
 
-            $result = Module::query($query);
-            if(($obj = mysql_fetch_object($result)) && $obj->delete_when_viewed == 1 && $obj->active == 1) 
-            {
-                $query = "DELETE locations, qrcodes FROM locations LEFT JOIN qrcodes ON locations.location_id = qrcodes.link_id WHERE location_id = $locationId AND locations.game_id = '{$gameId}'";
-                Module::query($query);
-            }
-}
+        $result = Module::query($query);
+        if(($obj = mysql_fetch_object($result)) && $obj->delete_when_viewed == 1 && $obj->active == 1) 
+        {
+            $query = "DELETE locations, qrcodes FROM locations LEFT JOIN qrcodes ON locations.location_id = qrcodes.link_id WHERE location_id = $locationId AND locations.game_id = '{$gameId}'";
+            Module::query($query);
+        }
+    }
 
     protected function appendLog($playerId, $gameId, $eventType, $eventDetail1='N/A', $eventDetail2='N/A', $eventDetail3='N/A')
     {
