@@ -85,12 +85,12 @@ class Overlays extends Module
      * Fetch specific Overlay for game
      * @returns the media
      */
-    public function getOverlay($intGameId, $intOverlayId)
+    public function getOverlay($gameId, $intOverlayId)
     {
-        $prefix = Module::getPrefix($intGameId);
-        if (!$prefix && $intGameId != 0) return new returnData(1, NULL, "invalid game id");
+        $prefix = Module::getPrefix($gameId);
+        if (!$prefix && $gameId != 0) return new returnData(1, NULL, "invalid game id");
 
-        $query = "SELECT * FROM overlays WHERE game_id = {$intGameId} AND overlay_id = {$intOverlayId}";
+        $query = "SELECT * FROM overlays WHERE game_id = {$gameId} AND overlay_id = {$intOverlayId}";
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error 2");
 
@@ -236,7 +236,7 @@ class Overlays extends Module
     public function writeOverlaysToDatabase($gameId)
     {
         // go to folder for game Id: /var/www/html/server/gamedata/{game_id}/MapOverlays/0
-        $sGameDir = Config::gamedataFSPath."/".$intGameId."/";
+        $sGameDir = Config::gamedataFSPath."/".$gameId."/";
         $sOverlayDir = $sGameDir ."MapOverlays";
         $dirGame = new DirectoryIterator($sOverlayDir);
         $intOverlayId = 0;
@@ -308,7 +308,7 @@ class Overlays extends Module
             return new returnData(6, NULL, "Failed Authentication");
 
         // go to folder for game ID: /var/www/html/server/gamedata/{game_id}/
-        $sGameDir = Config::gamedataFSPath."/".$intGameId."/";
+        $sGameDir = Config::gamedataFSPath."/".$gameId."/";
         $sOverlayDir = $sGameDir . $folderName;
         $diOverlay = new DirectoryIterator($sOverlayDir);
         $i=0;
@@ -387,35 +387,48 @@ class Overlays extends Module
 
     public function recursiveRemoveDirectory($dir) 
     {
-        $files = glob( $dir . '*', GLOB_MARK ); 
-        foreach( $files as $file ){ 
-            if( substr( $file, -1 ) == '/' ) 
-                $this->recursiveRemoveDirectory( $file ); 
+        $files = glob($dir . '*', GLOB_MARK); 
+        foreach($files as $file)
+        { 
+            if(substr($file, -1) == '/') 
+                $this->recursiveRemoveDirectory($file); 
             else 
-                unlink( $file ); 
+                unlink($file); 
         } 
 
-        if (is_dir($dir)) rmdir( $dir );      
+        $files = glob($dir . '.*', GLOB_MARK); //do it again for hidden files
+        foreach($files as $file)
+        { 
+            if((substr($file, -3) == '/./') || (substr($file, -4) == '/../')) continue;
+            if(substr($file, -1) == '/') 
+                $this->recursiveRemoveDirectory($file); 
+            else 
+                unlink($file); 
+        } 
+
+        if(is_dir($dir)) rmdir( $dir );      
     }
 
 
-    public function unzipOverlay($intGameId, $origFile){ 
+    public function unzipOverlay($gameId, $origFile)
+    { 
         // to test: http://dev.arisgames.org/server/json.php/v1.overlays.unzipOverlay/3279/arisd1a796a25517386d80a8da5a91a05a61.zip
-        $sGameDir =  Config::gamedataFSPath . "/{$intGameId}/";
-        $sOverlayDir = $sGameDir;
-        $fullFile = $sOverlayDir . $origFile;
+        $sOverlayDir = Config::gamedataFSPath."/{$gameId}/";
+        $fullFile = $sOverlayDir.$origFile;
         $zip = zip_open($fullFile); 
         $i=0;
-        if(is_resource($zip)){ 
+        if(is_resource($zip))
+        { 
             $tree = ""; 
-            while(($zip_entry = zip_read($zip)) !== false){ 
-                //echo "Unpacking ".zip_entry_name($zip_entry)."\n"; 
-                if(strpos(zip_entry_name($zip_entry), DIRECTORY_SEPARATOR) !== false){ 
-                    $first = strpos(zip_entry_name($zip_entry), DIRECTORY_SEPARATOR); 
-                    $last = strrpos(zip_entry_name($zip_entry), DIRECTORY_SEPARATOR); 
+            while(($zip_entry = zip_read($zip)) !== false)
+            { 
+                if(strpos(zip_entry_name($zip_entry), DIRECTORY_SEPARATOR) !== false)
+                { 
+                    $first  = strpos(zip_entry_name($zip_entry), DIRECTORY_SEPARATOR); 
+                    $last   = strrpos(zip_entry_name($zip_entry), DIRECTORY_SEPARATOR); 
                     $newdir = substr($origFile,0,strlen($origFile)-4) . "/";
-                    $dir = $sOverlayDir . $newdir .  substr(zip_entry_name($zip_entry), 0, $last); 
-                    $file = substr(zip_entry_name($zip_entry), strrpos(zip_entry_name($zip_entry), DIRECTORY_SEPARATOR)+1); 
+                    $dir    = $sOverlayDir . $newdir .  substr(zip_entry_name($zip_entry), 0, $last); 
+                    $file   = substr(zip_entry_name($zip_entry), strrpos(zip_entry_name($zip_entry), DIRECTORY_SEPARATOR)+1); 
                     if(!is_dir($dir)){ 
 
                         $return = @mkdir($dir, 0755, true);
@@ -456,7 +469,7 @@ class Overlays extends Module
         // -- gdalinfo $imageFileName 
         // -- look for Upper Left ( 0.0, 0.0)  and Lower Right   (21600.0, 10800.0)
         // ----- need to figure out where to send the output and how to parse it
-        $sGameDir = Config::gamedataFSPath . "/{$intGameId}/";
+        $sGameDir = Config::gamedataFSPath . "/{$gameId}/";
         $sOverlayDir = "{$sGameDir}MapOverlays/{$intOverlayId}/";
         $cmd = "gdalinfo {$sGameDir}{$imageFileName}";
         $exit = exec($cmd,$fileInfo, $stderr);  

@@ -50,7 +50,7 @@ if(
     $ext != "jpg" &&
     $ext != "png" &&
     $ext != "gif" &&
-//Movies
+//Video
     $ext != "mp4" &&
     $ext != "mov" &&
     $ext != "m4v" &&
@@ -59,7 +59,9 @@ if(
     $ext != "caf" &&
     $ext != "mp3" &&
     $ext != "aac" &&
-    $ext != "m4a"
+    $ext != "m4a" &&
+//Overlays
+    $ext != "zip"
 )
     die("Invalid filetype");
 
