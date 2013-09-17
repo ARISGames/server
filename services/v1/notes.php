@@ -149,9 +149,9 @@ class Notes extends Module
 
 	function setNoteComplete($noteId)
 	{
-		$query = "UPDATE notes SET incomplete = '0' WHERE note_id = '{$noteId}'";
-		$result = Module::query($query);
-		if (mysql_error()) return new returnData(1, NULL, mysql_error());
+		Module::query("UPDATE notes SET incomplete = '0' WHERE note_id = '{$noteId}'");
+                $noteObj = Module::queryObject("SELECT owner_id FROM notes WHERE note_id = '{$noteId}'");
+                Module::processGameEvent($noteObj->player_id, $noteObj->game_id, Module::kLOG_CREATE_NOTE);
 		return new returnData(0, NULL);
 	}
 
