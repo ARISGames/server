@@ -14,9 +14,9 @@ class Locations extends Module
         return new returnData(0, $rsResult);	
     }
 
-   public function getAllImageMatchEntriesForLocation($gameId, $intLocationID)
+   public function getAllImageMatchEntriesForLocation($gameId, $intLocationId)
     {
-        $query = "SELECT match_media_id FROM qrcodes WHERE game_id = {$gameId} AND link_id = {$intLocationID}";
+        $query = "SELECT match_media_id FROM qrcodes WHERE game_id = {$gameId} AND link_id = {$intLocationId}";
         $result = Module::query($query);
 
         $medias = array();
@@ -27,7 +27,7 @@ class Locations extends Module
         return new returnData(0, $medias);
     }
 
-    public function addImageMatchEntryForLocation($gameId, $intLocationId, $intMatchMediaID)
+    public function addImageMatchEntryForLocation($gameId, $intLocationId, $intMatchMediaId)
     {
         //Check if location exists, and store code
         $query = "SELECT * FROM qrcodes WHERE game_id = {$gameId} AND link_id={$intLocationId}";
@@ -40,7 +40,7 @@ class Locations extends Module
         else return new returnData(1, NULL, "Location Doesn't Exist");
 
         //Check if this media/location pair already exists. If so, exit (our job is already done)
-        $query = "SELECT * FROM qrcodes WHERE game_id = {$gameId} AND link_id ={$intLocationId} AND match_media_id ={$intMatchMediaID}";
+        $query = "SELECT * FROM qrcodes WHERE game_id = {$gameId} AND link_id ={$intLocationId} AND match_media_id ={$intMatchMediaId}";
         $result = Module::query($query);
         if(mysql_num_rows($result) != 0) return new returnData(0); 
 
@@ -48,16 +48,16 @@ class Locations extends Module
         $query = "SELECT * FROM qrcodes WHERE game_id = {$gameId} AND link_id ={$intLocationId} AND match_media_id ='0'";
         $result = Module::query($query);
         if(mysql_num_rows($result) == 1){
-            $query = "UPDATE qrcodes SET match_media_id = {$intMatchMediaID} WHERE game_id = {$gameId} AND link_id={$intLocationId}";
+            $query = "UPDATE qrcodes SET match_media_id = {$intMatchMediaId} WHERE game_id = {$gameId} AND link_id={$intLocationId}";
             Module::query($query);
-            Locations::generateDescriptors($intMatchMediaID, $gameId);
+            Locations::generateDescriptors($intMatchMediaId, $gameId);
             return new returnData(0);
         }
 
 
-        $query = "INSERT INTO qrcodes (game_id, link_id, match_media_id, code) VALUES ({$gameId}, {$intLocationId}, {$intMatchMediaID}, {$code})";
+        $query = "INSERT INTO qrcodes (game_id, link_id, match_media_id, code) VALUES ({$gameId}, {$intLocationId}, {$intMatchMediaId}, {$code})";
         Module::query($query);
-        Locations::generateDescriptors($intMatchMediaID, $gameId);
+        Locations::generateDescriptors($intMatchMediaId, $gameId);
 
         return new returnData(0);
     }
@@ -75,21 +75,21 @@ class Locations extends Module
         }
     }
 
-    public function removeImageMatchEntryForLocation($gameId, $intLocationId, $intMatchMediaID)
+    public function removeImageMatchEntryForLocation($gameId, $intLocationId, $intMatchMediaId)
     {
-        //Check if this is the only remaining QR code entry. If so, ONLY clear the image match media ID, DO NOT delete the whole row.
+        //Check if this is the only remaining QR code entry. If so, ONLY clear the image match media Id, DO NOT delete the whole row.
         $query = "SELECT * FROM qrcodes WHERE game_id = {$gameId} AND link_id ={$intLocationId}";
         $result = Module::query($query);
         if(mysql_num_rows($result) == 1){
-            $query = "UPDATE qrcodes SET match_media_id = '0' WHERE game_id = {$gameId} AND link_id={$intLocationId} AND match_media_id = {$intMatchMediaID}";
+            $query = "UPDATE qrcodes SET match_media_id = '0' WHERE game_id = {$gameId} AND link_id={$intLocationId} AND match_media_id = {$intMatchMediaId}";
             Module::query($query);
-            deleteImageMatchXML($intMatchMediaID, $gameId);
+            deleteImageMatchXML($intMatchMediaId, $gameId);
             return new returnData(0);
         }
         elseif(mysql_num_rows($result) > 1){
-            $query = "DELETE FROM qrcodes WHERE game_id = {$gameId} AND link_id={$intLocationId} AND match_media_id={$intMatchMediaID}";
+            $query = "DELETE FROM qrcodes WHERE game_id = {$gameId} AND link_id={$intLocationId} AND match_media_id={$intMatchMediaId}";
             Module::query($query);
-            deleteImageMatchXML($intMatchMediaID, $gameId);
+            deleteImageMatchXML($intMatchMediaId, $gameId);
             return new returnData(0);
         }
         else{
@@ -122,7 +122,7 @@ class Locations extends Module
         return new returnData(0, $rsResult);	
     }	
 
-    public function getLocationsForPlayer($gameId, $intPlayerID, $lat = 0, $lon = 0)
+    public function getLocationsForPlayer($gameId, $intPlayerId, $lat = 0, $lon = 0)
     {
         $arrayLocations = array();
 
@@ -205,7 +205,7 @@ class Locations extends Module
             }
 
             //Does it meet it's requirements?
-            if (!$this->objectMeetsRequirements($gameId, $intPlayerID, 'Location', $location->location_id)) {
+            if (!$this->objectMeetsRequirements($gameId, $intPlayerId, 'Location', $location->location_id)) {
                 continue;
             }
 
@@ -216,7 +216,7 @@ class Locations extends Module
                 $result = Module::query($query);
                 $note = mysql_fetch_object($result);
                 //If note doesn't exist, or if it is neither public nor owned by the owner, skip it.
-                if(!$note || !($note->public_to_map || $note->owner_id == $intPlayerID))
+                if(!$note || !($note->public_to_map || $note->owner_id == $intPlayerId))
                 {
                     continue;
                 }
@@ -275,13 +275,13 @@ class Locations extends Module
             $spawnable->title = $object->title;
 
             //Does it meet it's requirements?
-            if(!$this->objectMeetsRequirements($gameId, $intPlayerID, 'Spawnable', $spawnable->spawnable_id)) continue;
+            if(!$this->objectMeetsRequirements($gameId, $intPlayerId, 'Spawnable', $spawnable->spawnable_id)) continue;
 
             //Create spawnables
             if($spawnable->location_bound_type == 'PLAYER')
             {
                 //Find player location from log and set lat and lon accordingly
-                if($lat == 0 && $lon == 0 && $obj = Module::queryObject("SELECT event_detail_1, event_detail_2 FROM player_log WHERE player_id = $intPlayerID AND (game_id = $gameId OR game_id = 0) AND event_type = 'MOVE' AND deleted = 0 ORDER BY timestamp DESC LIMIT 1"))
+                if($lat == 0 && $lon == 0 && $obj = Module::queryObject("SELECT event_detail_1, event_detail_2 FROM player_log WHERE player_id = $intPlayerId AND (game_id = $gameId OR game_id = 0) AND event_type = 'MOVE' AND deleted = 0 ORDER BY timestamp DESC LIMIT 1"))
                 {
                     $lat = $obj->event_detail_1;
                     $lon = $obj->event_detail_2;
@@ -361,7 +361,7 @@ class Locations extends Module
         }
 
         //Add the others players from this game, making them look like reqular locations
-        $playersJSON = Players::getOtherPlayersForGame($gameId, $intPlayerID);
+        $playersJSON = Players::getOtherPlayersForGame($gameId, $intPlayerId);
         $playersArray = $playersJSON->data;
 
         foreach ($playersArray as $player) {
@@ -392,9 +392,9 @@ class Locations extends Module
 
     }
 
-    public function getLocation($gameId, $intLocationID)
+    public function getLocation($gameId, $intLocationId)
     {
-        $query = "SELECT * FROM locations WHERE game_id = {$gameId} AND location_id = {$intLocationID} LIMIT 1";
+        $query = "SELECT * FROM locations WHERE game_id = {$gameId} AND location_id = {$intLocationId} LIMIT 1";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -403,20 +403,20 @@ class Locations extends Module
         return new returnData(0, $location);
     }
 
-    public function createLocation($gameId, $strLocationName, $intIconMediaID, 
+    public function createLocation($gameId, $strLocationName, $intIconMediaId, 
             $dblLatitude, $dblLongitude, $dblError,
-            $strObjectType, $intObjectID,
+            $strObjectType, $intObjectId,
             $intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $boolAllowWiggle, $boolDisplayAnnotation)
     {	
-        Locations::createLocationWithQrCode($gameId, $strLocationName, $intIconMediaID, 
+        Locations::createLocationWithQrCode($gameId, $strLocationName, $intIconMediaId, 
                 $dblLatitude, $dblLongitude, $dblError,
-                $strObjectType, $intObjectID,
+                $strObjectType, $intObjectId,
                 $intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $boolAllowWiggle, $boolDisplayAnnotation, $qrCode = '', 0);
     }
 
-    public function createLocationWithQrCode($gameId, $strLocationName, $intIconMediaID, 
+    public function createLocationWithQrCode($gameId, $strLocationName, $intIconMediaId, 
             $dblLatitude, $dblLongitude, $dblError,
-            $strObjectType, $intObjectID,
+            $strObjectType, $intObjectId,
             $intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $boolAllowWiggle, $boolDisplayAnnotation, $qrCode = '', $imageMatchId, $errorText)
     {
         if (!$intQuantity) $intQuantity = 1;
@@ -432,9 +432,9 @@ class Locations extends Module
         $query = "INSERT INTO locations 
             (game_id, name, icon_media_id, latitude, longitude, error, 
              type, type_id, item_qty, hidden, force_view, allow_quick_travel, wiggle, show_title)
-            VALUES ('{$gameId}','{$strLocationName}', '{$intIconMediaID}',
+            VALUES ('{$gameId}','{$strLocationName}', '{$intIconMediaId}',
                     '{$dblLatitude}','{$dblLongitude}','{$dblError}',
-                    '{$strObjectType}','{$intObjectID}','{$intQuantity}',
+                    '{$strObjectType}','{$intObjectId}','{$intQuantity}',
                     '{$boolHidden}','{$boolForceView}', '{$boolAllowQuickTravel}', '{$boolAllowWiggle}', '{$boolDisplayAnnotation}')";
 
 
@@ -452,9 +452,9 @@ class Locations extends Module
 
     }
 
-    public function updateLocation($gameId, $intLocationID, $strLocationName, $intIconMediaID, 
+    public function updateLocation($gameId, $intLocationId, $strLocationName, $intIconMediaId, 
             $dblLatitude, $dblLongitude, $dblError,
-            $strObjectType, $intObjectID,
+            $strObjectType, $intObjectId,
             $intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $boolAllowWiggle, $boolDisplayAnnotations)
     {
         $strLocationName = addslashes($strLocationName);
@@ -467,19 +467,19 @@ class Locations extends Module
         $query = "UPDATE locations
             SET 
             name = '{$strLocationName}',
-                 icon_media_id = '{$intIconMediaID}', 
+                 icon_media_id = '{$intIconMediaId}', 
                  latitude = '{$dblLatitude}', 
                  longitude = '{$dblLongitude}', 
                  error = '{$dblError}',
                  type = '{$strObjectType}',
-                 type_id = '{$intObjectID}',
+                 type_id = '{$intObjectId}',
                  item_qty = '{$intQuantity}',
                  hidden = '{$boolHidden}',
                  force_view = '{$boolForceView}',
                  allow_quick_travel = '{$boolAllowQuickTravel}',
                  wiggle = '{$boolAllowWiggle}',
                  show_title = '{$boolDisplayAnnotations}',
-                 WHERE game_id = {$gameId} AND location_id = '{$intLocationID}'";
+                 WHERE game_id = {$gameId} AND location_id = '{$intLocationId}'";
 
 
         Module::query($query);
@@ -496,7 +496,7 @@ class Locations extends Module
 
     }	
 
-    public function updateLocationWithQrCode($gameId, $intLocationID, $strLocationName, $intIconMediaID, $dblLatitude, $dblLongitude, $dblError, $strObjectType, $intObjectID, $intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $boolAllowWiggle, $boolDisplayAnnotation, $qrCode, $imageMatchId, $errorText)
+    public function updateLocationWithQrCode($gameId, $intLocationId, $strLocationName, $intIconMediaId, $dblLatitude, $dblLongitude, $dblError, $strObjectType, $intObjectId, $intQuantity, $boolHidden, $boolForceView, $boolAllowQuickTravel, $boolAllowWiggle, $boolDisplayAnnotation, $qrCode, $imageMatchId, $errorText)
     {
         $errorText = addslashes($errorText);
         $strLocationName = addslashes($strLocationName);
@@ -508,19 +508,19 @@ class Locations extends Module
 
         $query = "UPDATE locations SET 
             name = '{$strLocationName}',
-                 icon_media_id = '{$intIconMediaID}', 
+                 icon_media_id = '{$intIconMediaId}', 
                  latitude = '{$dblLatitude}', 
                  longitude = '{$dblLongitude}', 
                  error = '{$dblError}',
                  type = '{$strObjectType}',
-                 type_id = '{$intObjectID}',
+                 type_id = '{$intObjectId}',
                  item_qty = '{$intQuantity}',
                  hidden = '{$boolHidden}',
                  force_view = '{$boolForceView}',
                  allow_quick_travel = '{$boolAllowQuickTravel}',
                  wiggle = '{$boolAllowWiggle}',
                  show_title = '{$boolDisplayAnnotation}' 
-                     WHERE game_id = {$gameId} AND location_id = '{$intLocationID}'";
+                     WHERE game_id = {$gameId} AND location_id = '{$intLocationId}'";
         Module::query($query);
         if (mysql_error()) {
             return new returnData(3, NULL, "SQL Error" . mysql_error());		
@@ -530,7 +530,7 @@ class Locations extends Module
         $query = "UPDATE qrcodes
             SET 
             code = '{$qrCode}', fail_text = '{$errorText}'
-            WHERE game_id = {$gameId} AND link_type = 'Location' AND link_id = '{$intLocationID}'";
+            WHERE game_id = {$gameId} AND link_type = 'Location' AND link_id = '{$intLocationId}'";
         Module::query($query);
 
 
@@ -581,6 +581,8 @@ class Locations extends Module
             ON locations.game_id = qrcodes.game_id AND locations.location_id = qrcodes.link_id
             WHERE locations.type = '{$strObjectType}' AND locations.type_id = '{$intObjectId}' AND qrcodes.link_type = 'Location'";
 
+        if($strObjectType == "PlayerNote") //Notes have no qr code so above join will fail
+            $query = "DELETE FROM locations WHERE game_id = '{$gameId}' AND type = '{$strObjectType}' AND type_id = '{$intObjectId}'";
 
         Module::query($query);
 

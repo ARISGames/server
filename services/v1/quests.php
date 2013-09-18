@@ -13,7 +13,7 @@ class Quests extends Module
         return new returnData(0, $rsResult);
     }
 
-    public function getQuestsForPlayer($gameId,$intPlayerID)
+    public function getQuestsForPlayer($gameId,$intPlayerId)
     {
         $query = "SELECT * FROM quests WHERE game_id = {$gameId} ORDER BY sort_index";
 
@@ -25,8 +25,8 @@ class Quests extends Module
 
         //Walk the rs add each quest to the correct array
         while ($quest = mysql_fetch_object($rsResult)) {
-            $display = Module::objectMeetsRequirements ($gameId, $intPlayerID, "QuestDisplay", $quest->quest_id);
-            $complete = Module::playerHasLog($gameId, $intPlayerID, Module::kLOG_COMPLETE_QUEST, $quest->quest_id);
+            $display = Module::objectMeetsRequirements ($gameId, $intPlayerId, "QuestDisplay", $quest->quest_id);
+            $complete = Module::playerHasLog($gameId, $intPlayerId, Module::kLOG_COMPLETE_QUEST, $quest->quest_id);
 
             if ($display && !$complete) $activeQuests[] = $quest;
             if ($display && $complete) $completedQuests[] = $quest;
@@ -42,9 +42,9 @@ class Quests extends Module
         return new returnData(0, $quests);
     }	
 
-    public function getQuest($gameId, $intQuestID)
+    public function getQuest($gameId, $intQuestId)
     {
-        $query = "SELECT * FROM quests WHERE game_id = {$gameId} AND quest_id = {$intQuestID} LIMIT 1";
+        $query = "SELECT * FROM quests WHERE game_id = {$gameId} AND quest_id = {$intQuestId} LIMIT 1";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -53,10 +53,9 @@ class Quests extends Module
         if (!$event) return new returnData(2, NULL, "invalid quest id");
 
         return new returnData(0, $event);
-
     }
 
-    public function createQuest($gameId, $strName, $strIncompleteDescription, $strCompleteDescription, $boolFullScreenNotification, $intActiveMediaId, $intCompleteMediaId, $intActiveIconMediaId, $intCompleteIconMediaID, $exitToTab, $index, $editorId, $editorToken)
+    public function createQuest($gameId, $strName, $strIncompleteDescription, $strCompleteDescription, $boolFullScreenNotification, $intActiveMediaId, $intCompleteMediaId, $intActiveIconMediaId, $intCompleteIconMediaId, $goFunction, $index, $editorId, $editorToken)
     {
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
@@ -66,8 +65,8 @@ class Quests extends Module
         $strCompleteDescription = addslashes($strCompleteDescription);	
 
         $query = "INSERT INTO quests 
-            (game_id, name, description, text_when_complete, sort_index, exit_to_tab, full_screen_notify)
-            VALUES ('{$gameId}','{$strName}','{$strIncompleteDescription}','{$strCompleteDescription}','{$index}','{$exitToTab}','{$boolFullScreenNotification}')";
+            (game_id, name, description, text_when_complete, sort_index, go_function, full_screen_notify)
+            VALUES ('{$gameId}','{$strName}','{$strIncompleteDescription}','{$strCompleteDescription}','{$index}','{$goFunction}','{$boolFullScreenNotification}')";
 
 
         Module::query($query);
@@ -76,7 +75,7 @@ class Quests extends Module
         return new returnData(0, mysql_insert_id());
     }
 
-    public function updateQuest($gameId, $intQuestID, $strName, $strIncompleteDescription, $strCompleteDescription, $boolFullScreenNotification, $intActiveMediaId, $intCompleteMediaId, $intActiveIconMediaId, $intCompleteIconMediaID, $exitToTab, $index, $editorId, $editorToken)
+    public function updateQuest($gameId, $intQuestId, $strName, $strIncompleteDescription, $strCompleteDescription, $boolFullScreenNotification, $intActiveMediaId, $intCompleteMediaId, $intActiveIconMediaId, $intCompleteIconMediaId, $goFunction, $index, $editorId, $editorToken)
     {
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
@@ -91,9 +90,15 @@ class Quests extends Module
                  description = '{$strIncompleteDescription}',
                  text_when_complete = '{$strCompleteDescription}',
                  sort_index = '{$index}',
-                 exit_to_tab = '{$exitToTab}',
                  full_screen_notify = '{$boolFullScreenNotification}'
-                     WHERE game_id = {$gameId} AND quest_id = '{$intQuestID}'";
+                     WHERE game_id = {$gameId} AND quest_id = '{$intQuestId}'";
+
+                 //removed from query until fully implemented
+                 //go_function = '{$goFunction}',
+                 //active_media_id = '{$intActiveMediaId}',
+                 //complete_media_id = '{$intCompleteMediaId}',
+                 //active_icon_media_id = '{$intActiveIconMediaId}',
+                 //complete_icon_media_id = '{$intCompleteIconMediaId}',
 
         Module::query($query);
 
@@ -104,12 +109,12 @@ class Quests extends Module
 
     }
 
-    public function deleteQuest($gameId, $intQuestID, $editorId, $editorToken)
+    public function deleteQuest($gameId, $intQuestId, $editorId, $editorToken)
     {
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
-        $query = "DELETE FROM quests WHERE game_id = {$gameId} AND quest_id = {$intQuestID}";
+        $query = "DELETE FROM quests WHERE game_id = {$gameId} AND quest_id = {$intQuestId}";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");

@@ -11,86 +11,48 @@ class Media extends Module
     protected $validAudioTypes = array('mp3','m4a','caf');
     protected $validVideoTypes = array('mp4','m4v','3gp','mov');
 
-    public function getMedia($gameId)
+    public function parseRawMedia($media)
     {
-        if ($gameId == 0) $query = "SELECT * FROM media WHERE game_id = 0 AND SUBSTRING(file_path,1,1) != 'p'";
-        else $query = "SELECT * FROM media WHERE game_id = {$gameId} OR (game_id = 0 AND SUBSTRING(file_path,1,1) != 'p')";
+        $media->file_name = $media->file_path; //this is for legacy reasons... Phil 10/12/2012
+        $media->thumb_file_path = substr($media->file_path,0,strrpos($media->file_path,'.')).'_128'.substr($media->file_path,strrpos($media->file_path,'.'));
+        $media->url_path = Config::gamedataWWWPath . "/" . Config::gameMediaSubdir;
+        $media->url       = $media->url_path."/".$media->file_path;
+        $media->thumb_url = $media->url_path."/".$media->thumb_file_path;
 
-        $rsResult = Module::query($query);
-        if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+        if($media->is_icon == '1') $media->type = self::MEDIA_ICON;
+        else $media->type = Media::getMediaType($media->file_path);
 
-        $returnData = new returnData(0, array());
+        if($media->game_id == 0) $media->is_default = 1;
+        else $media->is_default = 0;
 
-        //Calculate the media types
-        while ($mediaRow = mysql_fetch_array($rsResult)) {
-
-            $mediaItem = array();
-            $mediaItem['media_id'] = $mediaRow['media_id'];
-            $mediaItem['game_id'] = $mediaRow['game_id'];
-            $mediaItem['name'] = $mediaRow['name'];
-            $mediaItem['file_path'] = $mediaRow['file_path'];
-            $mediaItem['file_name'] = $mediaRow['file_path']; //this is for legacy reasons... Phil 10/12/2012
-            $mediaItem['url_path'] = Config::gamedataWWWPath . "/" . Config::gameMediaSubdir;
-
-            if ($mediaRow['is_icon'] == '1') $mediaItem['type'] = self::MEDIA_ICON;
-            else $mediaItem['type'] = $this->getMediaType($mediaRow['file_path']);
-
-            if ($mediaRow['game_id'] == 0) $mediaItem['is_default'] = 1;
-            else $mediaItem['is_default'] = 0;
-
-            array_push($returnData->data, $mediaItem);
-        }
-        return $returnData;
+        return $media;
     }
 
-    public function getMediaObject($gameId, $intMediaID)
+    public function getMedia($gameId)
+    {
+        $medias = Module::query("SELECT * FROM media WHERE (game_id = '{$gameId}' OR game_id = 0) AND SUBSTRING(file_path,1,1) != 'p'");
+
+        $data = array();
+        while($media = mysql_fetch_object($medias))
+            $data[] = Media::parseRawMedia($media);
+        return new returnData(0, $data);
+    }
+
+    public function getMediaObject($gameId, $intMediaId)
     {
         //apparently, "is_numeric(NAN)" returns 'true'. NAN literally means "Not A Number". Think about that one for a sec.
-        if(!$intMediaID || !is_numeric($intMediaID) || $intMediaID == NAN) //return new returnData(2, NULL, "No matching media");
+        if(!$intMediaId || !is_numeric($intMediaId) || $intMediaId == NAN //return new returnData(2, NULL, "No matching media");
+        || !($media = Module::queryObject("SELECT * FROM media WHERE media_id = {$intMediaId} LIMIT 1")))
 	{
-		$mediaItem = new stdClass;
-        	$mediaItem->media_id = $intMediaID;
-        	$mediaItem->name = "Default NPC";
-        	$mediaItem->file_path = "0/npc.png";
-        	$mediaItem->file_name = "0/npc.png";
-        	$mediaItem->url_path = Config::gamedataWWWPath . "/" . Config::gameMediaSubdir;
-		$mediaItem->type = Media::getMediaType($mediaItem->file_path);
-		$mediaItem->is_default = 1;
-        	return new returnData(0, $mediaItem);
+		$media = new stdClass;
+                $media->game_id = 0;
+        	$media->media_id = $intMediaId;
+        	$media->name = "Default NPC";
+        	$media->file_path = "0/npc.png";
+        	return new returnData(0, Media::parseRawMedia($media));
 	}
 
-        $query = "SELECT * FROM media WHERE media_id = {$intMediaID} LIMIT 1";
-        $rsResult = Module::query($query);
-
-        $mediaRow = mysql_fetch_object($rsResult);
-        if (!$mediaRow) //return new returnData(2, NULL, "No matching media");
-	{
-		$mediaItem = new stdClass;
-        	$mediaItem->media_id = $intMediaID;
-        	$mediaItem->name = "Default NPC";
-        	$mediaItem->file_path = "0/npc.png";
-        	$mediaItem->file_name = "0/npc.png";
-        	$mediaItem->url_path = Config::gamedataWWWPath . "/" . Config::gameMediaSubdir;
-		$mediaItem->type = Media::getMediaType($mediaItem->file_path);
-		$mediaItem->is_default = 1;
-        	return new returnData(0, $mediaItem);
-	}
-
-        $mediaItem = new stdClass;
-        $mediaItem->media_id = $mediaRow->media_id;
-        $mediaItem->name = $mediaRow->name;
-        $mediaItem->file_path = $mediaRow->file_path;
-        $mediaItem->file_name = $mediaRow->file_path; //this is for legacy reasons... Phil 10/12/2012
-
-        $mediaItem->url_path = Config::gamedataWWWPath . "/" . Config::gameMediaSubdir;
-
-        if ($mediaRow->is_icon == '1') $mediaItem->type = self::MEDIA_ICON;
-        else $mediaItem->type = Media::getMediaType($mediaRow->file_path);
-
-        if ($mediaRow->game_id == 0) $mediaItem->is_default = 1;
-        else $mediaItem->is_default = 0;
-
-        return new returnData(0, $mediaItem);
+        return new returnData(0, Media::parseRawMedia($media));
     }	
 
     public function getValidAudioExtensions()
@@ -132,20 +94,16 @@ class Media extends Module
         Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error:".mysql_error());
 
+        $media = new stdClass();
         $media->media_id = mysql_insert_id();
+        $media->game_id = $gameId;
         $media->name = $strName;
         $media->file_path = $strFileName;
-        $media->file_name = $strFileName; //this is for legacy reasons... Phil 10/12/2012
-        $media->is_icon = $boolIsIcon;
-        $media->url_path = Config::gamedataWWWPath . "/" . Config::gameMediaSubdir;
 
-        if ($media->is_icon == '1') $media->type = self::MEDIA_ICON;
-        else $media->type = Media::getMediaType($media->file_path);
-
-        return new returnData(0,$media);
+        return new returnData(0,Media::parseRawMedia($media));
     }
 
-    public function renameMedia($gameId, $intMediaID, $strName, $editorId, $editorToken)
+    public function renameMedia($gameId, $intMediaId, $strName, $editorId, $editorToken)
     {
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
@@ -157,7 +115,7 @@ class Media extends Module
         //Update this record
         $query = "UPDATE media 
             SET name = '{$strName}' 
-            WHERE media_id = '{$intMediaID}' and game_id = '{$gameId}'";
+            WHERE media_id = '{$intMediaId}' and game_id = '{$gameId}'";
 
         Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -166,22 +124,22 @@ class Media extends Module
         else return new returnData(0, FALSE);	
     }
 
-    public function deleteMedia($gameId, $intMediaID, $editorId, $editorToken)
+    public function deleteMedia($gameId, $intMediaId, $editorId, $editorToken)
     {
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
         $query = "SELECT * FROM media 
-            WHERE media_id = {$intMediaID}";
+            WHERE media_id = {$intMediaId}";
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error:". mysql_error());
 
         $mediaRow = mysql_fetch_array($rsResult);
-        if ($mediaRow === FALSE) return new returnData(2, NULL, "Invalid Media Record");
+        if($mediaRow === FALSE) return new returnData(2, NULL, "Invalid Media Record");
 
         //Delete the Record
         $query = "DELETE FROM media 
-            WHERE media_id = {$intMediaID}";
+            WHERE media_id = {$intMediaId}";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
@@ -196,14 +154,14 @@ class Media extends Module
         else return new returnData(0, FALSE);	
     }	
 
-    public function getMediaDirectory($gameID)
+    public function getMediaDirectory($gameId)
     {
-        return new returnData(0, Config::gamedataFSPath . "/{$gameID}" . Config::gameMediaSubdir);
+        return new returnData(0, Config::gamedataFSPath . "/{$gameId}" . Config::gameMediaSubdir);
     }
 
-    public function getMediaDirectoryURL($gameID)
+    public function getMediaDirectoryURL($gameId)
     {
-        return new returnData(0, Config::gamedataWWWPath . "/{$gameID}". Config::gameMediaSubdir);
+        return new returnData(0, Config::gamedataWWWPath . "/{$gameId}". Config::gameMediaSubdir);
     }	
 
     public function getMediaType($strMediaFileName)

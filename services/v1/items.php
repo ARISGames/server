@@ -10,12 +10,28 @@ class Items extends Module
 {
     public static function getItems($gameId)
     {
-        $query = "SELECT * FROM items WHERE game_id = '{$gameId}'";
-
-        $rsResult = Module::query($query);
+        $rsResult = Module::query("SELECT * FROM items WHERE game_id = '{$gameId}'");
 
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
         return new returnData(0, $rsResult);
+    }
+
+    public static function getFullItems($gameId)
+    {
+        $items = Module::queryArray("SELECT * FROM items WHERE game_id = '{$gameId}';");
+        $tags = Module::queryArray("SELECT ot.tag_id, ot.object_id, got.media_id, got.tag FROM (SELECT * FROM object_tags WHERE object_type = 'ITEM') as ot LEFT JOIN (SELECT * FROM game_object_tags WHERE game_id = '{$gameId}' AND use_for_sort = '1') as got ON ot.tag_id = got.tag_id;");
+
+        for($i = 0; $i < count($items); $i++)
+        {
+            $items[$i]->tags = array();
+            for($t = 0; $t < count($tags); $t++)
+            {
+                if($tags[$t]->object_id == $items[$i]->item_id && $tags[$t]->tag != null)
+                    $items[$i]->tags[] = $tags[$t];
+            }
+        }
+
+        return new returnData(0, $items);
     }
 
     public static function getItemsForPlayer($gameId, $playerId)
@@ -250,8 +266,16 @@ class Items extends Module
         $result = Module::query($query);
         $contents = array();
         while($content = mysql_fetch_object($result)) {
-            if($content->media_url) $content->media_url = Config::gamedataWWWPath . '/' . $content->media_url;
-            if($content->icon_url) $content->icon_url = Config::gamedataWWWPath . '/' . $content->icon_url;
+            if($content->media_url)
+            {
+                $content->media_url       = Config::gamedataWWWPath . '/' . $content->media_url;
+                $content->media_thumb_url = substr($content->media_url,0,strrpos($content->media_url,'.')).'_128'.substr($content->media_url,strrpos($content->media_url,'.'));
+            }
+            if($content->icon_url)
+            {
+                $content->icon_url = Config::gamedataWWWPath . '/' . $content->icon_url;
+                $content->icon_thumb_url = substr($content-icon_url,0,strrpos($content-icon_url,'.')).'_128'.substr($content-icon_url,strrpos($content-icon_url,'.'));
+            }
             $content->tags = Items::getItemTags($content->item_id)->data;
             $contents[] = $content;
         }
@@ -266,8 +290,16 @@ class Items extends Module
         $result = Module::query($query);
         $contents = array();
         while($content = mysql_fetch_object($result)){
-            if($content->media_url) $content->media_url = Config::gamedataWWWPath . '/' . $content->media_url;
-            if($content->icon_url) $content->icon_url = Config::gamedataWWWPath . '/' . $content->icon_url;
+            if($content->media_url)
+            {
+                $content->media_url = Config::gamedataWWWPath . '/' . $content->media_url;
+                $content->media_thumb_url = substr($content->media_url,0,strrpos($content->media_url,'.')).'_128'.substr($content->media_url,strrpos($content->media_url,'.'));
+            }
+            if($content->icon_url)
+            {
+                $content->icon_url = Config::gamedataWWWPath . '/' . $content->icon_url;
+                $content->icon_thumb_url = substr($content-icon_url,0,strrpos($content-icon_url,'.')).'_128'.substr($content-icon_url,strrpos($content-icon_url,'.'));
+            }
             $content->tags = Items::getItemTags($content->item_id)->data;
             $contents[] = $content;
         }

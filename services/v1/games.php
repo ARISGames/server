@@ -675,7 +675,7 @@ class Games extends Module
         $query = "SELECT * FROM quests WHERE game_id = {$gameId}";
         $result = Module::query($query);
         while($result && $row = mysql_fetch_object($result)){
-            $query = "INSERT INTO quests (game_id, name, description, text_when_complete, sort_index, exit_to_tab, active_media_id, complete_media_id, full_screen_notify, active_icon_media_id, complete_icon_media_id) VALUES ('{$newGameId}', '".addSlashes($row->name)."', '".addSlashes($row->description)."', '".addSlashes($row->text_when_complete)."', '{$row->sort_index}', '{$row->exit_to_tab}', '{$row->active_media_id}', '{$row->complete_media_id}', '{$row->full_screen_notify}', '{$row->active_icon_media_id}', '{$row->complete_icon_media_id}')";
+            $query = "INSERT INTO quests (game_id, name, description, text_when_complete, sort_index, go_function, active_media_id, complete_media_id, full_screen_notify, active_icon_media_id, complete_icon_media_id) VALUES ('{$newGameId}', '".addSlashes($row->name)."', '".addSlashes($row->description)."', '".addSlashes($row->text_when_complete)."', '{$row->sort_index}', '{$row->go_function}', '{$row->active_media_id}', '{$row->complete_media_id}', '{$row->full_screen_notify}', '{$row->active_icon_media_id}', '{$row->complete_icon_media_id}')";
 
             Module::query($query);
             $newId = mysql_insert_id();
