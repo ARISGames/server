@@ -28,6 +28,7 @@ abstract class Module extends Utils
 
     const kLOG_RECEIVE_WEBHOOK = 'RECEIVE_WEBHOOK';
     const kLOG_COMPLETE_QUEST = 'COMPLETE_QUEST';
+    const kLOG_CREATE_NOTE = 'CREATE_NOTE';
     const kLOG_GET_NOTE = 'GET_NOTE';
     const kLOG_TAG_NOTE = 'TAG_NOTE';
     const kLOG_GIVE_NOTE_LIKE = 'GIVE_NOTE_LIKE';
