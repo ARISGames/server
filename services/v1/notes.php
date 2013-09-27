@@ -622,14 +622,22 @@ class Notes extends Module
 			if (!$player = mysql_fetch_array($result)) return new returnData(4, NULL, "Not a player");
 
 			$email = $player['email'];
-			$isComment = $player['parent_id'];
+			$parentId = $player['parent_id'];
 			$noteContent = $player['title'];
 			$typeOfNoteDescription;
-			if($isComment != 0) $typeOfNoteDescription = "Comment";
-			else $typeOfNoteDescription = "Note";
+			if($parentId != 0) 
+			{
+				$typeOfNoteDescription = "Comment";
+				$linkText = "You can view and edit the comment at http://www.siftr.org/#noteId{$parentId}";
+			}
+			else 
+			{
+				$typeOfNoteDescription = "Note";
+				$linkText = "You can view and edit this note at http://www.siftr.org/#noteId{$noteId}";
+			}
 
-			$subject = "'{$typeOfNoteDescription}' Flagged 3 Times";
-			$body = "Your '{$typeOfNoteDescription}' that had the text: '{$noteContent}' has been flagged 3 times.<br><br>Please be aware of others on this platform. The Siftr team has been notified and will be looking into the matter.";
+			$subject = "{$typeOfNoteDescription} Flagged 3 Times";
+			$body = "Your {$typeOfNoteDescription} that had the text: {$noteContent} has been flagged 3 times.<br><br>{$linkText}<br><br>Please be aware of others on this platform. The Siftr team has been notified and will be looking into the matter.";
 			$playerNotificationSent = Module::sendEmail($email, $subject, $body);
 			$email = "hanshaw@wisc.edu";
 			$subject = "NoteId '{$noteId}' Flagged";
