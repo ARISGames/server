@@ -4,7 +4,7 @@ html
 
 body
 {
-  background: #F4F4F4;
+  background: #f4f4f4;
   font-family: calibri,tahoma,arial,sans-serif;
   font-size: 1em;
   height: 100%;
@@ -41,7 +41,7 @@ a:hover
   width: 100%;
   position: absolute;
   left: 0;
-  background-color: #222;
+  background-color: #e4e5e6;
   z-index: -10;
 }
 
@@ -62,7 +62,6 @@ a:hover
 {
   width: 62.5em;
   margin: 0 auto;
-  color: #AAAAAA;
 }
  
 #header
@@ -78,11 +77,11 @@ img#title
 #logotext
 {
   font-family: arial,sans-serif;
-  color: #fff;
-  font-size: 3em;
-  font-weight: bold;
+  color: #000;
+  font-size: 2em;
   position: relative;
-  top: 0.3em;
+  top: 0.7em;
+  left: .3em;
 }
 
 #mapContainer 
@@ -160,8 +159,8 @@ border-bottom: 1px solid #AAAAAA;
   margin: 0 auto;
   width: 100%;
   border: 0.125em solid #AAAAAA;
-  border-radius: 1em;
-  -moz-border-radius: 1em;
+  border-radius: .5em;
+  -moz-border-radius: .5em;
   position: relative;
   top: 1.25em;
 }
@@ -173,8 +172,8 @@ border-bottom: 1px solid #AAAAAA;
   width: 40%;
   height: 31.25em;
   border: 0.125em solid white;
-  border-radius: 1em;
-  -moz-border-radius: 1em;
+  border-radius: .5em;
+  -moz-border-radius: .5em;
 }
 
 h1
@@ -253,7 +252,7 @@ h1
 
 #topTenButtonBox
 {
-  width: 15em;
+  width: 10em;
   margin-left: auto;
   margin-right: auto;
 }
@@ -268,7 +267,7 @@ button {
   color: white;
   margin: 0.625em auto;
   border: solid white 0.125em;
-  border-radius: 1em;
-  -moz-border-radius: 1em;
+  border-radius: .5em;
+  -moz-border-radius: .5em;
 }
 

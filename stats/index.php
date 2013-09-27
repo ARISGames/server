@@ -104,8 +104,8 @@ function populateGraphs()
 
 // topTenArray and topTenButtons must be parallel arrays
 
-var topTenArray = ['topTenElementForDay', 'topTenElementForWeek', 'topTenElementForMonth', 'topTenElementForAllTime'];
-var topTenButtons = ['topTenDayButton', 'topTenWeekButton', 'topTenMonthButton', 'topTenAllTimeButton'];
+var topTenArray = ['topTenElementForDay', 'topTenElementForWeek', 'topTenElementForMonth',];
+var topTenButtons = ['topTenDayButton', 'topTenWeekButton', 'topTenMonthButton',];
 
 function enableTopTenItem(divId)
 {
@@ -192,7 +192,7 @@ function reverseLatLng(lat, lng)
 <div id="main">
 <div id="header" >
   <a href="http://arisgames.org">
-    <img src="http://arisgames.org/wp-content/uploads/2010/08/ARISLogo1.png" id="title" class="png" alt="ARIS - Mobile Learning Experiences" />
+    <img src="http://arisgames.org/wp-content/uploads/2013/06/Aris-Horizontal251.png" id="title" class="png" alt="ARIS - Mobile Learning Experiences" />
   </a>   
   <span id="logotext">LIVE STATS</span>
 </div>
@@ -240,7 +240,6 @@ function reverseLatLng(lat, lng)
     <button id="topTenDayButton" onclick="javascript:enableTopTenItem('topTenElementForDay')">day</button>
     <button id="topTenWeekButton" onclick="javascript:enableTopTenItem('topTenElementForWeek')">week</button>
     <button id="topTenMonthButton" onclick="javascript:enableTopTenItem('topTenElementForMonth')">month</button>
-    <button id="topTenAllTimeButton" onclick="javascript:enableTopTenItem('topTenElementForAllTime')">all time</button>
     <script type="text/javascript">
       document.getElementById("topTenWeekButton").style.backgroundColor = '#336699';
     </script> 
@@ -249,7 +248,6 @@ function reverseLatLng(lat, lng)
   <?php @generateTopGames(day); ?>
   <?php @generateTopGames(week); ?>
   <?php @generateTopGames(month); ?>
-  <?php @generateTopGames(alltime); ?>
   
 </div>
 
@@ -306,7 +304,6 @@ function generatePlayerLocations()
   $result = mysql_query($query.$interval);
   while ($row = mysql_fetch_object($result))
     echo 'new google.maps.Marker({ position: new google.maps.LatLng(' . $row->latitude . ',' . $row->longitude . '), map: map, icon: \'http://arisgames.org/server/stats/map_icons/player_alpha_66.png\' });' . "\n";
-
 /*
   $interval = ' AND updated BETWEEN DATE_SUB(NOW(), INTERVAL 1 WEEK) AND NOW()';
   $result = mysql_query($query.$interval);
@@ -386,11 +383,13 @@ function generateTopGames($timeframe)
     $topTenDivName = 'topTenElementForMonth';
     $queryInterval = '1 MONTH';
   }
+  /*
   else if ($timeframe == 'alltime')
   {
     $topTenDivName = 'topTenElementForAllTime';
     $queryInterval = '100 YEAR';
   }
+  */
 
   $query = '
 SELECT media.file_path as file_path, temp.game_id, temp.name, temp.description, temp.count FROM
@@ -429,9 +428,7 @@ ORDER BY count DESC
 	  $description = truncate_text($game->description, 215);   
     
       $query = "SELECT name FROM game_editors LEFT JOIN editors ON game_editors.editor_id = editors.editor_id WHERE game_editors.game_id = $gameid";
-      
-      //$query  = "SELECT * FROM game_editors LEFT JOIN editors ON game_editors.editor_id = editors.editor_id WHERE game_editors.game_id = $gameid";
-           
+                 
       $authorResult = mysql_query($query);
       $authors = array();
       while($author = mysql_fetch_object($authorResult))
@@ -499,7 +496,6 @@ function getCountsForTable($t, $range)
 		$query = $query . ", SUM(created BETWEEN ".monthsago($i+1)." AND ".monthsago($i).") AS '_".($i+1)."_months_ago'";
 	}
 	$query = $query." FROM $t;";
-	//echo "/*query=".$query."*/\n";
 	$result = mysql_query($query);
 	$counts = mysql_fetch_array($result);
 
