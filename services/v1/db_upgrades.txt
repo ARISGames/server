@@ -25,3 +25,5 @@ ALTER TABLE quests ADD COLUMN description_notification TINYTEXT NOT NULL DEFAULT
 ALTER TABLE quests ADD COLUMN text_when_complete_notification TINYTEXT NOT NULL DEFAULT "";
 ALTER TABLE quests ADD COLUMN active_notification_media_id INT(10) UNSIGNED NOT NULL DEFAULT 0;
 ALTER TABLE quests ADD COLUMN complete_notification_media_id INT(10) UNSIGNED NOT NULL DEFAULT 0;
+
+ALTER TABLE quests ADD COLUMN complete_go_function ENUM('NONE','NEARBY','GPS','INVENTORY','PLAYER','QR','NOTE','PICKGAME','JAVASCRIPT') NOT NULL DEFAULT "NONE";
