@@ -192,6 +192,17 @@ class Notes extends Module
 			return addSlashes($input);
 	}
 
+	function getListOfPlayersWithMostNotes($json)
+	{
+		$gameId   = Notes::addSlashesArrayFriendly($json["gameId"]);
+		$count    = Notes::addSlashesArrayFriendly($json["count"]);
+
+		$query = "SELECT user_name, count(notes.note_id) AS score, player_id FROM players LEFT JOIN (SELECT note_id, owner_id FROM notes WHERE game_id = {$gameId}) AS notes ON players.player_id = notes.owner_id GROUP BY player_id ORDER BY count(notes.note_id) DESC LIMIT {$count}"; 
+		$result = Module::query($query);
+		if (mysql_error()) return new returnData(1, NULL, mysql_error());
+		return new returnData(0, $result);
+	}
+
 	function getNotesWithAttributes($json)
 	{
 		$gameId       = Notes::addSlashesArrayFriendly($json["gameId"]);
