@@ -55,16 +55,16 @@ class Quests extends Module
         return new returnData(0, $event);
     }
 
-    public function createQuest($gameId, $strName, $index, $editorId, $editorToken)
+    public function createQuest($gameId, $name, $index, $editorId, $editorToken)
     {
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
-        $strName = addslashes($strName);	
+        $name = addslashes($name);	
 
         $query = "INSERT INTO quests 
             (game_id, name, sort_index)
-            VALUES ('{$gameId}','{$strName}','{$index}')";
+            VALUES ('{$gameId}','{$name}','{$index}')";
 
 
         Module::query($query);
@@ -75,15 +75,15 @@ class Quests extends Module
 
     public function updateQuest($gameId, $questId,
         $name,
-        $activeText, $completeText, 
-        $activeNotifText, $completeNotifText,
-        $activeMediaId, $completeMediaId, 
-        $activeIconMediaId, $completeIconMediaId, 
-        $activeNotifMediaId, $completeNotifMediaId,
-        $activeFunction, $completeFunction,
-        $activeNotifFunction, $completeNotifFunction, 
+        $activeText,             $completeText, 
+        $activeNotifText,        $completeNotifText,
+        $activeMediaId,          $completeMediaId, 
+        $activeIconMediaId,      $completeIconMediaId, 
+        $activeNotifMediaId,     $completeNotifMediaId,
+        $activeFunction,         $completeFunction,
+        $activeNotifFunction,    $completeNotifFunction, 
         $activeFullScreenNotify, $completeFullScreenNotify,
-        $activeShowDismiss, $completeShowDismiss
+        $activeShowDismiss,      $completeShowDismiss,
         $sortIndex,
         $editorId, $editorToken)
     {
@@ -91,28 +91,28 @@ class Quests extends Module
             return new returnData(6, NULL, "Failed Authentication");
 
         Module::query("UPDATE quests SET
-            name                            = '"+addslashes($name)+"',
-            description                     = '"+addslashes($activeText)+"',
-            text_when_complete              = '"+addslashes($completeText)+"',
-            description_notification        = '"+addslashes($activeNotifText)+"',
-            text_when_complete_notification = '"+addslashes($completeNotifText)+"',
-            active_media_id                 = '"+intval($activeMediaId)+"',
-            complete_media_id               = '"+intval($completeMediaId)+"',
-            active_icon_media_id            = '"+intval($activeIconMediaId)+"',
-            complete_icon_media_id          = '"+intval($completeIconMediaId)+"',
-            active_notification_media_id    = '"+intval($activeNotifMediaId)+"',
-            complete_notification_media_id  = '"+intval($completeNotifMediaId)+"',
-            go_function                     = '"+addslashes($activeFunction)+"',
-            complete_go_function            = '"+addslashes($completeFunction)+"',
-            notif_go_function               = '"+addslashes($activeNotifFunction)+"',
-            complete_notif_go_function      = '"+addslashes($completeNotifFunction)+"',
-            full_screen_notify              = '"+intval($activeFullScreenNotify)+"',
-            complete_full_screen_notify     = '"+intval($completeFullScreenNotify)+"',
-            active_notif_show_dismiss       = '"+intval($activeShowDismiss)+"',
-            complete_notif_show_dismiss     = '"+intval($completeShowDismiss)+"',
-            sort_index                      = '"+intval($sortIndex)+"'
+            name                            = '".addslashes($name)."',
+            description                     = '".addslashes($activeText)."',
+            text_when_complete              = '".addslashes($completeText)."',
+            description_notification        = '".addslashes($activeNotifText)."',
+            text_when_complete_notification = '".addslashes($completeNotifText)."',
+            active_media_id                 = '".intval($activeMediaId)."',
+            complete_media_id               = '".intval($completeMediaId)."',
+            active_icon_media_id            = '".intval($activeIconMediaId)."',
+            complete_icon_media_id          = '".intval($completeIconMediaId)."',
+            active_notification_media_id    = '".intval($activeNotifMediaId)."',
+            complete_notification_media_id  = '".intval($completeNotifMediaId)."',
+            go_function                     = '".addslashes($activeFunction)."',
+            complete_go_function            = '".addslashes($completeFunction)."',
+            notif_go_function               = '".addslashes($activeNotifFunction)."',
+            complete_notif_go_function      = '".addslashes($completeNotifFunction)."',
+            full_screen_notify              = '".intval($activeFullScreenNotify)."',
+            complete_full_screen_notify     = '".intval($completeFullScreenNotify)."',
+            active_notif_show_dismiss       = '".intval($activeShowDismiss)."',
+            complete_notif_show_dismiss     = '".intval($completeShowDismiss)."',
+            sort_index                      = '".intval($sortIndex)."'
             WHERE
-            game_id = '"+intval($gameId)+"' AND quest_id = '"+$questId+"';");
+            game_id = '".intval($gameId)."' AND quest_id = '".$questId."';");
 
         if(mysql_error()) return new returnData(3, NULL, "SQL Error");
 
