@@ -169,7 +169,7 @@ class Media extends Module
         $mediaParts = pathinfo($strMediaFileName);
         $mediaExtension = $mediaParts['extension'];
 
-        $validImageAndIconTypes = array('jpg','png');
+        $validImageAndIconTypes = array('jpg','png','gif');
         $validAudioTypes = array('mp3','m4a','caf');
         $validVideoTypes = array('mp4','m4v','3gp','mov');
 
