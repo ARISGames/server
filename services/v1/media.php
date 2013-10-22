@@ -7,7 +7,7 @@ class Media extends Module
     const MEDIA_ICON = 'Icon';
     const MEDIA_VIDEO = 'Video';
     const MEDIA_AUDIO = 'Audio';
-    protected $validImageAndIconTypes = array('jpg','png');
+    protected $validImageAndIconTypes = array('jpg','png','gif');
     protected $validAudioTypes = array('mp3','m4a','caf');
     protected $validVideoTypes = array('mp4','m4v','3gp','mov');
 
