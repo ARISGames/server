@@ -144,11 +144,12 @@ abstract class Utils
 		return $str;
 	}
 
-	protected function fixBadQuotes($inputString){
+	protected function fixBadQuotes($inputString)
+        {
 		$output = str_replace("“", "\"", $inputString);
 		$output = str_replace("”", "\"", $output);
 		return $output;
 	}
-
 }
 ?>
+
