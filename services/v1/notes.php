@@ -501,31 +501,18 @@ class Notes extends Module
 
 	function addTagToNote($noteId, $gameId, $tag)
 	{
-		//Check if tag exists for game
-		$query = "SELECT tag_id FROM game_tags WHERE game_id = '{$gameId}' AND tag = '{$tag}' LIMIT 1";
-		$result = Module::query($query);
-		$id = mysql_fetch_object($result);
-
-		//If not
-		if(!$id->tag_id)
+		$id = Module::queryObject("SELECT tag_id FROM game_tags WHERE game_id = '{$gameId}' AND tag = '{$tag}' LIMIT 1");
+		if(!$id->tag_id) //doesn't already exist
 		{
-			//Make sure it is ok for player to create tag for game
-			$query = "SELECT allow_player_tags FROM games WHERE game_id='{$gameId}'";	
-			$result = Module::query($query);
-			$allow = mysql_fetch_object($result);
-			if($allow->allow_player_tags != 1)
-				//Player not allowed to create own tag
-				return new returnData(1, NULL, "Player Generated Tags Not Allowed In This Game");	
+			$allow = Module::queryObject("SELECT allow_player_tags FROM games WHERE game_id = '{$gameId}'");
+			if($allow->allow_player_tags != 1) return new returnData(1, NULL, "Player Generated Tags Not Allowed In This Game");	
 
-			//Create tag for game
-			$query = "INSERT INTO game_tags (tag, game_id, player_created) VALUES ('{$tag}', '{$gameId}', 1)";
-			Module::query($query);
+                        Module::query("INSERT INTO game_tags (tag, game_id, player_created) VALUES ('{$tag}', '{$gameId}', 1)");
 			$id->tag_id = mysql_insert_id();
 		}
 
-		//Apply tag to note
-		$query = "INSERT INTO note_tags (note_id, tag_id) VALUES ('{$noteId}', '{$id->tag_id}')";
-		Module::query($query);
+                if(!Module::queryObject("SELECT * FROM note_tags WHERE note_id = '{$noteId}' AND tag_id = '{$id->tag_id}'"))
+		    Module::query("INSERT INTO note_tags (note_id, tag_id) VALUES ('{$noteId}', '{$id->tag_id}')");
 
 		return new returnData(0, $id->tag_id);
 	}
