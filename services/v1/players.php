@@ -287,13 +287,11 @@ class Players extends Module
 			return $rData;
 	}
 
-	public function locationViewed($gameId, $intPlayerId, $intLocationId)
+	public function locationViewed($gameId, $playerId, $locationId)
 	{
-               	$query = "SELECT * FROM locations WHERE game_id = $gameId AND location_id = $intLocationId LIMIT 1";
-		$result = Module::query($query);
-		if (mysql_error()) return new returnData(3, NULL, "SQL Error");
-		$location = mysql_fetch_object($result);
-		Module::checkSpawnablesForDeletion($gameId, $intLocationId, $location->type, $location->type_id);
+		$location = Module::queryObject("SELECT * FROM locations WHERE game_id = $gameId AND location_id = $locationId LIMIT 1");
+		if(mysql_error()) return new returnData(3, NULL, "SQL Error");
+		if($location) Module::checkSpawnablesForDeletion($gameId, $locationId, $location->type, $location->type_id);
 
 		return new returnData(0, TRUE);
 	}
