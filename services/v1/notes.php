@@ -150,8 +150,8 @@ class Notes extends Module
 	function setNoteComplete($noteId)
 	{
 		Module::query("UPDATE notes SET incomplete = '0' WHERE note_id = '{$noteId}'");
-                $noteObj = Module::queryObject("SELECT * FROM notes WHERE note_id = '{$noteId}'");
-                Module::processGameEvent($noteObj->owner_id, $noteObj->game_id, Module::kLOG_CREATE_NOTE);
+                $noteObj = Module::queryObject("SELECT * FROM notes WHERE note_id = '{$noteId}' LIMIT 1");
+                if($noteObj) Module::processGameEvent($noteObj->owner_id, $noteObj->game_id, Module::kLOG_CREATE_NOTE);
 		return new returnData(0, NULL);
 	}
 
