@@ -157,5 +157,12 @@ abstract class Utils
 		return $output;
 	}
 
+	protected function addSlashesArrayFriendly($input)
+	{
+		if (is_array($input))
+			return array_map('addSlashes', $input);
+		else
+			return addSlashes($input);
+	}
 }
 ?>

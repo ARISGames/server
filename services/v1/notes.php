@@ -184,18 +184,10 @@ class Notes extends Module
 		return new returnData(0, $notes);
 	}
 
-	function addSlashesArrayFriendly($input)
-	{
-		if (is_array($input))
-			return array_map('addSlashes', $input);
-		else
-			return addSlashes($input);
-	}
-
 	function getListOfPlayersWithMostNotes($json)
 	{
-		$gameId   = Notes::addSlashesArrayFriendly($json["gameId"]);
-		$count    = Notes::addSlashesArrayFriendly($json["count"]);
+		$gameId   = Module::addSlashesArrayFriendly($json["gameId"]);
+		$count    = Module::addSlashesArrayFriendly($json["count"]);
 
 		$query = "SELECT user_name, count(notes.note_id) AS score, player_id FROM players LEFT JOIN (SELECT note_id, owner_id FROM notes WHERE game_id = {$gameId}) AS notes ON players.player_id = notes.owner_id GROUP BY player_id ORDER BY count(notes.note_id) DESC LIMIT {$count}"; 
 		$result = Module::query($query);
@@ -205,15 +197,15 @@ class Notes extends Module
 
 	function getNotesWithAttributes($json)
 	{
-		$gameId       = Notes::addSlashesArrayFriendly($json["gameId"]);
-		$playerId     = Notes::addSlashesArrayFriendly($json["playerId"]);
+		$gameId       = Module::addSlashesArrayFriendly($json["gameId"]);
+		$playerId     = Module::addSlashesArrayFriendly($json["playerId"]);
 
-		$searchType   = Notes::addSlashesArrayFriendly($json["searchType"]);
-		$tagIds       = Notes::addSlashesArrayFriendly($json["tagIds"]);
-		$searchTerms  = Notes::addSlashesArrayFriendly($json["searchTerms"]);
-		$date         = Notes::addSlashesArrayFriendly($json["date"]);
-		$lastLocation = Notes::addSlashesArrayFriendly($json["lastLocation"]);	
-		$noteCount    = Notes::addSlashesArrayFriendly($json["noteCount"]);
+		$searchType   = Module::addSlashesArrayFriendly($json["searchType"]);
+		$tagIds       = Module::addSlashesArrayFriendly($json["tagIds"]);
+		$searchTerms  = Module::addSlashesArrayFriendly($json["searchTerms"]);
+		$date         = Module::addSlashesArrayFriendly($json["date"]);
+		$lastLocation = Module::addSlashesArrayFriendly($json["lastLocation"]);	
+		$noteCount    = Module::addSlashesArrayFriendly($json["noteCount"]);
 
 		$notesName   = "result_notes";
 		$notesSelect = "";
