@@ -578,16 +578,14 @@ class Games extends Module
         return new returnData(0, $games);
     }
 
-    public function getRecentGamesForPlayer($intPlayerId, $latitude, $longitude, $boolIncludeDevGames = 1)
+    public function getRecentGamesForPlayer($playerId, $latitude, $longitude, $includeDev = 1)
     {
-        $query = "SELECT p_log.*, games.ready_for_public FROM (SELECT player_id, game_id, timestamp FROM player_log WHERE player_id = {$intPlayerId} AND game_id != 0 ORDER BY timestamp DESC) as p_log LEFT JOIN games ON p_log.game_id = games.game_id ".($boolIncludeDevGames ? "" : "WHERE games.ready_for_public = 1 ")."GROUP BY game_id ORDER BY timestamp DESC LIMIT 10"; 
-        $result = Module::query($query);
-        $x = 0;
+        $logs = Module::queryArray("SELECT game_id, timestamp FROM player_log WHERE player_id = {$playerId} AND game_id != 0 GROUP BY game_id ORDER BY timestamp DESC");
         $games = array();
-        while($game = mysql_fetch_object($result))
+        for($i = 0; $i < count($logs) && count($games) < 10; $i++)
         {
-            $gameObj = Games::getFullGameObject($game->game_id, $intPlayerId, 1, 9999999999, $latitude, $longitude);
-            if($gameObj != NULL) $games[] = $gameObj;
+            $gameObj = Games::getFullGameObject($logs[$i]->game_id, $playerId, 1, 9999999999, $latitude, $longitude);
+            if($gameObj != NULL && ($gameObj->ready_for_public || $includeDev)) $games[] = $gameObj;
         }
 
         return new returnData(0, $games);
