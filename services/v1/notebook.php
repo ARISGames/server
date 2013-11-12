@@ -145,6 +145,8 @@ class Notebook extends Module
         $fullNote->comments = Notebook::getNoteComments($noteId);
         $fullNote->tags = Notebook::getNoteTags($noteId, $note->gameId);
         $fullNote->likes = Notebook::getNoteLikes($noteId);
+        $fullNote->public_to_map = $note->public_to_map;
+        $fullNote->public_to_list = $note->public_to_notebook;
 
         return $fullNote;
     }
@@ -164,6 +166,8 @@ class Notebook extends Module
         $stubNote->title = $note->title;
         $stubNote->description = $note->description;
         $stubNote->created = $note->created;
+        $stubNote->public_to_map = $note->public_to_map;
+        $stubNote->public_to_list = $note->public_to_notebook;
 
         return $stubNote;
     }
