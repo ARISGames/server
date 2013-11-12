@@ -604,10 +604,11 @@ class Games extends Module
         $gamesRs = Module::query($query);
 
         $games = array();
-        while ($game = @mysql_fetch_object($gamesRs)) {
-            $gameObj = new stdClass;
+        while($game = @mysql_fetch_object($gamesRs))
+        {
             $gameObj = Games::getFullGameObject($game->game_id, $playerId, 0, 9999999999, 0, 0);
-            if($gameObj != NULL){
+            if($gameObj != NULL)
+            {
                 $gameObj->count = $game->count;
                 $games[] = $gameObj;
             }
