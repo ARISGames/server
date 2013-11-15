@@ -580,7 +580,8 @@ class Games extends Module
 
     public function getRecentGamesForPlayer($playerId, $latitude, $longitude, $includeDev = 1)
     {
-        $logs = Module::queryArray("SELECT game_id, timestamp FROM player_log WHERE player_id = {$playerId} AND game_id != 0 GROUP BY game_id ORDER BY timestamp DESC");
+    
+        $logs = Module::queryArray("SELECT game_id, MAX(timestamp) as ts FROM player_log WHERE player_id = '{$playerId}' AND game_id != 0 GROUP BY game_id ORDER BY ts DESC");
         $games = array();
         for($i = 0; $i < count($logs) && count($games) < 10; $i++)
         {
