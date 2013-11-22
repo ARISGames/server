@@ -229,34 +229,34 @@ class Players extends Module
 	public function setItemCountForPlayerJSON($obj)
 	{
 		$gameId = $obj['gameId'];
-		$intItemId = $obj['itemId'];
+		$itemId = $obj['itemId'];
 		$playerId = $obj['playerId'];
 		$qty = $obj['qty'];
 
-		Module::setItemCountForPlayer($gameId, $intItemId, $playerId, $qty);
+		Module::setItemCountForPlayer($gameId, $itemId, $playerId, $qty);
 	}
 
-	public function setItemCountForPlayer($gameId, $intItemId, $playerId, $qty)
+	public function setItemCountForPlayer($gameId, $itemId, $playerId, $qty)
 	{
-		$rData = Module::setItemCountForPlayer($gameId, $intItemId, $playerId, $qty);
+		$rData = Module::setItemCountForPlayer($gameId, $itemId, $playerId, $qty);
 		if(!$rData->returnCode)
 			return new returnData(0, $rData);
 		else
 			return $rData;
 	}
 
-	public function giveItemToPlayer($gameId, $intItemId, $playerId, $qtyToGive=1) 
+	public function giveItemToPlayer($gameId, $itemId, $playerId, $qtyToGive=1) 
 	{
-		$rData = Module::giveItemToPlayer($gameId, $intItemId, $playerId, $qtyToGive=1);
+		$rData = Module::giveItemToPlayer($gameId, $itemId, $playerId, $qtyToGive=1);
 		if(!$rData->returnCode)
 			return new returnData(0, $rData);
 		else
 			return $rData;
 	}
 
-	public function takeItemFromPlayer($gameId, $intItemId, $playerId, $qtyToGive=1) 
+	public function takeItemFromPlayer($gameId, $itemId, $playerId, $qtyToGive=1) 
 	{
-		$rData = Module::takeItemFromPlayer($gameId, $intItemId, $playerId, $qtyToGive=1);
+		$rData = Module::takeItemFromPlayer($gameId, $itemId, $playerId, $qtyToGive=1);
 		if(!$rData->returnCode)
 			return new returnData(0, $rData);
 		else
@@ -272,11 +272,11 @@ class Players extends Module
 		return new returnData(0, TRUE);
 	}
 
-	public function itemViewed($gameId, $playerId, $intItemId, $intLocationId = 0)
+	public function itemViewed($gameId, $playerId, $itemId, $intLocationId = 0)
 	{
-		Module::processGameEvent($playerId, $gameId, Module::kLOG_VIEW_ITEM, $intItemId, $intLocationId);
+		Module::processGameEvent($playerId, $gameId, Module::kLOG_VIEW_ITEM, $itemId, $intLocationId);
 
-		$query = "UPDATE player_items SET viewed = 1 WHERE game_id = {$gameId} AND player_id = {$playerId} AND item_id = {$intItemId}";
+		$query = "UPDATE player_items SET viewed = 1 WHERE game_id = {$gameId} AND player_id = {$playerId} AND item_id = {$itemId}";
 
 		Module::query($query);
 
@@ -308,7 +308,7 @@ class Players extends Module
 		return new returnData(0, TRUE);
 	}
 
-	public function pickupItemFromLocation($gameId, $playerId, $intItemId, $intLocationId, $qty=1)
+	public function pickupItemFromLocation($gameId, $playerId, $itemId, $intLocationId, $qty=1)
 	{	
 		$query = "SELECT item_qty from locations WHERE game_id = {$gameId} AND location_id = $intLocationId";
 		$result = Module::query($query);
@@ -319,23 +319,23 @@ class Players extends Module
 				return new returnData(0, FALSE, "Location has qty 0");
 			}
 
-			$qtyGiven = Module::giveItemToPlayer($gameId, $intItemId, $playerId, $loc->item_qty);
+			$qtyGiven = Module::giveItemToPlayer($gameId, $itemId, $playerId, $loc->item_qty);
 			Module::decrementItemQtyAtLocation($gameId, $intLocationId, $qtyGiven); 
 
 			return new returnData(0, $qtyGiven, "Location has qty 0");
 		}
 
-		$qtyGiven = Module::giveItemToPlayer($gameId, $intItemId, $playerId, $qty);
+		$qtyGiven = Module::giveItemToPlayer($gameId, $itemId, $playerId, $qty);
 		Module::decrementItemQtyAtLocation($gameId, $intLocationId, $qtyGiven); 
 
 		return new returnData(0, TRUE);
 
 	}
 
-	public function dropItem($gameId, $playerId, $intItemId, $floatLat, $floatLong, $qty=1)
+	public function dropItem($gameId, $playerId, $itemId, $floatLat, $floatLong, $qty=1)
 	{
-		Module::takeItemFromPlayer($gameId, $intItemId, $playerId, $qty);
-		Players::giveItemToWorld($gameId, $intItemId, $floatLat, $floatLong, $qty);
+		Module::takeItemFromPlayer($gameId, $itemId, $playerId, $qty);
+		Players::giveItemToWorld($gameId, $itemId, $floatLat, $floatLong, $qty);
 
 		return new returnData(0, FALSE);
 	}		
@@ -347,10 +347,10 @@ class Players extends Module
 		return new returnData(0, FALSE);
 	}	
 
-	public function destroyItem($gameId, $playerId, $intItemId, $qty=1)
+	public function destroyItem($gameId, $playerId, $itemId, $qty=1)
 	{
-		Module::takeItemFromPlayer($gameId, $intItemId, $playerId, $qty);
-		Module::processGameEvent($playerId, $gameId, Module::kLOG_DESTROY_ITEM, $intItemId, $qty);
+		Module::takeItemFromPlayer($gameId, $itemId, $playerId, $qty);
+		Module::processGameEvent($playerId, $gameId, Module::kLOG_DESTROY_ITEM, $itemId, $qty);
 
 		return new returnData(0, FALSE);
 	}		
@@ -819,43 +819,28 @@ class Players extends Module
 		return new returnData(0,$log);
 	}
 
-	protected function giveItemToWorld($gameId, $intItemId, $floatLat, $floatLong, $intQty = 1)
-	{
-		//Find any items on the map nearby
-		$clumpingRangeInMeters = 10;
+        protected function giveItemToWorld($gameId, $itemId, $floatLat, $floatLong, $intQty = 1)
+        {
+            $clumpingRangeInMeters = 10;
 
-		$query = "SELECT *,((ACOS(SIN($floatLat * PI() / 180) * SIN(latitude * PI() / 180) + 
-			COS($floatLat * PI() / 180) * COS(latitude * PI() / 180) * 
-			COS(($floatLong - longitude) * PI() / 180)) * 180 / PI()) * 60 * 1.1515) * 1609.344
-			AS `distance`, location_id 
-			FROM locations 
-			WHERE type = 'item' AND type_id = '{$intItemId}' AND game_id = '{$gameId}'
-			HAVING distance<= {$clumpingRangeInMeters}
-		ORDER BY distance ASC"; 	
-			$result = Module::query($query);
+            $query = "SELECT *,((ACOS(SIN($floatLat * PI() / 180) * SIN(latitude * PI() / 180) + 
+                COS($floatLat * PI() / 180) * COS(latitude * PI() / 180) * 
+                COS(($floatLong - longitude) * PI() / 180)) * 180 / PI()) * 60 * 1.1515) * 1609.344
+                AS `distance`, location_id 
+                FROM locations 
+                WHERE type = 'item' AND type_id = '{$itemId}' AND game_id = '{$gameId}'
+                HAVING distance<= {$clumpingRangeInMeters}
+            ORDER BY distance ASC"; 	
+                $result = Module::query($query);
 
-		if ($closestLocationWithinClumpingRange = @mysql_fetch_object($result)) {
-			//We have a match
-
-			$query = "UPDATE locations
-				SET item_qty = item_qty + {$intQty}
-			WHERE location_id = {$closestLocationWithinClumpingRange->location_id} AND game_id = '{$gameId}'";
-			Module::query($query);
-		}
-		else {
-
-			$itemName = $this->getItemName($gameId, $intItemId);
-			$error = 100; //Use 100 meters
-			$icon_media_id = $this->getItemIconMediaId($gameId, $intItemId); //Set the map icon = the item's icon
-
-			$query = "INSERT INTO locations (game_id, name, type, type_id, icon_media_id, latitude, longitude, error, item_qty)
-				VALUES ('{$gameId}', '{$itemName}','Item','{$intItemId}', '{$icon_media_id}', '{$floatLat}','{$floatLong}', '{$error}','{$intQty}')";
-			Module::query($query);
-
-			$newId = mysql_insert_id();
-			//Create a coresponding QR Code
-			QRCodes::createQRCode($gameId, "Location", $newId, '');
-		}
-	}
+            if($closestLocationWithinClumpingRange = @mysql_fetch_object($result))
+                Module::query("UPDATE locations SET item_qty = item_qty + {$intQty} WHERE location_id = {$closestLocationWithinClumpingRange->location_id} AND game_id = '{$gameId}'");
+            else
+            {
+                $item = Module::queryObject("SELECT * FROM items WHERE item_id = '{$itemId}'");
+                Module::query("INSERT INTO locations (game_id, name, type, type_id, icon_media_id, latitude, longitude, error, item_qty) VALUES ('{$gameId}', '{$item->name}','Item','{$itemId}', '{$item->icon_media_id}', '{$floatLat}','{$floatLong}', '100','{$intQty}')");
+                QRCodes::createQRCode($gameId, "Location", mysql_insert_id(), '');
+            }
+        }
 }
 ?>
