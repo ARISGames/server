@@ -126,11 +126,12 @@ abstract class Module extends Utils
         $item = Items::getItem($gameId, $intItemId)->data;
         $maxQty = $item->max_qty_in_inventory; 
 
-        if ($currentQty + $qtyToGive > $maxQty  && $maxQty != -1)
+        if($currentQty + $qtyToGive > $maxQty  && $maxQty != -1)
             $qtyToGive =  $maxQty - $currentQty;
 
-        if ($qtyToGive < 1) return 0;
-        else {
+        if($qtyToGive < 1) return 0;
+        else
+        {
             Module::adjustQtyForPlayerItem($gameId, $intItemId, $playerId, $qtyToGive);
 
             //check log if item has already been viewed. If yes, set item to viewed in database
@@ -159,11 +160,12 @@ abstract class Module extends Utils
         $item = Items::getItem($gameId, $intItemId)->data;
         $maxQty = $item->max_qty_in_inventory; 
 
-        if ($qty > $maxQty  && $maxQty != -1)
-            $qty =  $maxQty;
+        if($qty > $maxQty  && $maxQty != -1)
+            $qty = $maxQty;
 
-        if ($qty < 0) return 0;
-        else {
+        if($qty < 0) return 0;
+        else
+        {
             $amountToAdjust = $qty - $currentQty;
             Module::adjustQtyForPlayerItem($gameId, $intItemId, $playerId, $amountToAdjust);
             return $qty;
@@ -263,8 +265,8 @@ abstract class Module extends Utils
 
     protected static function saveContentNoAuthentication($gameId, $intObjectContentId, $intFolderId, $strContentType, $intContentId, $intSortOrder)
     {
-        if ($intObjectContentId) {
-            //This is an update
+        if($intObjectContentId)
+        {
             $query = "UPDATE folder_contents
                 SET 
                 folder_id = '{$intFolderId}',
@@ -277,11 +279,10 @@ abstract class Module extends Utils
             ";
 
             Module::query($query);
-            if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
-            else return new returnData(0, NULL, NULL);
+            return new returnData(0);
         }	
-        else {		
-            //This is an insert
+        else
+        {
             $query = "INSERT INTO folder_contents 
                 (game_id, folder_id, content_type, content_id, previous_id)
                 VALUES 
@@ -290,8 +291,7 @@ abstract class Module extends Utils
             Module::query($query);
             $newContentId = mysql_insert_id();
 
-            if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
-            else return new returnData(0, $newContentId, NULL);
+            return new returnData(0, $newContentId, NULL);
         }
     }
 
@@ -321,32 +321,6 @@ abstract class Module extends Utils
 
         return $locObj;
     }
-
-    protected function recordExists($gameId, $strTable, $intRecordId)
-    {
-        $key = substr($strTable, 0, strlen($strTable)-1);
-        $query = "SELECT * FROM {$strTable} WHERE {$key} = $intRecordId AND game_id = '{$gameId}'";
-        $rsResult = Module::query($query);
-        if (mysql_error()) return false;
-        if (mysql_num_rows($rsResult) < 1) return false;
-        return true;
-    }
-
-    protected function getItemName($gameId, $intItemId)
-    {
-        $query = "SELECT name FROM items WHERE item_id = $intItemId AND game_id = '{$gameId}'";
-        $rsResult = Module::query($query);		
-        $row = @mysql_fetch_array($rsResult);	
-        return $row['name'];
-    }
-
-    protected function getItemIconMediaId($gameId, $intItemId)
-    {
-        $query = "SELECT name FROM items WHERE item_id = $intItemId AND game_id = '{$gameId}'";
-        $rsResult = Module::query($query);		
-        $row = @mysql_fetch_array($rsResult);	
-        return $row['icon_media_id'];
-    }   
 
     protected function playerHasLog($gameId, $playerId, $strEventType, $strEventDetail)
     {
