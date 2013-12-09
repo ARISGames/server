@@ -66,9 +66,9 @@ class Notebook extends Module
         return new returnData(0, NULL);	
     }
 
-    private function getNotesVisibleToGame($gameId, $full = false) 
+    private function getNotesVisibleToGame($gameId, $full = false, $page = 0, $psize = 20) 
     {
-        $noteIds = Module::queryArray("SELECT note_id FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = '0' AND (public_to_notebook = '1' OR public_to_map = '1')");
+        $noteIds = Module::queryArray("SELECT note_id FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = '0' AND (public_to_notebook = '1' OR public_to_map = '1') LIMIT ".($page*$psize).",".$psize);
 
         $notes = array();
         for($i = 0; $i < count($noteIds); $i++)
@@ -80,19 +80,19 @@ class Notebook extends Module
         return $notes;
     }
 
-    public function getFullNotesVisibleToGame($gameId) 
+    public function getFullNotesVisibleToGame($gameId, $page = 0, $psize = 20) 
     {
-        return new returnData(0, Notebook::getNotesVisibleToGame($gameId,true));
+        return new returnData(0, Notebook::getNotesVisibleToGame($gameId,true,$page,$psize));
     }
 
-    public function getStubNotesVisibleToGame($gameId)
+    public function getStubNotesVisibleToGame($gameId, $page = 0, $psize = 20)
     {
-        return new returnData(0, Notebook::getNotesVisibleToGame($gameId,false));
+        return new returnData(0, Notebook::getNotesVisibleToGame($gameId,false,$page,$psize));
     }
 
-    private function getNotesVisibleToPlayer($gameId, $playerId, $full = false)
+    private function getNotesVisibleToPlayer($gameId, $playerId, $full = false, $page = 0, $psize = 20)
     {
-        $noteIds = Module::queryArray("SELECT note_id FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = 0 AND (owner_id = '{$playerId}' OR public_to_notebook = '1' OR public_to_map = '1')");
+        $noteIds = Module::queryArray("SELECT note_id FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = 0 AND (owner_id = '{$playerId}' OR public_to_notebook = '1' OR public_to_map = '1') LIMIT ".($page*$psize).",".$psize);
 
         $notes = array();
         for($i = 0; $i < count($noteIds); $i++)
@@ -104,14 +104,14 @@ class Notebook extends Module
         return $notes;
     }
 
-    public function getFullNotesVisibleToPlayer($gameId, $playerId)
+    public function getFullNotesVisibleToPlayer($gameId, $playerId, $page = 0, $psize = 20)
     {
-        return new returnData(0, Notebook::getNotesVisibleToPlayer($gameId, $playerId, true));
+        return new returnData(0, Notebook::getNotesVisibleToPlayer($gameId,$playerId,true,$page,$psize));
     }
 
-    public function getStubNotesVisibleToPlayer($gameId, $playerId)
+    public function getStubNotesVisibleToPlayer($gameId, $playerId, $page = 0, $psize = 20)
     {
-        return new returnData(0, Notebook::getNotesVisibleToPlayer($gameId, $playerId, false));
+        return new returnData(0, Notebook::getNotesVisibleToPlayer($gameId,$playerId,false,$page,$psize));
     }
 
     public function getNote($noteId)
