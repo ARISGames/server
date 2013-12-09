@@ -143,7 +143,7 @@ class Notebook extends Module
         $fullNote->created = $note->created;
         $fullNote->contents = Notebook::getNoteContents($noteId);
         $fullNote->comments = Notebook::getNoteComments($noteId);
-        $fullNote->tags = Notebook::getNoteTags($noteId, $note->gameId);
+        $fullNote->tags = Notebook::getNoteTags($noteId, $note->game_id);
         $fullNote->likes = Notebook::getNoteLikes($noteId);
         $fullNote->public_to_map = $note->public_to_map;
         $fullNote->public_to_list = $note->public_to_notebook;
