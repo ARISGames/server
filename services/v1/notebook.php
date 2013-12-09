@@ -185,11 +185,13 @@ class Notebook extends Module
             $content->content_id      = $contentIds[$i]->content_id;
             $content->type            = $contentIds[$i]->type;
             $content->media_id        = $contentIds[$i]->media_id;
+            $content->text            = $contentIds[$i]->text; //LEGACY
             $content->file_path       = $media->file_path; 
             $content->thumb_file_path = $media->thumb_file_path; 
             $content->url_path        = $media->url_path; 
             $content->url             = $media->url; 
             $content->thumb_url       = $media->thumb_url; 
+
 
             $contents[] = $content;
         }
