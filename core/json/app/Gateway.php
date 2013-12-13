@@ -38,12 +38,16 @@ class Gateway extends BasicGateway
 		}
 		// </_POST HACK>
 
-
-
 		$GLOBALS['HTTP_RAW_POST_DATA'] = file_get_contents("php://input");
-		if(isset($GLOBALS['HTTP_RAW_POST_DATA']))
+		if(isset($GLOBALS['HTTP_RAW_POST_DATA']) && $GLOBALS['HTTP_RAW_POST_DATA'] != "")
 		{
-			$rawArgs[] = $GLOBALS['HTTP_RAW_POST_DATA'];
+		    $len = count($rawArgs);
+		    // Check for and remove [last] empty arg from URL '/' explosion
+		    if($len && trim($rawArgs[$len-1]) == "")
+			    unset($rawArgs[$len-1]);
+
+                    //$rawArgs = new array();
+		    $rawArgs[] = $GLOBALS['HTTP_RAW_POST_DATA'];
 		}
 		
 		$body->setValue($rawArgs);

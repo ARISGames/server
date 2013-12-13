@@ -348,14 +348,12 @@ class Notebook extends Module
 
     public function uploadMedia($glob)
     {
+        //$glob = json_decode(file_get_contents('php://input'));
         //Module::serverErrorLog(json_encode($glob));
-        //Module::serverErrorLog($_SERVER['REQUEST_METHOD']);
-        //Module::serverErrorLog(file_get_contents('php://input'));
-        $glob = json_decode(file_get_contents('php://input'));
 
-        $path     = $glob->path;
-        $filename = $glob->filename;
-        $data     = $glob->data;
+        $path     = $glob["path"];
+        $filename = $glob["filename"];
+        $data     = $glob["data"];
         
         $gameMediaDirectory = Media::getMediaDirectory($path)->data;
 
