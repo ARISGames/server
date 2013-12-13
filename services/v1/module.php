@@ -179,27 +179,20 @@ abstract class Module extends Utils
 
     protected function removeItemFromAllPlayerInventories($gameId, $intItemId)
     {
-        $query = "DELETE FROM player_items 
-            WHERE item_id = {$intItemId} AND game_id = '{$gameId}'";
-        $result = Module::query($query);
+        Module::query("DELETE FROM player_items WHERE item_id = {$intItemId} AND game_id = '{$gameId}'");
     }
 
     protected function adjustQtyForPlayerItem($gameId, $intItemId, $playerId, $amountOfAdjustment)
     {
         //Get any existing record
-        $query = "SELECT * FROM player_items 
-            WHERE player_id = $playerId AND item_id = $intItemId AND game_id = '{$gameId}' LIMIT 1";
-        $result = Module::query($query);
+        $result = Module::query("SELECT * FROM player_items WHERE player_id = $playerId AND item_id = $intItemId AND game_id = '{$gameId}' LIMIT 1");
 
-        if ($existingPlayerItem = @mysql_fetch_object($result)) {
-
+        if ($existingPlayerItem = @mysql_fetch_object($result))
+        {
             //Check if this change will make the qty go to < 1, if so delete the record
             $newQty = $existingPlayerItem->qty + $amountOfAdjustment;
-            if ($newQty < 1) {
-                $query = "DELETE FROM player_items 
-                    WHERE player_id = $playerId AND item_id = $intItemId AND game_id = '{$gameId}'";
-                Module::query($query);
-            }
+            if($newQty < 1)
+                Module::query("DELETE FROM player_items WHERE player_id = $playerId AND item_id = $intItemId AND game_id = '{$gameId}'");
             else {
                 //Update the qty
                 $query = "UPDATE player_items 
