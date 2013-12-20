@@ -606,15 +606,19 @@ class Games extends Module
 
     public function getRecentGamesForPlayer($playerId, $latitude, $longitude, $includeDev = 1)
     {
+        $debugString = "";
         $sTime = microtime();
         $logs = Module::queryArray("SELECT game_id, MAX(timestamp) as ts FROM player_log WHERE player_id = '{$playerId}' AND game_id != 0 GROUP BY game_id ORDER BY ts DESC LIMIT 20");
-        Module::serverErrorLog("GetRecentGamesQuery: ".(microtime()-$sTime));
+        $debugString .= "GetRecentGamesQuery: ".(microtime()-$sTime)."\n";
         $games = array();
         for($i = 0; $i < count($logs) && count($games) < 10; $i++)
         {
+            $sTime = microtime();
             $gameObj = Games::getFullGameObject($logs[$i]->game_id, $playerId, 1, 9999999999, $latitude, $longitude);
             if($gameObj != NULL && ($gameObj->ready_for_public || $includeDev)) $games[] = $gameObj;
+            $debugString .= $logs[$i]->game_id.": ".(microtime()-$sTime)."\n";
         }
+        Module::serverErrorLog($debugString);
 
         return new returnData(0, $games);
     }
