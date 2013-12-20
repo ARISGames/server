@@ -53,7 +53,8 @@ class Games extends Module
         $gamesRs = Module::query($query);
 
         $games = array();
-        while ($game = @mysql_fetch_object($gamesRs)) {
+        while($game = @mysql_fetch_object($gamesRs))
+        {
             $gameObj = new stdClass;
             $gameObj = Games::getFullGameObject($game->game_id, $playerId, 1, $maxDistance, $latitude, $longitude);
             if($gameObj != NULL) $games[] = $gameObj;
@@ -115,24 +116,24 @@ class Games extends Module
 
     public function getFullGameObject($gameId, $intPlayerId, $boolGetLocationalInfo = 0, $intSkipAtDistance = 99999999, $latitude = 0, $longitude = 0)
     {
-        $debugString = "";
-        $sTime = microtime();
+        //$debugString = "";
+        //$sTime = microtime();
 
         $gameObj = Module::queryObject("SELECT * FROM games WHERE game_id = '{$gameId}' LIMIT 1");
 
         //Check if Game Has Been Played
-        $debugString .= "HAS BEEN PLAYED:";
-        $sTime = microtime();
+        //$debugString .= "HAS BEEN PLAYED:";
+        //$sTime = microtime();
         $query = "SELECT * FROM player_log WHERE game_id = '{$gameId}' AND player_id = '{$intPlayerId}' AND deleted = 0 LIMIT 1";
         $result = Module::query($query);
         if(mysql_num_rows($result) > 0) $gameObj->has_been_played = true;
         else                            $gameObj->has_been_played = false;
-        $debugString .=(microtime()-$sTime)."\n";
+        //$debugString .=(microtime()-$sTime)."\n";
 
 
         //Get Locational Stuff
-        $debugString .= "LOCATION INFO:";
-        $sTime = microtime();
+        //$debugString .= "LOCATION INFO:";
+        //$sTime = microtime();
         if($boolGetLocationalInfo)
         {
             if($gameObj->is_locational == true)
@@ -150,15 +151,15 @@ class Games extends Module
                 $gameObj->distance = 0;
             }
         }
-        $debugString .=(microtime()-$sTime)."\n";
+        //$debugString .=(microtime()-$sTime)."\n";
         //Get Quest Stuff
         //$questsReturnData = Quests::getQuestsForPlayer($gameId, $intPlayerId);
         //$gameObj->totalQuests = $questsReturnData->data->totalQuests;
         //$gameObj->completedQuests = count($questsReturnData->data->completed);
 
         //Get Editors
-        $debugString .= "EDITORS:";
-        $sTime = microtime();
+        //$debugString .= "EDITORS:";
+        //$sTime = microtime();
         $query = "SELECT editors.* FROM editors, game_editors
             WHERE game_editors.editor_id = editors.editor_id
             AND game_editors.game_id = {$gameId}";
@@ -169,20 +170,20 @@ class Games extends Module
             $editorsString .= ', ' . $editor['name'];
         }
         $gameObj->editors = $editorsString;
-        $debugString .=(microtime()-$sTime)."\n";
+        //$debugString .=(microtime()-$sTime)."\n";
 
         //Get Num Players
-        $debugString .= "NUM_PLAYERS:";
-        $sTime = microtime();
+        //$debugString .= "NUM_PLAYERS:";
+        //$sTime = microtime();
         $query = "SELECT * FROM players
             WHERE last_game_id = {$gameId}";
         $playersRs = Module::query($query);
         $gameObj->numPlayers = @mysql_num_rows($playersRs);
-        $debugString .=(microtime()-$sTime)."\n";
+        //$debugString .=(microtime()-$sTime)."\n";
 
         //Get the media URLs
-        $debugString .= "MEDIA:";
-        $sTime = microtime();
+        //$debugString .= "MEDIA:";
+        //$sTime = microtime();
         //Icon
         $icon_media_data = Media::getMediaObject($gameId, $gameObj->icon_media_id);
         $icon_media = $icon_media_data->data; 
@@ -191,21 +192,21 @@ class Games extends Module
         $media_data = Media::getMediaObject($gameId, $gameObj->media_id);
         $media = $media_data->data; 
         $gameObj->media_url = $media->url_path . $media->file_path;
-        $debugString .=(microtime()-$sTime)."\n";
+        //$debugString .=(microtime()-$sTime)."\n";
 
         //Calculate the rating
-        $debugString .= "RATING:";
-        $sTime = microtime();
+        //$debugString .= "RATING:";
+        //$sTime = microtime();
         $query = "SELECT AVG(rating) AS rating FROM game_comments WHERE game_id = {$gameId}";
         $avRs = Module::query($query);
         $avRecord = @mysql_fetch_object($avRs);
         $gameObj->rating = $avRecord->rating;
         if($gameObj->rating == NULL) $gameObj->rating = 0;
-        $debugString .=(microtime()-$sTime)."\n";
+        //$debugString .=(microtime()-$sTime)."\n";
 
         //Getting Comments
-        $debugString .= "COMMENTS:";
-        $sTime = microtime();
+        //$debugString .= "COMMENTS:";
+        //$sTime = microtime();
         $query = "SELECT * FROM game_comments WHERE game_id = {$gameId}";
         $result = Module::query($query);
         $comments = array();
@@ -221,13 +222,13 @@ class Games extends Module
             $x++;
         }
         $gameObj->comments = $comments;
-        $debugString .=(microtime()-$sTime)."\n";
+        //$debugString .=(microtime()-$sTime)."\n";
 
         //Calculate score
         $gameObj->calculatedScore = ($gameObj->rating - 3) * $x;
         $gameObj->numComments = $x;
 
-        Module::serverErrorLog($debugString);
+        //Module::serverErrorLog($debugString);
         return $gameObj;
     }
 
@@ -605,7 +606,9 @@ class Games extends Module
 
     public function getRecentGamesForPlayer($playerId, $latitude, $longitude, $includeDev = 1)
     {
+        $sTime = microtime();
         $logs = Module::queryArray("SELECT game_id, MAX(timestamp) as ts FROM player_log WHERE player_id = '{$playerId}' AND game_id != 0 GROUP BY game_id ORDER BY ts DESC LIMIT 20");
+        Module::serverErrorLog("GetRecentGamesQuery: ".(microtime()-$sTime));
         $games = array();
         for($i = 0; $i < count($logs) && count($games) < 10; $i++)
         {
