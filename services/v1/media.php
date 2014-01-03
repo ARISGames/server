@@ -1,5 +1,6 @@
 <?php
 require_once("module.php");
+require_once("../../libraries/wideimage/WideImage.php");
 
 class Media extends Module
 {
@@ -179,5 +180,79 @@ class Media extends Module
 
         return '';
     }	
+
+    public function createMediaFromJSON($glob)
+    {
+        $path     = $glob["path"];
+        $filename = $glob["filename"];
+        $data     = $glob["data"];
+        
+        $gameMediaDirectory = Media::getMediaDirectory($path)->data;
+
+        $md5 = md5((string)microtime().$filename);
+        $ext = substr($filename, -3);
+        $newMediaFileName = 'aris'.$md5.'.'.$ext;
+        $resizedMediaFileName = 'aris'.$md5.'_128.'.$ext;
+
+        if(
+                //Images
+                $ext != "jpg" &&
+                $ext != "png" &&
+                $ext != "gif" &&
+                //Video
+                $ext != "mp4" &&
+                $ext != "mov" &&
+                $ext != "m4v" &&
+                $ext != "3gp" &&
+                //Audio
+                $ext != "caf" &&
+                $ext != "mp3" &&
+                $ext != "aac" &&
+                $ext != "m4a" &&
+                //Overlays
+                $ext != "zip" //oh god bad
+          )
+        return new returnData(1,NULL,"Invalid filetype:$ext");
+
+        $fullFilePath = $gameMediaDirectory."/".$newMediaFileName;
+
+        $fp = fopen($fullFilePath, 'w');
+        if(!$fp) return new returnData(1,NULL,"Couldn't open file:$fullFilePath");
+        fwrite($fp,base64_decode($data));
+        fclose($fp);
+
+        if($ext == "jpg" || $ext == "png" || $ext == "gif")
+        {
+            $img = WideImage::load($gameMediaDirectory."/".$newMediaFileName);
+            $img = $img->resize(128, 128, 'outside');
+            $img = $img->crop('center','center',128,128);
+            $img->saveToFile($gameMediaDirectory."/".$resizedMediaFileName);
+        }
+        else if($ext == "mp4") //only works with mp4
+        {
+            /*
+               $ffmpeg = '../../libraries/ffmpeg';
+               $videoFilePath      = $gameMediaDirectory."/".$newMediaFileName; 
+               $tempImageFilePath  = $gameMediaDirectory."/temp_".$resizedMediaFileName; 
+               $imageFilePath      = $gameMediaDirectory."/".$resizedMediaFileName; 
+               $cmd = "$ffmpeg -i $videoFilePath 2>&1"; 
+               $thumbTime = 1;
+               if(preg_match('/Duration: ((\d+):(\d+):(\d+))/s', shell_exec($cmd), $videoLength))
+               $thumbTime = (($videoLength[2] * 3600) + ($videoLength[3] * 60) + $videoLength[4])/2; 
+               $cmd = "$ffmpeg -i $videoFilePath -deinterlace -an -ss $thumbTime -t 00:00:01 -r 1 -y -vcodec mjpeg -f mjpeg $tempImageFilePath 2>&1"; 
+               shell_exec($cmd);
+
+               $img = WideImage::load($tempImageFilePath);
+               $img = $img->resize(128, 128, 'outside');
+               $img = $img->crop('center','center',128,128);
+               $img->saveToFile($imageFilePath);
+             */
+        }
+
+        Module::serverErrorLog("Uploaded W/JSON $newMediaFileName");
+
+        $m = Media::createMedia($path, "UploadedMedia", $newMediaFileName, false)
+        return new returnData(0,$m->data);
+    }
 }
 ?>

@@ -3,7 +3,6 @@
 require_once("module.php");
 require_once("media.php");
 require_once("locations.php");
-require_once("../../libraries/wideimage/WideImage.php");
 
 class Notebook extends Module
 {
@@ -346,82 +345,53 @@ class Notebook extends Module
         return new returnData(0);
     }
 
-    public function uploadMedia($glob)
+    /*
+    //Expected JSON format
     {
-        //$glob = json_decode(file_get_contents('php://input'));
-        //Module::serverErrorLog(json_encode($glob));
-
-        $path     = $glob["path"];
-        $filename = $glob["filename"];
-        $data     = $glob["data"];
-        
-        $gameMediaDirectory = Media::getMediaDirectory($path)->data;
-
-        $md5 = md5((string)microtime().$filename);
-        $ext = substr($filename, -3);
-        $newMediaFileName = 'aris'.$md5.'.'.$ext;
-        $resizedMediaFileName = 'aris'.$md5.'_128.'.$ext;
-
-        if(
-                //Images
-                $ext != "jpg" &&
-                $ext != "png" &&
-                $ext != "gif" &&
-                //Video
-                $ext != "mp4" &&
-                $ext != "mov" &&
-                $ext != "m4v" &&
-                $ext != "3gp" &&
-                //Audio
-                $ext != "caf" &&
-                $ext != "mp3" &&
-                $ext != "aac" &&
-                $ext != "m4a" &&
-                //Overlays
-                $ext != "zip"
-          )
-        return new returnData(1,NULL,"Invalid filetype:$ext");
-
-        $fullFilePath = $gameMediaDirectory."/".$newMediaFileName;
-
-        $fp = fopen($fullFilePath, 'w');
-        if(!$fp) return new returnData(1,NULL,"Couldn't open file:$fullFilePath");
-        fwrite($fp,base64_decode($data));
-        fclose($fp);
-
-        if($ext == "jpg" || $ext == "png" || $ext == "gif")
-        {
-            $img = WideImage::load($gameMediaDirectory."/".$newMediaFileName);
-            $img = $img->resize(128, 128, 'outside');
-            $img = $img->crop('center','center',128,128);
-            $img->saveToFile($gameMediaDirectory."/".$resizedMediaFileName);
-        }
-        else if($ext == "mp4") //only works with mp4
-        {
-            /*
-               $ffmpeg = '../../libraries/ffmpeg';
-               $videoFilePath      = $gameMediaDirectory."/".$newMediaFileName; 
-               $tempImageFilePath  = $gameMediaDirectory."/temp_".$resizedMediaFileName; 
-               $imageFilePath      = $gameMediaDirectory."/".$resizedMediaFileName; 
-               $cmd = "$ffmpeg -i $videoFilePath 2>&1"; 
-               $thumbTime = 1;
-               if(preg_match('/Duration: ((\d+):(\d+):(\d+))/s', shell_exec($cmd), $videoLength))
-               $thumbTime = (($videoLength[2] * 3600) + ($videoLength[3] * 60) + $videoLength[4])/2; 
-               $cmd = "$ffmpeg -i $videoFilePath -deinterlace -an -ss $thumbTime -t 00:00:01 -r 1 -y -vcodec mjpeg -f mjpeg $tempImageFilePath 2>&1"; 
-               shell_exec($cmd);
-
-               $img = WideImage::load($tempImageFilePath);
-               $img = $img->resize(128, 128, 'outside');
-               $img = $img->crop('center','center',128,128);
-               $img->saveToFile($imageFilePath);
-             */
-        }
-
-        Module::serverErrorLog("Uploaded W/JSON $newMediaFileName");
-
-        return new returnData(0,$newMediaFileName);
+        "gameId":1234,     //<- REQUIRED
+        "playerId":1234,   //<- REQUIRED
+        "title":"My Note",
+        "description":"This is my note",
+        "publicToMap":1,  //<- true/false also acceptable (UNQUOTED!)
+        "publicToBook":0,
+        "location":
+            {
+                "latitude":1.234,
+                "longitude":9.876,
+            },
+        "media":
+            [
+                {
+                    "path":1234,              //<- Often gameId. the folder within gamedata that you want the image saved
+                    "filename":"banana.jpg",  //<- Unimportant (will get changed), but MUST have correct extension (ie '.jpg')
+                    "data":"as262dsf6a..."    //<- base64 encoded media data
+                }
+                ...
+            ]
     }
+    */
+    public function addNoteFromJSON($glob)
+    {
+        $gameId       = $glob["gameId"];
+        $playerId     = $glob["playerId"];
+        $title        = $glob["title"];
+        $description  = $glob["desc"];
+        $publicToMap  = $glob["publicToMap"];
+        $publicToBook = $glob["publicToBook"];
+        $location     = $glob["location"];
+        $media        = $glob["media"];
 
+        if(!is_numeric($gameId))   return new returnData(1,NULL,"JSON package has no numeric member \"gameId\"");
+        if(!is_numeric($playerId)) return new returnData(1,NULL,"JSON package has no numeric member \"playerId\"");
+
+        $noteId = Notebook::createNote($gameId, $playerId)->data;
+        Notebook::updateNote($noteId, $title, $publicToMap, $publicToBook, $location->latitude, $location->longitude);
+
+        for($i = 0; is_array($media) && $i < count($media); $i++)
+            Media::createMediaFromJSON($media[$i]);
+
+        return new returnData(0,Notebook::getNote($noteId));
+    }
 }
 ?>
 
