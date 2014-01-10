@@ -372,14 +372,17 @@ class Notebook extends Module
     */
     public function addNoteFromJSON($glob)
     {
-        $gameId       = $glob["gameId"];
-        $playerId     = $glob["playerId"];
-        $title        = $glob["title"];
-        $description  = $glob["desc"];
-        $publicToMap  = $glob["publicToMap"];
-        $publicToBook = $glob["publicToBook"];
-        $location     = $glob["location"];
-        $media        = $glob["media"];
+	$data = file_get_contents("php://input");
+        $glob = json_decode($data);
+
+        $gameId       = $glob->gameId;
+        $playerId     = $glob->playerId;
+        $title        = $glob->title;
+        $description  = $glob->desc;
+        $publicToMap  = $glob->publicToMap;
+        $publicToBook = $glob->publicToBook;
+        $location     = $glob->location;
+        $media        = $glob->media;
 
         if(!is_numeric($gameId))   return new returnData(1,NULL,"JSON package has no numeric member \"gameId\"");
         if(!is_numeric($playerId)) return new returnData(1,NULL,"JSON package has no numeric member \"playerId\"");

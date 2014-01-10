@@ -183,9 +183,9 @@ class Media extends Module
 
     public function createMediaFromJSON($glob)
     {
-        $path     = $glob["path"];
-        $filename = $glob["filename"];
-        $data     = $glob["data"];
+        $path     = $glob->path;
+        $filename = $glob->filename;
+        $data     = $glob->data;
         
         $gameMediaDirectory = Media::getMediaDirectory($path)->data;
 
@@ -251,7 +251,7 @@ class Media extends Module
 
         Module::serverErrorLog("Uploaded W/JSON $newMediaFileName");
 
-        $m = Media::createMedia($path, "UploadedMedia", $newMediaFileName, false);
+        $m = Media::createMedia($path, "UploadedMedia", $newMediaFileName, 0);
         return new returnData(0,$m->data);
     }
 }
