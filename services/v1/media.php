@@ -251,7 +251,7 @@ class Media extends Module
 
         Module::serverErrorLog("Uploaded W/JSON $newMediaFileName");
 
-        $m = Media::createMedia($path, "UploadedMedia", $newMediaFileName, false)
+        $m = Media::createMedia($path, "UploadedMedia", $newMediaFileName, false);
         return new returnData(0,$m->data);
     }
 }
