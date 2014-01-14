@@ -32,6 +32,7 @@ class Notebook extends Module
         if($title == '') $title = Date('F jS Y h:i:s A');
         else $title = addslashes($title);
 
+
         $note = Module::queryObject("SELECT * FROM notes WHERE note_id = '{$noteId}'");
         Module::query("INSERT INTO note_content (note_id, game_id, media_id, type, title) VALUES ('{$noteId}', '{$note->game_id}', '{$mediaId}', '{$type}', '{$title}')");
         $contentId = mysql_insert_id();
@@ -372,6 +373,7 @@ class Notebook extends Module
     */
     public function addNoteFromJSON($glob)
     {
+        //WHY DOESNT THIS HAPPEN VIA THE FRAMEWORK?!
 	$data = file_get_contents("php://input");
         $glob = json_decode($data);
 
@@ -384,6 +386,9 @@ class Notebook extends Module
         $location     = $glob->location;
         $media        = $glob->media;
 
+        $publicToMap = 1;
+        $publicToBook = 1;
+
         if(!is_numeric($gameId))   return new returnData(1,NULL,"JSON package has no numeric member \"gameId\"");
         if(!is_numeric($playerId)) return new returnData(1,NULL,"JSON package has no numeric member \"playerId\"");
 
@@ -391,7 +396,10 @@ class Notebook extends Module
         Notebook::updateNote($noteId, $title, $publicToMap, $publicToBook, $location->latitude, $location->longitude);
 
         for($i = 0; is_array($media) && $i < count($media); $i++)
-            Media::createMediaFromJSON($media[$i]);
+        {
+            $mediaId = Media::createMediaFromJSON($media[$i])->data->media_id;
+            Notebook::addContentToNote($noteId,$mediaId,"MEDIA");
+        }
 
         return new returnData(0,Notebook::getNote($noteId));
     }
