@@ -314,22 +314,20 @@ class Players extends Module
 		$result = Module::query($query);
 		$loc = mysql_fetch_object($result);
 
-		if($loc->item_qty != -1 && $loc->item_qty < $qty){
-			if($loc->item_qty == 0){
-				return new returnData(0, FALSE, "Location has qty 0");
-			}
+		if($loc->item_qty != -1 && $loc->item_qty < $qty)
+                {
+			if($loc->item_qty == 0) return new returnData(0, FALSE, "Location has qty 0");
 
 			$qtyGiven = Module::giveItemToPlayer($gameId, $itemId, $playerId, $loc->item_qty);
 			Module::decrementItemQtyAtLocation($gameId, $intLocationId, $qtyGiven); 
 
-			return new returnData(0, $qtyGiven, "Location has qty 0");
+			return new returnData(0, $qtyGiven);
 		}
 
 		$qtyGiven = Module::giveItemToPlayer($gameId, $itemId, $playerId, $qty);
 		Module::decrementItemQtyAtLocation($gameId, $intLocationId, $qtyGiven); 
 
-		return new returnData(0, TRUE);
-
+		return new returnData(0, $qtyGiven);
 	}
 
 	public function dropItem($gameId, $playerId, $itemId, $floatLat, $floatLong, $qty=1)

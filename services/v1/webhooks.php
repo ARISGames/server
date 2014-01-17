@@ -103,4 +103,41 @@ class WebHooks extends Module
                 Module::processGameEvent($playerId, $gameId, "RECEIVE_WEBHOOK", $webHookId);
         }
     }
+
+    public function fireOffDynamicWebHook($playerId, $gameId, $url, $data = "", $method = "GET")
+    {
+        if($method == "POST")
+        {
+            if($data != "") $data = $data."&";
+            $data = $data."gameid=".$gameId."&playerid=".$playerId;
+            $options = array(
+                'http' => array(
+                    'header'  => "Content-type: application/x-www-form-urlencoded\r\n",
+                    'method'  => 'POST',
+                    'content' => $data,
+                ),
+            );
+            $result = file_get_contents("http://".$url, false, stream_context_create($options));
+        }
+        else
+        {
+            if($data == "") $data = "?";
+            else            $data = $data."&";
+            $url = $url.$data."gameid=".$gameId."&playerid=".$playerId;
+            @file_get_contents($url);
+        }
+        return new returnData(0);
+    }
+
+    protected function fireOffWebHook($playerId, $gameId, $webHookId)
+    {
+        Module::appendLog($playerId, $gameId, "SEND_WEBHOOK", $webHookId);
+
+        $webHook = Module::queryObject("SELECT * FROM web_hooks WHERE web_hook_id = '{$webHookId}' LIMIT 1");
+        $name = str_replace(" ", "", $webHook->name);
+        $name = str_replace("{playerId}", $playerId, $webHook->name);
+        $url = $webHook->url . "?hook=" . $name . "&wid=" . $webHook->web_hook_id . "&gameid=" . $gameId . "&playerid=" . $playerId; 
+        @file_get_contents($url);
+    }
 }
+?>
