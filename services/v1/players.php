@@ -863,10 +863,10 @@ class Players extends Module
         $media->path  = "player";
 
         if(!is_numeric($playerId)) return new returnData(1,NULL,"JSON package has no numeric member \"playerId\"");
-
-        $mediaId = Media::createMediaFromJSON($media)->data->media_id;
-        Module::query("UPDATE players SET media_id = '{$mediaId}' WHERE player_id = '{$playerId}'");
-        return new returnData(0,Media::getMediaObject("player", $mediaId)->data);
+ 
+        $media = Media::createMediaFromJSON($media)->data;
+        Module::query("UPDATE players SET media_id = '{$media->media_id}' WHERE player_id = '{$playerId}'");
+        return new returnData(0,$media);
     }
 }
 ?>
