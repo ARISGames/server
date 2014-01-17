@@ -154,18 +154,22 @@ class Players extends Module
 
 	function addPlayerPic($playerId, $mediaId)
 	{
-		$query = "UPDATE players SET media_id = {$mediaId} WHERE player_id = {$playerId}";
-		Module::query($query);
+		Module::query("UPDATE players SET media_id = {$mediaId} WHERE player_id = {$playerId}");
 		return new returnData(0);
 	}
+
+        function updatePlayerName($playerId, $name)
+        {
+	    Module::query("UPDATE players SET display_name = '{$name}' WHERE player_id = {$playerId}");
+            return new returnData(0);
+        }
 
 	function updatePlayerNameMedia($playerId, $name, $mediaId = 0)
 	{
 		if($mediaId > 0)
-			$query = "UPDATE players SET display_name = '{$name}', media_id = {$mediaId} WHERE player_id = {$playerId}";
+			Module::query("UPDATE players SET display_name = '{$name}', media_id = {$mediaId} WHERE player_id = {$playerId}");
 		else
-			$query = "UPDATE players SET display_name = '{$name}' WHERE player_id = {$playerId}";
-		Module::query($query);
+			Module::query("UPDATE players SET display_name = '{$name}' WHERE player_id = {$playerId}");
 		return new returnData(0);
 	}
 
