@@ -39,15 +39,15 @@ class Media extends Module
         return new returnData(0, $data);
     }
 
-    public function getMediaObject($gameId, $intMediaId)
+    public function getMediaObject($gameId, $mediaId)
     {
         //apparently, "is_numeric(NAN)" returns 'true'. NAN literally means "Not A Number". Think about that one for a sec.
-        if(!$intMediaId || !is_numeric($intMediaId) || $intMediaId == NAN //return new returnData(2, NULL, "No matching media");
-        || !($media = Module::queryObject("SELECT * FROM media WHERE media_id = {$intMediaId} LIMIT 1")))
+        if(!$mediaId || !is_numeric($mediaId) || $mediaId == NAN //return new returnData(2, NULL, "No matching media");
+        || !($media = Module::queryObject("SELECT * FROM media WHERE media_id = {$mediaId} LIMIT 1")))
 	{
 		$media = new stdClass;
                 $media->game_id = 0;
-        	$media->media_id = $intMediaId;
+        	$media->media_id = $mediaId;
         	$media->name = "Default NPC";
         	$media->file_path = "0/npc.png";
         	return new returnData(0, Media::parseRawMedia($media));
@@ -104,7 +104,7 @@ class Media extends Module
         return new returnData(0,Media::parseRawMedia($media));
     }
 
-    public function renameMedia($gameId, $intMediaId, $strName, $editorId, $editorToken)
+    public function renameMedia($gameId, $mediaId, $strName, $editorId, $editorToken)
     {
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
@@ -116,7 +116,7 @@ class Media extends Module
         //Update this record
         $query = "UPDATE media 
             SET name = '{$strName}' 
-            WHERE media_id = '{$intMediaId}' and game_id = '{$gameId}'";
+            WHERE media_id = '{$mediaId}' and game_id = '{$gameId}'";
 
         Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error");
@@ -125,13 +125,13 @@ class Media extends Module
         else return new returnData(0, FALSE);	
     }
 
-    public function deleteMedia($gameId, $intMediaId, $editorId, $editorToken)
+    public function deleteMedia($gameId, $mediaId, $editorId, $editorToken)
     {
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
         $query = "SELECT * FROM media 
-            WHERE media_id = {$intMediaId}";
+            WHERE media_id = {$mediaId}";
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error:". mysql_error());
 
@@ -140,7 +140,7 @@ class Media extends Module
 
         //Delete the Record
         $query = "DELETE FROM media 
-            WHERE media_id = {$intMediaId}";
+            WHERE media_id = {$mediaId}";
 
         $rsResult = Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());

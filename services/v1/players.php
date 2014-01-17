@@ -840,5 +840,34 @@ class Players extends Module
                 QRCodes::createQRCode($gameId, "Location", mysql_insert_id(), '');
             }
         }
+
+    /*
+    //Expected JSON format
+    {
+        "playerId":1234,   //<- REQUIRED
+        "media":
+            {
+                "filename":"banana.jpg",  //<- Unimportant (will get changed), but MUST have correct extension (ie '.jpg')
+                "data":"as262dsf6a..."    //<- base64 encoded media data
+            }
+    }
+    */
+    public function uploadPlayerMediaFromJSON($glob)
+    {
+        //WHY DOESNT THIS HAPPEN VIA THE FRAMEWORK?!
+	$data = file_get_contents("php://input");
+        $glob = json_decode($data);
+
+        $playerId     = $glob->playerId;
+        $media        = $glob->media;
+        $media->path  = "player";
+
+        if(!is_numeric($playerId)) return new returnData(1,NULL,"JSON package has no numeric member \"playerId\"");
+
+        $mediaId = Media::createMediaFromJSON($media)->data->media_id;
+
+        return new returnData(0,Media::getMediaObject("player", $mediaId)->data);
+    }
 }
 ?>
+
