@@ -874,4 +874,3 @@ class Players extends Module
     }
 }
 ?>
-
