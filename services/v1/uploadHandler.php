@@ -7,8 +7,8 @@ header('Access-Control-Allow-Origin: *');
  */ 
 set_time_limit(0);
 
-include ('media.php');
-include ('../../libraries/wideimage/WideImage.php');
+require_once('media.php');
+require_once('../../libraries/wideimage/WideImage.php');
 
 header('HTTP/1.1 200 OK');
 header('Status: 200 OK');
