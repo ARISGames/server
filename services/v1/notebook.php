@@ -380,7 +380,7 @@ class Notebook extends Module
         $gameId       = $glob->gameId;
         $playerId     = $glob->playerId;
         $title        = $glob->title;
-        $description  = $glob->desc;
+        $description  = $glob->description;
         $publicToMap  = $glob->publicToMap;
         $publicToBook = $glob->publicToBook;
         $location     = $glob->location;
