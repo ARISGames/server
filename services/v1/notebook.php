@@ -401,7 +401,7 @@ class Notebook extends Module
             Notebook::addContentToNote($noteId,$mediaId,"MEDIA");
         }
 
-        return new returnData(0,Notebook::getNote($noteId));
+        return new returnData(0,Notebook::getNote($noteId)->data);
     }
 }
 ?>
