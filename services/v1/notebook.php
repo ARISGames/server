@@ -180,7 +180,7 @@ class Notebook extends Module
         $contents = array();
         for($i = 0; $i < count($contentIds); $i++)
         {
-            $media = Media::getMediaObject($contentIds[$i]->game_id, $contentIds[$i]->media_id);
+            $media = Media::getMediaObject($contentIds[$i]->game_id, $contentIds[$i]->media_id)->data;
 
             $content = new stdClass();
             $content->content_id      = $contentIds[$i]->content_id;
