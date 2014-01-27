@@ -216,8 +216,7 @@ class Notebook extends Module
             $comment->owner->display_name = $player->display_name;
             $comment->comment_id = $commentIds[$i]->note_id;
             $comment->game_id = $commentIds[$i]->game_id;
-            $comment->title = $commentIds[$i]->title;
-            $comment->description = $commentIds[$i]->description;
+            $comment->text = $commentIds[$i]->title.$commentIds[$i]->description;
             $comment->created = $commentIds[$i]->created;
             $comment->likes = Notebook::getNoteLikes($commentIds[$i]->note_id);
 
