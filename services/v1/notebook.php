@@ -53,11 +53,13 @@ class Notebook extends Module
         return new returnData(0);
     }
 
-    public function addCommentToNote($noteId, $playerId, $title, $text)
+    public function addCommentToNote($noteId, $playerId, $text)
     {
-        Module::query("INSERT INTO notes (game_id, owner_id, parent_note_id, title) VALUES ('{$gameId}', '{$playerId}', '{$noteId}', '{$title}')");
-        $commentId = mysql_insert_id();
-        return new returnData(0, $commentId);
+        $note = Module::queryObject("SELECT * FROM notes WHERE note_id = '".$noteId."'");
+        Module::query("INSERT INTO notes (game_id, parent_note_id, owner_id, title) VALUES ('{$note->game_id}', '{$note->note_id}', '{$playerId}', '{$text}')");
+        $comment = new stdClass();
+        $comment->comment_id = mysql_insert_id();
+        return new returnData(0, $comment);
     }
 
     public function updateComment($noteId, $title)
