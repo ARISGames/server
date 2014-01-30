@@ -367,7 +367,14 @@ class Notebook extends Module
                     "path":1234,              //<- Often gameId. the folder within gamedata that you want the image saved
                     "filename":"banana.jpg",  //<- Unimportant (will get changed), but MUST have correct extension (ie '.jpg')
                     "data":"as262dsf6a..."    //<- base64 encoded media data
-                }
+                },
+                ...
+            ],
+        "tags":
+            [
+                "Banana",
+                "Alphabet",
+                "Tater tots",
                 ...
             ]
     }
@@ -386,6 +393,7 @@ class Notebook extends Module
         $publicToBook = $glob->publicToBook;
         $location     = $glob->location;
         $media        = $glob->media;
+        $tags         = $glob->tags;
 
         $publicToMap = 1;
         $publicToBook = 1;
@@ -401,6 +409,8 @@ class Notebook extends Module
             $mediaId = Media::createMediaFromJSON($media[$i])->data->media_id;
             Notebook::addContentToNote($noteId,$mediaId,"MEDIA");
         }
+        for($i = 0; is_array($tags) && $i < count($tags); $i++)
+            Notebook::addTagToNote($tags[$i]);
 
         return new returnData(0,Notebook::getNote($noteId)->data);
     }
