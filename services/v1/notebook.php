@@ -411,7 +411,7 @@ class Notebook extends Module
             Notebook::addContentToNote($noteId,$mediaId,"MEDIA");
         }
         for($i = 0; is_array($tags) && $i < count($tags); $i++)
-            Notebook::addTagToNote($tags[$i]);
+            Notebook::addTagToNote($noteId, $tags[$i]);
 
         return new returnData(0,Notebook::getNote($noteId)->data);
     }
