@@ -403,7 +403,7 @@ class Notebook extends Module
 
         $noteId = Notebook::createNote($gameId, $playerId)->data;
         Notebook::updateNote($noteId, $title, $publicToMap, $publicToBook, $location->latitude, $location->longitude);
-        Notebook::addContentToNote($noteId,  0, 'TEXT', $description);
+        Module::query("INSERT INTO note_content (note_id, game_id, media_id, type, title) VALUES ('".$noteId."', '".$gameId."', 0, 'TEXT', '".$description."')");
 
         for($i = 0; is_array($media) && $i < count($media); $i++)
         {
