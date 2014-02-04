@@ -190,7 +190,7 @@ class Media extends Module
         $gameMediaDirectory = Media::getMediaDirectory($path)->data;
 
         $md5 = md5((string)microtime().$filename);
-        $ext = substr($filename, -3);
+        $ext = strtolower(substr($filename, -3));
         $newMediaFileName = 'aris'.$md5.'.'.$ext;
         $resizedMediaFileName = 'aris'.$md5.'_128.'.$ext;
 
