@@ -351,6 +351,7 @@ class Notebook extends Module
     //Expected JSON format
     {
         "gameId":1234,     //<- REQUIRED
+        "noteId":1234,     //<- REQUIRED if UPDATING a note, DISALLOWED if new
         "playerId":1234,   //<- REQUIRED
         "title":"My Note",
         "description":"This is my note",
@@ -386,6 +387,7 @@ class Notebook extends Module
         $glob = json_decode($data);
 
         $gameId       = $glob->gameId;
+        $noteId       = $glob->noteId;
         $playerId     = $glob->playerId;
         $title        = $glob->title;
         $description  = $glob->description;
@@ -401,7 +403,7 @@ class Notebook extends Module
         if(!is_numeric($gameId))   return new returnData(1,NULL,"JSON package has no numeric member \"gameId\"");
         if(!is_numeric($playerId)) return new returnData(1,NULL,"JSON package has no numeric member \"playerId\"");
 
-        $noteId = Notebook::createNote($gameId, $playerId)->data;
+        if(!$noteId) $noteId = Notebook::createNote($gameId, $playerId)->data;
         Notebook::updateNote($noteId, $title, $publicToMap, $publicToBook, $location->latitude, $location->longitude);
         Module::query("INSERT INTO note_content (note_id, game_id, media_id, type, text) VALUES ('".$noteId."', '".$gameId."', 0, 'TEXT', '".$description."')");
 
