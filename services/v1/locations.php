@@ -478,7 +478,7 @@ class Locations extends Module
                  force_view = '{$boolForceView}',
                  allow_quick_travel = '{$boolAllowQuickTravel}',
                  wiggle = '{$boolAllowWiggle}',
-                 show_title = '{$boolDisplayAnnotations}',
+                 show_title = '{$boolDisplayAnnotations}'
                  WHERE game_id = {$gameId} AND location_id = '{$intLocationId}'";
 
 
