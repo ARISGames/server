@@ -224,9 +224,9 @@ class Locations extends Module
                     $location->allow_quick_travel = 1;
             }
 
-
             //If location's icon is not defined, use the object's icon
-            if (!$location->icon_media_id) {
+            if(!$location->icon_media_id)
+            {
                 $objectsIconMediaId = $object->icon_media_id;
                 $location->icon_media_id = $objectsIconMediaId;
             }
@@ -360,36 +360,7 @@ class Locations extends Module
             }
         }
 
-        //Add the others players from this game, making them look like reqular locations
-        $playersJSON = Players::getOtherPlayersForGame($gameId, $intPlayerId);
-        $playersArray = $playersJSON->data;
-
-        foreach ($playersArray as $player) {
-
-            $tmpPlayerObject = new stdClass();
-
-            $tmpPlayerObject->name = $player->user_name;
-            if($player->display_name) $tmpPlayerObject->name = $player->display_name;
-            $tmpPlayerObject->latitude = $player->latitude;
-            $tmpPlayerObject->longitude = $player->longitude;
-            $tmpPlayerObject->type_id = $player->player_id;
-
-            $tmpPlayerObject->error = "5";
-            $tmpPlayerObject->type = "Player";
-
-            $tmpPlayerObject->description = '';
-            $tmpPlayerObject->force_view = "0";
-            $tmpPlayerObject->hidden = "0";
-            $tmpPlayerObject->icon_media_id = "0";
-            $tmpPlayerObject->item_qty = "0";
-            $tmpPlayerObject->location_id = "0";
-
-            $arrayLocations[] = $tmpPlayerObject;
-
-        }
-
         return new returnData(0, $arrayLocations);
-
     }
 
     public function getLocation($gameId, $intLocationId)
