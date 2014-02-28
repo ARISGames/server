@@ -759,13 +759,18 @@ abstract class Module extends Utils
     {
         Module::appendLog($playerId, $gameId, "SEND_WEBHOOK", $webHookId);
 
-        $query = "SELECT * FROM web_hooks WHERE web_hook_id = '{$webHookId}' LIMIT 1";
-        $result = Module::query($query);
-        $webHook = mysql_fetch_object($result);
+        $webHook = Module::queryObject("SELECT * FROM web_hooks WHERE web_hook_id = '{$webHookId}' LIMIT 1");
         $name = str_replace(" ", "", $webHook->name);
-        $name = str_replace("{playerId}", $playerId, $webHook->name);
+        $name = str_replace("{playerId}", $playerId, $name);
         $url = $webHook->url . "?hook=" . $name . "&wid=" . $webHook->web_hook_id . "&gameid=" . $gameId . "&playerid=" . $playerId; 
-        @file_get_contents($url);
+
+	$ch = curl_init();
+	$timeout = 5;
+	curl_setopt($ch, CURLOPT_URL, $url);
+	curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+	curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, $timeout);
+	curl_exec($ch);
+	curl_close($ch);
     }
 }
 ?>
