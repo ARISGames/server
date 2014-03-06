@@ -1,8 +1,31 @@
 <?php
 require_once("module.php");
+/*
++-----------------------+------------------+------+-----+---------+----------------+
+| Field                 | Type             | Null | Key | Default | Extra          |
++-----------------------+------------------+------+-----+---------+----------------+
+| overlay_id            | int(11) unsigned | NO   | PRI | NULL    | auto_increment |
+| game_id               | int(11) unsigned | NO   |     | NULL    |                |
+| name                  | varchar(100)     | NO   |     |         |                |
+| media_id              | int(11) unsigned | NO   |     | NULL    |                |
+| top_left_latitude     | double           | NO   |     | 0       |                |
+| top_left_longitude    | double           | NO   |     | 0       |                |
+| top_right_latitude    | double           | NO   |     | 0       |                |
+| top_right_longitude   | double           | NO   |     | 0       |                |
+| bottom_left_latitude  | double           | NO   |     | 0       |                |
+| bottom_left_longitude | double           | NO   |     | 0       |                |
++-----------------------+------------------+------+-----+---------+----------------+
+*/
 
 class Overlays extends Module
 {
+
+    public function getOverlays()
+    {
+        return new returnData(0, Module::queryArray("SELECT * FROM overlays")); 			
+    }
+    
+    /*
     public function createOverlay($gameId, $name, $index, $editorId, $editorToken)
     {
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
@@ -417,5 +440,6 @@ class Overlays extends Module
         //echo $cmd;
         //echo $stdout;
     }
+    */
 }
 ?>

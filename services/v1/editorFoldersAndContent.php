@@ -8,7 +8,6 @@ require_once("media.php");
 require_once("webpages.php");
 require_once("augbubbles.php");
 require_once("notes.php");
-require_once("overlays.php");
 
 class EditorFoldersAndContent extends Module
 {
@@ -264,11 +263,6 @@ class EditorFoldersAndContent extends Module
             $content->media = NULL;
             $content->media_id = NULL;
         }
-        else if ($content->content_type == 'CustomMap')
-        {
-            $contentDetails = Overlays::getOverlay($gameId,$content->content_id)->data;
-            $content->name = $contentDetails->name;
-        }
         else if ($content->content_type == 'PlayerNote')
         {
             $contentDetails = Notes::getNoteById($content->content_id)->data;
@@ -286,7 +280,7 @@ class EditorFoldersAndContent extends Module
         $content->icon_media_id = $contentDetails->icon_media_id;
         $content->is_spawnable = Spawnables::hasActiveSpawnable($gameId, $content->content_type, $content->content_id);
 
-        if ($content->content_type != 'WebPage' && $content->content_type != 'PlayerNote' && $content->content_type != 'AugBubble' && $content->content_type != 'CustomMap'){
+        if ($content->content_type != 'WebPage' && $content->content_type != 'PlayerNote' && $content->content_type != 'AugBubble'){
             //Get the Media
             $mediaHelper = new Media;
             $mediaReturnObject = $mediaHelper->getMediaObject($gameId, $contentDetails->media_id);

@@ -36,3 +36,11 @@ ALTER TABLE quests ADD COLUMN complete_notif_go_function ENUM('NONE','NEARBY','G
 ALTER TABLE quests CHANGE complete_go_function complete_go_function ENUM('NONE','NEARBY','GPS','QUESTS','INVENTORY','PLAYER','QR','NOTE','PICKGAME','JAVASCRIPT') NOT NULL DEFAULT 'NONE';
 
 ALTER TABLE notes ADD COLUMN description tinytext NOT NULL DEFAULT "";
+
+DROP TABLE overlay_tiles;
+DROP TABLE overlays;
+
+CREATE TABLE overlays (overlay_id INT(11) UNSIGNED NOT NULL AUTO_INCREMENT, game_id INT(11) UNSIGNED NOT NULL, name VARCHAR(100) NOT NULL DEFAULT "", media_id INT(11) UNSIGNED NOT NULL, top_left_latitude DOUBLE NOT NULL DEFAULT 0.0, top_left_longitude DOUBLE NOT NULL DEFAULT 0.0, top_right_latitude DOUBLE NOT NULL DEFAULT 0.0, top_right_longitude DOUBLE NOT NULL DEFAULT 0.0, bottom_left_latitude DOUBLE NOT NULL DEFAULT 0.0, bottom_left_longitude DOUBLE NOT NULL DEFAULT 0.0, PRIMARY KEY (overlay_id)) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+
+CREATE INDEX game_id ON overlays (game_id);
+

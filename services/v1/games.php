@@ -435,14 +435,6 @@ class Games extends Module
         Module::query("DELETE FROM quests               WHERE game_id = '{$gameId}'");
         Module::query("DELETE FROM requirements         WHERE game_id = '{$gameId}'");
 
-        //Delete Overlays //SHOULD HAVE A GAME_ID COLUMN!!!
-        $result = Module::query("SELECT * FROM overlays WHERE game_id = '{$gameId}'");
-        while($result && $row = mysql_fetch_object($result))
-        {
-            Module::query("DELETE FROM overlay_tiles WHERE overlay_id = '{$row->overlay_id}'");
-            Module::query("DELETE FROM overlays      WHERE overlay_id = '{$row->overlay_id}'");
-        }
-
         return new returnData(0);	
     }
 
@@ -756,20 +748,6 @@ class Games extends Module
             Module::query($query);
         }
 
-        $query = "SELECT * FROM overlays WHERE game_id = {$gameId}";
-        $result = Module::query($query);
-        while($result && $row = mysql_fetch_object($result)){
-            $query = "INSERT INTO overlays (game_id, sort_order, alpha, num_tiles, game_overlay_id) VALUES ('{$newGameId}', '{$row->sort_order}', '{$row->alpha}', '{$row->num_tiles}', '{$row->game_overlay_id}')";
-            Module::query($query);
-            $newId = mysql_insert_id();
-            $query = "SELECT * FROM overlay_tiles WHERE overlay_id = '{$row->overlay_id}'";
-            $result = Module::query($query);
-            while($result && $row = mysql_fetch_object($result)){
-                $query = "INSERT INTO overlay_tiles (overlay_id, media_id, zoom, x, x_max, y, y_max) VALUES ('{$newId}', '{$row->media_id}', '{$row->zoom}', '{$row->x}', '{$row->x_max}',  '{$row->y}',  '{$row->y_max}')";
-                Module::query($query);
-            }
-        }
-
         $query = "SELECT * FROM fountains WHERE game_id = {$gameId}";
         $result = Module::query($query);
         while($result && $row = mysql_fetch_object($result)){
@@ -970,32 +948,6 @@ class Games extends Module
             Module::query($query);
         }
 
-        $originalOverlayId = array();
-        $newOverlayId = array();
-        $query = "SELECT * FROM overlays WHERE game_id = {$gameId}";
-        $result = Module::query($query);
-        while($row = mysql_fetch_object($result)){
-            array_push($originalOverlayId, $row->overlay_id);
-            $origOverlayId = $row->overlay_id;
-
-            $query = "INSERT INTO overlays (game_id, game_overlay_id, name, sort_index, file_uploaded) VALUES ('{$newGameId}', '{$row->game_overlay_id}', '{$row->name}', '{$row->sort_index}', '{$row->file_uploaded}')";
-            Module::query($query);
-            $newId = mysql_insert_id();
-            array_push($newOverlayId, $newId);
-
-            $query2 = "SELECT * FROM overlay_tiles WHERE overlay_id = {$origOverlayId}";
-            $result2 = Module::query($query2);
-            while($row2 = mysql_fetch_object($result2)){
-                $query3 = "INSERT INTO overlay_tiles (overlay_id, media_id, zoom, x, y) VALUES ('{$newId}', '{$row2->media_id}', '{$row2->zoom}', '{$row2->x}', '{$row2->y}')";
-                Module::query($query3);
-            }
-
-
-            $query = "UPDATE requirements SET content_id = {$newId} WHERE content_type = 'CustomMap' AND content_id = {$row->overlay_id}";
-            Module::query($query);
-
-        }
-
         $originalMediaId = array();
         $newMediaId = array();
         $query = "SELECT * FROM media WHERE game_id = {$gameId}";
@@ -1045,9 +997,6 @@ class Games extends Module
             Module::query($query);
             $query = "UPDATE web_pages SET icon_media_id = {$newId} WHERE icon_media_id = $row->media_id AND game_id = {$newGameId}";
             Module::query($query);
-            $query = "UPDATE overlay_tiles, overlays SET overlay_tiles.media_id = {$newId} WHERE overlay_tiles.media_id = $row->media_id AND overlays.game_id = {$newGameId} AND overlay_tiles.overlay_id = overlays.overlay_id";
-            Module::query($query);
-
         }
 
         //NOTE: substr removes <?xml version="1.0" ? //> from the beginning of the text
