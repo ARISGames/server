@@ -22,7 +22,7 @@ class Notebook extends Module
         $note = Module::queryObject("SELECT * FROM notes WHERE note_id = '{$noteId}'");
         $loc = Module::queryObject("SELECT * FROM locations WHERE game_id = '{$note->game_id}' AND type = 'PlayerNote' AND type_id = '{$noteId}'");
         if($loc) Module::query("UPDATE locations SET name = '{$title}', latitude = '{$lat}', longitude = '{$lon}'  WHERE game_id = {$note->game_id} AND type='PlayerNote' AND type_id = '{$noteId}'");
-        else Module::query("INSERT INTO locations (name, latitude, longitude, type, type_id) VALUES ('{$title}', '{$lat}', '{$lon}', 'PlayerNote', '{$noteId}')");
+        else Module::query("INSERT INTO locations (game_id, name, latitude, longitude, type, type_id) VALUES ('{$note->game_id}', '{$title}', '{$lat}', '{$lon}', 'PlayerNote', '{$noteId}')");
 
         return new returnData(0);
     }
