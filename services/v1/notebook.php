@@ -405,6 +405,9 @@ class Notebook extends Module
 
         if(!$noteId) $noteId = Notebook::createNote($gameId, $playerId)->data;
         Notebook::updateNote($noteId, $title, $publicToMap, $publicToBook, $location->latitude, $location->longitude);
+
+        //THIS IS THE CLEANEST WAY TO HANDLE LEGACY DESCRIPTION STORAGE
+        Module::query("DELETE FROM note_content WHERE game_id = '{$gameId}' AND note_id = '{$noteId}' AND type = 'TEXT'"); 
         Module::query("INSERT INTO note_content (note_id, game_id, media_id, type, text) VALUES ('".$noteId."', '".$gameId."', 0, 'TEXT', '".$description."')");
 
         for($i = 0; is_array($media) && $i < count($media); $i++)
