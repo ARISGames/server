@@ -24,6 +24,38 @@ class Overlays extends Module
     {
         return new returnData(0, Module::queryArray("SELECT * FROM overlays")); 			
     }
+
+    public function getOverlaysForGame($gameId)
+    {
+        return new returnData(0, Module::queryArray("SELECT * FROM overlays WHERE game_id = {$gameId};"));
+    }
+
+    public function createOverlay($gameId, $name, $mediaId, $topLeftLat, $topLeftLong, $topRightLat, $topRightLong, $bottomLeftLat, $bottomLeftLong)
+    {
+        $name = addslashes($name);
+        Module::query("INSERT INTO overlays (overlay_id, game_id, name, media_id, top_left_latitude, top_left_longitude, top_right_latitude, top_right_longitude, bottom_left_latitude, bottom_left_longitude) 
+                                     VALUES (0, {$gameId}, '{$name}', {$mediaId}, {$topLeftLat}, {$topLeftLong}, {$topRightLat}, {$topRightLong}, {$bottomLeftLat}, {$bottomLeftLong});");    
+        return new returnData(0);
+    }
+
+    public function deleteOverlay($overlayId)
+    {
+        Module::query("DELETE FROM overlays WHERE overlay_id = {$overlayId};");
+        return new returnData(0);
+    }
+
+    public function deleteOverlaysFromGame($gameId)
+    {
+        Module::query("DELETE FROM overlays WHERE game_id = {$gameId};");
+        return new returnData(0);
+    }
+
+    public function updateOverlay($overlayId, $gameId, $name, $mediaId, $topLeftLat, $topLeftLong, $topRightLat, $topRightLong, $bottomLeftLat, $bottomLeftLong)
+    {
+        $newName = addslashes($newName);
+        Module::query("UPDATE overlays SET game_id = {$gameId}, name = '{$name}', media_id = {$mediaId}, top_left_latitude = {$topLeftLat}, top_left_longitude = {$topLeftLong}, top_right_latitude = {$topRightLat}, top_right_longitude = {$topRightLong}, bottom_left_latitude = {$bottomLeftLat}, bottom_left_longitude = {$bottomLeftLong} WHERE overlay_id = {$overlayId};");
+        return new returnData(0);
+    }
     
     /*
     public function createOverlay($gameId, $name, $index, $editorId, $editorToken)
