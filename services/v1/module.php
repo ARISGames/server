@@ -120,10 +120,10 @@ abstract class Module extends Utils
         return false;
     }
 
-    protected function giveItemToPlayer($gameId, $intItemId, $playerId, $qtyToGive=1)
+    protected function giveItemToPlayer($gameId, $itemId, $playerId, $qtyToGive=1)
     {
-        $currentQty = Module::itemQtyInPlayerInventory($gameId, $playerId, $intItemId);
-        $item = Items::getItem($gameId, $intItemId)->data;
+        $currentQty = Module::itemQtyInPlayerInventory($gameId, $playerId, $itemId);
+        $item = Items::getItem($gameId, $itemId)->data;
         $maxQty = $item->max_qty_in_inventory; 
 
         if($currentQty + $qtyToGive > $maxQty  && $maxQty != -1)
@@ -132,17 +132,12 @@ abstract class Module extends Utils
         if($qtyToGive < 1) return 0;
         else
         {
-            Module::adjustQtyForPlayerItem($gameId, $intItemId, $playerId, $qtyToGive);
+            Module::adjustQtyForPlayerItem($gameId, $itemId, $playerId, $qtyToGive);
 
             //check log if item has already been viewed. If yes, set item to viewed in database
-            $query = "SELECT * FROM player_log WHERE game_id = {$gameId} AND player_id = {$playerId} AND event_type = 'VIEW_ITEM' AND event_detail_1 = {$intItemId} AND deleted = 0;";
-            $result = Module::query($query);
-            while(mysql_fetch_object($result))
-            {
-                $query2 = "UPDATE player_items SET viewed = 1 WHERE game_id = {$gameId} AND player_id = {$playerId} AND item_id = {$intItemId}";
-                Module::query($query2);
-                break;
-            }
+            $viewed = Module::queryObject("SELECT * FROM player_log WHERE game_id = {$gameId} AND player_id = {$playerId} AND event_type = 'VIEW_ITEM' AND event_detail_1 = {$itemId} AND deleted = 0;");
+            if($viewed)
+                Module::query("UPDATE player_items SET viewed = 1 WHERE game_id = {$gameId} AND player_id = {$playerId} AND item_id = {$itemId}");
 
             return $qtyToGive;
         }
