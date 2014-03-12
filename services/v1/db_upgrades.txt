@@ -44,3 +44,5 @@ CREATE TABLE overlays (overlay_id INT(11) UNSIGNED NOT NULL AUTO_INCREMENT, game
 
 CREATE INDEX game_id ON overlays (game_id);
 
+ALTER TABLE game_comments ADD COLUMN title TINYTEXT NOT NULL DEFAULT "";
+

@@ -62,12 +62,12 @@ class Games extends Module
         return new returnData(0, $games, NULL);
     }		
 
-    public function getOneGame($gameId, $intPlayerId, $boolGetLocationalInfo = 0, $intSkipAtDistance = 99999999, $latitude = 0, $longitude = 0)
+    public function getOneGame($gameId, $playerId, $boolGetLocationalInfo = 0, $intSkipAtDistance = 99999999, $latitude = 0, $longitude = 0)
     {
         $games = array();
 
         $gameObj = new stdClass;
-        $gameObj = Games::getFullGameObject($gameId, $intPlayerId, $boolGetLocationalInfo, $intSkipAtDistance, $latitude, $longitude);
+        $gameObj = Games::getFullGameObject($gameId, $playerId, $boolGetLocationalInfo, $intSkipAtDistance, $latitude, $longitude);
 
         if($gameObj != NULL)
             $games[] = $gameObj;
@@ -114,7 +114,7 @@ class Games extends Module
         return new returnData(0);
     }
 
-    public function getFullGameObject($gameId, $intPlayerId, $boolGetLocationalInfo = 0, $intSkipAtDistance = 99999999, $latitude = 0, $longitude = 0)
+    public function getFullGameObject($gameId, $playerId, $boolGetLocationalInfo = 0, $intSkipAtDistance = 99999999, $latitude = 0, $longitude = 0)
     {
         //$debugString = "";
         //$sTime = microtime(true);
@@ -124,7 +124,7 @@ class Games extends Module
         //Check if Game Has Been Played
         //$debugString .= "HAS BEEN PLAYED:";
         //$sTime = microtime(true);
-        $query = "SELECT * FROM player_log WHERE game_id = '{$gameId}' AND player_id = '{$intPlayerId}' AND deleted = 0 LIMIT 1";
+        $query = "SELECT * FROM player_log WHERE game_id = '{$gameId}' AND player_id = '{$playerId}' AND deleted = 0 LIMIT 1";
         $result = Module::query($query);
         if(mysql_num_rows($result) > 0) $gameObj->has_been_played = true;
         else                            $gameObj->has_been_played = false;
@@ -153,7 +153,7 @@ class Games extends Module
         }
         //$debugString .=(microtime(true)-$sTime)."\n";
         //Get Quest Stuff
-        //$questsReturnData = Quests::getQuestsForPlayer($gameId, $intPlayerId);
+        //$questsReturnData = Quests::getQuestsForPlayer($gameId, $playerId);
         //$gameObj->totalQuests = $questsReturnData->data->totalQuests;
         //$gameObj->completedQuests = count($questsReturnData->data->completed);
 
@@ -197,29 +197,24 @@ class Games extends Module
         //Calculate the rating
         //$debugString .= "RATING:";
         //$sTime = microtime(true);
-        $query = "SELECT AVG(rating) AS rating FROM game_comments WHERE game_id = {$gameId}";
-        $avRs = Module::query($query);
-        $avRecord = @mysql_fetch_object($avRs);
-        $gameObj->rating = $avRecord->rating;
+        $gameObj->rating = Module::queryObject("SELECT AVG(rating) AS rating FROM game_comments WHERE game_id = {$gameId}")->rating;
         if($gameObj->rating == NULL) $gameObj->rating = 0;
         //$debugString .=(microtime(true)-$sTime)."\n";
 
         //Getting Comments
         //$debugString .= "COMMENTS:";
         //$sTime = microtime(true);
-        $query = "SELECT * FROM game_comments WHERE game_id = {$gameId}";
-        $result = Module::query($query);
+        $gameComments = Module::queryArray("SELECT * FROM game_comments WHERE game_id = {$gameId}");
         $comments = array();
-        $x = 0;
-        while($row = mysql_fetch_assoc($result)){
-            $comments[$x]->playerId = $row['player_id'];
-            $query = "SELECT user_name FROM players WHERE player_id = '{$comments[$x]->playerId}'";
-            $player = Module::query($query);
-            $playerOb = mysql_fetch_assoc($player);
-            $comments[$x]->username = $playerOb['user_name'];
-            $comments[$x]->rating = $row['rating'];
-            $comments[$x]->text = $row['comment'] == 'Comment' ? "" : $row['comment'];
-            $x++;
+        for($i = 0; $i < count($gameComments); $i++)
+        {
+            $c = new stdClass();
+            $c->playerId = $gameComments[$i]->player_id;
+            $c->username = Module::queryObject("SELECT user_name FROM players WHERE player_id = '{$gameComments[$i]->player_id}'")->user_name;
+            $c->rating = $gameComments[$i]->rating;
+            $c->text = $gameComments[$i]->comment == 'Comment' ? "" : $gameComments[$i]->comment;
+            $c->title = $gameComments[$i]->title;
+            $comments[] = $c;
         }
         $gameObj->comments = $comments;
         //$debugString .=(microtime(true)-$sTime)."\n";
@@ -489,27 +484,23 @@ class Games extends Module
         else return new returnData(0, FALSE);
     }
 
-    public function saveComment($intPlayerId, $gameId, $intRating, $comment)
+    public function saveComment($playerId, $gameId, $rating, $comment, $title)
     {
         if($comment == 'Comment') $comment = "";
-        $query = "SELECT * FROM game_comments WHERE game_id = '{$gameId}' AND player_id = '{$intPlayerId}'";
-        $result = Module::query($query);
-        if(mysql_num_rows($result) > 0) $query = "UPDATE game_comments SET rating='{$intRating}', comment='{$comment}' WHERE game_id = '{$gameId}' AND player_id = '{$intPlayerId}'";
-        else $query = "INSERT INTO game_comments (game_id, player_id, rating, comment) VALUES ('{$gameId}', '{$intPlayerId}', '{$intRating}', '{$comment}')";
-        Module::query($query);
-
-        if (mysql_error()) return new returnData(3, NULL, 'SQL Error');
-        $query = "SELECT editors.email FROM (SELECT * FROM game_editors WHERE game_id = ".$gameId.") AS ge LEFT JOIN editors ON ge.editor_id = editors.editor_id";
-        $result = Module::query($query);
-        if(mysql_num_rows($result) > 0)
+        $comments = Module::queryArray("SELECT * FROM game_comments WHERE game_id = '{$gameId}' AND player_id = '{$playerId}'");
+        if(count($comments) > 0) Module::query("UPDATE game_comments SET rating='{$rating}', comment='{$comment}', title='{$title}' WHERE game_id = '{$gameId}' AND player_id = '{$playerId}'");
+        else $query = Module::query("INSERT INTO game_comments (game_id, player_id, rating, comment, title) VALUES ('{$gameId}', '{$playerId}', '{$rating}', '{$comment}', '{$title}')");
+        
+        $editorEmails = Module::queryArray("SELECT editors.email FROM (SELECT * FROM game_editors WHERE game_id = ".$gameId.") AS ge LEFT JOIN editors ON ge.editor_id = editors.editor_id");
+        if(count($editorEmails) > 0)
         {
-            $gameName = mysql_fetch_object(Module::query("SELECT name FROM games WHERE game_id = $gameId"))->name;
-            $playerName = mysql_fetch_object(Module::query("SELECT user_name FROM players WHERE player_id = $intPlayerId"))->user_name;
+            $gameName = Module::queryObject("SELECT name FROM games WHERE game_id = $gameId")->name;
+            $playerName = Module::queryObject("SELECT user_name FROM players WHERE player_id = $playerId")->user_name;
             $sub = "New Rating for '".$gameName."'";
-            $body = "Congratulations! People are playing your ARIS game! \n".$playerName." Recently gave your game ".$intRating." stars out of 5" . (($comment && $comment != 'Comment') ? ", commenting \"".$comment."\"" : ".");
+            $body = "Congratulations! People are playing your ARIS game! \n".$playerName." Recently gave your game ".$rating." stars out of 5" . (($comment.$title) ? ", commenting \"".$title.": ".$comment."\"" : ".");
         }
-        while($ob = mysql_fetch_object($result))
-            Module::sendEmail($ob->email,$sub,$body);
+        for($i = 0; $i < count($editorEmails); $i++)
+            Module::sendEmail($editorEmails[$i]->email,$sub,$body);
 
         return new returnData(0);
     }
@@ -571,7 +562,7 @@ class Games extends Module
         return $nearestLocation;
     }
 
-    public function getGamesContainingText($intPlayerId, $latitude, $longitude, $textToFind, $boolIncludeDevGames = 1, $page = 0)
+    public function getGamesContainingText($playerId, $latitude, $longitude, $textToFind, $boolIncludeDevGames = 1, $page = 0)
     {
         $textToFind = addSlashes($textToFind);
         $textToFind = urldecode($textToFind);
@@ -582,12 +573,12 @@ class Games extends Module
         $games = array();
         while($game = mysql_fetch_object($result)){
             $gameObj = new stdClass;
-            $gameObj = Games::getFullGameObject($game->game_id, $intPlayerId, 1, 9999999999, $latitude, $longitude);
+            $gameObj = Games::getFullGameObject($game->game_id, $playerId, 1, 9999999999, $latitude, $longitude);
             if($gameObj != NULL){
                 $games[] = $gameObj;
             }
             else{
-                $gameObj = Games::getFullGameObject($game->game_id, $intPlayerId, 0, 9999999999, $latitude, $longitude);
+                $gameObj = Games::getFullGameObject($game->game_id, $playerId, 0, 9999999999, $latitude, $longitude);
                 if($gameObj != NULL){
                     $games[] = $gameObj;
                 }
