@@ -214,6 +214,7 @@ class Games extends Module
             $c->rating = $gameComments[$i]->rating;
             $c->text = $gameComments[$i]->comment == 'Comment' ? "" : $gameComments[$i]->comment;
             $c->title = $gameComments[$i]->title;
+            $c->timestamp = $gameComments[$i]->time_stamp;
             $comments[] = $c;
         }
         $gameObj->comments = $comments;
