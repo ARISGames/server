@@ -30,28 +30,40 @@ class Overlays extends Module
         return new returnData(0, Module::queryArray("SELECT * FROM overlays WHERE game_id = {$gameId};"));
     }
 
-    public function createOverlay($gameId, $name, $mediaId, $topLeftLat, $topLeftLong, $topRightLat, $topRightLong, $bottomLeftLat, $bottomLeftLong)
+    public function createOverlay($gameId, $name, $mediaId, $topLeftLat, $topLeftLong, $topRightLat, $topRightLong, $bottomLeftLat, $bottomLeftLong, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $name = addslashes($name);
         Module::query("INSERT INTO overlays (overlay_id, game_id, name, media_id, top_left_latitude, top_left_longitude, top_right_latitude, top_right_longitude, bottom_left_latitude, bottom_left_longitude) 
                                      VALUES (0, {$gameId}, '{$name}', {$mediaId}, {$topLeftLat}, {$topLeftLong}, {$topRightLat}, {$topRightLong}, {$bottomLeftLat}, {$bottomLeftLong});");    
         return new returnData(0);
     }
 
-    public function deleteOverlay($overlayId)
+    public function deleteOverlay($overlayId, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         Module::query("DELETE FROM overlays WHERE overlay_id = {$overlayId};");
         return new returnData(0);
     }
 
-    public function deleteOverlaysFromGame($gameId)
+    public function deleteOverlaysFromGame($gameId, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+        
         Module::query("DELETE FROM overlays WHERE game_id = {$gameId};");
         return new returnData(0);
     }
 
-    public function updateOverlay($overlayId, $gameId, $name, $mediaId, $topLeftLat, $topLeftLong, $topRightLat, $topRightLong, $bottomLeftLat, $bottomLeftLong)
+    public function updateOverlay($overlayId, $gameId, $name, $mediaId, $topLeftLat, $topLeftLong, $topRightLat, $topRightLong, $bottomLeftLat, $bottomLeftLong, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $newName = addslashes($newName);
         Module::query("UPDATE overlays SET game_id = {$gameId}, name = '{$name}', media_id = {$mediaId}, top_left_latitude = {$topLeftLat}, top_left_longitude = {$topLeftLong}, top_right_latitude = {$topRightLat}, top_right_longitude = {$topRightLong}, bottom_left_latitude = {$bottomLeftLat}, bottom_left_longitude = {$bottomLeftLong} WHERE overlay_id = {$overlayId};");
         return new returnData(0);
