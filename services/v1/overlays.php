@@ -30,6 +30,12 @@ class Overlays extends Module
         return new returnData(0, Module::queryArray("SELECT * FROM overlays WHERE game_id = {$gameId};"));
     }
 
+    public function getOverlaysForPlayer($gameId, $playerId)
+    {
+        //add more logic for requirements here
+        return new returnData(0, Module::queryArray("SELECT overlay_id FROM overlays WHERE game_id = {$gameId};"));
+    }
+
     public function createOverlay($gameId, $name, $mediaId, $topLeftLat, $topLeftLong, $topRightLat, $topRightLong, $bottomLeftLat, $bottomLeftLong, $editorId, $editorToken)
     {
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
@@ -41,7 +47,7 @@ class Overlays extends Module
         return new returnData(0);
     }
 
-    public function deleteOverlay($overlayId, $editorId, $editorToken)
+    public function deleteOverlay($overlayId, $gameId, $editorId, $editorToken)
     {
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
