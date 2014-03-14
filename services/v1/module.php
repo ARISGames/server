@@ -451,7 +451,7 @@ abstract class Module extends Utils
         return false;
     }
 
-    protected function PlayerHasGivenNoteComments($gameId, $playerId, $qty)
+    protected function playerHasGivenNoteComments($gameId, $playerId, $qty)
     {
         $query = "SELECT note_id FROM notes WHERE owner_id = '{$playerId}' AND parent_note_id != 0";
         $result = Module::query($query);
