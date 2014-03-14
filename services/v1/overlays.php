@@ -33,7 +33,18 @@ class Overlays extends Module
     public function getOverlaysForPlayer($gameId, $playerId)
     {
         //add more logic for requirements here
-        return new returnData(0, Module::queryArray("SELECT overlay_id FROM overlays WHERE game_id = {$gameId};"));
+        $overlays = Module::queryArray("SELECT * FROM overlays WHERE game_id = {$gameId};");
+        $overlayIds = array();
+        for($i = 0; $i < count($overlays); $i++){
+            $overlay = $overlays[$i];
+            $display = Module::objectMeetsRequirements ($gameId, $playerId, "CustomMap", $overlay->overlay_id);
+            if($display){
+               $overlayObj = new stdClass();
+               $overlayObj->overlay_id = $overlay->overlay_id;
+               $overlayIds[] = $overlayObj;
+            }
+        }
+        return new returnData(0, $overlayIds);
     }
 
     public function createOverlay($gameId, $name, $mediaId, $topLeftLat, $topLeftLong, $topRightLat, $topRightLong, $bottomLeftLat, $bottomLeftLong, $editorId, $editorToken)
