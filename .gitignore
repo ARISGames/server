@@ -1,12 +1,13 @@
 config.class.php
-gamedata/*
+gamedata
 !gamedata/0
 !gamedata/player
 gamedata/0/aris*
-gamedata/player/*
+gamedata/player
 gamedataNFS
 newTest/human/results.txt
 services/v1/samples/yoimap
 services/v1/samples/yoimapC
 .AppleDouble
 .DS_Store
+v2
