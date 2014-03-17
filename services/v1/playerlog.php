@@ -301,7 +301,6 @@ class PlayerLog extends Module
                         $row->qty = $r[$j]->event_detail_2;
                         $row->timestamp = $r[$j]->timestamp;
                         $row->human = $playerLogs[$i]->player->display_name." lost ".$row->qty." ".$row->object." (Item).";
-                        $row->human = "";
                         break;
                     case "VIEW_ITEM":
                         $row->event = "Viewed Item";
