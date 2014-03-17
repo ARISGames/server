@@ -1,0 +1,45 @@
+<html>
+<head>
+<script type="text/javascript">
+    function sendRequest(fn, params)
+    {
+        var xmlhttp;
+        xmlhttp=new XMLHttpRequest();
+        xmlhttp.open("POST","http://dev.arisgames.org/server/json.php/v1."+fn,false);
+        xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xmlhttp.send(params); //Synchronous call
+
+        var response=JSON.parse(xmlhttp.responseText);
+        if(response.returnCode > 0) //Error
+            document.getElementById('logs').innerHTML = "Error- <br />"+xmlhttp.responseText;	
+        else
+            document.getElementById('logs').innerHTML = "Success!- <br />"+JSON.stringify(response.data);	
+    }
+
+    function makeRequest()
+    {
+        var logRequest = 
+        {
+            "game_id":document.getElementById("game_id").value,
+            "editor_id":document.getElementById("editor_id").value,
+            "editor_token":document.getElementById("editor_token").value,
+            "output_format":"json",
+            "start_date":document.getElementById("start_date").value,
+            "end_date":document.getElementById("end_date").value
+        };
+        sendRequest("playerlog.getPlayerLogs", JSON.stringify(logRequest));
+    }
+</script>
+</head>
+<body>
+<div id='logs'> 
+    Game id:<input type="text" id="game_id" /> <br />
+    Editor id:<input type="text" id="editor_id" /> <br />
+    Editor token:<input type="text" id="editor_token" /> <br />
+    Start Date:<input type="text" id="start_date" value="2013-01-01 00:00:00"/> <br />
+    End Date:<input type="text" id="end_date" value="2014-01-01 00:00:00" /> <br />
+    <input type="button" value="go" onclick="makeRequest()"/>
+</div>
+</body>
+</html>
+
