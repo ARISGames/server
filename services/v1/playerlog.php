@@ -225,7 +225,7 @@ class PlayerLog extends Module
                 $log = new stdClass();
                 $log->player = $p[$i];
                 if($log->player->display_name == "") $log->player->display_name = $log->player->user_name;
-                $log->player->pic_url = Media::getMediaObject("player", $p[$i]->media_id)->url;
+                $log->player->pic_url = Media::getMediaObject("player", $p[$i]->media_id)->data->url;
                 $playerLogs[] = $log;
             }
         }
@@ -237,7 +237,7 @@ class PlayerLog extends Module
                 $log = new stdClass();
                 $log->player = $p;
                 if($log->player->display_name == "") $log->player->display_name = $log->player->user_name;
-                $log->player->pic_url = Media::getMediaObject("player", $p->media_id)->url;
+                $log->player->pic_url = Media::getMediaObject("player", $p->media_id)->data->url;
                 $playerLogs[] = $log;
             }
         }
@@ -247,7 +247,7 @@ class PlayerLog extends Module
             $log = new stdClass();
             $log->player = $p;
             if($log->player->display_name == "") $log->player->display_name = $log->player->user_name;
-            $log->player->pic_url = Media::getMediaObject("player", $p->media_id)->url;
+            $log->player->pic_url = Media::getMediaObject("player", $p->media_id)->data->url;
             $playerLogs[] = $log;
         }
         else //get all players for game
@@ -260,7 +260,7 @@ class PlayerLog extends Module
                 $log = new stdClass();
                 $log->player = $p;
                 if($log->player->display_name == "") $log->player->display_name = $log->player->user_name;
-                $log->player->pic_url = Media::getMediaObject("player", $p->media_id)->url;
+                $log->player->pic_url = Media::getMediaObject("player", intval($p->media_id))->data->url;
                 $playerLogs[] = $log;
             }
         }
