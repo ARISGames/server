@@ -260,7 +260,7 @@ class PlayerLog extends Module
                 $log = new stdClass();
                 $log->player = $p;
                 if($log->player->display_name == "") $log->player->display_name = $log->player->user_name;
-                //$log->player->pic_url = Media::getMediaObject("player", $p->media_id)->url;
+                $log->player->pic_url = Media::getMediaObject("player", $p->media_id)->url;
                 $playerLogs[] = $log;
             }
         }
@@ -272,7 +272,7 @@ class PlayerLog extends Module
         $itemsH = array(); for($i = 0; $i < count($itemsA); $i++) $itemsH[$itemsA[$i]->item_id] = $itemsA[$i];
         $nodesA = Module::queryArray("SELECT node_id, title FROM nodes WHERE game_id = '{$reqGameId}'");
         $nodesH = array(); for($i = 0; $i < count($nodesA); $i++) $nodesH[$nodesA[$i]->node_id] = $nodesA[$i];
-        $npcsA = Module::queryArray("SELECT npc_id, title FROM npcs WHERE game_id = '{$reqGameId}'");
+        $npcsA = Module::queryArray("SELECT npc_id, name FROM npcs WHERE game_id = '{$reqGameId}'");
         $npcsH = array(); for($i = 0; $i < count($npcsA); $i++) $npcsH[$npcsA[$i]->npc_id] = $npcsA[$i];
         $webpagesA = Module::queryArray("SELECT web_page_id, name FROM web_pages WHERE game_id = '{$reqGameId}'");
         $webpagesH = array(); for($i = 0; $i < count($webpagesA); $i++) $webpagesH[$webpagesA[$i]->web_page_id] = $webpagesA[$i];
@@ -319,7 +319,7 @@ class PlayerLog extends Module
                         break;
                     case "VIEW_NPC":
                         $row->event = "Viewed NPC";
-                        $row->object = $npcsH[$r[$j]->event_detail_1]->title;
+                        $row->object = $npcsH[$r[$j]->event_detail_1]->name;
                         $row->timestamp = $r[$j]->timestamp;
                         $row->human = $playerLogs[$i]->player->display_name." viewed ".$row->object." (Npc).";
                         break;
