@@ -53,10 +53,36 @@
             "end_date":document.getElementById("end_date").value
         };
         var response = sendRequest("playerlog.getPlayerLogs", JSON.stringify(logRequest), "POST");
-        if(response.returnCode > 0) //Error
-            document.getElementById('logs').innerHTML = JSON.stringify(response);	
-        else
+        if(response.returnCode > 0) { document.getElementById('logs').innerHTML = JSON.stringify(response); return; }
+
+        if(getSelectedFormat() == "json")
             document.getElementById('logs').innerHTML = JSON.stringify(response.data);	
+        else if(getSelectedFormat() == "human")
+        {
+            var humanOut = document.createElement('div');
+            for(var i = 0; i < response.data.length; i++)
+            {
+                var player = document.createElement('div');
+                player.innerHTML = response.data[i].player.display_name+"<br /><img width=\"100px\"; src=\""+response.data[i].player.pic_url+"\"/>";
+                humanOut.appendChild(player);
+                for(var j = 0; j < response.data[i].log.length; j++)
+                {
+                    var log = document.createElement('div');
+                    log.innerHTML = response.data[i].log[j].timestamp+" : "+response.data[i].log[j].human;
+                    humanOut.appendChild(log);
+                }
+                var log = document.createElement('div');
+                log.innerHTML = "<br /><br />";
+                humanOut.appendChild(log);
+            }
+            document.getElementById('logs').appendChild(humanOut);
+        }
+    }
+    function getSelectedFormat() //wrapper for radio functionality because HTML and javascript are fundamentally broken
+    {
+        if(document.getElementById('human_radio').checked) return "human";
+        if(document.getElementById('json_radio').checked)  return "json";
+        if(document.getElementById('csv_radio').checked)   return "csv";
     }
 </script>
 </head>
@@ -69,6 +95,10 @@
     Game id:<input type="text" id="game_id" /> <br />
     Start Date:<input type="text" id="start_date" value="2014-03-18 00:00:00"/> <br />
     End Date:<input type="text" id="end_date" value="2014-03-19 00:00:00" /> <br />
+    <input type="radio" name="format" id="human_radio" checked="true" />Human <br />
+    <input type="radio" name="format" id="json_radio" />JSON <br />
+    <input type="radio" name="format" id="csv_radio" />CSV <br />
+
     <input type="button" value="go" onclick="makeRequest()"/>
 </div>
 <div id='logs'> 
