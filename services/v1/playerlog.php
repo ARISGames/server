@@ -1,5 +1,6 @@
 <?php
 require_once("module.php");
+require_once("media.php");
 
 /*
 +----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------+-----+-------------------+----------------+
@@ -214,39 +215,40 @@ class PlayerLog extends Module
         if(!is_numeric($reqGetExpired)) $reqGetExpired = 0; else if(intval($reqGetExpired) > 0) $reqGetExpired = 1;
         if(!is_numeric($reqVerbose))    $reqVerbose    = 0; else if(intval($reqVerbose)    > 0) $reqVerbose    = 1;
 
+
         $playerLogs = array();
         if($filterMode == "group")
         {
-        /*
-            $r = Module::queryArray("SELECT player_id, display_name, media_id, group_name from players WHERE group_name = '{$reqGroup}'")
-            for($i = 0; $i < count($r); $i++)
+            $p = Module::queryArray("SELECT player_id, display_name, media_id, group_name from players WHERE group_name = '{$reqGroup}'");
+            for($i = 0; $i < count($p); $i++)
             {
                 $log = new stdClass();
-                $log->player = $r[$i];
+                $log->player = $p[$i];
+                if($log->player->display_name == "") $log->player->display_name = $log->player->user_name;
+                $log->player->pic_url = Media::getMediaObject("player", $p[$i]->media_id)->url;
                 $playerLogs[] = $log;
             }
-            */
         }
         else if($filterMode == "players")
         {
-        /*
             for($i = 0; $i < count($reqPlayers); $i++)
             {
-                $r = Module::queryObject("SELECT player_id, display_name, media_id, group_name from players WHERE player_id = '{$reqPlayers[$i]}'")
+                $p = Module::queryObject("SELECT player_id, display_name, media_id, group_name from players WHERE player_id = '{$reqPlayers[$i]}'");
                 $log = new stdClass();
-                $log->player = $r;
+                $log->player = $p;
+                if($log->player->display_name == "") $log->player->display_name = $log->player->user_name;
+                $log->player->pic_url = Media::getMediaObject("player", $p->media_id)->url;
                 $playerLogs[] = $log;
             }
-            */
         }
         else if($filterMode == "player")
         {
-        /*
-            $r = Module::queryObject("SELECT player_id, display_name, media_id, group_name from players WHERE player_id = '{$reqPlayer}'")
+            $p = Module::queryObject("SELECT player_id, display_name, media_id, group_name from players WHERE player_id = '{$reqPlayer}'");
             $log = new stdClass();
-            $log->player = $r;
+            $log->player = $p;
+            if($log->player->display_name == "") $log->player->display_name = $log->player->user_name;
+            $log->player->pic_url = Media::getMediaObject("player", $p->media_id)->url;
             $playerLogs[] = $log;
-        */
         }
         else //get all players for game
         {
@@ -256,8 +258,9 @@ class PlayerLog extends Module
                 $p = Module::queryObject("SELECT player_id, user_name, display_name, media_id, group_name from players WHERE player_id = '{$r[$i]->player_id}'");
                 if(!$p) continue;
                 $log = new stdClass();
-                if($p->display_name == "") $p->display_name = $p->user_name;
                 $log->player = $p;
+                if($log->player->display_name == "") $log->player->display_name = $log->player->user_name;
+                //$log->player->pic_url = Media::getMediaObject("player", $p->media_id)->url;
                 $playerLogs[] = $log;
             }
         }
@@ -271,7 +274,7 @@ class PlayerLog extends Module
         $nodesH = array(); for($i = 0; $i < count($nodesA); $i++) $nodesH[$nodesA[$i]->node_id] = $nodesA[$i];
         $npcsA = Module::queryArray("SELECT npc_id, title FROM npcs WHERE game_id = '{$reqGameId}'");
         $npcsH = array(); for($i = 0; $i < count($npcsA); $i++) $npcsH[$npcsA[$i]->npc_id] = $npcsA[$i];
-        $webpagesA = Module::queryArray("SELECT web_page_id, title FROM web_pages WHERE game_id = '{$reqGameId}'");
+        $webpagesA = Module::queryArray("SELECT web_page_id, name FROM web_pages WHERE game_id = '{$reqGameId}'");
         $webpagesH = array(); for($i = 0; $i < count($webpagesA); $i++) $webpagesH[$webpagesA[$i]->web_page_id] = $webpagesA[$i];
         $locationsA = Module::queryArray("SELECT location_id, name FROM locations WHERE game_id = '{$reqGameId}'");
         $locationsH = array(); for($i = 0; $i < count($locationsA); $i++) $locationsH[$locationsA[$i]->location_id] = $locationsA[$i];
@@ -316,7 +319,7 @@ class PlayerLog extends Module
                         break;
                     case "VIEW_NPC":
                         $row->event = "Viewed NPC";
-                        $row->object = $npcsH[$r[$j]->event_detail_1]->name;
+                        $row->object = $npcsH[$r[$j]->event_detail_1]->title;
                         $row->timestamp = $r[$j]->timestamp;
                         $row->human = $playerLogs[$i]->player->display_name." viewed ".$row->object." (Npc).";
                         break;
@@ -370,7 +373,6 @@ class PlayerLog extends Module
                 $playerLogs[$i]->log[] = $row;
             }
         }
-
         return new returnData(0,$playerLogs);
     }
 }
