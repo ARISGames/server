@@ -52,6 +52,8 @@
             "start_date":document.getElementById("start_date").value,
             "end_date":document.getElementById("end_date").value
         };
+        if(document.getElementById("group_id").value != "") logRequest.groupname = document.getElementById("group_id").value;
+
         var response = sendRequest("playerlog.getPlayerLogs", JSON.stringify(logRequest), "POST");
         if(response.returnCode > 0) { document.getElementById('logs').innerHTML = JSON.stringify(response); return; }
 
@@ -63,8 +65,10 @@
             for(var i = 0; i < response.data.length; i++)
             {
                 var player = document.createElement('div');
-                player.innerHTML = response.data[i].player.display_name+"<br /><img width=\"100px\"; src=\""+response.data[i].player.pic_url+"\"/>";
+                player.innerHTML = response.data[i].player.display_name+" (p_id="+response.data[i].player.player_id+", g_id="+response.data[i].player.group_name+")<br /><img width=\"100px\"; src=\""+response.data[i].player.pic_url+"\"/>";
                 humanOut.appendChild(player);
+
+                response.data[i].log.sort(function(a,b){ return a.timestamp > b.timestamp ? 1 : -1;});
                 for(var j = 0; j < response.data[i].log.length; j++)
                 {
                     var log = document.createElement('div');
@@ -75,6 +79,7 @@
                 log.innerHTML = "<br /><br />";
                 humanOut.appendChild(log);
             }
+            document.getElementById('logs').innerHTML = "";
             document.getElementById('logs').appendChild(humanOut);
         }
     }
@@ -93,6 +98,7 @@
     Username:<input type="text" id="username" /> <br />
     Password:<input type="password" id="password" /> <br />
     Game id:<input type="text" id="game_id" /> <br />
+    Group id:<input type="text" id="group_id" /> <br />
     Start Date:<input type="text" id="start_date" value="2014-03-18 00:00:00"/> <br />
     End Date:<input type="text" id="end_date" value="2014-03-19 00:00:00" /> <br />
     <input type="radio" name="format" id="human_radio" checked="true" />Human <br />
