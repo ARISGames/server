@@ -415,7 +415,16 @@ class Notebook extends Module
             $mediaId = Media::createMediaFromJSON($media[$i])->data->media_id;
             Notebook::addContentToNote($noteId,$mediaId,"MEDIA");
         }
-        for($i = 0; is_array($tags) && $i < count($tags); $i++)
+
+        $oldTags = Notebook::getNoteTags($noteId, $gameId)->data;
+        for($i = 0; is_array($oldTags) && $i < count($oldTags); $i++)
+        {
+            $tagDeleted = true;
+            for($i = 0; is_array($tags)    && $i < count($tags);    $i++)
+                if($oldTags[$i]->tag == $tags[$j]) $tagDeleted = false;
+            if($tagDeleted) Notebook::deleteTagFromNote($noteId, $oldTags[$i]->tag_id);
+        }
+        for($i = 0; is_array($tags)    && $i < count($tags);    $i++)
             Notebook::addTagToNote($noteId, $tags[$i]);
 
         return new returnData(0,Notebook::getNote($noteId)->data);
