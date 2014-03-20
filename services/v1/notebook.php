@@ -416,7 +416,7 @@ class Notebook extends Module
             Notebook::addContentToNote($noteId,$mediaId,"MEDIA");
         }
 
-        $oldTags = Notebook::getNoteTags($noteId, $gameId)->data;
+        $oldTags = Notebook::getNoteTags($noteId, $gameId);
         for($i = 0; is_array($oldTags) && $i < count($oldTags); $i++)
         {
             $tagDeleted = true;
