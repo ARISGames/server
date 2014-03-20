@@ -420,11 +420,11 @@ class Notebook extends Module
         for($i = 0; is_array($oldTags) && $i < count($oldTags); $i++)
         {
             $tagDeleted = true;
-            for($i = 0; is_array($tags)    && $i < count($tags);    $i++)
+            for($j = 0; is_array($tags) && $j < count($tags); $j++)
                 if($oldTags[$i]->tag == $tags[$j]) $tagDeleted = false;
             if($tagDeleted) Notebook::deleteTagFromNote($noteId, $oldTags[$i]->tag_id);
         }
-        for($i = 0; is_array($tags)    && $i < count($tags);    $i++)
+        for($i = 0; is_array($tags) && $i < count($tags); $i++)
             Notebook::addTagToNote($noteId, $tags[$i]);
 
         return new returnData(0,Notebook::getNote($noteId)->data);
