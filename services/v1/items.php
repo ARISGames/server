@@ -91,7 +91,7 @@ class Items extends Module
         $description = addslashes($description);	
 
         $query = "INSERT INTO items 
-            (game_id, name, description, icon_media_id, media_id, dropable, destroyable, tradeable, is_attribute, max_qty_in_inventory, weight, url, type)
+            (game_id, name, description, icon_media_id, media_id, dropable, destroyable, is_attribute, max_qty_in_inventory, weight, url, type)
             VALUES ('{$gameId}',
                     '{$name}', 
                     '{$description}',
@@ -99,7 +99,6 @@ class Items extends Module
                     '{$mediaId}', 
                     '{$droppable}',
                     '{$destroyable}',
-                    '{$tradeable}',
                     '{$attribute}',
                     '{$maxQuantityInPlayerInventory}',
                     '{$weight}',
@@ -129,7 +128,6 @@ class Items extends Module
                 media_id = '{$mediaId}', 
                 dropable = '{$droppable}',
                 destroyable = '{$destroyable}',
-                tradeable = '{$tradeable}',
                 is_attribute = '{$attribute}',
                 max_qty_in_inventory = '{$maxQuantityInPlayerInventory}',
                 weight = '{$weight}',

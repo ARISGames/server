@@ -269,7 +269,7 @@ class Games extends Module
             pc_media_id, use_player_pic,
             map_type, show_player_location,
             full_quick_travel,
-            inventory_weight_cap, allow_trading,
+            inventory_weight_cap, 
             created
                 ) VALUES (
                     '".$name."', '".$description."',
@@ -280,7 +280,7 @@ class Games extends Module
                     '".$pcMediaId."', '".$usePlayerPic."',
                     '".$mapType."', '".$showPlayerOnMap."',
                     '".$allLocQuickTravel."',
-                    '".$inventoryWeightCap."', '".$allowTrading."',
+                    '".$inventoryWeightCap."', 
                     NOW())";
 
         Module::query($query);
@@ -344,8 +344,7 @@ class Games extends Module
                                      map_type                 = '".$mapType."',
                                      show_player_location     = '".$showPlayerOnMap."',
                                      full_quick_travel        = '".$allLocQuickTravel."',
-                                     inventory_weight_cap     = '".$inventoryWeightCap."',
-                                     allow_trading            = '".$allowTrading."'
+                                     inventory_weight_cap     = '".$inventoryWeightCap."'
                                          WHERE game_id            = '".$gameId."'";
         Module::query($query);
         if (mysql_error()) return new returnData(3, NULL, "SQL Error: " . mysql_error());
@@ -862,7 +861,7 @@ class Games extends Module
         $query = "SELECT * FROM items WHERE game_id = {$gameId}";
         $result = Module::query($query);
         while($result && $row = mysql_fetch_object($result)){
-            $query = "INSERT INTO items (game_id, name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight, url, type, tradeable) VALUES ('{$newGameId}', '".addSlashes($row->name)."', '".addSlashes($row->description)."', '{$row->is_attribute}', '{$row->icon_media_id}', '{$row->media_id}', '{$row->dropable}', '{$row->destroyable}', '{$row->max_qty_in_inventory}', '{$row->creator_player_id}', '{$row->origin_latitude}', '{$row->origin_longitude}', '{$row->origin_timestamp}', '{$row->weight}', '{$row->url}', '{$row->type}', '{$row->tradeable}')";
+            $query = "INSERT INTO items (game_id, name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight, url, type) VALUES ('{$newGameId}', '".addSlashes($row->name)."', '".addSlashes($row->description)."', '{$row->is_attribute}', '{$row->icon_media_id}', '{$row->media_id}', '{$row->dropable}', '{$row->destroyable}', '{$row->max_qty_in_inventory}', '{$row->creator_player_id}', '{$row->origin_latitude}', '{$row->origin_longitude}', '{$row->origin_timestamp}', '{$row->weight}', '{$row->url}', '{$row->type}')";
             Module::query($query);
             $newId = mysql_insert_id();
             $newItemIds[($row->item_id)] = $newId;

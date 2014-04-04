@@ -46,3 +46,5 @@ CREATE INDEX game_id ON overlays (game_id);
 
 ALTER TABLE game_comments ADD COLUMN title TINYTEXT NOT NULL DEFAULT "";
 
+UPDATE games SET allow_trading = 0;
+UPDATE items SET tradeable = 0;
