@@ -124,7 +124,7 @@ class Games extends Module
         //Check if Game Has Been Played
         //$debugString .= "HAS BEEN PLAYED:";
         //$sTime = microtime(true);
-        $query = "SELECT * FROM player_log WHERE game_id = '{$gameId}' AND player_id = '{$playerId}' AND deleted = 0 LIMIT 1";
+        $query = "SELECT * FROM player_log WHERE player_id = '{$playerId}' AND game_id = '{$gameId}' AND deleted = 0 LIMIT 1";
         $result = Module::query($query);
         if(mysql_num_rows($result) > 0) $gameObj->has_been_played = true;
         else                            $gameObj->has_been_played = false;

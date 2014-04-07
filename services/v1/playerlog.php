@@ -284,7 +284,7 @@ class PlayerLog extends Module
         for($i = 0; $i < count($playerLogs); $i++)
         {
             $playerLogs[$i]->log = array();
-	    $r = Module::queryArray("SELECT * FROM player_log WHERE game_id = '{$reqGameId}' AND player_id = '{$playerLogs[$i]->player->player_id}' AND timestamp BETWEEN '{$reqStartDate}' AND '{$reqEndDate}' AND (deleted = 0 OR deleted = {$reqGetExpired})");
+	    $r = Module::queryArray("SELECT * FROM player_log WHERE player_id = '{$playerLogs[$i]->player->player_id}' AND game_id = '{$reqGameId}' AND  timestamp BETWEEN '{$reqStartDate}' AND '{$reqEndDate}' AND (deleted = 0 OR deleted = {$reqGetExpired})");
             for($j = 0; $j < count($r); $j++)
             {
                 $row = new stdClass();

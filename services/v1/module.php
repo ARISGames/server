@@ -135,7 +135,7 @@ abstract class Module extends Utils
             Module::adjustQtyForPlayerItem($gameId, $itemId, $playerId, $qtyToGive);
 
             //check log if item has already been viewed. If yes, set item to viewed in database
-            $viewed = Module::queryObject("SELECT * FROM player_log WHERE game_id = {$gameId} AND player_id = {$playerId} AND event_type = 'VIEW_ITEM' AND event_detail_1 = {$itemId} AND deleted = 0;");
+            $viewed = Module::queryObject("SELECT * FROM player_log WHERE player_id = {$playerId} AND game_id = {$gameId} AND event_type = 'VIEW_ITEM' AND event_detail_1 = {$itemId} AND deleted = 0;");
             if($viewed)
                 Module::query("UPDATE player_items SET viewed = 1 WHERE game_id = {$gameId} AND player_id = {$playerId} AND item_id = {$itemId}");
 
@@ -686,7 +686,7 @@ abstract class Module extends Utils
             $gameQuests[] = $gameQuest;
 
         //Get all completed quests by player
-        $query = "SELECT * FROM player_log WHERE game_id = $gameId AND player_id = $playerId AND event_type = 'COMPLETE_QUEST' AND deleted = 0;";
+        $query = "SELECT * FROM player_log WHERE player_id = $playerId AND game_id = $gameId AND event_type = 'COMPLETE_QUEST' AND deleted = 0;";
         $result = Module::query($query);
         $playerCompletedQuests = array();
         while($playerCompletedQuest = mysql_fetch_object($result))
@@ -719,7 +719,7 @@ abstract class Module extends Utils
             $gameWebhooks[] = $gameWebhook;
 
         //Get all webhooks fired by player
-        $query = "SELECT * FROM player_log WHERE game_id = $gameId AND player_id = $playerId AND event_type = 'SEND_WEBHOOK' AND deleted = 0;";
+        $query = "SELECT * FROM player_log WHERE player_id = $playerId AND game_id = $gameId AND event_type = 'SEND_WEBHOOK' AND deleted = 0;";
         $result = Module::query($query);
         $playerFiredWebhooks = array();
         while($playerFiredWebhook = mysql_fetch_object($result))

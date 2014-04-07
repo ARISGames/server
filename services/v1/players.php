@@ -210,7 +210,7 @@ class Players extends Module
 	public function startOverGameForPlayer($gameId, $playerId)
 	{	
 		Module::query("DELETE FROM player_items WHERE game_id = {$gameId} AND player_id = '{$playerId}'");
-		Module::query("UPDATE player_log SET deleted = 1 WHERE game_id = '{$gameId}' AND player_id = '{$playerId}'");
+		Module::query("UPDATE player_log SET deleted = 1 WHERE player_id = '{$playerId}' AND game_id = '{$gameId}'");
 
 		return new returnData(0, TRUE);
 	}	
