@@ -116,7 +116,7 @@ class Games extends Module
 
     public function getFullGameObject($gameId, $playerId, $boolGetLocationalInfo = 0, $intSkipAtDistance = 99999999, $latitude = 0, $longitude = 0)
     {
-        $debugString = "";
+        $debugString = "GETTING FULL GAME: ".$gameId;
         $gameObj = Module::queryObject("SELECT * FROM games WHERE game_id = '{$gameId}' LIMIT 1");
 
         //Check if Game Has Been Played
