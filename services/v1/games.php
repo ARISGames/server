@@ -125,10 +125,10 @@ class Games extends Module
         $debugString .=(microtime(true)-$sTime)."\n";
 
         //Get Locational Stuff
-        $debugString .= $gameId ." LOCATION INFO: ";
-        $sTime = microtime(true);
         if($boolGetLocationalInfo)
         {
+            $debugString .= $gameId ." LOCATION INFO: ";
+            $sTime = microtime(true);
             if($gameObj->is_locational == true)
             {
                 $nearestLocation = Games::getNearestLocationOfGameToUser($latitude, $longitude, $gameId);
@@ -143,8 +143,8 @@ class Games extends Module
                 $gameObj->longitude = 0;
                 $gameObj->distance = 0;
             }
+            $debugString .=(microtime(true)-$sTime)."\n";
         }
-        $debugString .=(microtime(true)-$sTime)."\n";
 
         //Get Editors
         $debugString .= $gameId ." EDITORS: ";
