@@ -116,17 +116,16 @@ class Games extends Module
 
     public function getFullGameObject($gameId, $playerId, $boolGetLocationalInfo = 0, $intSkipAtDistance = 99999999, $latitude = 0, $longitude = 0)
     {
-        $debugString = "GETTING FULL GAME: ".$gameId;
         $gameObj = Module::queryObject("SELECT * FROM games WHERE game_id = '{$gameId}' LIMIT 1");
 
         //Check if Game Has Been Played
-        $debugString .= "HAS BEEN PLAYED: ";
+        $debugString .= $gameId ." HAS BEEN PLAYED: ";
         $sTime = microtime(true);
         $gameObj->has_been_played = Module::queryObject("SELECT count(player_id) as count FROM player_log WHERE player_id = '{$playerId}' AND game_id = '{$gameId}' AND deleted = 0 LIMIT 1")->count > 0;
         $debugString .=(microtime(true)-$sTime)."\n";
 
         //Get Locational Stuff
-        $debugString .= "LOCATION INFO: ";
+        $debugString .= $gameId ." LOCATION INFO: ";
         $sTime = microtime(true);
         if($boolGetLocationalInfo)
         {
@@ -148,7 +147,7 @@ class Games extends Module
         $debugString .=(microtime(true)-$sTime)."\n";
 
         //Get Editors
-        $debugString .= "EDITORS: ";
+        $debugString .= $gameId ." EDITORS: ";
         $sTime = microtime(true);
         $editors = Module::queryArray("SELECT editors.* FROM editors, game_editors WHERE game_editors.editor_id = editors.editor_id AND game_editors.game_id = {$gameId}");
         $editorsString = "";
@@ -158,20 +157,20 @@ class Games extends Module
         $debugString .=(microtime(true)-$sTime)."\n";
 
         //Get Num Players
-        $debugString .= "NUM_PLAYERS: ";
+        $debugString .= $gameId ." NUM_PLAYERS: ";
         $sTime = microtime(true);
         $gameObj->numPlayers = Module::queryObject("SELECT count(player_id) as count FROM players WHERE last_game_id = {$gameId}")->count;
         $debugString .=(microtime(true)-$sTime)."\n";
 
         //Calculate the rating
-        $debugString .= "RATING: ";
+        $debugString .= $gameId ." RATING: ";
         $sTime = microtime(true);
         $gameObj->rating = Module::queryObject("SELECT AVG(rating) AS rating FROM game_comments WHERE game_id = {$gameId}")->rating;
         if($gameObj->rating == NULL) $gameObj->rating = 0;
         $debugString .=(microtime(true)-$sTime)."\n";
 
         //Getting Comments
-        $debugString .= "COMMENTS: ";
+        $debugString .= $gameId ." COMMENTS: ";
         $sTime = microtime(true);
         $gameComments = Module::queryArray("SELECT * FROM game_comments WHERE game_id = {$gameId}");
         $comments = array();
