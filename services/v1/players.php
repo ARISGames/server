@@ -209,8 +209,19 @@ class Players extends Module
 
 	public function startOverGameForPlayer($gameId, $playerId)
 	{	
+                $debugString = "";
+            
+                $debugString .= $gameId ." ". $playerId ." DELETE PLAYER_ITEMS: ";
+                $sTime = microtime(true);
 		Module::query("DELETE FROM player_items WHERE game_id = {$gameId} AND player_id = '{$playerId}'");
+                $debugString .=(microtime(true)-$sTime)."\n";
+
+                $debugString .= $gameId ." ". $playerId ." DELETE PLAYER_LOG: ";
+                $sTime = microtime(true);
 		Module::query("UPDATE player_log SET deleted = 1 WHERE player_id = '{$playerId}' AND game_id = '{$gameId}'");
+                $debugString .=(microtime(true)-$sTime)."\n";
+
+                Module::serverErrorLog($debugString);
 
 		return new returnData(0, TRUE);
 	}	
