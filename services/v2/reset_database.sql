@@ -1,0 +1,122 @@
+/*
+CREATE THE DATABASE
+*/
+/*
+CREATE USER 'temp_user'@'127.0.0.1' IDENTIFIED BY 'temp_pass';
+CREATE DATABASE aris_v2;
+GRANT SELECT,INSERT,DELETE,UPDATE ON aris_v2.* TO 'temp_user'@'127.0.0.1';
+*/
+USE aris_v2;
+
+/*
+CREATE THE TABLES
+*/
+
+/*
+GAME DATA
+*/
+
+DROP TABLE IF EXISTS games;
+CREATE TABLE games (
+game_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
+last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+DROP TABLE IF EXISTS objects;
+CREATE TABLE objects (
+object_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+game_id INT(32) UNSIGNED NOT NULL,
+object_type ENUM {'ITEM','NPC','PLAQUE','WEBPAGE'},
+created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
+last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE INDEX object_game ON objects(game_id);
+
+DROP TABLE IF EXISTS scenes;
+CREATE TABLE scenes (
+scene_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+game_id INT(32) UNSIGNED NOT NULL,
+created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
+last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE INDEX scene_game ON scenes(game_id);
+
+DROP TABLE IF EXISTS instances;
+CREATE TABLE instances (
+instance_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+game_id INT(32) UNSIGNED NOT NULL,
+object_id INT(32) UNSIGNED NOT NULL,
+created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
+last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE INDEX instance_object ON instances(object_id);
+CREATE INDEX instance_game ON instances(game_id);
+
+DROP TABLE IF EXISTS triggers;
+CREATE TABLE triggers (
+trigger_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+game_id INT(32) UNSIGNED NOT NULL,
+instance_id INT(32) UNSIGNED NOT NULL,
+scene_id INT(32) UNSIGNED NOT NULL,
+requirement_root_package_id INT(32) UNSIGNED NOT NULL,
+created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
+last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE INDEX trigger_instance ON triggers(instance_id);
+CREATE INDEX trigger_scene ON instances(scene_id);
+CREATE INDEX trigger_game ON triggers(game_id);
+
+DROP TABLE IF EXISTS requirement_root_packages;
+CREATE TABLE requirement_root_packages (
+requirement_root_package_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+game_id INT(32) UNSIGNED NOT NULL,
+created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
+last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE INDEX requirement_root_package_game ON requirement_root_packages(game_id);
+
+DROP TABLE IF EXISTS requirement_and_packages;
+CREATE TABLE requirement_and_packages (
+requirement_and_package_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+game_id INT(32) UNSIGNED NOT NULL,
+requirement_root_package_id INT(32) UNSIGNED NOT NULL,
+created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
+last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE INDEX and_requirement_root_package ON requirement_and_packages(requirement_root_package_id);
+CREATE INDEX and_requirement_game ON requirement_and_packages(game_id);
+
+DROP TABLE IF EXISTS requirement_atoms;
+CREATE TABLE requirement_atoms (
+requirement_atom_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+game_id INT(32) UNSIGNED NOT NULL,
+requirement_and_package_id INT(32) UNSIGNED NOT NULL,
+created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
+last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE INDEX atom_requirement_and_package ON requirement_atoms(requirement_and_package_id);
+CREATE INDEX atom_requirement_game ON requirement_atoms(game_id);
+
+/*
+USER DATA
+*/
+
+DROP TABLE IF EXISTS users;
+CREATE TABLE users (
+user_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+hash VARCHAR(64),
+salt VARCHAR(64),
+created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
+last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
+DROP TABLE IF EXISTS user_game_scenes;
+CREATE TABLE users (
+user_id INT(32) UNSIGNED NOT NULL,
+game_id INT(32) UNSIGNED NOT NULL,
+scene_id INT(32) UNSIGNED NOT NULL,
+PRIMARY KEY (user_id, game_id)
+);
+
+
