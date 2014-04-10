@@ -3,6 +3,293 @@ require_once("module.php");
 
 class Requirements extends Module
 {	
+    /*
+    example requirementPackage JSON. used as inputs and outputs for requirements API
+
+    {
+        "game_id":123,
+        "requirement_root_package_id":321,
+        "name":"requirementPackageName",
+        "and_packages": 
+            [
+                {
+                    "requirement_and_package_id":231,
+                    "name":"andPackageName",
+                    "atoms":
+                        [
+                            {
+                                "requirement_atom_id":132,
+                                "bool_operator":0,
+                                "requirement":"PLAYER_HAS_ITEM",
+                                "content_id":42,
+                                "qty":4,
+                                "latitude":86.75309,
+                                "longitude":3.141592
+                            },
+                            ...
+                        ]
+                },
+                ...
+            ]
+    }
+    */
+
+    //Takes in requirementPackage JSON, all fields optional except game_id.
+    //all individual ids (requirement_root_package_id, etc...) ignored if present ( = easy duplication)
+    public function createRequirementPackage($glob)
+    {
+        Module::query(
+            "INSERT INTO requirement_root_packages (".
+            "'game_id',".
+            ($glob->name ? "'name'," : "").
+            "'created'".
+            ") VALUES (".
+            "'".addslashes($glob->game_id)."',".
+            ($glob->name ? "'".addslashes($glob->name)."'," : "").
+            "CURRENT_TIMESTAMP".
+            ")"
+        );
+        $requirementPackageId = mysql_insert_id();
+
+        for($i = 0; $glob->and_packages && $i < count($glob->and_packages); $i++)
+        {
+            $glob->and_packages[$i]->requirement_root_package_id = $requirementPackageId;
+            $glob->and_packages[$i]->game_id = $glob->game_id;
+            Requirements::createRequirementAndPackage($glob->and_packages[$i]);
+        }
+
+        return Requirements::getRequirementPackage($requirementPackageId);
+    }
+
+    public function createRequirementAndPackage($glob)
+    {
+        Module::query(
+            "INSERT INTO requirement_and_packages (".
+            "'game_id',".
+            "'requirement_root_package_id',".
+            ($glob->name ? "'name'," : "").
+            "'created'".
+            ") VALUES (".
+            "'".addslashes($glob->game_id)."',".
+            "'".addslashes($glob->requirement_root_package_id)."',".
+            ($glob->name ? "'".addslashes($glob->name)."'," : "").
+            "CURRENT_TIMESTAMP".
+            ")"
+        );
+        $requirementAndPackageId = mysql_insert_id();
+
+        for($i = 0; $glob->atoms && $i < count($glob->atoms); $i++)
+        {
+            $glob->atoms[$i]->requirement_and_package_id = $requirementAndPackageId;
+            $glob->atoms[$i]->game_id = $glob->game_id;
+            Requirements::createRequirementAtom($glob->atoms[$i]);
+        }
+
+    }
+
+    public function createRequirementAtom($glob)
+    {
+        Module::query(
+            "INSERT INTO requirement_atoms (".
+            "'game_id',".
+            "'requirement_and_package_id',".
+            ($glob->bool_operator ? "'bool_operator'," : "").
+            ($glob->requirement   ? "'requirement',"   : "").
+            ($glob->content_id    ? "'content_id',"    : "").
+            ($glob->qty           ? "'qty',"           : "").
+            ($glob->latitude      ? "'latitude',"      : "").
+            ($glob->longitude     ? "'longitude',"     : "").
+            "'created'",
+            ") VALUES (".
+            "'".addslashes($glob->game_id)."',".
+            "'".addslashes($glob->requirement_and_package_id)."',".
+            ($glob->bool_operator ? "'".addslashes($glob->bool_operator)."'," : "").
+            ($glob->requirement   ? "'".addslashes($glob->requirement  )."'," : "").
+            ($glob->content_id    ? "'".addslashes($glob->content_id   )."'," : "").
+            ($glob->qty           ? "'".addslashes($glob->qty          )."'," : "").
+            ($glob->latitude      ? "'".addslashes($glob->latitude     )."'," : "").
+            ($glob->longitude     ? "'".addslashes($glob->longitude    )."'," : "").
+            "CURRENT_TIMESTAMP".
+            ")"
+        );
+    }
+
+    public function updateRequirementPackage($glob)
+    {
+        Module::query(
+            "UPDATE requirement_root_packages SET ".
+            "'game_id' = '".addslashes($glob->game_id).
+            ($glob->name ? ", 'name' = '".addslashes($glob->name)."'" : "").
+            "WHERE requirement_root_package_id = '".addslashes($glob->requirement_root_package_id)."'"
+        );
+
+        $sql_currentAndPacks = Module::queryArray("SELECT * FROM requirement_and_packages WHERE requirement_root_package_id = '{$glob->requirement_root_package_id}'");
+        for($i = 0; $i < count($sql_currentAndPacks); $i)
+        {
+            $matchingGlobAndPack = null;
+            for($j = 0; $j < $glob->and_packages && count($glob->and_packages); $j++)
+            {
+                if($sql_currentAndPacks[$i]->requirement_and_package_id == $glob->and_packages[$j]->requirement_and_package_id)
+                {
+                    $matchingGlobAndPack = $glob->and_packages[$j];
+                    //remove from array so I can just add all remaining later
+                    array_splice($glob->and_packages, $j, 1);
+                    $j--;
+                }
+            }
+            if($matchingGlobAndPack)
+            {
+                $matchingGlobAndPack->requirement_root_package_id = $glob->requirement_root_package_id;
+                $matchingGlobAndPack->game_id = $glob->game_id;
+                Requirements::updateRequirementAndPack($matchingGlobAndPack);
+            }
+            else
+                Requirements::deleteRequirementAndPack($sql_currentAndPacks->requirement_and_package_id);
+        }
+        for($i = 0; $glob->and_packages && $i < count($glob->and_packages); $i++)
+        {
+            $glob->and_packages[$i]->requirement_root_package_id = $glob->requirement_root_package_id;
+            $glob->and_packages[$i]->game_id = $glob->game_id;
+            Requirements::createRequirementAndPackage($glob->and_packages[$i]);
+        }
+
+        return Requirements::getRequirementPackage($glob->requirement_root_package_id);
+    }
+
+    public function updateRequirementAndPackage($glob)
+    {
+        Module::query(
+            "UPDATE requirement_and_packages SET ".
+            "'game_id' = '".addslashes($glob->game_id).
+            ($glob->name ? ", 'name' = '".addslashes($glob->name)."'" : "").
+            "WHERE requirement_and_package_id = '".addslashes($glob->requirement_and_package_id)."'"
+        );
+
+        $sql_currentAtoms = Module::queryArray("SELECT * FROM requirement_atoms WHERE requirement_and_package_id = '{$glob->requirement_and_package_id}'");
+        for($i = 0; $i < count($sql_currentAndPacks); $i)
+        {
+            $matchingGlobAtom = null;
+            for($j = 0; $j < $glob->atoms && count($glob->atoms); $j++)
+            {
+                if($sql_currentAtoms[$i]->requirement_atom_id == $glob->atoms[$j]->requirement_atom_id)
+                {
+                    $matchingGlobAtom = $glob->atoms[$j];
+                    //remove from array so I can just add all remaining later
+                    array_splice($glob->atoms, $j, 1);
+                    $j--;
+                }
+            }
+            if($matchingGlobAtom)
+            {
+                $matchingGlobAtom->requirement_atom_id = $glob->requirement_atom_id;
+                $matchingGlobAtom->game_id = $glob->game_id;
+                Requirements::updateRequirementAtom($matchingGlobAtom);
+            }
+            else
+                Requirements::deleteRequirementAtom($sql_currentAtoms->requirement_atom_id);
+        }
+        for($i = 0; $glob->atoms && $i < count($glob->atoms); $i++)
+        {
+            $glob->atoms[$i]->requirement_atom_id = $glob->requirement_atom_id;
+            $glob->atoms[$i]->game_id = $glob->game_id;
+            Requirements::createRequirementAtom($glob->atoms[$i]);
+        }
+
+    }
+
+    public function updateRequirementAtom($glob)
+    {
+        Module::query(
+            "UPDATE requirement_atoms SET ".
+            "'game_id' = '".addslashes($glob->game_id).
+            ($glob->bool_operator ? ", 'bool_operator' = '".addslashes($glob->bool_operator)."'" : "").
+            ($glob->requirement   ? ", 'requirement'   = '".addslashes($glob->requirement  )."'" : "").
+            ($glob->content_id    ? ", 'content_id'    = '".addslashes($glob->content_id   )."'" : "").
+            ($glob->qty           ? ", 'qty'           = '".addslashes($glob->qty          )."'" : "").
+            ($glob->latitude      ? ", 'latitude'      = '".addslashes($glob->latitude     )."'" : "").
+            ($glob->longitude     ? ", 'longitude'     = '".addslashes($glob->longitude    )."'" : "").
+            "WHERE requirement_atom_id = '".addslashes($glob->requirement_atom_id)."'"
+        );
+    }
+
+
+    public function getRequirementPackage($requirementPackageId)
+    {
+        $pack = new stdClass();
+
+        $sql_root = Module::queryObject("SELECT * FROM requirement_root_packages WHERE requirement_root_package_id = '{$requirementPackageId}'");
+        $pack->requirement_root_package_id = $sql_root->requirement_root_package_id;
+        $pack->name = $sql_root->name;
+
+        $sql_andPacks = Module::queryArray("SELECT * FROM requirement_and_packages WHERE requirement_root_package_id = '{$requirementPackageId}'");
+        $pack->and_packages = array();
+
+        for($i = 0; $i < count($sql_andPacks); $i++)
+        {
+            $pack->and_packages[$i] = new stdClass();
+            $pack->and_packages[$i]->requirement_and_package_id = $sql_andPacks[$i]->requirement_and_package_id;
+
+            $sql_packAtoms = Module::queryArray("SELECT * FROM  requirement_atoms WHERE requirement_and_package_id = '{$sql_andPacks[$i]->requirement_and_package_id}'");
+            $pack->and_packages[$i]->atoms = array();
+            for($j = 0; $j < count($sql_packAtoms); $j++)
+            {
+                $pack->and_packages[$i]->atoms[$j] = new stdClass();
+                $pack->and_packages[$i]->atoms[$j]->requirement_atom_id = $sql_packAtoms[$j]->requirement_atom_id;
+                $pack->and_packages[$i]->atoms[$j]->bool_operator       = $sql_packAtoms[$j]->bool_operator;
+                $pack->and_packages[$i]->atoms[$j]->requirement         = $sql_packAtoms[$j]->requirement;
+                $pack->and_packages[$i]->atoms[$j]->content_id          = $sql_packAtoms[$j]->content_id;
+                $pack->and_packages[$i]->atoms[$j]->qty                 = $sql_packAtoms[$j]->qty;
+                $pack->and_packages[$i]->atoms[$j]->latitude;           = $sql_packAtoms[$j]->latitude;
+                $pack->and_packages[$i]->atoms[$j]->longitude;          = $sql_packAtoms[$j]->longitude;
+            }
+        }
+    }
+
+    public function deleteRequirementPackage($requirementPackageId)
+    {
+        $gameId = Module::queryObject("SELECT game_id FROM requirement_root_packages WHERE requirement_root_package_id = '{$requirementPackageId}'")->game_id;
+        $sql_andPacks = Module::queryArray("SELECT * FROM requirement_and_packages WHERE requirement_root_package_id = '{$requirementPackageId}'");
+        for($i = 0; $i < count($sql_andPacks); $i++)
+            Requirements::deleteRequirementAtom($sql_andPacks[$i]->requirement_and_package_id);
+        Module::query("DELETE FROM requirement_root_packages WHERE requirement_root_package_id = '{$requirementPackageId}'");
+
+        Module::query("UPDATE quests SET complete_requirement_package_id = 0 WHERE game_id = '{$gameId}' AND complete_requirement_package_id = '{$requirementPackageId}'");
+        Module::query("UPDATE quests SET display_requirement_package_id = 0 WHERE game_id = '{$gameId}' AND display_requirement_package_id = '{$requirementPackageId}'");
+        Module::query("UPDATE locations SET requirement_package_id = 0 WHERE game_id = '{$gameId}' AND requirement_package_id = '{$requirementPackageId}'");
+        Module::query("UPDATE web_hooks SET requirement_package_id = 0 WHERE game_id = '{$gameId}' AND requirement_package_id = '{$requirementPackageId}'");
+        Module::query("UPDATE overlays SET requirement_package_id = 0 WHERE game_id = '{$gameId}' AND requirement_package_id = '{$requirementPackageId}'");
+    }
+
+    public function deleteRequirementAndPackage($requirementAndPackageId)
+    {
+        $sql_packAtoms = Module::queryArray("SELECT * FROM requirement_atoms WHERE requirement_and_package_id = '{$requirementAndPackageId}'");
+        for($i = 0; $i < count($sql_packAtoms); $i++)
+            Requirements::deleteRequirementAtom($sql_packAtoms[$i]->requirement_atom_id);
+        Module::query("DELETE FROM requirement_and_packages WHERE requirement_and_package_id = '{$requirementAndPackageId}'");
+    }
+
+    public function deleteRequirementAtom($requirementAtomId)
+    {
+        Module::query("DELETE FROM requirement_atoms WHERE requirement_atom_id = '{$requirementAtomId}'");
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     public function getRequirementsForObject($gameId, $objectType, $objectId, $editorId, $editorToken)
     {
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
