@@ -8,10 +8,10 @@ class aris extends dbconnection
     {
 
     }
-    
-    public function test($gameId)
+
+    public function logIn($username, $password)
     {
-        
+
     }
 }
 
