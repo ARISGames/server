@@ -1,0 +1,104 @@
+<html>
+<head>
+<script type="text/javascript">
+    function parseURLParams(url) 
+    {
+        var queryStart = url.indexOf("?") + 1;
+        var queryEnd   = url.indexOf("#") + 1 || url.length + 1;
+        var query      = url.slice(queryStart, queryEnd - 1);
+
+        var params  = {};
+        if (query === url || query === "") return params;
+        var nvPairs = query.replace(/\+/g, " ").split("&");
+
+        for(var i=0; i<nvPairs.length; i++)
+        {
+            var nv = nvPairs[i].split("=");
+            var n  = decodeURIComponent(nv[0]);
+            var v  = decodeURIComponent(nv[1]);
+            if(!(n in params)) params[n] = [];
+            params[n].push(nv.length === 2 ? v : null);
+        }
+        return params;
+    }
+
+    function sendRequest(fn, params, method)
+    {
+        var xmlhttp;
+        xmlhttp=new XMLHttpRequest();
+        xmlhttp.open(method,"http://arisgames.org/server/json.php/v1."+fn,false);
+        xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xmlhttp.send(params); //Synchronous call
+
+        return JSON.parse(xmlhttp.responseText);
+    }
+
+    function makeRequest()
+    {
+        var request = 
+            {
+                "game_id":123,
+                "name":"requirementPackageName",
+                "and_packages": 
+                    [
+                        {
+                            "name":"andPackageName",
+                            "atoms":
+                                [
+                                    {
+                                        "bool_operator":0,
+                                        "requirement":"PLAYER_HAS_ITEM",
+                                        "content_id":1,
+                                        "qty":4,
+                                        "latitude":86.75309,
+                                        "longitude":3.141592
+                                    },
+                                    {
+                                        "bool_operator":1,
+                                        "requirement":"PLAYER_HAS_ITEM",
+                                        "content_id":2,
+                                        "qty":3,
+                                        "latitude":86.75309,
+                                        "longitude":3.141592
+                                    }
+                                ]
+                        },
+                        {
+                            "name":"andPackageName2",
+                            "atoms":
+                                [
+                                    {
+                                        "bool_operator":0,
+                                        "requirement":"PLAYER_HAS_ITEM",
+                                        "content_id":1,
+                                        "qty":4,
+                                        "latitude":86.75309,
+                                        "longitude":3.141592
+                                    },
+                                    {
+                                        "bool_operator":1,
+                                        "requirement":"PLAYER_HAS_ITEM",
+                                        "content_id":2,
+                                        "qty":3,
+                                        "latitude":86.75309,
+                                        "longitude":3.141592
+                                    }
+                                ]
+                        }
+                    ]
+            };
+
+        request = {"game_id":1};
+
+        var response = sendRequest("requirements.createRequirementPackage", JSON.stringify(request), "POST");
+        document.getElementById('result').innerHTML = JSON.stringify(response);
+    }
+
+</script>
+</head>
+<body>
+<div id='result'> 
+</div>
+</body>
+</html>
+

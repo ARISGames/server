@@ -38,6 +38,8 @@ class Requirements extends Module
     //all individual ids (requirement_root_package_id, etc...) ignored if present ( = easy duplication)
     public function createRequirementPackage($glob)
     {
+        if(!$glob || !$glob->game_id) return;
+
         Module::query(
             "INSERT INTO requirement_root_packages (".
             "'game_id',".
@@ -61,8 +63,11 @@ class Requirements extends Module
         return Requirements::getRequirementPackage($requirementPackageId);
     }
 
+    //requires game_id and requirement_root_package_id
     public function createRequirementAndPackage($glob)
     {
+        if(!$glob || !$glob->game_id || !$glob->requirement_root_package_id) return;
+
         Module::query(
             "INSERT INTO requirement_and_packages (".
             "'game_id',".
@@ -87,8 +92,11 @@ class Requirements extends Module
 
     }
 
+    //requires game_id and requirement_and_package_id
     public function createRequirementAtom($glob)
     {
+        if(!$glob || !$glob->game_id || !$glob->requirement_and_package_id) return;
+
         Module::query(
             "INSERT INTO requirement_atoms (".
             "'game_id',".
@@ -116,6 +124,8 @@ class Requirements extends Module
 
     public function updateRequirementPackage($glob)
     {
+        if(!$glob || !$glob->game_id || !$glob->requirement_root_package_id) return;
+
         Module::query(
             "UPDATE requirement_root_packages SET ".
             "'game_id' = '".addslashes($glob->game_id).
@@ -158,6 +168,8 @@ class Requirements extends Module
 
     public function updateRequirementAndPackage($glob)
     {
+        if(!$glob || !$glob->game_id || !$glob->requirement_and_package_id) return;
+
         Module::query(
             "UPDATE requirement_and_packages SET ".
             "'game_id' = '".addslashes($glob->game_id).
@@ -199,6 +211,8 @@ class Requirements extends Module
 
     public function updateRequirementAtom($glob)
     {
+        if(!$glob || !$glob->game_id || !$glob->requirement_atom_id) return;
+
         Module::query(
             "UPDATE requirement_atoms SET ".
             "'game_id' = '".addslashes($glob->game_id).
