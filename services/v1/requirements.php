@@ -271,7 +271,7 @@ class Requirements extends Module
         $gameId = Module::queryObject("SELECT game_id FROM requirement_root_packages WHERE requirement_root_package_id = '{$requirementPackageId}'")->game_id;
         $sql_andPacks = Module::queryArray("SELECT * FROM requirement_and_packages WHERE requirement_root_package_id = '{$requirementPackageId}'");
         for($i = 0; $i < count($sql_andPacks); $i++)
-            Requirements::deleteRequirementAtom($sql_andPacks[$i]->requirement_and_package_id);
+            Requirements::deleteRequirementAndPackage($sql_andPacks[$i]->requirement_and_package_id);
         Module::query("DELETE FROM requirement_root_packages WHERE requirement_root_package_id = '{$requirementPackageId}'");
 
         Module::query("UPDATE quests SET complete_requirement_package_id = 0 WHERE game_id = '{$gameId}' AND complete_requirement_package_id = '{$requirementPackageId}'");
