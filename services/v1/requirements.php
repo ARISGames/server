@@ -133,9 +133,9 @@ class Requirements extends Module
 
         Module::query(
             "UPDATE requirement_root_packages SET ".
-            "game_id = '".addslashes($glob->game_id).
+            "game_id = '".addslashes($glob->game_id)."'"
             ($glob->name ? ", name = '".addslashes($glob->name)."'" : "").
-            "WHERE requirement_root_package_id = '".addslashes($glob->requirement_root_package_id)."'"
+            " WHERE requirement_root_package_id = '".addslashes($glob->requirement_root_package_id)."'"
         );
 
         $sql_currentAndPacks = Module::queryArray("SELECT * FROM requirement_and_packages WHERE requirement_root_package_id = '{$glob->requirement_root_package_id}'");
@@ -177,9 +177,9 @@ class Requirements extends Module
 
         Module::query(
             "UPDATE requirement_and_packages SET ".
-            "game_id = '".addslashes($glob->game_id).
+            "game_id = '".addslashes($glob->game_id)."'"
             ($glob->name ? ", name = '".addslashes($glob->name)."'" : "").
-            "WHERE requirement_and_package_id = '".addslashes($glob->requirement_and_package_id)."'"
+            " WHERE requirement_and_package_id = '".addslashes($glob->requirement_and_package_id)."'"
         );
 
         $sql_currentAtoms = Module::queryArray("SELECT * FROM requirement_atoms WHERE requirement_and_package_id = '{$glob->requirement_and_package_id}'");
@@ -219,14 +219,14 @@ class Requirements extends Module
 
         Module::query(
             "UPDATE requirement_atoms SET ".
-            "game_id = '".addslashes($glob->game_id).
+            "game_id = '".addslashes($glob->game_id)."'"
             ($glob->bool_operator ? ", bool_operator = '".addslashes($glob->bool_operator)."'" : "").
             ($glob->requirement   ? ", requirement   = '".addslashes($glob->requirement  )."'" : "").
             ($glob->content_id    ? ", content_id    = '".addslashes($glob->content_id   )."'" : "").
             ($glob->qty           ? ", qty           = '".addslashes($glob->qty          )."'" : "").
             ($glob->latitude      ? ", latitude      = '".addslashes($glob->latitude     )."'" : "").
             ($glob->longitude     ? ", longitude     = '".addslashes($glob->longitude    )."'" : "").
-            "WHERE requirement_atom_id = '".addslashes($glob->requirement_atom_id)."'"
+            " WHERE requirement_atom_id = '".addslashes($glob->requirement_atom_id)."'"
         );
     }
 
