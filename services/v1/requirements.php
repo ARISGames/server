@@ -38,13 +38,16 @@ class Requirements extends Module
     //all individual ids (requirement_root_package_id, etc...) ignored if present ( = easy duplication)
     public function createRequirementPackage($glob)
     {
-        if(!$glob || !$glob->game_id) return;
+	$data = file_get_contents("php://input");
+        $glob = json_decode($data);
+
+        if(!$glob || !$glob->game_id) return "nope";
 
         Module::query(
             "INSERT INTO requirement_root_packages (".
-            "'game_id',".
-            ($glob->name ? "'name'," : "").
-            "'created'".
+            "game_id,".
+            ($glob->name ? "name," : "").
+            "created".
             ") VALUES (".
             "'".addslashes($glob->game_id)."',".
             ($glob->name ? "'".addslashes($glob->name)."'," : "").
@@ -70,10 +73,10 @@ class Requirements extends Module
 
         Module::query(
             "INSERT INTO requirement_and_packages (".
-            "'game_id',".
-            "'requirement_root_package_id',".
-            ($glob->name ? "'name'," : "").
-            "'created'".
+            "game_id,".
+            "requirement_root_package_id,".
+            ($glob->name ? "name," : "").
+            "created".
             ") VALUES (".
             "'".addslashes($glob->game_id)."',".
             "'".addslashes($glob->requirement_root_package_id)."',".
@@ -89,7 +92,6 @@ class Requirements extends Module
             $glob->atoms[$i]->game_id = $glob->game_id;
             Requirements::createRequirementAtom($glob->atoms[$i]);
         }
-
     }
 
     //requires game_id and requirement_and_package_id
@@ -99,15 +101,15 @@ class Requirements extends Module
 
         Module::query(
             "INSERT INTO requirement_atoms (".
-            "'game_id',".
-            "'requirement_and_package_id',".
-            ($glob->bool_operator ? "'bool_operator'," : "").
-            ($glob->requirement   ? "'requirement',"   : "").
-            ($glob->content_id    ? "'content_id',"    : "").
-            ($glob->qty           ? "'qty',"           : "").
-            ($glob->latitude      ? "'latitude',"      : "").
-            ($glob->longitude     ? "'longitude',"     : "").
-            "'created'",
+            "game_id,".
+            "requirement_and_package_id,".
+            ($glob->bool_operator ? "bool_operator," : "").
+            ($glob->requirement   ? "requirement,"   : "").
+            ($glob->content_id    ? "content_id,"    : "").
+            ($glob->qty           ? "qty,"           : "").
+            ($glob->latitude      ? "latitude,"      : "").
+            ($glob->longitude     ? "longitude,"     : "").
+            "created".
             ") VALUES (".
             "'".addslashes($glob->game_id)."',".
             "'".addslashes($glob->requirement_and_package_id)."',".
@@ -124,12 +126,15 @@ class Requirements extends Module
 
     public function updateRequirementPackage($glob)
     {
+	$data = file_get_contents("php://input");
+        $glob = json_decode($data);
+
         if(!$glob || !$glob->game_id || !$glob->requirement_root_package_id) return;
 
         Module::query(
             "UPDATE requirement_root_packages SET ".
-            "'game_id' = '".addslashes($glob->game_id).
-            ($glob->name ? ", 'name' = '".addslashes($glob->name)."'" : "").
+            "game_id = '".addslashes($glob->game_id).
+            ($glob->name ? ", name = '".addslashes($glob->name)."'" : "").
             "WHERE requirement_root_package_id = '".addslashes($glob->requirement_root_package_id)."'"
         );
 
@@ -172,8 +177,8 @@ class Requirements extends Module
 
         Module::query(
             "UPDATE requirement_and_packages SET ".
-            "'game_id' = '".addslashes($glob->game_id).
-            ($glob->name ? ", 'name' = '".addslashes($glob->name)."'" : "").
+            "game_id = '".addslashes($glob->game_id).
+            ($glob->name ? ", name = '".addslashes($glob->name)."'" : "").
             "WHERE requirement_and_package_id = '".addslashes($glob->requirement_and_package_id)."'"
         );
 
@@ -206,7 +211,6 @@ class Requirements extends Module
             $glob->atoms[$i]->game_id = $glob->game_id;
             Requirements::createRequirementAtom($glob->atoms[$i]);
         }
-
     }
 
     public function updateRequirementAtom($glob)
@@ -215,13 +219,13 @@ class Requirements extends Module
 
         Module::query(
             "UPDATE requirement_atoms SET ".
-            "'game_id' = '".addslashes($glob->game_id).
-            ($glob->bool_operator ? ", 'bool_operator' = '".addslashes($glob->bool_operator)."'" : "").
-            ($glob->requirement   ? ", 'requirement'   = '".addslashes($glob->requirement  )."'" : "").
-            ($glob->content_id    ? ", 'content_id'    = '".addslashes($glob->content_id   )."'" : "").
-            ($glob->qty           ? ", 'qty'           = '".addslashes($glob->qty          )."'" : "").
-            ($glob->latitude      ? ", 'latitude'      = '".addslashes($glob->latitude     )."'" : "").
-            ($glob->longitude     ? ", 'longitude'     = '".addslashes($glob->longitude    )."'" : "").
+            "game_id = '".addslashes($glob->game_id).
+            ($glob->bool_operator ? ", bool_operator = '".addslashes($glob->bool_operator)."'" : "").
+            ($glob->requirement   ? ", requirement   = '".addslashes($glob->requirement  )."'" : "").
+            ($glob->content_id    ? ", content_id    = '".addslashes($glob->content_id   )."'" : "").
+            ($glob->qty           ? ", qty           = '".addslashes($glob->qty          )."'" : "").
+            ($glob->latitude      ? ", latitude      = '".addslashes($glob->latitude     )."'" : "").
+            ($glob->longitude     ? ", longitude     = '".addslashes($glob->longitude    )."'" : "").
             "WHERE requirement_atom_id = '".addslashes($glob->requirement_atom_id)."'"
         );
     }
@@ -233,6 +237,7 @@ class Requirements extends Module
 
         $sql_root = Module::queryObject("SELECT * FROM requirement_root_packages WHERE requirement_root_package_id = '{$requirementPackageId}'");
         $pack->requirement_root_package_id = $sql_root->requirement_root_package_id;
+        $pack->game_id = $sql_root->game_id;
         $pack->name = $sql_root->name;
 
         $sql_andPacks = Module::queryArray("SELECT * FROM requirement_and_packages WHERE requirement_root_package_id = '{$requirementPackageId}'");
@@ -253,10 +258,12 @@ class Requirements extends Module
                 $pack->and_packages[$i]->atoms[$j]->requirement         = $sql_packAtoms[$j]->requirement;
                 $pack->and_packages[$i]->atoms[$j]->content_id          = $sql_packAtoms[$j]->content_id;
                 $pack->and_packages[$i]->atoms[$j]->qty                 = $sql_packAtoms[$j]->qty;
-                $pack->and_packages[$i]->atoms[$j]->latitude;           = $sql_packAtoms[$j]->latitude;
-                $pack->and_packages[$i]->atoms[$j]->longitude;          = $sql_packAtoms[$j]->longitude;
+                $pack->and_packages[$i]->atoms[$j]->latitude            = $sql_packAtoms[$j]->latitude;
+                $pack->and_packages[$i]->atoms[$j]->longitude           = $sql_packAtoms[$j]->longitude;
             }
         }
+
+        return $pack;
     }
 
     public function deleteRequirementPackage($requirementPackageId)
