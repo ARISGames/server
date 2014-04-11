@@ -247,6 +247,7 @@ class Requirements extends Module
         {
             $pack->and_packages[$i] = new stdClass();
             $pack->and_packages[$i]->requirement_and_package_id = $sql_andPacks[$i]->requirement_and_package_id;
+            $pack->and_packages[$i]->name = $sql_andPacks[$i]->name;
 
             $sql_packAtoms = Module::queryArray("SELECT * FROM  requirement_atoms WHERE requirement_and_package_id = '{$sql_andPacks[$i]->requirement_and_package_id}'");
             $pack->and_packages[$i]->atoms = array();
@@ -294,6 +295,51 @@ class Requirements extends Module
         Module::query("DELETE FROM requirement_atoms WHERE requirement_atom_id = '{$requirementAtomId}'");
     }
 
+    public function evaluateRequirementPackage($requirementPackageId, $playerId)
+    {
+        $andPackages = Module::queryArray("SELECT requirement_and_package_id FROM requirement_and_packages WHERE requirement_root_package_id= '{$requirementPackageId}'");
+
+        for($i = 0; $i < count($andPackages); $i++)
+            if(Requirements::evaluateRequirementAndPackage($andPackages[$i]->requirement_and_package_id, $playerId)) return true;
+        return false;
+    }
+
+    public function evaluateRequirementAndPackage($requirementAndPackageId, $playerId)
+    {
+        $atoms = Module::queryArray("SELECT requirement_atom_id FROM requirement_atoms WHERE requirement_and_package_id= '{$requirementAndPackageId}'");
+
+        for($i = 0; $i < count($atoms); $i++)
+            if(!Requirements::evaluateRequirementAtom($atoms[$i]->requirement_atom_id, $playerId)) return false;
+        return true;
+    }
+
+    public function evaluateRequirementAtom($requirementAtomId, $playerId)
+    {
+        $atom = Module::queryObject("SELECT * FROM requirement_atoms WHERE requirement_atom_id = '{$requirementAtomId}'");
+
+        switch($atom->requirement)
+        {
+            case 'PLAYER_HAS_ITEM':                       return Module::playerHasItem($gameId, $playerId, $atom->content_id, $atom->qty); break;
+            case 'PLAYER_HAS_TAGGED_ITEM':                return Module::playerHasTaggedItem($gameId, $playerId, $atom->content_id, $atom->qty); break;
+            case 'PLAYER_VIEWED_ITEM':                    return Module::playerHasLog($gameId, $playerId, Module::kLOG_VIEW_ITEM, $atom->content_id); break;
+            case 'PLAYER_VIEWED_NODE':                    return Module::playerHasLog($gameId, $playerId, Module::kLOG_VIEW_NODE, $atom->content_id); break;
+            case 'PLAYER_VIEWED_NPC':                     return Module::playerHasLog($gameId, $playerId, Module::kLOG_VIEW_NPC, $atom->content_id); break;
+            case 'PLAYER_VIEWED_WEBPAGE':                 return Module::playerHasLog($gameId, $playerId, Module::kLOG_VIEW_WEBPAGE, $atom->content_id); break;
+            case 'PLAYER_VIEWED_AUGBUBBLE':               return Module::playerHasLog($gameId, $playerId, Module::kLOG_VIEW_AUGBUBBLE, $atom->content_id); break;
+            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM':        return Module::playerHasUploadedMediaItemWithinDistance($gameId, $playerId, $atom->latitude, $atom->longitude, $atom->distance, $atom->qty, Module::kLOG_UPLOAD_MEDIA_ITEM); break;
+            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE':  return Module::playerHasUploadedMediaItemWithinDistance($gameId, $playerId, $atom->latitude, $atom->longitude, $atom->distance, $atom->qty, Module::kLOG_UPLOAD_MEDIA_ITEM_IMAGE); break;
+            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO':  return Module::playerHasUploadedMediaItemWithinDistance($gameId, $playerId, $atom->latitude, $atom->longitude, $atom->distance, $atom->qty, Module::kLOG_UPLOAD_MEDIA_ITEM_AUDIO); break;
+            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO':  return Module::playerHasUploadedMediaItemWithinDistance($gameId, $playerId, $atom->latitude, $atom->longitude, $atom->distance, $atom->qty, Module::kLOG_UPLOAD_MEDIA_ITEM_VIDEO); break;
+            case 'PLAYER_HAS_COMPLETED_QUEST':            return Module::playerHasLog($gameId, $playerId, Module::kLOG_COMPLETE_QUEST, $atom->content_id); break;
+            case 'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK': return Module::playerHasLog($gameId, $playerId, Module::kLOG_RECEIVE_WEBHOOK, $atom->content_id); break;
+            case 'PLAYER_HAS_NOTE':                       return Module::playerHasNote($gameId, $playerId, $atom->qty); break;
+            case 'PLAYER_HAS_NOTE_WITH_TAG':              return Module::playerHasNoteWithTag($gameId, $playerId, $atom->content_id, $atom->qty); break;
+            case 'PLAYER_HAS_NOTE_WITH_LIKES':            return Module::playerHasNoteWithLikes($gameId, $playerId, $atom->qty); break;
+            case 'PLAYER_HAS_NOTE_WITH_COMMENTS':         return Module::playerHasNoteWithComments($gameId, $playerId, $atom->qty); break;
+            case 'PLAYER_HAS_GIVEN_NOTE_COMMENTS':        return Module::playerHasGivenNoteComments($gameId, $playerId, $atom->qty); break;
+        }
+        return false;
+    }
 
 
 
