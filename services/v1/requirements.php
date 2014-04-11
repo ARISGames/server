@@ -133,16 +133,16 @@ class Requirements extends Module
 
         Module::query(
             "UPDATE requirement_root_packages SET ".
-            "game_id = '".addslashes($glob->game_id)."'"
+            "game_id = '".addslashes($glob->game_id)."'".
             ($glob->name ? ", name = '".addslashes($glob->name)."'" : "").
             " WHERE requirement_root_package_id = '".addslashes($glob->requirement_root_package_id)."'"
         );
 
         $sql_currentAndPacks = Module::queryArray("SELECT * FROM requirement_and_packages WHERE requirement_root_package_id = '{$glob->requirement_root_package_id}'");
-        for($i = 0; $i < count($sql_currentAndPacks); $i)
+        for($i = 0; $i < count($sql_currentAndPacks); $i++)
         {
             $matchingGlobAndPack = null;
-            for($j = 0; $j < $glob->and_packages && count($glob->and_packages); $j++)
+            for($j = 0; $glob->and_packages && $j < count($glob->and_packages); $j++)
             {
                 if($sql_currentAndPacks[$i]->requirement_and_package_id == $glob->and_packages[$j]->requirement_and_package_id)
                 {
@@ -156,10 +156,10 @@ class Requirements extends Module
             {
                 $matchingGlobAndPack->requirement_root_package_id = $glob->requirement_root_package_id;
                 $matchingGlobAndPack->game_id = $glob->game_id;
-                Requirements::updateRequirementAndPack($matchingGlobAndPack);
+                Requirements::updateRequirementAndPackage($matchingGlobAndPack);
             }
             else
-                Requirements::deleteRequirementAndPack($sql_currentAndPacks->requirement_and_package_id);
+                Requirements::deleteRequirementAndPackage($sql_currentAndPacks[$i]->requirement_and_package_id);
         }
         for($i = 0; $glob->and_packages && $i < count($glob->and_packages); $i++)
         {
@@ -177,16 +177,16 @@ class Requirements extends Module
 
         Module::query(
             "UPDATE requirement_and_packages SET ".
-            "game_id = '".addslashes($glob->game_id)."'"
+            "game_id = '".addslashes($glob->game_id)."'".
             ($glob->name ? ", name = '".addslashes($glob->name)."'" : "").
             " WHERE requirement_and_package_id = '".addslashes($glob->requirement_and_package_id)."'"
         );
 
         $sql_currentAtoms = Module::queryArray("SELECT * FROM requirement_atoms WHERE requirement_and_package_id = '{$glob->requirement_and_package_id}'");
-        for($i = 0; $i < count($sql_currentAndPacks); $i)
+        for($i = 0; $i < count($sql_currentAtoms); $i++)
         {
             $matchingGlobAtom = null;
-            for($j = 0; $j < $glob->atoms && count($glob->atoms); $j++)
+            for($j = 0; count($glob->atoms) && $j < $glob->atoms; $j++)
             {
                 if($sql_currentAtoms[$i]->requirement_atom_id == $glob->atoms[$j]->requirement_atom_id)
                 {
@@ -198,16 +198,16 @@ class Requirements extends Module
             }
             if($matchingGlobAtom)
             {
-                $matchingGlobAtom->requirement_atom_id = $glob->requirement_atom_id;
+                $matchingGlobAtom->requirement_atom_id = $glob->atoms[$j]->requirement_atom_id;
                 $matchingGlobAtom->game_id = $glob->game_id;
                 Requirements::updateRequirementAtom($matchingGlobAtom);
             }
             else
-                Requirements::deleteRequirementAtom($sql_currentAtoms->requirement_atom_id);
+                Requirements::deleteRequirementAtom($sql_currentAtoms[$i]->requirement_atom_id);
         }
         for($i = 0; $glob->atoms && $i < count($glob->atoms); $i++)
         {
-            $glob->atoms[$i]->requirement_atom_id = $glob->requirement_atom_id;
+            $glob->atoms[$i]->requirement_atom_id = $glob->atoms[$j]->requirement_atom_id;
             $glob->atoms[$i]->game_id = $glob->game_id;
             Requirements::createRequirementAtom($glob->atoms[$i]);
         }
@@ -219,7 +219,7 @@ class Requirements extends Module
 
         Module::query(
             "UPDATE requirement_atoms SET ".
-            "game_id = '".addslashes($glob->game_id)."'"
+            "game_id = '".addslashes($glob->game_id)."'".
             ($glob->bool_operator ? ", bool_operator = '".addslashes($glob->bool_operator)."'" : "").
             ($glob->requirement   ? ", requirement   = '".addslashes($glob->requirement  )."'" : "").
             ($glob->content_id    ? ", content_id    = '".addslashes($glob->content_id   )."'" : "").
