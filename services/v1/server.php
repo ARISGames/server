@@ -10,7 +10,7 @@ class Server extends Module
         {
             while($migration = readdir($migrationsDir))
             {
-                if(preg_match('/^[0..9]+\.sql$/',$name))
+                if(preg_match('/^[0..9]+\.sql$/',$migration))
                 {
                     $migrations[intval(substr($migration, 0, -4))] = $migration;
                 }
@@ -20,11 +20,11 @@ class Server extends Module
         $migrated = array();
         if(Module::queryObject("SHOW TABLES LIKE 'aris_migrations'"))
         {
-            $knownVersions = Mysql::queryArray("SELECT * FROM aris_migrations");
+            $knownVersions = Module::queryArray("SELECT * FROM aris_migrations");
             foreach($knownVersions as $version)
             {
-                if(!$migrated[$version->version_major]) $migrated[$version->version_major] = array();
-                    $migrated[$version->version_major][$version->version_minor] = $version->timestamp;
+                if(!$migrated[intval($version->version_major)]) $migrated[intval($version->version_major)] = array();
+                $migrated[intval($version->version_major)][intval($version->version_minor)] = $version->timestamp;
             }
         }
 
@@ -37,7 +37,7 @@ class Server extends Module
             while(!feof($file_handle)) 
             {
                 $query = fgets($file_handle);
-                if(!$migration[$major][$minor])
+                if(!$migrated[$major][$minor])
                 {
                     //mysql_query($query);
                     echo $query;
@@ -54,5 +54,8 @@ class Server extends Module
             }
             fclose($file_handle);
         }
+        return 0;
     }
 }
+?>
+
