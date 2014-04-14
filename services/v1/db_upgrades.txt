@@ -93,4 +93,5 @@ ALTER TABLE web_hooks ADD COLUMN requirement_package_id INT(32) UNSIGNED NOT NUL
 ALTER TABLE overlays ADD COLUMN requirement_package_id INT(32) UNSIGNED NOT NULL DEFAULT 0;
 ALTER TABLE spawnables ADD COLUMN requirement_package_id INT(32) UNSIGNED NOT NULL DEFAULT 0;
 
-
+CREATE TABLE aris_migrations (version_major INT(32) UNSIGNED NOT NULL, version_minor INT(32) UNSIGNED NOT NULL, timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (version_major, version_minor));
+INSERT INTO aris_migrations (version_major, version_minor) VALUES (0, 0);
