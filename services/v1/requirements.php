@@ -380,27 +380,27 @@ class Requirements extends Module
         $pack = new stdClass();
         $pack->type = $type;
         $pack->type_id = $id;
-        $pack->and_reqs = Module::queryArray("SELECT * FROM requirements WHERE game_id = '{$gameId}' AND content_type = '{$type}' AND content_id = '{$id}' AND boolean_operator = 'AND'")
-        $pack->or_reqs  = Module::queryArray("SELECT * FROM requirements WHERE game_id = '{$gameId}' AND content_type = '{$type}' AND content_id = '{$id}' AND boolean_operator = 'OR'")
+        $pack->and_reqs = Module::queryArray("SELECT * FROM requirements WHERE game_id = '{$gameId}' AND content_type = '{$type}' AND content_id = '{$id}' AND boolean_operator = 'AND'");
+        $pack->or_reqs  = Module::queryArray("SELECT * FROM requirements WHERE game_id = '{$gameId}' AND content_type = '{$type}' AND content_id = '{$id}' AND boolean_operator = 'OR'");
         return $pack;
     }
     private function migrateReqPack($pack, $gameId)
     {
-        Module::query("INSERT INTO requirement_root_packages (game_id, name) VALUES ('{$gameId},'')");
+        Module::query("INSERT INTO requirement_root_packages (game_id, name, created) VALUES ('{$gameId}','', CURRENT_TIMESTAMP)");
         $requirement_root_id = mysql_insert_id();
 
         for($i = 0; $i < count($pack->or_reqs); $i++)
         {
-            Module::query("INSERT INTO requirement_and_packages (game_id, requirement_root_package_id, name) VALUES ('{$gameId},'{$requirement_root_id},'')");
+            Module::query("INSERT INTO requirement_and_packages (game_id, requirement_root_package_id, name, created) VALUES ('{$gameId}','{$requirement_root_id}','', CURRENT_TIMESTAMP)");
             $requirement_and_id = mysql_insert_id();
-            Requirements::migrateReqAtom($pack->or_reqs[$i], $requirement_and_id);
+            Requirements::migrateReqAtom($pack->or_reqs[$i], $gameId, $requirement_and_id);
         }
         if(count($pack->and_reqs) > 0)
         {
-            Module::query("INSERT INTO requirement_and_packages (game_id, requirement_root_package_id, name) VALUES ('{$gameId},'{$requirement_root_id},'')");
+            Module::query("INSERT INTO requirement_and_packages (game_id, requirement_root_package_id, name, created) VALUES ('{$gameId}','{$requirement_root_id}','', CURRENT_TIMESTAMP)");
             $requirement_and_id = mysql_insert_id();
             for($i = 0; $i < count($pack->and_reqs); $i++)
-                Requirements::migrateReqAtom($pack->and_reqs[$i], $requirement_and_id);
+                Requirements::migrateReqAtom($pack->and_reqs[$i], $gameId, $requirement_and_id);
         }
 
         switch($pack->type)
@@ -425,7 +425,7 @@ class Requirements extends Module
                 break;
         }
     }
-    private function migrateReqAtom($atom, $req_and_pack_id)
+    private function migrateReqAtom($atom, $gameId, $req_and_pack_id)
     {
         $content_id = 0;$distance = 0; //often requirement_detail_1
         $qty = 0;                      //often requirement_detail_2
@@ -476,7 +476,7 @@ class Requirements extends Module
             case "PLAYER_HAS_GIVEN_NOTE_COMMENTS":
                 $qty = $atom->requirement_detail_2;
         }
-            Module::query("INSERT INTO requirement_atoms (game_id, requirement_and_package_id, bool_operator, requirement, content_id, qty, latitude, longitude) VALUES ('{$gameId},'{$requirement_and_pack_id},'{$bool_operator}','{$atom->requirement},'{$content_id}','{$qty}','{$latitude}','{$longitude}')");
+            Module::query("INSERT INTO requirement_atoms (game_id, requirement_and_package_id, bool_operator, requirement, content_id, qty, distance, latitude, longitude, created) VALUES ('{$gameId}','{$req_and_pack_id}','{$bool_operator}','{$atom->requirement}','{$content_id}','{$qty}','{$distance}','{$latitude}','{$longitude}', CURRENT_TIMESTAMP)");
     }
 
 
