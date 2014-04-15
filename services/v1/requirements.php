@@ -406,22 +406,22 @@ class Requirements extends Module
         switch($pack->type)
         {
             case "Node":
-                Module::query("UPDATE nodes SET requirement_package_id = '{$requirement_root_id}' WHERE node_id = '{$atom->type_id}'");
+                Module::query("UPDATE nodes SET requirement_package_id = '{$requirement_root_id}' WHERE node_id = '{$pack->type_id}'");
                 break;
             case "QuestDisplay":
-                Module::query("UPDATE quests SET display_requirement_package_id = '{$requirement_root_id}' WHERE quest_id = '{$atom->type_id}'");
+                Module::query("UPDATE quests SET display_requirement_package_id = '{$requirement_root_id}' WHERE quest_id = '{$pack->type_id}'");
                 break;
             case "QuestComplete":
-                Module::query("UPDATE quests SET complete_requirement_package_id = '{$requirement_root_id}' WHERE quest_id = '{$atom->type_id}'");
+                Module::query("UPDATE quests SET complete_requirement_package_id = '{$requirement_root_id}' WHERE quest_id = '{$pack->type_id}'");
                 break;
             case "Location":
-                Module::query("UPDATE locations SET requirement_package_id = '{$requirement_root_id}' WHERE location_id = '{$atom->type_id}'");
+                Module::query("UPDATE locations SET requirement_package_id = '{$requirement_root_id}' WHERE location_id = '{$pack->type_id}'");
                 break;
             case "OutgoingWebHook":
-                Module::query("UPDATE web_hooks SET requirement_package_id = '{$requirement_root_id}' WHERE web_hook_id = '{$atom->type_id}'");
+                Module::query("UPDATE web_hooks SET requirement_package_id = '{$requirement_root_id}' WHERE web_hook_id = '{$pack->type_id}'");
                 break;
             case "Spawnable":
-                Module::query("UPDATE spawnables SET requirement_package_id = '{$requirement_root_id}' WHERE spawnable_id = '{$atom->type_id}'");
+                Module::query("UPDATE spawnables SET requirement_package_id = '{$requirement_root_id}' WHERE spawnable_id = '{$pack->type_id}'");
                 break;
         }
     }
@@ -466,17 +466,22 @@ class Requirements extends Module
                 break;
             case "PLAYER_HAS_NOTE":
                 $qty = $atom->requirement_detail_2;
+                break;
             case "PLAYER_HAS_NOTE_WITH_TAG":
                 $content_id = $atom->requirement_detail_1;
                 $qty = $atom->requirement_detail_2;
+                break;
             case "PLAYER_HAS_NOTE_WITH_LIKES":
                 $qty = $atom->requirement_detail_2;
+                break;
             case "PLAYER_HAS_NOTE_WITH_COMMENTS":
                 $qty = $atom->requirement_detail_2;
+                break;
             case "PLAYER_HAS_GIVEN_NOTE_COMMENTS":
                 $qty = $atom->requirement_detail_2;
+                break;
         }
-            Module::query("INSERT INTO requirement_atoms (game_id, requirement_and_package_id, bool_operator, requirement, content_id, qty, distance, latitude, longitude, created) VALUES ('{$gameId}','{$req_and_pack_id}','{$bool_operator}','{$atom->requirement}','{$content_id}','{$qty}','{$distance}','{$latitude}','{$longitude}', CURRENT_TIMESTAMP)");
+        Module::query("INSERT INTO requirement_atoms (game_id, requirement_and_package_id, bool_operator, requirement, content_id, qty, distance, latitude, longitude, created) VALUES ('{$gameId}','{$req_and_pack_id}','{$bool_operator}','{$atom->requirement}','{$content_id}','{$qty}','{$distance}','{$latitude}','{$longitude}', CURRENT_TIMESTAMP)");
     }
 
 
