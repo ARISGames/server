@@ -62,21 +62,6 @@ CREATE TABLE `ar_targets_to_media` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `aris_migrations`
---
-
-DROP TABLE IF EXISTS `aris_migrations`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `aris_migrations` (
-  `version_major` int(32) unsigned NOT NULL,
-  `version_minor` int(32) unsigned NOT NULL,
-  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`version_major`,`version_minor`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `aug_bubble_media`
 --
 

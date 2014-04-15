@@ -27,6 +27,11 @@ class Server extends Module
                 $migrated[intval($version->version_major)][intval($version->version_minor)] = $version->timestamp;
             }
         }
+        else
+        {
+            //The one migration/construction to be done outside the .sql files
+            Module::query("CREATE TABLE aris_migrations ( version_major int(32) unsigned NOT NULL, version_minor int(32) unsigned NOT NULL, timestamp timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP, PRIMARY KEY (version_major,version_minor))");
+        }
 
         foreach($migrations as $major => $file)
         {
@@ -36,11 +41,13 @@ class Server extends Module
             $minor = 0;
             while(!feof($file_handle)) 
             {
-                $query = fgets($file_handle);
+                //Funny way to continue to read from the file until it either ends, or reaches a semicolon
+                $query = "";
+                while(!feof($file_handle) && strpos($query .= fgets($file_handle),';') === FALSE) {}
+
                 if(!$migrated[$major][$minor])
                 {
-                    //mysql_query($query);
-                    echo $query;
+                    mysql_query($query);
                     if(mysql_error())
                     {
                         $error = "Error upgrading database to version ".$major.".".$minor.". Error was:\n".mysql_error()."\n in query:\n".$query;
