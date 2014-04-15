@@ -349,6 +349,135 @@ class Requirements extends Module
 
 
 
+    public function nonDestructivelyMigrateOldRequirementsToNewForGame($gameId)
+    {
+        $reqs = Requirements::getPackagedRequirementsForGame($gameId);
+        for($i = 0; $i < count($reqs); $i++)
+            Requirements::migrateReqPack($reqs[$i], $gameId);
+    }
+    private function getPackagedRequirementsForGame($gameId)
+    {
+        $nodereqs          = Requirements::getPackagedRequirementsForGameForType($gameId, 'Node');
+        $questdisplayreqs  = Requirements::getPackagedRequirementsForGameForType($gameId, 'QuestDisplay');
+        $questcompletereqs = Requirements::getPackagedRequirementsForGameForType($gameId, 'QuestComplete');
+        $locationreqs      = Requirements::getPackagedRequirementsForGameForType($gameId, 'Location');
+        $webhookreqs       = Requirements::getPackagedRequirementsForGameForType($gameId, 'OutgoingWebHook');
+        $spawnablereqs     = Requirements::getPackagedRequirementsForGameForType($gameId, 'Spawnable');
+        return array_merge($nodereqs, $questdisplayreqs, $questcompletereqs, $locationreqs, $webhookreqs, $spawnablereqs);
+    }
+    private function getPackagedRequirementsForGameForType($gameId, $type)
+    {
+        $ids = Module::queryArray("SELECT * FROM requirements WHERE game_id = '{$gameId}' AND content_type = '{$type}' GROUP BY content_id;");
+
+        $reqs = array();
+        for($i = 0; $i < count($ids); $i++)
+            $reqs[] = Requirements::getPackagedRequirementsForGameForTypeForId($gameId, $type, $ids[$i]->content_id);
+
+        return $reqs;
+    }
+    private function getPackagedRequirementsForGameForTypeForId($gameId, $type, $id)
+    {
+        $pack = new stdClass();
+        $pack->type = $type;
+        $pack->type_id = $id;
+        $pack->and_reqs = Module::queryArray("SELECT * FROM requirements WHERE game_id = '{$gameId}' AND content_type = '{$type}' AND content_id = '{$id}' AND boolean_operator = 'AND'")
+        $pack->or_reqs  = Module::queryArray("SELECT * FROM requirements WHERE game_id = '{$gameId}' AND content_type = '{$type}' AND content_id = '{$id}' AND boolean_operator = 'OR'")
+        return $pack;
+    }
+    private function migrateReqPack($pack, $gameId)
+    {
+        Module::query("INSERT INTO requirement_root_packages (game_id, name) VALUES ('{$gameId},'')");
+        $requirement_root_id = mysql_insert_id();
+
+        for($i = 0; $i < count($pack->or_reqs); $i++)
+        {
+            Module::query("INSERT INTO requirement_and_packages (game_id, requirement_root_package_id, name) VALUES ('{$gameId},'{$requirement_root_id},'')");
+            $requirement_and_id = mysql_insert_id();
+            Requirements::migrateReqAtom($pack->or_reqs[$i], $requirement_and_id);
+        }
+        if(count($pack->and_reqs) > 0)
+        {
+            Module::query("INSERT INTO requirement_and_packages (game_id, requirement_root_package_id, name) VALUES ('{$gameId},'{$requirement_root_id},'')");
+            $requirement_and_id = mysql_insert_id();
+            for($i = 0; $i < count($pack->and_reqs); $i++)
+                Requirements::migrateReqAtom($pack->and_reqs[$i], $requirement_and_id);
+        }
+
+        switch($pack->type)
+        {
+            case "Node":
+                Module::query("UPDATE nodes SET requirement_package_id = '{$requirement_root_id}' WHERE node_id = '{$atom->type_id}'");
+                break;
+            case "QuestDisplay":
+                Module::query("UPDATE quests SET display_requirement_package_id = '{$requirement_root_id}' WHERE quest_id = '{$atom->type_id}'");
+                break;
+            case "QuestComplete":
+                Module::query("UPDATE quests SET complete_requirement_package_id = '{$requirement_root_id}' WHERE quest_id = '{$atom->type_id}'");
+                break;
+            case "Location":
+                Module::query("UPDATE locations SET requirement_package_id = '{$requirement_root_id}' WHERE location_id = '{$atom->type_id}'");
+                break;
+            case "OutgoingWebHook":
+                Module::query("UPDATE web_hooks SET requirement_package_id = '{$requirement_root_id}' WHERE web_hook_id = '{$atom->type_id}'");
+                break;
+            case "Spawnable":
+                Module::query("UPDATE spawnables SET requirement_package_id = '{$requirement_root_id}' WHERE spawnable_id = '{$atom->type_id}'");
+                break;
+        }
+    }
+    private function migrateReqAtom($atom, $req_and_pack_id)
+    {
+        $content_id = 0;$distance = 0; //often requirement_detail_1
+        $qty = 0;                      //often requirement_detail_2
+        $latitude = 0.0;               //often requirement_detail_3
+        $longitude = 0.0;              //often requirement_detail_4
+        $bool_operator = $atom->not_operator == 'DO' ? 1 : 0;
+        switch($atom->requirement)
+        {
+            case "PLAYER_HAS_ITEM":
+                $content_id = $atom->requirement_detail_1;
+                $qty = $atom->requirement_detail_2;
+                break;
+            case "PLAYER_HAS_TAGGED_ITEM":
+                $content_id = $atom->requirement_detail_1;
+                $qty = $atom->requirement_detail_2;
+                break;
+            case "PLAYER_VIEWED_ITEM":
+            case "PLAYER_VIEWED_NODE":
+            case "PLAYER_VIEWED_NPC":
+            case "PLAYER_VIEWED_WEBPAGE":
+            case "PLAYER_VIEWED_AUGBUBBLE":
+                $content_id = $atom->requirement_detail_1;
+                break;
+            case "PLAYER_HAS_UPLOADED_MEDIA_ITEM":
+            case "PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE":
+            case "PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO":
+            case "PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO":
+                $distance = $atom->requirement_detail_1;
+                $qty = $atom->requirement_detail_2;
+                $latitude = $atom->requirement_detail_3;
+                $longitude = $atom->requirement_detail_4;
+                break;
+            case "PLAYER_HAS_COMPLETED_QUEST":
+                $content_id = $atom->requirement_detail_1;
+                break;
+            case "PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK":
+                $content_id = $atom->requirement_detail_1;
+                break;
+            case "PLAYER_HAS_NOTE":
+                $qty = $atom->requirement_detail_2;
+            case "PLAYER_HAS_NOTE_WITH_TAG":
+                $content_id = $atom->requirement_detail_1;
+                $qty = $atom->requirement_detail_2;
+            case "PLAYER_HAS_NOTE_WITH_LIKES":
+                $qty = $atom->requirement_detail_2;
+            case "PLAYER_HAS_NOTE_WITH_COMMENTS":
+                $qty = $atom->requirement_detail_2;
+            case "PLAYER_HAS_GIVEN_NOTE_COMMENTS":
+                $qty = $atom->requirement_detail_2;
+        }
+            Module::query("INSERT INTO requirement_atoms (game_id, requirement_and_package_id, bool_operator, requirement, content_id, qty, latitude, longitude) VALUES ('{$gameId},'{$requirement_and_pack_id},'{$bool_operator}','{$atom->requirement},'{$content_id}','{$qty}','{$latitude}','{$longitude}')");
+    }
 
 
 
