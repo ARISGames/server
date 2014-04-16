@@ -42,7 +42,7 @@ class Requirements extends Module
         $glob = json_decode($data);
         return Requirements::createRequirementPackage($glob);
     }
-    public function createRequirementPackageJSON($pack)
+    public function createRequirementPackage($pack)
     {
         if(!$pack || !$pack->game_id) return "nope";
 
@@ -252,10 +252,10 @@ class Requirements extends Module
 
         for($i = 0; $i < count($sql_andPacks); $i++)
         {
-            $pack->and_packages[$i] = Requirements::getRequirementAndPackage($sql_andPacks->requirement_and_package_id);
+            $pack->and_packages[$i] = Requirements::getRequirementAndPackage($sql_andPacks[$i]->requirement_and_package_id);
             //makes for cleaner return object, as game_id,requirement_and_package_id is already in parent
-            unset($andPack->and_packages[$i]->game_id);
-            unset($andPack->and_packages[$i]->requirement_root_package_id);
+            unset($pack->and_packages[$i]->game_id);
+            unset($pack->and_packages[$i]->requirement_root_package_id);
         }
 
         return $pack;
@@ -264,10 +264,10 @@ class Requirements extends Module
     {
         $sql_andPack = Module::queryObject("SELECT * FROM requirement_and_packages WHERE requirement_and_package_id = '{$requirementAndPackageId}'");
         $andPack = new stdClass();
-        $andPack->requirement_and_package_id = $sql_andPack->requirement_and_package_id;
-        $andPack->game_id                    = $sql_andPack->game_id;
-        $andPack->root_package_id            = $sql_andPack->root_package_id;
-        $andPack->name                       = $sql_andPack->name;
+        $andPack->requirement_and_package_id  = $sql_andPack->requirement_and_package_id;
+        $andPack->game_id                     = $sql_andPack->game_id;
+        $andPack->requirement_root_package_id = $sql_andPack->requirement_root_package_id;
+        $andPack->name                        = $sql_andPack->name;
 
         $sql_packAtoms = Module::queryArray("SELECT * FROM  requirement_atoms WHERE requirement_and_package_id = '{$sql_andPack->requirement_and_package_id}'");
         $andPack->atoms = array();
@@ -650,8 +650,84 @@ class Requirements extends Module
         }
         if(!$rPackId)
         {
-            Requirements::createRequirementPackage($pack);
+            $pack = new stdClass();
+            $pack->game_id = $gameId;
+            $pack->and_packages = array();
+            $pack->and_packages[0] = new stdClass();
+            $pack->and_packages[0]->atoms = array();
+            $pack->and_packages[0]->atoms[0] = new stdClass();
+            $pack->and_packages[0]->atoms[0]->bool_operator = $notOperator == "DO" ? 1 : 0;
+            $pack->and_packages[0]->atoms[0]->requirement   = $requirement;
+            $pack->and_packages[0]->atoms[0]->content_id    = $requirementDetail1;
+            $pack->and_packages[0]->atoms[0]->distance      = $requirementDetail1;
+            $pack->and_packages[0]->atoms[0]->qty           = $requirementDetail2;
+            $pack->and_packages[0]->atoms[0]->latitude      = $requirementDetail3;
+            $pack->and_packages[0]->atoms[0]->longitude     = $requirementDetail4;
+            return new returnData(0,Requirements::createRequirementPackage($pack)->and_packages[0]->atoms[0]->requirement_atom_id);
         }
+        else
+        {
+            $pack = Requirements::getRequirementPackage($rPackId);
+            if($booleanOperator == "OR")
+            {
+                $pack->and_packages[] = new stdClass();
+                $pack->and_packages[count($pack->and_packages)-1]->atoms = array();
+                $pack->and_packages[count($pack->and_packages)-1]->atoms[0] = new stdClass();
+                $pack->and_packages[count($pack->and_packages)-1]->atoms[0]->bool_operator = $notOperator == "DO" ? 1 : 0;
+                $pack->and_packages[count($pack->and_packages)-1]->atoms[0]->requirement   = $requirement;
+                $pack->and_packages[count($pack->and_packages)-1]->atoms[0]->content_id    = $requirementDetail1;
+                $pack->and_packages[count($pack->and_packages)-1]->atoms[0]->distance      = $requirementDetail1;
+                $pack->and_packages[count($pack->and_packages)-1]->atoms[0]->qty           = $requirementDetail2;
+                $pack->and_packages[count($pack->and_packages)-1]->atoms[0]->latitude      = $requirementDetail3;
+                $pack->and_packages[count($pack->and_packages)-1]->atoms[0]->longitude     = $requirementDetail4;
+
+                $newPack = Requirements::updateRequirementPackage($pack);
+                $andPackIndexThatDidntExistBefore = -1;
+                for($i = 0; $i < count($newPack->and_packages); $i++)
+                {
+                    $found = false;
+                    for($j = 0; $j < count($pack->and_packages); $j++)
+                        if($newPack->and_packages[$i]->requirement_and_package_id == $pack->and_packages[$j]->requirement_package_id) $found = true;
+                    if(!$found) $andPackIndexThatDidntExistBefore = $i;
+                }
+                if($andPackIndexThatDidntExistBefore > -1)
+                    return new returnData(0,$newPack->and_packages[$andPackIndexThatDidntExistBefore]->atoms[0]->requirement_atom_id);
+            }
+            else
+            {
+                $indexOfFirstAndPackWithMultipleAtoms = 0;
+                for($i = 0; $i < count($pack->and_packages); $i++)
+                    if(count($pack->and_packages[$i]->atoms) > 0) $indexOfFirstAndPackWithMultipleAtoms = $i;
+
+                $pack->and_packages[$indexOfFirstAndPackWithMultipleAtoms]->atoms[count($pack->and_packages[$indexOfFirstAndPackWithMultipleAtoms]->atoms)] = new stdClass();
+                $pack->and_packages[$indexOfFirstAndPackWithMultipleAtoms]->atoms[count($pack->and_packages[$indexOfFirstAndPackWithMultipleAtoms]->atoms)]->bool_operator = $notOperator == "DO" ? 1 : 0;
+                $pack->and_packages[$indexOfFirstAndPackWithMultipleAtoms]->atoms[count($pack->and_packages[$indexOfFirstAndPackWithMultipleAtoms]->atoms)]->requirement   = $requirement;
+                $pack->and_packages[$indexOfFirstAndPackWithMultipleAtoms]->atoms[count($pack->and_packages[$indexOfFirstAndPackWithMultipleAtoms]->atoms)]->content_id    = $requirementDetail1;
+                $pack->and_packages[$indexOfFirstAndPackWithMultipleAtoms]->atoms[count($pack->and_packages[$indexOfFirstAndPackWithMultipleAtoms]->atoms)]->distance      = $requirementDetail1;
+                $pack->and_packages[$indexOfFirstAndPackWithMultipleAtoms]->atoms[count($pack->and_packages[$indexOfFirstAndPackWithMultipleAtoms]->atoms)]->qty           = $requirementDetail2;
+                $pack->and_packages[$indexOfFirstAndPackWithMultipleAtoms]->atoms[count($pack->and_packages[$indexOfFirstAndPackWithMultipleAtoms]->atoms)]->latitude      = $requirementDetail3;
+                $pack->and_packages[$indexOfFirstAndPackWithMultipleAtoms]->atoms[count($pack->and_packages[$indexOfFirstAndPackWithMultipleAtoms]->atoms)]->longitude     = $requirementDetail4;
+
+                $newPack = Requirements::updateRequirementPackage($pack);
+                $packAndId = $pack->and_packages[$indexOfFirstAndPackWithMultipleAtoms]->requirement_and_package_id;
+                $andPackIndexThatWasChanged = -1;
+                for($i = 0; $i < count($newPack->and_packages); $i++)
+                    if($newPack->and_packages[$i]->requirement_and_package_id == $packAndId) $andPackIndexThatWasChanged = $i;
+                if($andPackIndexThatWasChanged > -1)
+                {
+                    for($i = 0; $i < count($newPack->and_packages[$andPackIndexThatWasChanged]->atoms); $i++)
+                    {
+                        $found = false;
+                        for($j = 0; $j < count($pack->and_packages[$indexOfFirstAndPackWithMultipleAtoms]->atoms); $j++)
+                            if($newPack->and_packages[$andPackIndexThatWasChanged]->atoms[$i]->requirement_atom_id == $pack->and_packages[$indexOfFirstAndPackWithMultipleAtoms]->atoms[$j]->requirement_atom_id) $found = true;
+                        if(!$found) $atomIndexThatDidntExistBefore = $i;
+                    }
+                    if($atomIndexThatDidntExistBefore > -1)
+                        return new returnData(0,$newPack->and_packages[$andPackIndexThatWasChanged]->atoms[$atomIndexThatDidntExistBefore]->requirement_atom_id);
+                }
+            }
+        }
+        return new returnData(5,null,"Something went wrong");
     }
 
     public function updateRequirement($gameId, $requirementId, $objectType, $objectId, $requirementType, $requirementDetail1, $requirementDetail2,$requirementDetail3,$requirementDetail4, $booleanOperator,$notOperator, $editorId, $editorToken)
