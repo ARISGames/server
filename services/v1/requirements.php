@@ -245,26 +245,49 @@ class Requirements extends Module
 
         for($i = 0; $i < count($sql_andPacks); $i++)
         {
-            $pack->and_packages[$i] = new stdClass();
-            $pack->and_packages[$i]->requirement_and_package_id = $sql_andPacks[$i]->requirement_and_package_id;
-            $pack->and_packages[$i]->name = $sql_andPacks[$i]->name;
-
-            $sql_packAtoms = Module::queryArray("SELECT * FROM  requirement_atoms WHERE requirement_and_package_id = '{$sql_andPacks[$i]->requirement_and_package_id}'");
-            $pack->and_packages[$i]->atoms = array();
-            for($j = 0; $j < count($sql_packAtoms); $j++)
-            {
-                $pack->and_packages[$i]->atoms[$j] = new stdClass();
-                $pack->and_packages[$i]->atoms[$j]->requirement_atom_id = $sql_packAtoms[$j]->requirement_atom_id;
-                $pack->and_packages[$i]->atoms[$j]->bool_operator       = $sql_packAtoms[$j]->bool_operator;
-                $pack->and_packages[$i]->atoms[$j]->requirement         = $sql_packAtoms[$j]->requirement;
-                $pack->and_packages[$i]->atoms[$j]->content_id          = $sql_packAtoms[$j]->content_id;
-                $pack->and_packages[$i]->atoms[$j]->qty                 = $sql_packAtoms[$j]->qty;
-                $pack->and_packages[$i]->atoms[$j]->latitude            = $sql_packAtoms[$j]->latitude;
-                $pack->and_packages[$i]->atoms[$j]->longitude           = $sql_packAtoms[$j]->longitude;
-            }
+            $pack->and_packages[$i] = Requirements::getRequirementAndPackage($sql_andPacks->requirement_and_package_id);
+            //makes for cleaner return object, as game_id,requirement_and_package_id is already in parent
+            unset($andPack->and_packages[$i]->game_id);
+            unset($andPack->and_packages[$i]->requirement_root_package_id);
         }
 
         return $pack;
+    }
+    public function getRequirementAndPackage($requirementAndPackageId)
+    {
+        $sql_andPack = Module::queryObject("SELECT * FROM requirement_and_packages WHERE requirement_and_package_id = '{$requirementAndPackageId}'");
+        $andPack = new stdClass();
+        $andPack->requirement_and_package_id = $sql_andPack->requirement_and_package_id;
+        $andPack->game_id                    = $sql_andPack->game_id;
+        $andPack->root_package_id            = $sql_andPack->root_package_id;
+        $andPack->name                       = $sql_andPack->name;
+
+        $sql_packAtoms = Module::queryArray("SELECT * FROM  requirement_atoms WHERE requirement_and_package_id = '{$sql_andPack->requirement_and_package_id}'");
+        $andPack->atoms = array();
+        for($i = 0; $i < count($sql_packAtoms); $i++)
+        {
+            $andPack->atoms[$i] = Requirements::getRequirementAtom($sql_packAtoms[$i]->requirement_atom_id);
+            //makes for cleaner return object, as game_id,requirement_and_package_id is already in parent
+            unset($andPack->atoms[$i]->game_id);
+            unset($andPack->atoms[$i]->requirement_and_package_id);
+        }
+
+        return $andPack;
+    }
+    public function getRequirementAtom($requirementAtomId)
+    {
+        $sql_atom = Module::queryObject("SELECT * FROM requirement_atoms WHERE requirement_atom_id = '{$requirementAtomId}'");
+        $atom = new stdClass();
+        $atom->requirement_atom_id        = $sql_atom->requirement_atom_id;
+        $atom->game_id                    = $sql_atom->game_id;
+        $atom->requirement_and_package_id = $sql_atom->requirement_and_package_id;
+        $atom->bool_operator              = $sql_atom->bool_operator;
+        $atom->requirement                = $sql_atom->requirement;
+        $atom->content_id                 = $sql_atom->content_id;
+        $atom->qty                        = $sql_atom->qty;
+        $atom->latitude                   = $sql_atom->latitude;
+        $atom->longitude                  = $sql_atom->longitude;
+        return $atom;
     }
 
     public function deleteRequirementPackage($requirementPackageId)
@@ -498,22 +521,22 @@ class Requirements extends Module
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
-/*
+        /*
         //Old tables
         $rsResult = Module::query("SELECT * FROM requirements WHERE game_id = {$gameId} AND content_type = '{$objectType}' and content_id = '{$objectId}'");
         return new returnData(0, $rsResult);
-*/
+        */
 
         //New tables
         switch($objectType)
         {
-            case 'Node'     : $reqId = Module::queryObject("SELECT requirement_package_id FROM nodes      WHERE node_id = '{$objectId}'")->requirement_package_id; break;
-            case 'Item'     : $reqId = Module::queryObject("SELECT requirement_package_id FROM items      WHERE node_id = '{$objectId}'")->requirement_package_id; break;
-            case 'Npc'      : $reqId = Module::queryObject("SELECT requirement_package_id FROM npcs       WHERE node_id = '{$objectId}'")->requirement_package_id; break;
-            case 'AugBubble': $reqId = Module::queryObject("SELECT requirement_package_id FROM augbubbles WHERE node_id = '{$objectId}'")->requirement_package_id; break;
-            case 'WebPage'  : $reqId = Module::queryObject("SELECT requirement_package_id FROM webpages   WHERE node_id = '{$objectId}'")->requirement_package_id; break;
-            case 'WebHook'  : $reqId = Module::queryObject("SELECT requirement_package_id FROM webhooks   WHERE node_id = '{$objectId}'")->requirement_package_id; break;
-            case 'Quest'    : $reqId = Module::queryObject("SELECT requirement_package_id FROM quests     WHERE node_id = '{$objectId}'")->requirement_package_id; break;
+            case 'Node'     : $reqId = Module::queryObject("SELECT requirement_package_id FROM nodes      WHERE node_id      = '{$objectId}'")->requirement_package_id; break;
+            case 'Item'     : $reqId = Module::queryObject("SELECT requirement_package_id FROM items      WHERE item_id      = '{$objectId}'")->requirement_package_id; break;
+            case 'Npc'      : $reqId = Module::queryObject("SELECT requirement_package_id FROM npcs       WHERE npc_id       = '{$objectId}'")->requirement_package_id; break;
+            case 'AugBubble': $reqId = Module::queryObject("SELECT requirement_package_id FROM augbubbles WHERE augbubble_id = '{$objectId}'")->requirement_package_id; break;
+            case 'WebPage'  : $reqId = Module::queryObject("SELECT requirement_package_id FROM webpages   WHERE webpage_id   = '{$objectId}'")->requirement_package_id; break;
+            case 'WebHook'  : $reqId = Module::queryObject("SELECT requirement_package_id FROM webhooks   WHERE webhook_id   = '{$objectId}'")->requirement_package_id; break;
+            case 'Quest'    : $reqId = Module::queryObject("SELECT complete_requirement_package_id FROM quests     WHERE quest_id     = '{$objectId}'")->complete_requirement_package_id; break;
             default: return new returnData(4, NULL, "invalid object type");
         }
         $rpack = Requirements::getRequirementPackage($reqId);
@@ -563,8 +586,39 @@ class Requirements extends Module
 
     public function getRequirement($gameId, $requirementId)
     {
+        /*
+        //Old tables
         $requirement = Module::queryObject("SELECT * FROM requirements WHERE game_id = {$gameId} AND requirement_id = {$requirementId} LIMIT 1");
         return new returnData(0, $requirement);	
+        */
+
+        //New tables
+        //assume by requirement, they mean "requirement atom"
+        $rAtom = Requirements::getRequirementAtom($requirementId);
+        $returnObj = new stdClass();
+        $returnObj->data = new stdClass();
+        $returnObj->data->requirement_id = $rAtom->requirement_atom_id;
+        $returnObj->data->game_id = $rAtom->game_id;
+        $returnObj->data->requirement = $rAtom->requirement;
+        $bool = Module::queryArray("SELECT * FROM requirement_atoms WHERE requirement_and_package_id = '{$rAtom->requirement_and_package_id}'");
+        $returnObj->data->boolean_operator = count($bool) > 1 ? "AND" : "OR";
+        $returnObj->data->not_operator = $rAtom->bool_operator ? "DO" : "NOT";
+        $returnObj->data->group_operator = "SELF";
+        $returnObj->data->requirement_detail_1 = $rAtom->content_id;
+        $returnObj->data->requirement_detail_2 = $rAtom->qty;
+        $returnObj->data->requirement_detail_3 = $rAtom->latitude;
+        $returnObj->data->requirement_detail_4 = $rAtom->longitude;
+
+        $packId = Module::queryObject("SELECT * FROM requirement_and_packages WHERE requirement_and_package_id = '{$rAtom->requirement_and_package_id}'")->requirement_root_package_id;
+        
+        if(     $content = Module::queryObject("SELECT * FROM locations WHERE requirement_package_id          = '{$packId}'")) { $returnObj->data->content_type = 'Location';      $returnObj->data->content_id = $content->location_id; }
+        else if($content = Module::queryObject("SELECT * FROM nodes     WHERE requirement_package_id          = '{$packId}'")) { $returnObj->data->content_type = 'Node';          $returnObj->data->content_id = $content->node_id;     }
+        else if($content = Module::queryObject("SELECT * FROM quests    WHERE display_requirement_package_id  = '{$packId}'")) { $returnObj->data->content_type = 'QuestDisplay';  $returnObj->data->content_id = $content->quest_id;    }
+        else if($content = Module::queryObject("SELECT * FROM quests    WHERE complete_requirement_package_id = '{$packId}'")) { $returnObj->data->content_type = 'QuestComplete'; $returnObj->data->content_id = $content->quest_id;    }
+
+        $returnObj->returnCode = 0;
+        $returnObj->returnCodeDescription = null;
+        return $returnObj;
     }
 
     public function createRequirement($gameId, $objectType, $objectId, $requirementType, $requirementDetail1, $requirementDetail2, $requirementDetail3, $requirementDetail4, $booleanOperator, $notOperator, $editorId, $editorToken)
