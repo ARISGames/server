@@ -489,15 +489,76 @@ class Requirements extends Module
 
 
 
-
+    //
+    //HACKED OLD OUTDATED API \/ \/ \/ \/
+    //
 
     public function getRequirementsForObject($gameId, $objectType, $objectId, $editorId, $editorToken)
     {
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
+/*
+        //Old tables
         $rsResult = Module::query("SELECT * FROM requirements WHERE game_id = {$gameId} AND content_type = '{$objectType}' and content_id = '{$objectId}'");
         return new returnData(0, $rsResult);
+*/
+
+        //New tables
+        switch($objectType)
+        {
+            case 'Node'     : $reqId = Module::queryObject("SELECT requirement_package_id FROM nodes      WHERE node_id = '{$objectId}'")->requirement_package_id; break;
+            case 'Item'     : $reqId = Module::queryObject("SELECT requirement_package_id FROM items      WHERE node_id = '{$objectId}'")->requirement_package_id; break;
+            case 'Npc'      : $reqId = Module::queryObject("SELECT requirement_package_id FROM npcs       WHERE node_id = '{$objectId}'")->requirement_package_id; break;
+            case 'AugBubble': $reqId = Module::queryObject("SELECT requirement_package_id FROM augbubbles WHERE node_id = '{$objectId}'")->requirement_package_id; break;
+            case 'WebPage'  : $reqId = Module::queryObject("SELECT requirement_package_id FROM webpages   WHERE node_id = '{$objectId}'")->requirement_package_id; break;
+            case 'WebHook'  : $reqId = Module::queryObject("SELECT requirement_package_id FROM webhooks   WHERE node_id = '{$objectId}'")->requirement_package_id; break;
+            case 'Quest'    : $reqId = Module::queryObject("SELECT requirement_package_id FROM quests     WHERE node_id = '{$objectId}'")->requirement_package_id; break;
+            default: return new returnData(4, NULL, "invalid object type");
+        }
+        $rpack = Requirements::getRequirementPackage($reqId);
+
+        //now, we flatten to resemble old structure
+        $returnObj = new stdClass();
+        $returnObj->data = new stdClass();
+        //Ok, this is so ridiculous
+        $returnObj->data->columns = array("requirement_id","game_id","content_type","content_id","requirement","boolean_operator","not_operator","group_operator","requirement_detail_1","requirement_detail_2","requirement_detail_3","requirement_detail_4");
+        $returnObj->data->rows = array();
+        $returnDataRowIndex = 0;
+        $returnObj->returnCode = 0; //fake it
+        $returnObj->returnCodeDescription = null; //fake it
+
+        //Make sure requirement package expressable in old model
+        $multiAndPackCount = 0;
+        for($i = 0; $i < count($rpack->and_packages); $i++)
+            if(count($rpack->and_packages[$i]->atoms) > 1) $multiAndPackCount++;
+        if($multiAndPackCount > 1) return new returnData(7, "Requirement data corrupted- use new editor");
+
+        for($i = 0; $i < count($rpack->and_packages); $i++)
+        {
+            $BOOL = "AND";
+            if(count($rpack->and_packages[$i]->atoms) == 1) $BOOL = "OR";
+
+            for($j = 0; $j < count($rpack->and_packages[$i]->atoms); $j++)
+            {
+                $returnObj->data->rows[$returnDataRowIndex] = array();
+                $returnObj->data->rows[$returnDataRowIndex][] = $rpack->and_packages[$i]->atoms[$j]->requirement_atom_id;
+                $returnObj->data->rows[$returnDataRowIndex][] = $rpack->game_id;
+                $returnObj->data->rows[$returnDataRowIndex][] = $objectType;
+                $returnObj->data->rows[$returnDataRowIndex][] = $objectId;
+                $returnObj->data->rows[$returnDataRowIndex][] = $rpack->and_packages[$i]->atoms[$j]->requirement;
+                $returnObj->data->rows[$returnDataRowIndex][] = $BOOL;
+                $returnObj->data->rows[$returnDataRowIndex][] = $rpack->and_packages[$i]->atoms[$j]->bool_operator ? "DO" : "NOT";
+                $returnObj->data->rows[$returnDataRowIndex][] = "SELF";
+                $returnObj->data->rows[$returnDataRowIndex][] = $rpack->and_packages[$i]->atoms[$j]->content_id+$rpack->and_packages[$i]->atoms[$j]->distance; //this is me being clever.
+                $returnObj->data->rows[$returnDataRowIndex][] = $rpack->and_packages[$i]->atoms[$j]->qty;
+                $returnObj->data->rows[$returnDataRowIndex][] = $rpack->and_packages[$i]->atoms[$j]->latitude;
+                $returnObj->data->rows[$returnDataRowIndex][] = $rpack->and_packages[$i]->atoms[$j]->longitude;
+                $returnDataRowIndex++;
+            }
+        }
+
+        return $returnObj;
     }
 
     public function getRequirement($gameId, $requirementId)
