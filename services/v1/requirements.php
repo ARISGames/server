@@ -193,7 +193,7 @@ class Requirements extends Module
         for($i = 0; $i < count($sql_currentAtoms); $i++)
         {
             $matchingAtom = null;
-            for($j = 0; count($pack->atoms) && $j < $pack->atoms; $j++)
+            for($j = 0; $pack->atoms && $j < count($pack->atoms); $j++)
             {
                 if($sql_currentAtoms[$i]->requirement_atom_id == $pack->atoms[$j]->requirement_atom_id)
                 {
@@ -735,6 +735,8 @@ class Requirements extends Module
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
+        /*
+        //Old Tables
         $query = "UPDATE requirements 
             SET 
             content_type = '{$objectType}',
@@ -750,6 +752,105 @@ class Requirements extends Module
 
         Module::query($query);
         return new returnData(0);
+        */
+
+        $atomPack = Module::queryObject("SELECT * FROM requirement_atoms WHERE requirement_atom_id = '{$requirementId}'");
+        $andPack = Module::queryObject("SELECT * FROM requirement_and_packages WHERE requirement_and_package_id = '{$atomPack->requirement_and_package_id}'");
+        $pack = Requirements::getRequirementPackage($andPack->requirement_root_package_id);
+        $indexOfAndPack = -1;
+        for($i = 0; $i < count($pack->and_packages); $i++)
+        {
+            if(count($pack->and_packages[$i]->atoms) > 1)
+            {
+                if($indexOfAndPack == -1) $indexOfAndPack = $i;
+                else return new returnData(7, "Requirement data acorrupted- use new editor");
+            }
+        }
+        if($indexOfAndPack == -1) $indexOfAndPack = 0;
+        for($i = 0; $i < count($pack->and_packages); $i++)
+        {
+            if($pack->and_packages[$i]->requirement_and_package_id == $andPack->requirement_and_package_id)
+            {
+                if($booleanOperator == "AND")
+                {
+                    $indexOfAtom = -1;
+                    for($j = 0; $j < count($pack->and_packages[$i]->atoms); $j++)
+                    {
+                        if($pack->and_packages[$i]->atoms[$j]->requirement_atom_id == $atomPack->requirement_atom_id)
+                        {
+                            if($indexOfAtom == -1) $indexOfAtom = $j;
+                            else return new returnData(7, "Requirement data bcorrupted- use new editor");
+                        }
+                    }
+                    if($i == $indexOfAndPack)
+                    {
+                        $pack->and_packages[$indexOfAndPack]->atoms[$indexOfAtom]->requirement   = $requirementType;
+                        $pack->and_packages[$indexOfAndPack]->atoms[$indexOfAtom]->content_id    = $requirementDetail1;
+                        $pack->and_packages[$indexOfAndPack]->atoms[$indexOfAtom]->distance      = $requirementDetail1;
+                        $pack->and_packages[$indexOfAndPack]->atoms[$indexOfAtom]->qty           = $requirementDetail2;
+                        $pack->and_packages[$indexOfAndPack]->atoms[$indexOfAtom]->latitude      = $requirementDetail3;
+                        $pack->and_packages[$indexOfAndPack]->atoms[$indexOfAtom]->longitude     = $requirementDetail4;
+                        $pack->and_packages[$indexOfAndPack]->atoms[$indexOfAtom]->bool_operator = $notOperator == "DO" ? 1 : 0;
+                    }
+                    else
+                    {
+                        $pack->and_packages[$indexOfAndPack]->atoms[] = $pack->and_packages[$i]->atoms[0];
+                        $newIndex = count($pack->and_packages[$indexOfAndPack]->atoms)-1;
+                        $pack->and_packages[$indexOfAndPack]->atoms[$newIndex]->requirement   = $requirementType;
+                        $pack->and_packages[$indexOfAndPack]->atoms[$newIndex]->content_id    = $requirementDetail1;
+                        $pack->and_packages[$indexOfAndPack]->atoms[$newIndex]->distance      = $requirementDetail1;
+                        $pack->and_packages[$indexOfAndPack]->atoms[$newIndex]->qty           = $requirementDetail2;
+                        $pack->and_packages[$indexOfAndPack]->atoms[$newIndex]->latitude      = $requirementDetail3;
+                        $pack->and_packages[$indexOfAndPack]->atoms[$newIndex]->longitude     = $requirementDetail4;
+                        $pack->and_packages[$indexOfAndPack]->atoms[$newIndex]->bool_operator = $notOperator == "DO" ? 1 : 0;
+                        unset($pack->and_packages[$i]->atoms[0]);
+                        unset($pack->and_packages[$i]->atoms);
+                        unset($pack->and_packages[$i]);
+                    }
+                }
+                else if($booleanOperator == "OR")
+                {
+                    if($i != $indexOfAndPack)
+                    {
+                        $pack->and_packages[$i]->atoms[0]->requirement   = $requirementType;
+                        $pack->and_packages[$i]->atoms[0]->content_id    = $requirementDetail1;
+                        $pack->and_packages[$i]->atoms[0]->distance      = $requirementDetail1;
+                        $pack->and_packages[$i]->atoms[0]->qty           = $requirementDetail2;
+                        $pack->and_packages[$i]->atoms[0]->latitude      = $requirementDetail3;
+                        $pack->and_packages[$i]->atoms[0]->longitude     = $requirementDetail4;
+                        $pack->and_packages[$i]->atoms[0]->bool_operator = $notOperator == "DO" ? 1 : 0;
+                    }
+                    else
+                    {
+                        $indexOfAtom = -1;
+                        for($j = 0; $j < count($pack->and_packages[$i]->atoms); $j++)
+                        {
+                            if($pack->and_packages[$i]->atoms[$j]->requirement_atom_id == $atomPack->requirement_atom_id)
+                            {
+                                if($indexOfAtom == -1) $indexOfAtom = $j;
+                                else return new returnData(7, "Requirement data ccorrupted- use new editor");
+                            }
+                        }
+
+                        $pack->and_packages[] = new stdClass();
+                        $newIndex = count($pack->and_packages)-1;
+                        $pack->and_packages[$newIndex]->atoms = array();
+                        $pack->and_packages[$newIndex]->atoms[0] = $pack->and_packages[$i]->atoms[$indexOfAtom];
+                        $pack->and_packages[$newIndex]->atoms[0]->requirement   = $requirementType;
+                        $pack->and_packages[$newIndex]->atoms[0]->content_id    = $requirementDetail1;
+                        $pack->and_packages[$newIndex]->atoms[0]->distance      = $requirementDetail1;
+                        $pack->and_packages[$newIndex]->atoms[0]->qty           = $requirementDetail2;
+                        $pack->and_packages[$newIndex]->atoms[0]->latitude      = $requirementDetail3;
+                        $pack->and_packages[$newIndex]->atoms[0]->longitude     = $requirementDetail4;
+                        $pack->and_packages[$newIndex]->atoms[0]->bool_operator = $notOperator == "DO" ? 1 : 0;
+                        unset($pack->and_packages[$i]->atoms[$indexOfAtom]);
+                    }
+                }
+                Requirements::updateRequirementPackage($pack);
+                return new returnData(0);
+            }
+        }
+        return new returnData(7, "Requirement data dcorrupted- use new editor");
     }
 
     public function deleteRequirement($gameId, $requirementId, $editorId, $editorToken)
