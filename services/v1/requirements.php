@@ -528,12 +528,11 @@ class Requirements extends Module
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
-        /*
         //Old tables
         $rsResult = Module::query("SELECT * FROM requirements WHERE game_id = {$gameId} AND content_type = '{$objectType}' and content_id = '{$objectId}'");
         return new returnData(0, $rsResult);
-        */
 
+/*
         //New tables
         switch($objectType)
         {
@@ -589,16 +588,16 @@ class Requirements extends Module
         }
 
         return $returnObj;
+*/
     }
 
     public function getRequirement($gameId, $requirementId)
     {
-        /*
         //Old tables
         $requirement = Module::queryObject("SELECT * FROM requirements WHERE game_id = {$gameId} AND requirement_id = {$requirementId} LIMIT 1");
         return new returnData(0, $requirement);	
-        */
 
+/*
         //New tables
         //assume by requirement, they mean "requirement atom"
         $rAtom = Requirements::getRequirementAtom($requirementId);
@@ -626,6 +625,7 @@ class Requirements extends Module
         $returnObj->returnCode = 0;
         $returnObj->returnCodeDescription = null;
         return $returnObj;
+*/
     }
 
     public function createRequirement($gameId, $objectType, $objectId, $requirementType, $requirementDetail1, $requirementDetail2, $requirementDetail3, $requirementDetail4, $booleanOperator, $notOperator, $editorId, $editorToken)
@@ -635,12 +635,11 @@ class Requirements extends Module
         //if the requirement type refers to an item, make sure the QTY is set to 1 or more
         if(($requirementType == "PLAYER_HAS_ITEM") && $requirementDetail2 < 1) $requirementDetail2 = 1;
 
-        /*
         //Old tables
         Module::query("INSERT INTO requirements (game_id, content_type, content_id, requirement, requirement_detail_1,requirement_detail_2,requirement_detail_3,requirement_detail_4,boolean_operator,not_operator) VALUES ('{$gameId}','{$objectType}','{$objectId}','{$requirementType}', '{$requirementDetail1}', '{$requirementDetail2}', '{$requirementDetail3}', '{$requirementDetail4}', '{$booleanOperator}','{$notOperator}')");
         return new returnData(0, mysql_insert_id());
-        */
 
+/*
         switch($objectType)
         {
             case "Node":          $rPackId = Module::queryObject("SELECT * FROM nodes     WHERE node_id     = '{$objectId}'")->requirement_package_id; break;
@@ -728,6 +727,7 @@ class Requirements extends Module
             }
         }
         return new returnData(5,null,"Something went wrong");
+*/
     }
 
     public function updateRequirement($gameId, $requirementId, $objectType, $objectId, $requirementType, $requirementDetail1, $requirementDetail2,$requirementDetail3,$requirementDetail4, $booleanOperator,$notOperator, $editorId, $editorToken)
@@ -735,7 +735,6 @@ class Requirements extends Module
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
-        /*
         //Old Tables
         $query = "UPDATE requirements 
             SET 
@@ -752,8 +751,8 @@ class Requirements extends Module
 
         Module::query($query);
         return new returnData(0);
-        */
 
+/*
         $atomPack = Module::queryObject("SELECT * FROM requirement_atoms WHERE requirement_atom_id = '{$requirementId}'");
         $andPack = Module::queryObject("SELECT * FROM requirement_and_packages WHERE requirement_and_package_id = '{$atomPack->requirement_and_package_id}'");
         $pack = Requirements::getRequirementPackage($andPack->requirement_root_package_id);
@@ -851,6 +850,7 @@ class Requirements extends Module
             }
         }
         return new returnData(7, "Requirement data dcorrupted- use new editor");
+*/
     }
 
     public function deleteRequirement($gameId, $requirementId, $editorId, $editorToken)
