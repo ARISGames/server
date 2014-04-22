@@ -8,6 +8,14 @@ CREATE DATABASE tmp_db;
 GRANT ALL ON tmp_db.* TO 'tmp_user'@'127.0.0.1';
 USE tmp_db;
 
+DROP TABLE IF EXISTS aris_migrations;
+CREATE TABLE aris_migrations (
+version_major INT(32) UNSIGNED NOT NULL,
+version_minor INT(32) UNSIGNED NOT NULL,
+timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+PRIMARY KEY (version_major, version_minor)
+);
+
 /*
 GAME DATA
 */
@@ -270,7 +278,7 @@ CREATE TABLE users (
 user_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 user_name VARCHAR(255) NOT NULL DEFAULT "",
 display_name VARCHAR(255) NOT NULL DEFAULT "",
-email VARCHAR(255) NOT NULL DEFAULT"",
+email VARCHAR(255) NOT NULL DEFAULT "",
 media_id INT(32) UNSIGNED NOT NULL DEFAULT 0,
 hash VARCHAR(255) NOT NULL,
 salt VARCHAR(255) NOT NULL,
