@@ -70,7 +70,7 @@
     {
         var package = JSON.parse(document.getElementById('create_request').value);
         package.auth = {"user_id":userId,"read_write_key":rwkey};
-        var response = sendRequest(document.getElementById('get_request_method').value, JSON.stringify(package), "POST");
+        var response = sendRequest(document.getElementById('create_request_method').value, JSON.stringify(package), "POST");
         document.getElementById('result').innerHTML = JSON.stringify(response);
     }
 
@@ -78,7 +78,7 @@
     {
         var package = JSON.parse(document.getElementById('update_request').value);
         package.auth = {"user_id":userId,"read_write_key":rwkey};
-        var response = sendRequest(document.getElementById('get_request_method').value, JSON.stringify(package), "POST");
+        var response = sendRequest(document.getElementById('update_request_method').value, JSON.stringify(package), "POST");
         document.getElementById('result').innerHTML = JSON.stringify(response);
     }
 
@@ -90,7 +90,7 @@
 
     function submitDelete()
     {
-        var response = sendRequest(document.getElementById('get_request_method').value+"/"+document.getElementById('delete_request').value+"/"+userId+"/"+rwkey, null, "GET");
+        var response = sendRequest(document.getElementById('delete_request_method').value+"/"+document.getElementById('delete_request').value+"/"+userId+"/"+rwkey, null, "GET");
         document.getElementById('result_text').innerHTML = JSON.stringify(response);
     }
 

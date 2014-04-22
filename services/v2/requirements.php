@@ -1,5 +1,7 @@
 <?php
 require_once("dbconnection.php");
+require_once("editors.php");
+require_once("returnData.php");
 
 class requirements extends dbconnection
 {	
@@ -391,5 +393,5 @@ class requirements extends dbconnection
         }
         return false;
     }
-
+}
 ?>

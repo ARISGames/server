@@ -40,7 +40,7 @@ class users extends dbconnection
         return new returnData(0, $ret);
     }
 
-    protected function authenticateUser($userId, $token, $permission)
+    public function authenticateUser($userId, $token, $permission)
     {
         $permission = addslashes($permission);
         $token      = addslashes($token);

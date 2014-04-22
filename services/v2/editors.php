@@ -5,7 +5,7 @@ require_once("users.php");
 
 class editors extends dbconnection
 {
-    protected function authenticateGameEditor($gameId, $userId, $token, $permission)
+    public function authenticateGameEditor($gameId, $userId, $token, $permission)
     {
         if(!users::authenticateUser($userId, $token, $permission)) return false;
         if(dbconnection::queryObject("SELECT * FROM user_games WHERE user_id = '{$userId}' AND game_id = '{$gameId}'")) return true;
