@@ -6,7 +6,7 @@ Class dbconnection
   
   function __construct()
   {
-    $this->con = mysqli_connect(Config::host, Config::db_user, Config::db_pass, Config::db);
+    $this->con = mysqli_connect(Config::v2_host, Config::v2_db_user, Config::v2_db_pass, Config::v2_db);
   }
 
   function query($query, $debug = false)
@@ -29,7 +29,7 @@ Class dbconnection
     return mysqli_insert_id($this->con);
   }
 
-  function queryObj($query, $debug = false)
+  function queryObject($query, $debug = false)
   {
     if($debug) echo $query;
     if(!$sql_data = mysqli_query($this->con, $query))

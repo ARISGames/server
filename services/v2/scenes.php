@@ -6,7 +6,7 @@ require_once("editors.php");
 
 class scenes extends dbconnection
 {	
-    //Takes in game JSON, all fields optional except user_id + token
+    //Takes in game JSON, all fields optional except user_id + key
     public static function createSceneJSON($glob)
     {
         $data = file_get_contents("php://input");
@@ -16,7 +16,7 @@ class scenes extends dbconnection
 
     public static function createScene($pack)
     {
-        if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->token, "read_write"))
+        if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
         $sceneId = dbconnection::queryInsert(
@@ -34,7 +34,7 @@ class scenes extends dbconnection
         return scenes::getScene($sceneId);
     }
 
-    //Takes in game JSON, all fields optional except user_id + token
+    //Takes in game JSON, all fields optional except user_id + key
     public static function updateSceneJSON($glob)
     {
         $data = file_get_contents("php://input");
@@ -45,7 +45,7 @@ class scenes extends dbconnection
     public static function updateScene($pack)
     {
         $gameId = dbconnection::queryObject("SELECT * FROM scenes WHERE scene_id = '{$pack->scene_id}'")->game_id;
-        if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->token, "read_write"))
+        if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
         $sceneId = dbconnection::queryInsert(
@@ -70,10 +70,10 @@ class scenes extends dbconnection
         return new returnData(0,$scene);
     }
 
-    public static function deleteScene($sceneId, $userId, $token)
+    public static function deleteScene($sceneId, $userId, $key)
     {
         $gameId = dbconnection::queryObject("SELECT * FROM scenes WHERE scene_id = '{$sceneId}'")->game_id;
-        if(!editors::authenticateGameEditor($gameId, $userId, $token, "read_write")) return new returnData(6, NULL, "Failed Authentication");
+        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new returnData(6, NULL, "Failed Authentication");
 
         dbconnection::queryObject("DELETE FROM scenes WHERE scene_id = '{$sceneId}' LIMIT 1");
     }

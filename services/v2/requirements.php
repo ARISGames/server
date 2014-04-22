@@ -44,7 +44,8 @@ class requirements extends dbconnection
     }
     public function createRequirementPackage($pack)
     {
-        if(!$pack || !$pack->game_id) return "nope";
+        if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
 
         $requirementPackageId = dbconnection::queryInsert(
             "INSERT INTO requirement_root_packages (".
@@ -62,6 +63,7 @@ class requirements extends dbconnection
         {
             $pack->and_packages[$i]->requirement_root_package_id = $requirementPackageId;
             $pack->and_packages[$i]->game_id = $pack->game_id;
+            $pack->and_packages[$i]->auth = $pack->auth;
             requirements::createRequirementAndPackage($pack->and_packages[$i]);
         }
 
@@ -71,7 +73,9 @@ class requirements extends dbconnection
     //requires game_id and requirement_root_package_id
     public function createRequirementAndPackage($pack)
     {
-        if(!$pack || !$pack->game_id || !$pack->requirement_root_package_id) return;
+        if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+        if(!$pack->requirement_root_package_id) return;
 
         $requirementAndPackageId = dbconnection::queryInsert(
             "INSERT INTO requirement_and_packages (".
@@ -91,6 +95,7 @@ class requirements extends dbconnection
         {
             $pack->atoms[$i]->requirement_and_package_id = $requirementAndPackageId;
             $pack->atoms[$i]->game_id = $pack->game_id;
+            $pack->atoms[$i]->auth = $pack->auth;
             requirements::createRequirementAtom($pack->atoms[$i]);
         }
     }
@@ -98,7 +103,9 @@ class requirements extends dbconnection
     //requires game_id and requirement_and_package_id
     public function createRequirementAtom($pack)
     {
-        if(!$pack || !$pack->game_id || !$pack->requirement_and_package_id) return;
+        if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+        if(!$pack->requirement_and_package_id) return;
 
         dbconnection::query(
             "INSERT INTO requirement_atoms (".
@@ -134,7 +141,10 @@ class requirements extends dbconnection
 
     public function updateRequirementPackage($pack)
     {
-        if(!$pack || !$pack->game_id || !$pack->requirement_root_package_id) return;
+        $gameId = dbconnection::queryObject("SELECT * FROM requirement_root_packages WHERE requirement_root_package_id = '{$pack->requirement_root_package_id}'")->game_id;
+        if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+        if(!$pack->requirement_root_package_id) return;
 
         dbconnection::query(
             "UPDATE requirement_root_packages SET ".
@@ -160,7 +170,8 @@ class requirements extends dbconnection
             if($matchingAndPack)
             {
                 $matchingAndPack->requirement_root_package_id = $pack->requirement_root_package_id;
-                $matchingAndPack->game_id = $pack->game_id;
+                $matchingAndPack->game_id                     = $pack->game_id;
+                $matchingAndPack->auth                        = $pack->auth;
                 requirements::updateRequirementAndPackage($matchingAndPack);
             }
             else
@@ -169,7 +180,8 @@ class requirements extends dbconnection
         for($i = 0; $pack->and_packages && $i < count($pack->and_packages); $i++)
         {
             $pack->and_packages[$i]->requirement_root_package_id = $pack->requirement_root_package_id;
-            $pack->and_packages[$i]->game_id = $pack->game_id;
+            $pack->and_packages[$i]->game_id                     = $pack->game_id;
+            $pack->and_packages[$i]->auth                        = $pack->auth;
             requirements::createRequirementAndPackage($pack->and_packages[$i]);
         }
 
@@ -178,7 +190,10 @@ class requirements extends dbconnection
 
     public function updateRequirementAndPackage($pack)
     {
-        if(!$pack || !$pack->game_id || !$pack->requirement_and_package_id) return new returnData(1,NULL,"Insufficient data");
+        $gameId = dbconnection::queryObject("SELECT * FROM requirement_and_packages WHERE requirement_and_package_id = '{$pack->requirement_and_package_id}'")->game_id;
+        if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+        if(!$pack->requirement_and_package_id) return new returnData(1,NULL,"Insufficient data");
 
         dbconnection::query(
             "UPDATE requirement_and_packages SET ".
@@ -204,7 +219,8 @@ class requirements extends dbconnection
             if($matchingAtom)
             {
                 $matchingAtom->requirement_atom_id = $pack->atoms[$j]->requirement_atom_id;
-                $matchingAtom->game_id = $pack->game_id;
+                $matchingAtom->game_id             = $pack->game_id;
+                $matchingAtom->auth                = $pack->auth;
                 requirements::updateRequirementAtom($matchingAtom);
             }
             else
@@ -213,14 +229,18 @@ class requirements extends dbconnection
         for($i = 0; $pack->atoms && $i < count($pack->atoms); $i++)
         {
             $pack->atoms[$i]->requirement_atom_id = $pack->atoms[$j]->requirement_atom_id;
-            $pack->atoms[$i]->game_id = $pack->game_id;
+            $pack->atoms[$i]->game_id             = $pack->game_id;
+            $pack->atoms[$i]->auth                = $pack->auth;
             requirements::createRequirementAtom($pack->atoms[$i]);
         }
     }
 
     public function updateRequirementAtom($pack)
     {
-        if(!$pack || !$pack->game_id || !$pack->requirement_atom_id) return new returnData(1,NULL,"Insufficient data");
+        $gameId = dbconnection::queryObject("SELECT * FROM requirement_atoms WHERE requirement_atom_id = '{$pack->requirement_atom_id}'")->game_id;
+        if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+        if(!$pack->requirement_atom_id) return new returnData(1,NULL,"Insufficient data");
 
         dbconnection::query(
             "UPDATE requirement_atoms SET ".

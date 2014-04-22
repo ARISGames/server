@@ -7,7 +7,7 @@ require_once("editors.php");
 
 class games extends dbconnection
 {	
-    //Takes in game JSON, all fields optional except user_id + token
+    //Takes in game JSON, all fields optional except user_id + key
     public static function createGameJSON($glob)
     {
 	$data = file_get_contents("php://input");
@@ -17,7 +17,7 @@ class games extends dbconnection
 
     public static function createGame($pack)
     {
-        if(!users::authenticateUser($pack->auth->user_id, $pack->auth->token, "read_write"))
+        if(!users::authenticateUser($pack->auth->user_id, $pack->auth->key, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
         $gameId = dbconnection::queryInsert(
@@ -73,7 +73,7 @@ class games extends dbconnection
         return games::getGame($gameId);
     }
 
-    //Takes in game JSON, all fields optional except user_id + token
+    //Takes in game JSON, all fields optional except user_id + key
     public static function updateGameJSON($glob)
     {
 	$data = file_get_contents("php://input");
@@ -83,7 +83,7 @@ class games extends dbconnection
 
     public static function updateGame($pack)
     {
-        if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->token, "read_write"))
+        if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
         $gameId = dbconnection::queryInsert(
@@ -135,9 +135,9 @@ class games extends dbconnection
         return new returnData(0,$game);
     }
 
-    public static function deleteGame($gameId, $userId, $token)
+    public static function deleteGame($gameId, $userId, $key)
     {
-        if(!editors::authenticateGameEditor($gameId, $userId, $token, "read_write")) return new returnData(6, NULL, "Failed Authentication");
+        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new returnData(6, NULL, "Failed Authentication");
 
         dbconnection::queryObject("DELETE FROM games WHERE game_id = '{$gameId}' LIMIT 1");
         dbconnection::queryObject("DELETE FROM game_tab_data WHERE game_id = '{$gameId}' LIMIT 1");
@@ -152,9 +152,9 @@ class games extends dbconnection
         return new returnData(0, $tabs, NULL);
     }
 
-    public function saveTab($gameId, $tab, $index, $userId, $token)
+    public function saveTab($gameId, $tab, $index, $userId, $key)
     {
-        if(!editors::authenticateGameEditor($gameId, $userId, $token, "read_write"))
+        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
         dbconnection::query("UPDATE game_tab_data SET tab_index = '{$index}' WHERE game_id = '{$gameId}' AND tab = '{$tab}'");
@@ -270,9 +270,9 @@ class games extends dbconnection
         return new returnData(0);
     }
 
-    public function duplicateGame($gameId, $userId, $token)
+    public function duplicateGame($gameId, $userId, $key)
     {
-        if(!users::authenticateUser($userId, $token, "read_write"))
+        if(!users::authenticateUser($userId, $key, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
 	//Add back in when requirements not being deleted is fixed, recheck for other issues
@@ -306,7 +306,7 @@ class games extends dbconnection
                 $game->map_type, $game->show_player_location,
                 $game->full_quick_travel,
                 $game->inventory_weight_cap, $game->allow_trading, 
-                $userId, $token)->data;
+                $userId, $key)->data;
 
         //Remove the tabs created by createGame
         dbconnection::query("DELETE FROM game_tab_data WHERE game_id = {$newGameId}");

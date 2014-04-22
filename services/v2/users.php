@@ -8,7 +8,7 @@ class users extends dbconnection
 {
     public function createUser($username, $password) //note- password expected to be md5'd or something. don't be passing plaintext across the tubes...
     {
-        if(dbconnection::queryObject("SELECT * FROM users WHERE username = '{$username}'"))
+        if(dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$username}'"))
             return new returnData(1, NULL, "User already exists");
 
         $salt       = util::rand_string(64);
@@ -16,13 +16,13 @@ class users extends dbconnection
         $read       = util::rand_string(64);
         $write      = util::rand_string(64);
         $read_write = util::rand_string(64);
-        dbconnection::query("INSERT INTO users (user_name, display_name, salt, hash, read_key, write_key, read_write_key, created) VALUES ('{$username}', '{$username}','{$salt}','{$hash}','{$read_ley}','{$write_key}','{$read_write_key}', CURRENT_TIMESTAMP)");
-        return users::logIn($username, $password, "read");
+        dbconnection::query("INSERT INTO users (user_name, display_name, salt, hash, read_key, write_key, read_write_key, created) VALUES ('{$username}', '{$username}','{$salt}','{$hash}','{$read}','{$write}','{$read_write}', CURRENT_TIMESTAMP)");
+        return users::logIn($username, $password, "read_write");
     }
 
     public function logIn($username, $password, $permission)
     {
-        if(!$user = dbconnection::queryObject("SELECT * FROM users WHERE username = '{$username}'") || hash("sha256",$user->salt.$password) != $user->hash)
+        if(!($user = dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$username}'")) || hash("sha256",$user->salt.$password) != $user->hash)
             return new returnData(1, NULL, "Incorrect username/password");
 
         $ret = new stdClass();
