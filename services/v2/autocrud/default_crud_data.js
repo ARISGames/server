@@ -30,7 +30,7 @@ var CRUD_DEFAULTS = [
           "show_player_location":true\n\
         }\n\
         ',
-    "getData":"",
+    "getData":"123",
     "updateData":
         '\
         {\n\
@@ -46,7 +46,7 @@ var CRUD_DEFAULTS = [
           "show_player_location":true\n\
         }\n\
         ',
-    "deleteData":""
+    "deleteData":"123"
 },
 {
     "service":"requirements",
@@ -105,7 +105,7 @@ var CRUD_DEFAULTS = [
           ]\n\
         }\n\
         ',
-    "getData":"",
+    "getData":"123",
     "updateData":
         '\
         {\n\
@@ -164,6 +164,30 @@ var CRUD_DEFAULTS = [
           ]\n\
         }\n\
         ',
-    "deleteData":""
+    "deleteData":"123"
+},
+{
+    "service":"scenes",
+    "create":"scenes.createSceneJSON",
+    "get":"scenes.getScene",
+    "update":"scenes.updateSceneJSON",
+    "delete":"scenes.deleteScene",
+    "createData":
+        '\
+        {\n\
+          "game_id":123,\n\
+          "name":"sceneName"\n\
+        }\n\
+        ',
+    "getData":"123",
+    "updateData":
+        '\
+        {\n\
+          "scene_id":234,\n\
+          "game_id":123,\n\
+          "name":"sceneName"\n\
+        }\n\
+        ',
+    "deleteData":"123"
 }
 ];

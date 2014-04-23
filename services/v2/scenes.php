@@ -11,7 +11,7 @@ class scenes extends dbconnection
     {
         $data = file_get_contents("php://input");
         $glob = json_decode($data);
-        return games::createScene($glob);
+        return scenes::createScene($glob);
     }
 
     public static function createScene($pack)
@@ -39,7 +39,7 @@ class scenes extends dbconnection
     {
         $data = file_get_contents("php://input");
         $glob = json_decode($data);
-        return games::updateScene($glob);
+        return scenes::updateScene($glob);
     }
 
     public static function updateScene($pack)
@@ -48,14 +48,14 @@ class scenes extends dbconnection
         if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
-        $sceneId = dbconnection::queryInsert(
+        dbconnection::query(
             "UPDATE scenes SET ".
-            ($pack->name ? "name = '{$pack->name}', " : "").
+            ($pack->name ? "name = '".addslashes($pack->name)."', " : "").
             "last_active = CURRENT_TIMESTAMP ".
-            "WHERE scene_id = '{$pack->scene_id}'".
+            "WHERE scene_id = '{$pack->scene_id}'"
         );
 
-        return scenes::getScene($sceneId);
+        return scenes::getScene($pack->scene_id);
     }
 
     public static function getScene($sceneId)

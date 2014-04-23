@@ -5,37 +5,6 @@ require_once("returnData.php");
 
 class requirements extends dbconnection
 {	
-    /*
-    example requirementPackage JSON. used as inputs and outputs for requirements API
-
-    {
-        "game_id":123,
-        "requirement_root_package_id":321,
-        "name":"requirementPackageName",
-        "and_packages": 
-            [
-                {
-                    "requirement_and_package_id":231,
-                    "name":"andPackageName",
-                    "atoms":
-                        [
-                            {
-                                "requirement_atom_id":132,
-                                "bool_operator":0,
-                                "requirement":"PLAYER_HAS_ITEM",
-                                "content_id":42,
-                                "qty":4,
-                                "latitude":86.75309,
-                                "longitude":3.141592
-                            },
-                            ...
-                        ]
-                },
-                ...
-            ]
-    }
-    */
-
     //Takes in requirementPackage JSON, all fields optional except game_id.
     //all individual ids (requirement_root_package_id, etc...) ignored if present ( = easy duplication)
     public function createRequirementPackageJSON($glob)
