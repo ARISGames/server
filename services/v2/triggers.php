@@ -6,7 +6,7 @@ require_once("editors.php");
 
 class triggers extends dbconnection
 {	
-    //Takes in game JSON, all fields optional except user_id + token
+    //Takes in game JSON, all fields optional except user_id + key
     public static function createTriggerJSON($glob)
     {
         $data = file_get_contents("php://input");
@@ -16,7 +16,7 @@ class triggers extends dbconnection
 
     public static function createTrigger($pack)
     {
-        if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->token, "read_write"))
+        if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
         $triggerId = dbconnection::queryInsert(
@@ -54,7 +54,7 @@ class triggers extends dbconnection
         return triggers::getTrigger($triggerId);
     }
 
-    //Takes in game JSON, all fields optional except user_id + token
+    //Takes in game JSON, all fields optional except user_id + key
     public static function updateTriggerJSON($glob)
     {
         $data = file_get_contents("php://input");
@@ -65,27 +65,27 @@ class triggers extends dbconnection
     public static function updateTrigger($pack)
     {
         $gameId = dbconnection::queryObject("SELECT * FROM triggers WHERE trigger_id = '{$pack->trigger_id}'")->game_id;
-        if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->token, "read_write"))
+        if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
-        $triggerId = dbconnection::queryInsert(
+        dbconnection::query(
             "UPDATE triggers SET ".
-            ($pack->name                        ? "name                        = '{$pack->name}', "                        : "").
-            ($pack->instance_id                 ? "instance_id                 = '{$pack->instance_id}', "                 : "").
-            ($pack->scene_id                    ? "scene_id                    = '{$pack->scene_id}', "                    : "").
-            ($pack->requirement_root_package_id ? "requirement_root_package_id = '{$pack->requirement_root_package_id}', " : "").
-            ($pack->type                        ? "type                        = '{$pack->type}', "                        : "").
-            ($pack->latitude                    ? "latitude                    = '{$pack->latitude}', "                    : "").
-            ($pack->longitude                   ? "longitude                   = '{$pack->longitude}', "                   : "").
-            ($pack->distance                    ? "distance                    = '{$pack->distance}', "                    : "").
-            ($pack->wiggle                      ? "wiggle                      = '{$pack->wiggle}', "                      : "").
-            ($pack->show_title                  ? "show_title                  = '{$pack->show_title}', "                  : "").
-            ($pack->code                        ? "code                        = '{$pack->code}', "                        : "").
+            ($pack->name                        ? "name                        = '".addslashes($pack->name)."', "                        : "").
+            ($pack->instance_id                 ? "instance_id                 = '".addslashes($pack->instance_id)."', "                 : "").
+            ($pack->scene_id                    ? "scene_id                    = '".addslashes($pack->scene_id)."', "                    : "").
+            ($pack->requirement_root_package_id ? "requirement_root_package_id = '".addslashes($pack->requirement_root_package_id)."', " : "").
+            ($pack->type                        ? "type                        = '".addslashes($pack->type)."', "                        : "").
+            ($pack->latitude                    ? "latitude                    = '".addslashes($pack->latitude)."', "                    : "").
+            ($pack->longitude                   ? "longitude                   = '".addslashes($pack->longitude)."', "                   : "").
+            ($pack->distance                    ? "distance                    = '".addslashes($pack->distance)."', "                    : "").
+            ($pack->wiggle                      ? "wiggle                      = '".addslashes($pack->wiggle)."', "                      : "").
+            ($pack->show_title                  ? "show_title                  = '".addslashes($pack->show_title)."', "                  : "").
+            ($pack->code                        ? "code                        = '".addslashes($pack->code)."', "                        : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE trigger_id = '{$pack->trigger_id}'".
         );
 
-        return triggers::getTrigger($triggerId);
+        return triggers::getTrigger($pack->trigger_id);
     }
 
     public static function getTrigger($triggerId)
@@ -110,12 +110,12 @@ class triggers extends dbconnection
         return new returnData(0,$trigger);
     }
 
-    public static function deleteTrigger($triggerId, $userId, $token)
+    public static function deleteTrigger($triggerId, $userId, $key)
     {
         $gameId = dbconnection::queryObject("SELECT * FROM triggers WHERE trigger_id = '{$triggerId}'")->game_id;
-        if(!editors::authenticateGameEditor($gameId, $userId, $token, "read_write")) return new returnData(6, NULL, "Failed Authentication");
+        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new returnData(6, NULL, "Failed Authentication");
 
-        dbconnection::queryObject("DELETE FROM triggers WHERE trigger_id = '{$triggerId}' LIMIT 1");
+        dbconnection::query("DELETE FROM triggers WHERE trigger_id = '{$triggerId}' LIMIT 1");
     }
 }
 ?>

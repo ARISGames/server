@@ -75,7 +75,7 @@ class scenes extends dbconnection
         $gameId = dbconnection::queryObject("SELECT * FROM scenes WHERE scene_id = '{$sceneId}'")->game_id;
         if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new returnData(6, NULL, "Failed Authentication");
 
-        dbconnection::queryObject("DELETE FROM scenes WHERE scene_id = '{$sceneId}' LIMIT 1");
+        dbconnection::query("DELETE FROM scenes WHERE scene_id = '{$sceneId}' LIMIT 1");
     }
 }
 ?>
