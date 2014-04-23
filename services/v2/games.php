@@ -87,28 +87,26 @@ class games extends dbconnection
         if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
-/*
         $gameId = dbconnection::queryInsert(
             "UPDATE games SET ".
-            //($pack->name                   ? "name                   = '{$pack->name}', "             : "").
-            //($pack->description            ? "description            = '{$description}', "            : "").
-            //($pack->icon_media_id          ? "icon_media_id          = '{$icon_media_id}', "          : "").
-            //($pack->media_id               ? "media_id               = '{$media_id}', "               : "").
-            //($pack->map_type               ? "map_type               = '{$map_type}', "               : "").
-            //($pack->latitude               ? "latitude               = '{$latitude}', "               : "").
-            //($pack->longitude              ? "longitude              = '{$longitude}', "              : "").
-            //($pack->zoom_level             ? "zoom_level             = '{$zoom_level}', "             : "").
-            //($pack->show_player_location   ? "show_player_location   = '{$show_player_location}', "   : "").
-            //($pack->full_quick_travel      ? "full_quick_travel      = '{$full_quick_travel}', "      : "").
-            //($pack->allow_note_comments    ? "allow_note_comments    = '{$allow_note_comments}', "    : "").
-            //($pack->allow_note_player_tags ? "allow_note_player_tags = '{$allow_note_player_tags}', " : "").
-            //($pack->allow_note_likes       ? "allow_note_likes       = '{$allow_note_likes}', "       : "").
-            //($pack->inventory_weight_cap   ? "inventory_weight_cap   = '{$inventory_weight_cap}', "   : "").
-            //($pack->ready_for_public       ? "ready_for_public       = '{$ready_for_public}', "       : "").
+            ($pack->name                   ? "name                   = '{$pack->name}', "             : "").
+            ($pack->description            ? "description            = '{$description}', "            : "").
+            ($pack->icon_media_id          ? "icon_media_id          = '{$icon_media_id}', "          : "").
+            ($pack->media_id               ? "media_id               = '{$media_id}', "               : "").
+            ($pack->map_type               ? "map_type               = '{$map_type}', "               : "").
+            ($pack->latitude               ? "latitude               = '{$latitude}', "               : "").
+            ($pack->longitude              ? "longitude              = '{$longitude}', "              : "").
+            ($pack->zoom_level             ? "zoom_level             = '{$zoom_level}', "             : "").
+            ($pack->show_player_location   ? "show_player_location   = '{$show_player_location}', "   : "").
+            ($pack->full_quick_travel      ? "full_quick_travel      = '{$full_quick_travel}', "      : "").
+            ($pack->allow_note_comments    ? "allow_note_comments    = '{$allow_note_comments}', "    : "").
+            ($pack->allow_note_player_tags ? "allow_note_player_tags = '{$allow_note_player_tags}', " : "").
+            ($pack->allow_note_likes       ? "allow_note_likes       = '{$allow_note_likes}', "       : "").
+            ($pack->inventory_weight_cap   ? "inventory_weight_cap   = '{$inventory_weight_cap}', "   : "").
+            ($pack->ready_for_public       ? "ready_for_public       = '{$ready_for_public}', "       : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE game_id = '{$pack->game_id}'".
         );
-*/
 
         return games::getGame($gameId);
     }
@@ -148,6 +146,7 @@ class games extends dbconnection
         $command = 'rm -rf '. Config::gamedataFSPath . "/{$gameId}";
         exec($command, $output, $return);
         if($return) return new returnData(4, NULL, "unable to delete game directory");
+        return new returnData(0);
     }
 
     public function getTabBarItemsForGame($gameId)
