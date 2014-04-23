@@ -105,7 +105,7 @@ class games extends dbconnection
             ($pack->inventory_weight_cap   ? "inventory_weight_cap   = '{$inventory_weight_cap}', "   : "").
             ($pack->ready_for_public       ? "ready_for_public       = '{$ready_for_public}', "       : "").
             "last_active = CURRENT_TIMESTAMP ".
-            "WHERE game_id = '{$pack->game_id}'".
+            "WHERE game_id = '{$pack->game_id}'"
         );
 
         return games::getGame($gameId);
