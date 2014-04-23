@@ -147,7 +147,7 @@ For GET requests (get, delete): http://arisgames.org/server/json.php/v1.myservic
 <br />
 <br />
 
-<div id="request_inputs" style="min-height:400px; width:600px; float:left;">
+<div id="request_inputs" style="width:600px; float:left;">
     <div style="min-height:200px;">
     <button id='create_request_submit' onclick='submitCreate()'>create</button><input id='create_request_method' type='text'></input><br />
     <textarea id='create_request' style="width:100%; min-height:180px;"></textarea><br />
@@ -156,12 +156,14 @@ For GET requests (get, delete): http://arisgames.org/server/json.php/v1.myservic
     <div style="min-height:200px;">
     <button id='update_request_submit' onclick='submitUpdate()'>update</button><input id='update_request_method' type='text'></input><br />
     <textarea id='update_request' style="width:100%; min-height:180px;"></textarea><br />
-    <div style="min-height:200px;">
+    </div>
 
+    <div>
     <button id='get_request_submit' onclick='submitGet()'>get</button><input id='get_request_method' type='text'></input><br />
     <input id='get_request' type='text'></input><br />
     </div>
 
+    <div>
     <button id='delete_request_submit' onclick='submitDelete()'>delete</button><input id='delete_request_method' type='text'></input><br />
     <input id='delete_request' type='text'></input><br />
     </div>
@@ -169,7 +171,7 @@ For GET requests (get, delete): http://arisgames.org/server/json.php/v1.myservic
    </div>
 </div>
 
-<div id='result' style="min-height:600px; width:300px; float:left;"> 
+<div id='result' style="max-width:300px; float:left;"> 
 Result:<br />
 <div id='result_text'>
 (No Requests made)
