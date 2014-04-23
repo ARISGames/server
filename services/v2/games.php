@@ -84,6 +84,8 @@ class games extends dbconnection
 
     public static function updateGame($pack)
     {
+        return $pack;
+        return editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write");
         if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
