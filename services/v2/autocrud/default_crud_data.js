@@ -12,11 +12,24 @@ var CRUD_DEFAULTS = [
 },
 {
     "service":"games",
-    "create":"games.createGame",
+    "create":"games.createGameJSON",
     "get":"games.getGame",
     "update":"games.updateGame",
     "delete":"games.deleteGame",
-    "createData":"",
+    "createData":
+        '\
+        {\n\
+          "name":"gameName",\n\
+          "description":"gameDescription",\n\
+          "icon_media_id":1,\n\
+          "media_id":2,\n\
+          "map_type":"huh",\n\
+          "latitude":1.234,\n\
+          "longitude":2.468,\n\
+          "zoom_level":2,\n\
+          "show_player_location":true\n\
+        }\n\
+        ',
     "getData":"",
     "updateData":"",
     "deleteData":""

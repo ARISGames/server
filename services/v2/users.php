@@ -40,13 +40,13 @@ class users extends dbconnection
         return new returnData(0, $ret);
     }
 
-    public function authenticateUser($userId, $token, $permission)
+    public function authenticateUser($userId, $key, $permission)
     {
         $permission = addslashes($permission);
-        $token      = addslashes($token);
+        $key        = addslashes($key);
 
         $user = dbconnection::queryObject("SELECT * FROM users WHERE user_id = '{$userId}' LIMIT 1");
-        if($user && $user->{$permission."_token"} == $token) return true;
+        if($user && $user->{$permission."_key"} == $key) return true;
         util::serverErrorLog("Failed Editor Authentication!"); return false;
     }
 

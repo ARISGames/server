@@ -2,47 +2,49 @@
 require_once('../../config.class.php');
 Class dbconnection
 {
-  public $con;
-  
+  private static $con;
+  private static function connect()    { dbconnection::$con = mysqli_connect(Config::v2_host, Config::v2_db_user, Config::v2_db_pass, Config::v2_db); }
+  private static function disconnect() { mysqli_close(dbconnection::$con); }
+
   function __construct()
   {
-    $this->con = mysqli_connect(Config::v2_host, Config::v2_db_user, Config::v2_db_pass, Config::v2_db);
+    dbconnection::connect();
   }
 
-  function query($query, $debug = false)
+  protected static function query($query, $debug = false)
   {
     if($debug) echo $query;
-    if(!mysqli_query($this->con, $query))
+    if(!mysqli_query(dbconnection::$con, $query))
     {
         return false;
     }
-    return $this->con->insert_id;
+    return dbconnection::$con->insert_id;
   }
 
-  function queryInsert($query, $debug = false)
+  protected static function queryInsert($query, $debug = false)
   {
     if($debug) echo $query;
-    if(!mysqli_query($this->con, $query))
+    if(!mysqli_query(dbconnection::$con, $query))
     {
         return false;
     }
-    return mysqli_insert_id($this->con);
+    return mysqli_insert_id(dbconnection::$con);
   }
 
-  function queryObject($query, $debug = false)
+  protected static function queryObject($query, $debug = false)
   {
     if($debug) echo $query;
-    if(!$sql_data = mysqli_query($this->con, $query))
+    if(!$sql_data = mysqli_query(dbconnection::$con, $query))
     {
         return false;
     }
     return mysqli_fetch_object($sql_data);
   }
 
-  function queryArray($query, $debug = false)
+  protected static function queryArray($query, $debug = false)
   {
     if($debug) echo $query;
-    if(!$sql_data = mysqli_query($this->con, $query))
+    if(!$sql_data = mysqli_query(dbconnection::$con, $query))
     {
         return false;
     }
@@ -54,7 +56,7 @@ Class dbconnection
 
   function __destruct()
   {
-    mysqli_close($this->con);
+    dbconnection::disconnect();
   }
 }
 ?>

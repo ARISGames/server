@@ -9,6 +9,13 @@
         var defaults = document.getElementById('crud_defaults');
         for(var i = 0; i < CRUD_DEFAULTS.length; i++)
             defaults.innerHTML += "<option value='"+i+"'>"+CRUD_DEFAULTS[i].service+"</option>";
+        var params = parseURLParams(document.URL);
+        if(params.username && params.password)
+        {
+            document.getElementById('auth_request_user').value = params.username;
+            document.getElementById('auth_request_password').value = params.password;
+            submitAuth();
+        }
     }
     
     function parseURLParams(url) 
@@ -69,7 +76,7 @@
     function submitCreate()
     {
         var package = JSON.parse(document.getElementById('create_request').value);
-        package.auth = {"user_id":userId,"read_write_key":rwkey};
+        package.auth = {"user_id":userId,"key":rwkey};
         var response = sendRequest(document.getElementById('create_request_method').value, JSON.stringify(package), "POST");
         document.getElementById('result').innerHTML = JSON.stringify(response);
     }
@@ -77,7 +84,7 @@
     function submitUpdate()
     {
         var package = JSON.parse(document.getElementById('update_request').value);
-        package.auth = {"user_id":userId,"read_write_key":rwkey};
+        package.auth = {"user_id":userId,"key":rwkey};
         var response = sendRequest(document.getElementById('update_request_method').value, JSON.stringify(package), "POST");
         document.getElementById('result').innerHTML = JSON.stringify(response);
     }
