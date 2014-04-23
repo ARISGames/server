@@ -72,6 +72,15 @@
         userId = response.data.user_id; document.getElementById('auth_response_user_id').innerHTML = response.data.user_id;
         rwkey = response.data.read_write_key; document.getElementById('auth_response_read_write_key').innerHTML = response.data.read_write_key;
     }
+    function submitNewUser()
+    {
+        var response = sendRequest('users.createUser/'+document.getElementById('new_user_request_user').value+"/"+hex_md5(document.getElementById('new_user_request_password').value)+"/read_write", null, "GET");
+        document.getElementById('auth_request_user').value = document.getElementById('new_user_request_user').value;
+        document.getElementById('auth_request_password').value = document.getElementById('new_user_request_password').value;
+        document.getElementById('result_text').innerHTML = JSON.stringify(response);
+        userId = response.data.user_id; document.getElementById('auth_response_user_id').innerHTML = response.data.user_id;
+        rwkey = response.data.read_write_key; document.getElementById('auth_response_read_write_key').innerHTML = response.data.read_write_key;
+    }
 
     function submitCreate()
     {
@@ -105,12 +114,22 @@
 </head>
 <body onload="load()">
 
-<table id="auth_inputs">
-<tr> <td> <button id='auth_request_submit' onclick='submitAuth()'>authenticate</button> </td> </tr>
-<tr> <td style='text-align:right;'>Username:</td> <td><input id='auth_request_user'     type='text'>    </input></td> <td style='text-align:right;'>user_id:</td>        <td id='auth_response_user_id'>       </td> </tr>
-<tr> <td style='text-align:right;'>Password:</td> <td><input id='auth_request_password' type='password'></input></td> <td style='text-align:right;'>read_write_key:</td> <td id='auth_response_read_write_key'></td> </tr>
-</table>
+<div style="float:left;">
+    <table id="auth_inputs">
+    <tr> <td> <button id='auth_request_submit' onclick='submitAuth()'>authenticate</button> </td> </tr>
+    <tr> <td style='text-align:right;'>Username:</td> <td><input id='auth_request_user'     type='text'>    </input></td> <td style='text-align:right;'>user_id:</td>        <td id='auth_response_user_id'>       </td> </tr>
+    <tr> <td style='text-align:right;'>Password:</td> <td><input id='auth_request_password' type='password'></input></td> <td style='text-align:right;'>read_write_key:</td> <td id='auth_response_read_write_key'></td> </tr>
+    </table>
+</div>
+<div style="float:left;">
+    <table id="new_user_inputs">
+    <tr> <td> <button id='new_user_request_submit' onclick='submitNewUser()'>create new user</button> </td> </tr>
+    <tr> <td style='text-align:right;'>Username:</td> <td><input id='new_user_request_user'     type='text'>    </input></td>  </tr>
+    <tr> <td style='text-align:right;'>Password:</td> <td><input id='new_user_request_password' type='password'></input></td>  </tr>
+    </table>
+</div>
 
+<div style="clear:both;"></div>
 <br />
 <br />
 

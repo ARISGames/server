@@ -14,7 +14,7 @@ Class dbconnection
   protected static function query($query, $debug = false)
   {
     if($debug) echo $query;
-    if(!mysqli_query(dbconnection::$con, $query))
+    if(!(mysqli_query(dbconnection::$con, $query)))
     {
         return false;
     }
@@ -24,7 +24,7 @@ Class dbconnection
   protected static function queryInsert($query, $debug = false)
   {
     if($debug) echo $query;
-    if(!mysqli_query(dbconnection::$con, $query))
+    if(!(mysqli_query(dbconnection::$con, $query)))
     {
         return false;
     }
@@ -34,7 +34,7 @@ Class dbconnection
   protected static function queryObject($query, $debug = false)
   {
     if($debug) echo $query;
-    if(!$sql_data = mysqli_query(dbconnection::$con, $query))
+    if(!($sql_data = mysqli_query(dbconnection::$con, $query)))
     {
         return false;
     }
@@ -44,7 +44,7 @@ Class dbconnection
   protected static function queryArray($query, $debug = false)
   {
     if($debug) echo $query;
-    if(!$sql_data = mysqli_query(dbconnection::$con, $query))
+    if(!($sql_data = mysqli_query(dbconnection::$con, $query)))
     {
         return false;
     }

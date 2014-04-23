@@ -59,7 +59,7 @@ class games extends dbconnection
             ")"
         );
 
-        dbconnection::queryInsert("INSERT INTO user_games (game_id, user_id, created) VALUES ('{$gameId}','{$pack->user_id}',CURRENT_TIMESTAMP)");
+        dbconnection::queryInsert("INSERT INTO user_games (game_id, user_id, created) VALUES ('{$gameId}','{$pack->auth->user_id}',CURRENT_TIMESTAMP)");
 
         dbconnection::query("INSERT INTO game_tab_data (game_id, tab, tab_index) VALUES ('{$gameId}', 'QUESTS',    '1')");
         dbconnection::query("INSERT INTO game_tab_data (game_id, tab, tab_index) VALUES ('{$gameId}', 'GPS',       '2')");
@@ -116,6 +116,7 @@ class games extends dbconnection
     public static function getGame($gameId)
     {
         $sql_game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$gameId}' LIMIT 1");
+        if(!$sql_game) return new returnData(2, NULL, "The game you've requested does not exist");
 
         $game = new stdClass();
         $game->game_id = $sql_game->game_id;
@@ -142,8 +143,8 @@ class games extends dbconnection
     {
         if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new returnData(6, NULL, "Failed Authentication");
 
-        dbconnection::queryObject("DELETE FROM games WHERE game_id = '{$gameId}' LIMIT 1");
-        dbconnection::queryObject("DELETE FROM game_tab_data WHERE game_id = '{$gameId}' LIMIT 1");
+        dbconnection::query("DELETE FROM games WHERE game_id = '{$gameId}' LIMIT 1");
+        dbconnection::query("DELETE FROM game_tab_data WHERE game_id = '{$gameId}' LIMIT 1");
         $command = 'rm -rf '. Config::gamedataFSPath . "/{$gameId}";
         exec($command, $output, $return);
         if($return) return new returnData(4, NULL, "unable to delete game directory");
