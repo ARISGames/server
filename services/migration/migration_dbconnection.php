@@ -2,9 +2,9 @@
 require_once('../../config.class.php');
 Class dbconnection
 {
-    //SAME AS dbconnection.php, but with legacy db config
+    //SAME AS dbconnection.php, but with migration db config
   private static $con;
-  private static function connect()    { dbconnection::$con = mysqli_connect(Config::dbHost, Config::dbUser, Config::dbPass, Config::dbSchema); }
+  private static function connect()    { dbconnection::$con = mysqli_connect(Config::migration_host, Config::migration_db_user, Config::migration_db_pass, Config::migration_db); }
   private static function disconnect() { mysqli_close(dbconnection::$con); }
 
   function __construct()

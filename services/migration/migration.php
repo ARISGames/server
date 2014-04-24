@@ -1,12 +1,8 @@
 <?php
 
-require_once("legacy_dbconnection.php");
-require_once("returnData.php");
-require_once("users.php");
-require_once("editors.php");
-require_once("media.php");
+require_once("migration_dbconnection.php");
 
-class migration extends dbconnection
+class migration extends migration_dbconnection
 {	
     public function duplicateGame($gameId, $userId, $key)
     {
