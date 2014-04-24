@@ -202,7 +202,7 @@ var CRUD_DEFAULTS = [
           "instance_id":123,\n\
           "scene_id":123,\n\
           "requirement_root_package_id":132,\n\
-          "type":"Location",\n\
+          "type":"LOCATION",\n\
           "latitude":1.234,\n\
           "longitude":2.468,\n\
           "distance":5,\n\
@@ -220,7 +220,7 @@ var CRUD_DEFAULTS = [
           "instance_id":123,\n\
           "scene_id":123,\n\
           "requirement_root_package_id":132,\n\
-          "type":"Location",\n\
+          "type":"LOCATION",\n\
           "latitude":1.234,\n\
           "longitude":2.468,\n\
           "distance":5,\n\
