@@ -67,7 +67,7 @@ class instances extends dbconnection
         $sql_instance = dbconnection::queryObject("SELECT * FROM instances WHERE instance_id = '{$instanceId}' LIMIT 1");
 
         $instance = new stdClass();
-        $instance->instance_id  = $sql_instancinstance_id;
+        $instance->instance_id  = $sql_instance->instance_id;
         $instance->game_id      = $sql_instance->game_id;
         $instance->object_id    = $sql_instance->object_id;
         $instance->spawnable_id = $sql_instance->spawnable_id;

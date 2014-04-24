@@ -110,7 +110,6 @@ var CRUD_DEFAULTS = [
         '\
         {\n\
           "requirement_root_package_id":123,\n\
-          "game_id":123,\n\
           "name":"requirementPackageName",\n\
           "and_packages": [\n\
             {\n\
@@ -184,7 +183,6 @@ var CRUD_DEFAULTS = [
         '\
         {\n\
           "scene_id":234,\n\
-          "game_id":123,\n\
           "name":"sceneName"\n\
         }\n\
         ',
@@ -218,7 +216,6 @@ var CRUD_DEFAULTS = [
         '\
         {\n\
           "trigger_id":123,\n\
-          "game_id":123,\n\
           "name":"triggerName",\n\
           "instance_id":123,\n\
           "scene_id":123,\n\
@@ -230,6 +227,31 @@ var CRUD_DEFAULTS = [
           "wiggle":1,\n\
           "show_title":1,\n\
           "code":"abc123"\n\
+        }\n\
+        ',
+    "deleteData":"123"
+},
+{
+    "service":"instances",
+    "create":"instances.createInstanceJSON",
+    "get":"instances.getInstance",
+    "update":"instances.updateInstanceJSON",
+    "delete":"instances.deleteInstance",
+    "createData":
+        '\
+        {\n\
+          "game_id":123,\n\
+          "object_id":123,\n\
+          "spawnable_id":123\n\
+        }\n\
+        ',
+    "getData":"123",
+    "updateData":
+        '\
+        {\n\
+          "instance_id":123,\n\
+          "object_id":123,\n\
+          "spawnable_id":123\n\
         }\n\
         ',
     "deleteData":"123"
