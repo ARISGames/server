@@ -2,8 +2,29 @@
 
 require_once("migration_dbconnection.php");
 
+require_once("../v1/players.php");
+require_once("../v1/editors.php");
+require_once("../v2/users.php");
+
 class migration extends migration_dbconnection
 {	
+    public function migrateUser($playerName, $playerPass, $editorName, $editorPass, $newName, $newPass)
+    {
+        $v1Player = Players::getLoginPlayerObject($playerName, $playerPass);
+        $v1Editor = Editors::getToken($editorName, $editorPass, "read_write");
+        if($v1Player->player_id && $v1Editor->editor_id)
+            $v2User = users::createUser($newName, $newPass);
+        else return "Invalid Credentials";
+        if($v2User)
+            migration_dbconnection::query("INSERT INTO user_migrations (v2_user_id, v1_player_id, v1_editor_id) VALUES ('{$v2User->user_id}', '{$v1Player->player_id}', '{$v1Editor->editor_id}')");
+        else return "New Username taken";
+    }
+
+    public function migrateGame($v1GameId, $v1EditorId, $v1Token, $v2Username, $v2Password)
+    {
+
+    }
+
     public function duplicateGame($gameId, $userId, $key)
     {
         if(!users::authenticateUser($userId, $key, "read_write"))
