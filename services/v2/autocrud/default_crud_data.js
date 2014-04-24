@@ -189,5 +189,49 @@ var CRUD_DEFAULTS = [
         }\n\
         ',
     "deleteData":"123"
+},
+{
+    "service":"triggers",
+    "create":"triggers.createTriggerJSON",
+    "get":"triggers.getTrigger",
+    "update":"triggers.updateTriggerJSON",
+    "delete":"triggers.deleteTrigger",
+    "createData":
+        '\
+        {\n\
+          "game_id":123,\n\
+          "name":"triggerName",\n\
+          "instance_id":123,\n\
+          "scene_id":123,\n\
+          "requirement_root_package_id":132,\n\
+          "type":"Location",\n\
+          "latitude":1.234,\n\
+          "longitude":2.468,\n\
+          "distance":5,\n\
+          "wiggle":1,\n\
+          "show_title":1,\n\
+          "code":"abc123"\n\
+        }\n\
+        ',
+    "getData":"123",
+    "updateData":
+        '\
+        {\n\
+          "trigger_id":123,\n\
+          "game_id":123,\n\
+          "name":"triggerName",\n\
+          "instance_id":123,\n\
+          "scene_id":123,\n\
+          "requirement_root_package_id":132,\n\
+          "type":"Location",\n\
+          "latitude":1.234,\n\
+          "longitude":2.468,\n\
+          "distance":5,\n\
+          "wiggle":1,\n\
+          "show_title":1,\n\
+          "code":"abc123"\n\
+        }\n\
+        ',
+    "deleteData":"123"
 }
 ];

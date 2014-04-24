@@ -6,19 +6,19 @@ require_once("editors.php");
 
 class triggers extends dbconnection
 {	
-    //Takes in game JSON, all fields optional except user_id + key
+    //Takes in trigger JSON, all fields optional except user_id + key
     public static function createTriggerJSON($glob)
     {
         $data = file_get_contents("php://input");
         $glob = json_decode($data);
-        return games::createTrigger($glob);
+        return triggers::createTrigger($glob);
     }
 
     public static function createTrigger($pack)
     {
         if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
-
+    
         $triggerId = dbconnection::queryInsert(
             "INSERT INTO triggers (".
             "game_id,".
@@ -37,7 +37,7 @@ class triggers extends dbconnection
             ") VALUES (".
             "'".$pack->game_id."',".
             ($pack->name                        ? "'".addslashes($pack->name)."',"                        : "").
-            ($pack->instanc_id                  ? "'".addslashes($pack->instanc_id)."',"                  : "").
+            ($pack->instance_id                 ? "'".addslashes($pack->instance_id)."',"                 : "").
             ($pack->scene_id                    ? "'".addslashes($pack->scene_id)."',"                    : "").
             ($pack->requirement_root_package_id ? "'".addslashes($pack->requirement_root_package_id)."'," : "").
             ($pack->type                        ? "'".addslashes($pack->type)."',"                        : "").
@@ -59,7 +59,7 @@ class triggers extends dbconnection
     {
         $data = file_get_contents("php://input");
         $glob = json_decode($data);
-        return games::updateTrigger($glob);
+        return triggers::updateTrigger($glob);
     }
 
     public static function updateTrigger($pack)
@@ -82,7 +82,7 @@ class triggers extends dbconnection
             ($pack->show_title                  ? "show_title                  = '".addslashes($pack->show_title)."', "                  : "").
             ($pack->code                        ? "code                        = '".addslashes($pack->code)."', "                        : "").
             "last_active = CURRENT_TIMESTAMP ".
-            "WHERE trigger_id = '{$pack->trigger_id}'".
+            "WHERE trigger_id = '{$pack->trigger_id}'"
         );
 
         return triggers::getTrigger($pack->trigger_id);
@@ -116,6 +116,7 @@ class triggers extends dbconnection
         if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new returnData(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM triggers WHERE trigger_id = '{$triggerId}' LIMIT 1");
+        return new returnData(0);
     }
 }
 ?>
