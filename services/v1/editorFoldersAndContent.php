@@ -36,7 +36,7 @@ class EditorFoldersAndContent extends Module
         {
             $media[$m->media_id] = $m;
             $media[$m->media_id]->file_name = $m->file_path;
-            $media[$m->media_id]->url_path = Config::gamedataWWWPath . "/" . Config::gameMediaSubdir;
+            $media[$m->media_id]->url_path = Config::gamedataWWWPath . "/";
             if($media[$m->media_id]->is_icon)
                 $media[$m->media_id]->type = 'Icon';
             else

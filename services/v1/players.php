@@ -547,7 +547,7 @@ class Players extends Module
                 $backpack->owner->player_pic_thumb_url = $playerPic->thumb_url;
 
                 $media->thumb_file_path = substr($media->file_path,0,strrpos($media->file_path,'.')).'_128'.substr($media->file_path,strrpos($media->file_path,'.'));
-                $media->url_path = Config::gamedataWWWPath . "/" . Config::gameMediaSubdir;
+                $media->url_path = Config::gamedataWWWPath . "/";
 
                 if($getItems || $getAttributes)
                 {

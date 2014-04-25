@@ -1,258 +1,171 @@
 <?php
-require_once("module.php");
+require_once("dbconnection.php");
 require_once("../../libraries/wideimage/WideImage.php");
 
-class Media extends Module
+class media extends dbconnection
 {
-    const MEDIA_IMAGE = 'Image';
-    const MEDIA_ICON = 'Icon';
-    const MEDIA_VIDEO = 'Video';
-    const MEDIA_AUDIO = 'Audio';
-    protected $validImageAndIconTypes = array('jpg','png','gif');
-    protected $validAudioTypes = array('mp3','m4a','caf');
-    protected $validVideoTypes = array('mp4','m4v','3gp','mov');
-
-    public function parseRawMedia($media)
+    //This will be the returned format of every media query
+    private function mediaObjectFromSQL($sql_media)
     {
-        $media->file_name = $media->file_path; //this is for legacy reasons... Phil 10/12/2012
-        $media->thumb_file_path = substr($media->file_path,0,strrpos($media->file_path,'.')).'_128'.substr($media->file_path,strrpos($media->file_path,'.'));
-        $media->url_path = Config::gamedataWWWPath . "/" . Config::gameMediaSubdir;
-        $media->url       = $media->url_path."/".$media->file_path;
-        $media->thumb_url = $media->url_path."/".$media->thumb_file_path;
+        $media = new stdClass();
+        $media->media_id     = $sql_media->media_id;
+        $media->game_id      = $sql_media->game_id;
+        $media->display_name = $sql_media->display_name;
+        $media->file_name    = $sql_media->file_name;
 
-        if($media->is_icon == '1') $media->type = self::MEDIA_ICON;
-        else $media->type = Media::getMediaType($media->file_path);
+        $filenametitle = substr($sql_media->file_name,0,strrpos($sql_media->file_name,'.'));
+        $filenameext   = substr($sql_media->file_name,strrpos($sql_media->file_name,'.'));
 
-        if($media->game_id == 0) $media->is_default = 1;
-        else $media->is_default = 0;
+        $media->url       = Config::gamedataWWWPath."/".$sql_media->file_folder."/".$sql_media->file_name;
+        $media->thumb_url = Config::gamedataWWWPath."/".$sql_media->file_folder."/".$filenametitle."_128".$filenameext;
 
         return $media;
     }
 
-    public function getMedia($gameId)
+    private function defaultMediaObject($mediaId)
     {
-        $medias = Module::query("SELECT * FROM media WHERE (game_id = '{$gameId}' OR game_id = 0) AND SUBSTRING(file_path,1,1) != 'p'");
-
-        $data = array();
-        while($media = mysql_fetch_object($medias))
-            $data[] = Media::parseRawMedia($media);
-        return new returnData(0, $data);
+        $fake_sql_media = new stdClass;
+        $fake_sql_media->game_id = 0;
+        $fake_sql_media->media_id = $mediaId;
+        $fake_sql_media->display_name = "Default NPC";
+        $fake_sql_media->file_folder = "0";
+        $fake_sql_media->file_name = "npc.png";
+        return media::mediaObjectFromSQL($fake_sql_media);
     }
 
-    public function getMediaObject($gameId, $mediaId)
+    public function getMediaForGame($gameId)
     {
-        //apparently, "is_numeric(NAN)" returns 'true'. NAN literally means "Not A Number". Think about that one for a sec.
-        if(!$mediaId || !is_numeric($mediaId) || $mediaId == NAN //return new returnData(2, NULL, "No matching media");
-        || !($media = Module::queryObject("SELECT * FROM media WHERE media_id = {$mediaId} LIMIT 1")))
-	{
-		$media = new stdClass;
-                $media->game_id = 0;
-        	$media->media_id = $mediaId;
-        	$media->name = "Default NPC";
-        	$media->file_path = "0/npc.png";
-        	return new returnData(0, Media::parseRawMedia($media));
-	}
+        $sql_medias = dbconnection::queryArray("SELECT * FROM media WHERE (game_id = '{$gameId}' OR game_id = 0) AND SUBSTRING(file_path,1,1) != 'p'");
 
-        return new returnData(0, Media::parseRawMedia($media));
-    }	
-
-    public function getValidAudioExtensions()
-    {
-        return new returnData(0, $this->validAudioTypes);
+        $medias = array();
+        for($i = 0; $i < count($sql_medias); $i++)
+            $medias[] = media::mediaObjectFromSQL($sql_medias[$i]);
+        return new returnData(0, $medias);
     }
 
-    public function getValidVideoExtensions()
+    //Takes in media JSON, all fields optional except user_id + key
+    public static function createMediaJSON($glob)
     {
-        return new returnData(0, $this->validVideoTypes);
+        $data = file_get_contents("php://input");
+        $glob = json_decode($data);
+        return media::createMedia($glob);
     }
 
-    public function getValidImageAndIconExtensions()
+    public static function createMedia($pack)
     {
-        return new returnData(0, $this->validImageAndIconTypes);
-    }
-
-    public function createMedia($gameId, $strName, $strFileName, $boolIsIcon)
-    {
-        if($gameId == "player")
-        {
-            $gameId = 0;
-            $strFileName = "player/".$strFileName;
-        }
-        else
-        {
-            $strFileName = $gameId."/".$strFileName;
-        }
-
-        $strName = addslashes($strName);
-
-        if ($boolIsIcon && $this->getMediaType($strFileName) != self::MEDIA_IMAGE)
-            return new returnData(4, NULL, "Icons must have a valid Image file extension");
-
-        $query = "INSERT INTO media 
-            (game_id, name, file_path, is_icon)
-            VALUES ('{$gameId}','{$strName}', '".$strFileName."',{$boolIsIcon})";
-
-        Module::query($query);
-        if (mysql_error()) return new returnData(3, NULL, "SQL Error:".mysql_error());
-
-        $media = new stdClass();
-        $media->media_id = mysql_insert_id();
-        $media->game_id = $gameId;
-        $media->name = $strName;
-        $media->file_path = $strFileName;
-
-        return new returnData(0,Media::parseRawMedia($media));
-    }
-
-    public function renameMedia($gameId, $mediaId, $strName, $editorId, $editorToken)
-    {
-        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+        //commented out because we need to allow anyone to create media for any game due to notes...
+        /*
+        if(($pack->game_id && !editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write")) //game media
+         || !editors::authenticateEditor($pack->auth->user_id, $pack->auth->key, "read_write")) //player media
             return new returnData(6, NULL, "Failed Authentication");
+        */
 
-        if($gameId == 'player') $gameId = '';
-
-        $strName = addslashes($strName);
-
-        //Update this record
-        $query = "UPDATE media 
-            SET name = '{$strName}' 
-            WHERE media_id = '{$mediaId}' and game_id = '{$gameId}'";
-
-        Module::query($query);
-        if (mysql_error()) return new returnData(3, NULL, "SQL Error");
-
-        if (mysql_affected_rows()) return new returnData(0, TRUE);
-        else return new returnData(0, FALSE);	
-    }
-
-    public function deleteMedia($gameId, $mediaId, $editorId, $editorToken)
-    {
-        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
-
-        $query = "SELECT * FROM media 
-            WHERE media_id = {$mediaId}";
-        $rsResult = Module::query($query);
-        if (mysql_error()) return new returnData(3, NULL, "SQL Error:". mysql_error());
-
-        $mediaRow = mysql_fetch_array($rsResult);
-        if($mediaRow === FALSE) return new returnData(2, NULL, "Invalid Media Record");
-
-        //Delete the Record
-        $query = "DELETE FROM media 
-            WHERE media_id = {$mediaId}";
-
-        $rsResult = Module::query($query);
-        if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error());
-
-        //Delete the file		
-        $fileToDelete = Config::gamedataFSPath . "/" . $mediaRow['file_path'];
-        if (!@unlink($fileToDelete)) 
-            return new returnData(4, NULL, "Record Deleted but file was not: $fileToDelete");
-
-        //Done
-        if (mysql_affected_rows()) return new returnData(0, TRUE);
-        else return new returnData(0, FALSE);	
-    }	
-
-    public function getMediaDirectory($gameId)
-    {
-        return new returnData(0, Config::gamedataFSPath . "/{$gameId}" . Config::gameMediaSubdir);
-    }
-
-    public function getMediaDirectoryURL($gameId)
-    {
-        return new returnData(0, Config::gamedataWWWPath . "/{$gameId}". Config::gameMediaSubdir);
-    }	
-
-    public function getMediaType($strMediaFileName)
-    {
-        $mediaParts = pathinfo($strMediaFileName);
-        $mediaExtension = $mediaParts['extension'];
-
-        $validImageAndIconTypes = array('jpg','png','gif');
-        $validAudioTypes = array('mp3','m4a','caf');
-        $validVideoTypes = array('mp4','m4v','3gp','mov');
-
-        if (in_array($mediaExtension, $validImageAndIconTypes )) return Media::MEDIA_IMAGE;
-        else if (in_array($mediaExtension, $validAudioTypes )) return Media::MEDIA_AUDIO;
-        else if (in_array($mediaExtension, $validVideoTypes )) return Media::MEDIA_VIDEO;
-
-        return '';
-    }	
-
-    public function createMediaFromJSON($glob)
-    {
-        $path     = $glob->path;
-        $filename = $glob->filename;
-        $data     = $glob->data;
-        
-        $gameMediaDirectory = Media::getMediaDirectory($path)->data;
-
-        $md5 = md5((string)microtime().$filename);
-        $ext = strtolower(substr($filename, -3));
-        $newMediaFileName = 'aris'.$md5.'.'.$ext;
-        $resizedMediaFileName = 'aris'.$md5.'_128.'.$ext;
+        $filenameext = substr($pack->file_name,strrpos($pack->file_name,'.'));
+        $filename = md5((string)microtime().$pack->file_name);
+        $newfilename = 'aris'.$filename.'.'.$filenameext;
+        $newthumbfilename = 'aris'.$filename.'_128.'.$filenameext;
 
         if(
                 //Images
-                $ext != "jpg" &&
-                $ext != "png" &&
-                $ext != "gif" &&
+                $filenameext != "jpg" &&
+                $filenameext != "png" &&
+                $filenameext != "gif" &&
                 //Video
-                $ext != "mp4" &&
-                $ext != "mov" &&
-                $ext != "m4v" &&
-                $ext != "3gp" &&
+                $filenameext != "mp4" &&
+                $filenameext != "mov" &&
+                $filenameext != "m4v" &&
+                $filenameext != "3gp" &&
                 //Audio
-                $ext != "caf" &&
-                $ext != "mp3" &&
-                $ext != "aac" &&
-                $ext != "m4a" &&
-                //Overlays
-                $ext != "zip" //oh god bad
-          )
-        return new returnData(1,NULL,"Invalid filetype:$ext");
+                $filenameext != "caf" &&
+                $filenameext != "mp3" &&
+                $filenameext != "aac" &&
+                $filenameext != "m4a" &&
+        )
+        return new returnData(1,NULL,"Invalid filetype: '{$filenameext}'");
 
-        $fullFilePath = $gameMediaDirectory."/".$newMediaFileName;
+        $filefolder = "";
+        if($pack->game_id) $filefolder = $pack->game_id;
+        else               $filefolder = "players"
+        $fspath      = Config::gamedataFSPath."/".$filefolder."/".$newfilename;
+        $fsthumbpath = Config::gamedataFSPath."/".$filefolder."/".$newthumbfilename;
 
-        $fp = fopen($fullFilePath, 'w');
-        if(!$fp) return new returnData(1,NULL,"Couldn't open file:$fullFilePath");
-        fwrite($fp,base64_decode($data));
+        $fp = fopen($fspath, 'w');
+        if(!$fp) return new returnData(1,NULL,"Couldn't open file:$fspath");
+        fwrite($fp,base64_decode($pack->data));
         fclose($fp);
 
-        if($ext == "jpg" || $ext == "png" || $ext == "gif")
+        if($filenameext == "jpg" || $filenameext == "png" || $filenameext == "gif")
         {
-            $img = WideImage::load($gameMediaDirectory."/".$newMediaFileName);
-            $img = $img->resize(128, 128, 'outside');
-            $img = $img->crop('center','center',128,128);
-            $img->saveToFile($gameMediaDirectory."/".$resizedMediaFileName);
-        }
-        else if($ext == "mp4") //only works with mp4
-        {
-            /*
-               $ffmpeg = '../../libraries/ffmpeg';
-               $videoFilePath      = $gameMediaDirectory."/".$newMediaFileName; 
-               $tempImageFilePath  = $gameMediaDirectory."/temp_".$resizedMediaFileName; 
-               $imageFilePath      = $gameMediaDirectory."/".$resizedMediaFileName; 
-               $cmd = "$ffmpeg -i $videoFilePath 2>&1"; 
-               $thumbTime = 1;
-               if(preg_match('/Duration: ((\d+):(\d+):(\d+))/s', shell_exec($cmd), $videoLength))
-               $thumbTime = (($videoLength[2] * 3600) + ($videoLength[3] * 60) + $videoLength[4])/2; 
-               $cmd = "$ffmpeg -i $videoFilePath -deinterlace -an -ss $thumbTime -t 00:00:01 -r 1 -y -vcodec mjpeg -f mjpeg $tempImageFilePath 2>&1"; 
-               shell_exec($cmd);
-
-               $img = WideImage::load($tempImageFilePath);
-               $img = $img->resize(128, 128, 'outside');
-               $img = $img->crop('center','center',128,128);
-               $img->saveToFile($imageFilePath);
-             */
+            $thumb = WideImage::load($fspath);
+            $thumb = $thumb->resize(128, 128, 'outside');
+            $thumb = $thumb->crop('center','center',128,128);
+            $thumb->saveToFile($fsthumbpath);
         }
 
-        Module::serverErrorLog("Uploaded W/JSON $newMediaFileName");
+        $mediaId = dbconnection::queryInsert(
+            "INSERT INTO media (".
+            "file_folder,".
+            "file_name,".
+            ($pack->game_id      ? "game_id,"      : "").
+            ($pack->display_name ? "display_name," : "").
+            "created".
+            ") VALUES (".
+            "'".$filefolder."',".
+            "'".$newfilename."',".
+            ($pack->game_id      ? "'".addslashes($pack->game_id)."',"      : "").
+            ($pack->display_name ? "'".addslashes($pack->display_name)."'," : "").
+            "CURRENT_TIMESTAMP".
+            ")"
+        );
 
-        $m = Media::createMedia($path, "UploadedMedia", $newMediaFileName, 0);
-        return new returnData(0,$m->data);
+        return media::getMedia($mediaId);
+    }
+
+    //Takes in game JSON, all fields optional except user_id + key
+    public static function updateMediaJSON($glob)
+    {
+        $data = file_get_contents("php://input");
+        $glob = json_decode($data);
+        return media::updateMedia($glob);
+    }
+
+    public static function updateMedia($pack)
+    {
+        $gameId = dbconnection::queryObject("SELECT * FROM media WHERE media_id = '{$pack->media_id}'")->game_id;
+        //commented out because we need to allow anyone to update media for any game due to notes...
+        /*
+        if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+        */
+
+        //boring, but this is the only immutable property of media
+        dbconnection::query(
+            "UPDATE media SET ".
+            ($pack->display_name ? "display_name = '".addslashes($pack->display_name)."', " : "").
+            "last_active = CURRENT_TIMESTAMP ".
+            "WHERE media_id = '{$pack->media_id}'"
+        );
+
+        return media::getMedia($pack->media_id);
+    }
+
+    public function getMedia($mediaId)
+    {
+        if(!($sql_media = dbconnection::queryObject("SELECT * FROM media WHERE media_id = '{$mediaId}' LIMIT 1")))
+            return new returnData(0,media::defaultMediaObject($mediaId));
+        return new returnData(0, media::mediaObjectFromSQL($sql_media));
+    }	
+
+    public static function deleteMedia($mediaId, $userId, $key)
+    {
+        $media_sql = dbconnection::queryObject("SELECT * FROM media WHERE media_id = '{$mediaId}'");
+        if(!editors::authenticateGameEditor($media_sql->gameId, $userId, $key, "read_write")) return new returnData(6, NULL, "Failed Authentication");
+
+        if(!unlink(Config::gamedataFSPath."/".$media_sql->file_folder."/".$media_sql->file_name)) 
+            return new returnData(1, "Could not delete file.");
+
+        dbconnection::query("DELETE FROM media WHERE media_id = '{$mediaId}' LIMIT 1");
+        return new returnData(0);
     }
 }
 ?>

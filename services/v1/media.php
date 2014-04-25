@@ -16,7 +16,7 @@ class Media extends Module
     {
         $media->file_name = $media->file_path; //this is for legacy reasons... Phil 10/12/2012
         $media->thumb_file_path = substr($media->file_path,0,strrpos($media->file_path,'.')).'_128'.substr($media->file_path,strrpos($media->file_path,'.'));
-        $media->url_path = Config::gamedataWWWPath . "/" . Config::gameMediaSubdir;
+        $media->url_path = Config::gamedataWWWPath . "/";
         $media->url       = $media->url_path."/".$media->file_path;
         $media->thumb_url = $media->url_path."/".$media->thumb_file_path;
 
@@ -157,12 +157,12 @@ class Media extends Module
 
     public function getMediaDirectory($gameId)
     {
-        return new returnData(0, Config::gamedataFSPath . "/{$gameId}" . Config::gameMediaSubdir);
+        return new returnData(0, Config::gamedataFSPath . "/{$gameId}");
     }
 
     public function getMediaDirectoryURL($gameId)
     {
-        return new returnData(0, Config::gamedataWWWPath . "/{$gameId}". Config::gameMediaSubdir);
+        return new returnData(0, Config::gamedataWWWPath . "/{$gameId}");
     }	
 
     public function getMediaType($strMediaFileName)
