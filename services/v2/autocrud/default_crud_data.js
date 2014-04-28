@@ -391,6 +391,35 @@ var CRUD_DEFAULTS = [
     "deleteData":"123"
 },
 {
+    "service":"state_changes",
+    "create":"state_changes.createStateChangeJSON",
+    "get":"state_changes.getStateChange",
+    "update":"state_changes.updateStateChangeJSON",
+    "delete":"state_changes.deleteStateChange",
+    "createData":
+        '\
+        {\n\
+          "game_id":123,\n\
+          "action":"GIVE_ITEM",\n\
+          "amount":10,\n\
+          "object_type":"PLAQUE",\n\
+          "object_id":123\n\
+        }\n\
+        ',
+    "getData":"123",
+    "updateData":
+        '\
+        {\n\
+          "state_change_id":123,\n\
+          "action":"GIVE_ITEM",\n\
+          "amount":10,\n\
+          "object_type":"PLAQUE",\n\
+          "object_id":123\n\
+        }\n\
+        ',
+    "deleteData":"123"
+},
+{
     "service":"media",
     "create":"media.createMediaJSON",
     "get":"media.getMedia",
