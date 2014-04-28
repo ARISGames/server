@@ -362,6 +362,35 @@ var CRUD_DEFAULTS = [
     "deleteData":"123"
 },
 {
+    "service":"npc_scripts",
+    "create":"npc_scripts.createNpcScriptJSON",
+    "get":"npc_scripts.getNpcScript",
+    "update":"npc_scripts.updateNpcScriptJSON",
+    "delete":"npc_scripts.deleteNpcScript",
+    "createData":
+        '\
+        {\n\
+          "game_id":123,\n\
+          "npc_id":123,\n\
+          "title":"npcScriptTitle",\n\
+          "text":"npcScriptText",\n\
+          "sort_index":0\n\
+        }\n\
+        ',
+    "getData":"123",
+    "updateData":
+        '\
+        {\n\
+          "npc_script_id":123,\n\
+          "npc_id":123,\n\
+          "title":"npcScriptTitle",\n\
+          "text":"npcScriptText",\n\
+          "sort_index":0\n\
+        }\n\
+        ',
+    "deleteData":"123"
+},
+{
     "service":"media",
     "create":"media.createMediaJSON",
     "get":"media.getMedia",
