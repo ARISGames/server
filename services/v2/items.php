@@ -1,307 +1,117 @@
 <?php
-require_once("module.php");
-require_once("media.php");
-require_once("games.php");
-require_once("locations.php");
-require_once("playerStateChanges.php");
-require_once("editorFoldersAndContent.php");
+require_once("dbconnection.php");
+require_once("returnData.php");
+require_once("editors.php");
 
-class Items extends Module
+class items extends dbconnection
 {
-    public static function getItems($gameId)
+    //Takes in item JSON, all fields optional except game_id + user_id + key
+    public static function createItemJSON($glob)
     {
-        $rsResult = Module::query("SELECT * FROM items WHERE game_id = '{$gameId}'");
-
-        if (mysql_error()) return new returnData(3, NULL, "SQL Error");
-        return new returnData(0, $rsResult);
+        $data = file_get_contents("php://input");
+        $glob = json_decode($data);
+        return items::createItem($glob);
     }
 
-    public static function getFullItems($gameId)
+    public static function createItem($pack)
     {
-        $items = Module::queryArray("SELECT * FROM items WHERE game_id = '{$gameId}';");
-        $tags = Module::queryArray("SELECT ot.tag_id, ot.object_id, got.media_id, got.tag FROM (SELECT * FROM object_tags WHERE object_type = 'ITEM') as ot LEFT JOIN (SELECT * FROM game_object_tags WHERE game_id = '{$gameId}' AND use_for_sort = '1') as got ON ot.tag_id = got.tag_id;");
-
-        for($i = 0; $i < count($items); $i++)
-        {
-            $items[$i]->tags = array();
-            for($t = 0; $t < count($tags); $t++)
-            {
-                if($tags[$t]->object_id == $items[$i]->item_id && $tags[$t]->tag != null)
-                    $items[$i]->tags[] = $tags[$t];
-            }
-        }
-
-        return new returnData(0, $items);
-    }
-
-    public static function getItemsForPlayer($gameId, $playerId)
-    {
-        $query = "SELECT game_items.*, game_player_items.qty, game_player_items.viewed FROM (SELECT * FROM items WHERE game_id = {$gameId}) AS game_items JOIN (SELECT * FROM player_items WHERE game_id = {$gameId} AND player_id = $playerId) AS game_player_items ON game_items.item_id = game_player_items.item_id";
-
-        $rsResult = Module::query($query);
-        if (mysql_error()) return new returnData(3, NULL, "SQL Error");
-        if (!$rsResult) return new returnData(3, NULL, "Something bad happened");
-        return new returnData(0, $rsResult);
-    }	
-
-    public static function getItemCountForPlayer($obj)
-    {
-        $gameId = $obj['gameId'];
-        $playerId = $obj['playerId'];
-        $itemId = $obj['itemId'];
-
-        $query = "SELECT qty FROM player_items WHERE player_id = $playerId AND item_id = $itemId AND game_id = '{$gameId}'";
-
-        $rsResult = Module::query($query);
-        if (!$rsResult) return new returnData(0, NULL);
-        $row = @mysql_fetch_row($rsResult);
-        if (mysql_error()) return new returnData(3, NULL, "SQL Error");
-        return new returnData(0, $row[0]);
-    }
-
-    public static function getAttributesForPlayer($gameId, $playerId)
-    {
-        $query = "SELECT game_items.*, game_player_items.qty FROM (SELECT * FROM items WHERE game_id = {$gameId} AND is_attribute = '1') AS game_items JOIN (SELECT * FROM player_items WHERE game_id = {$gameId} AND player_id = $playerId) AS game_player_items ON game_items.item_id = game_player_items.item_id";
-
-        $rsResult = Module::query($query);
-        if (!$rsResult) return new returnData(0, NULL);
-        if (mysql_error()) return new returnData(3, NULL, "SQL Error");
-        return new returnData(0, $rsResult);
-    }
-
-    public static function getItem($gameId, $itemId)
-    {
-        $query = "SELECT * FROM items WHERE item_id = {$itemId} AND game_id = '{$gameId}' LIMIT 1";
-
-        $rsResult = Module::query($query);
-        if (mysql_error()) return new returnData(3, NULL, "SQL Error");
-
-        $item = @mysql_fetch_object($rsResult);
-        if (!$item) return new returnData(2, NULL, "invalid item id");
-
-        return new returnData(0, $item);
-    }
-
-    public static function createItem($gameId, $name, $description, $iconMediaId, $mediaId, $droppable, $destroyable, $tradeable, $attribute, $maxQuantityInPlayerInventory, $weight, $url, $type, $editorId, $editorToken)
-    {
-        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+        if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
-        $name = addslashes($name);	
-        $description = addslashes($description);	
+        $itemId = dbconnection::queryInsert(
+            "INSERT INTO items (".
+            "game_id,".
+            ($pack->name                 ? "name,"                 : "").
+            ($pack->description          ? "description,"          : "").
+            ($pack->icon_media_id        ? "icon_media_id,"        : "").
+            ($pack->media_id             ? "media_id,"             : "").
+            ($pack->droppable            ? "droppable,"            : "").
+            ($pack->destroyable          ? "destroyable,"          : "").
+            ($pack->max_qty_in_inventory ? "max_qty_in_inventory," : "").
+            ($pack->weight               ? "weight,"               : "").
+            ($pack->url                  ? "url,"                  : "").
+            ($pack->type                 ? "type,"                 : "").
+            "created".
+            ") VALUES (".
+            "'".addslashes($pack->game_id)."',".
+            ($pack->name                 ? "'".addslashes($pack->name)."',"                 : "").
+            ($pack->description          ? "'".addslashes($pack->description)."',"          : "").
+            ($pack->icon_media_id        ? "'".addslashes($pack->icon_media_id)."',"        : "").
+            ($pack->media_id             ? "'".addslashes($pack->media_id)."',"             : "").
+            ($pack->droppable            ? "'".addslashes($pack->droppable)."',"            : "").
+            ($pack->destroyable          ? "'".addslashes($pack->destroyable)."',"          : "").
+            ($pack->max_qty_in_inventory ? "'".addslashes($pack->max_qty_in_inventory)."'," : "").
+            ($pack->weight               ? "'".addslashes($pack->weight)."',"               : "").
+            ($pack->url                  ? "'".addslashes($pack->url)."',"                  : "").
+            ($pack->type                 ? "'".addslashes($pack->type)."',"                 : "").
+            "CURRENT_TIMESTAMP".
+            ")"
+        );
 
-        $query = "INSERT INTO items 
-            (game_id, name, description, icon_media_id, media_id, dropable, destroyable, is_attribute, max_qty_in_inventory, weight, url, type)
-            VALUES ('{$gameId}',
-                    '{$name}', 
-                    '{$description}',
-                    '{$iconMediaId}', 
-                    '{$mediaId}', 
-                    '{$droppable}',
-                    '{$destroyable}',
-                    '{$attribute}',
-                    '{$maxQuantityInPlayerInventory}',
-                    '{$weight}',
-                    '{$url}',
-                    '{$type}')";
-
-
-        Module::query($query);
-        if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);		
-
-        return new returnData(0, mysql_insert_id());
+        return items::getItem($itemId);
     }
 
-    public static function updateItem($gameId, $itemId, $name, $description, 
-            $iconMediaId, $mediaId, $droppable, $destroyable, $tradeable, $attribute, $maxQuantityInPlayerInventory, $weight, $url, $type, $editorId, $editorToken)
+    //Takes in game JSON, all fields optional except item_id + user_id + key
+    public static function updateItemJSON($glob)
     {
-        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+        $data = file_get_contents("php://input");
+        $glob = json_decode($data);
+        return items::updateItem($glob);
+    }
+
+    public static function updateItem($pack)
+    {
+        $gameId = dbconnection::queryObject("SELECT * FROM items WHERE item_id = '{$pack->item_id}'")->game_id;
+        if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
-        $name = addslashes($name);	
-        $description = addslashes($description);	
+        dbconnection::query(
+            "UPDATE items SET ".
+            ($pack->name                 ? "name                 = '".addslashes($pack->name)."', "                 : "").
+            ($pack->description          ? "description          = '".addslashes($pack->description)."', "          : "").
+            ($pack->icon_media_id        ? "icon_media_id        = '".addslashes($pack->icon_media_id)."', "        : "").
+            ($pack->media_id             ? "media_id             = '".addslashes($pack->media_id)."', "             : "").
+            ($pack->droppable            ? "droppable            = '".addslashes($pack->droppable)."', "            : "").
+            ($pack->destroyable          ? "destroyable          = '".addslashes($pack->destroyable)."', "          : "").
+            ($pack->max_qty_in_inventory ? "max_qty_in_inventory = '".addslashes($pack->max_qty_in_inventory)."', " : "").
+            ($pack->weight               ? "weight               = '".addslashes($pack->weight)."', "               : "").
+            ($pack->url                  ? "url                  = '".addslashes($pack->url)."', "                  : "").
+            ($pack->type                 ? "type                 = '".addslashes($pack->type)."', "                 : "").
+            "last_active = CURRENT_TIMESTAMP ".
+            "WHERE item_id = '{$pack->item_id}'"
+        );
 
-        $query = "UPDATE items 
-            SET name = '{$name}', 
-                description = '{$description}', 
-                icon_media_id = '{$iconMediaId}',
-                media_id = '{$mediaId}', 
-                dropable = '{$droppable}',
-                destroyable = '{$destroyable}',
-                is_attribute = '{$attribute}',
-                max_qty_in_inventory = '{$maxQuantityInPlayerInventory}',
-                weight = '{$weight}',
-                url = '{$url}',
-                type = '{$type}'
-                    WHERE item_id = '{$itemId}' AND game_id = '{$gameId}'";
-
-
-        Module::query($query);
-        if (mysql_error()) return new returnData(3, NULL, "SQL Error:" . mysql_error() . "while running query:" . $query);
-
-        if (mysql_affected_rows()) return new returnData(0, TRUE, "Success Running:" . $query);
-        else return new returnData(0, FALSE, "Success Running:" . $query);
-
-
+        return items::getItem($pack->item_id);
     }
 
-    public static function deleteItem($gameId, $itemId)
+    public static function getItem($itemId)
     {
-        Locations::deleteLocationsForObject($gameId, 'Item', $itemId);
-        Requirements::deleteRequirementsForRequirementObject($gameId, 'Item', $itemId);
-        PlayerStateChanges::deletePlayerStateChangesThatRefrenceObject($gameId, 'Item', $itemId);
-        Module::removeItemFromAllPlayerInventories($gameId, $itemId );
+        $sql_item = dbconnection::queryObject("SELECT * FROM items WHERE item_id = '{$itemId}' LIMIT 1");
 
-        $query = "DELETE FROM items WHERE item_id = {$itemId} AND game_id = '{$gameId}'";
+        $item = new stdClass();
+        $item->item_id              = $sql_item->item_id;
+        $item->game_id              = $sql_item->game_id;
+        $item->name                 = $sql_item->name;
+        $item->description          = $sql_item->description;
+        $item->icon_media_id        = $sql_item->icon_media_id;
+        $item->media_id             = $sql_item->media_id;
+        $item->droppable            = $sql_item->droppable;
+        $item->destroyable          = $sql_item->destroyable;
+        $item->max_qty_in_inventory = $sql_item->max_qty_in_inventory;
+        $item->weight               = $sql_item->weight;
+        $item->url                  = $sql_item->url;
+        $item->type                 = $sql_item->type;
 
-        $rsResult = Module::query($query);
-        if (mysql_error()) return new returnData(3, NULL, "SQL Error");
+        return new returnData(0,$item);
+    }
 
-        if(mysql_affected_rows())
-            return new returnData(0, TRUE);
-        else
-            return new returnData(0, FALSE);
-    }	
-
-    public static function commitTradeTransaction($gameId, $pOneId, $pTwoId, $giftsFromPOneJSON, $giftsFromPTwoJSON)
+    public static function deleteItem($itemId, $userId, $key)
     {
-        /* $giftsFromPNJSON format- 
-           {"items":[{"item_id":1,"qtyDelta":3},{"item_id":2,"qtyDelta":4}]}
-         */
-        $pOneGifts = $giftsFromPOneJSON["items"];
-        $pTwoGifts = $giftsFromPTwoJSON["items"];
+        $gameId = dbconnection::queryObject("SELECT * FROM items WHERE item_id = '{$itemId}'")->game_id;
+        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new returnData(6, NULL, "Failed Authentication");
 
-        foreach($pOneGifts as $pog)
-        {
-            Module::adjustQtyForPlayerItem($gameId, $pog["item_id"], $pOneId, -1*$pog["qtyDelta"]);
-            Module::adjustQtyForPlayerItem($gameId, $pog["item_id"], $pTwoId, $pog["qtyDelta"]);
-        }
-        foreach($pTwoGifts as $ptg)
-        {
-            Module::adjustQtyForPlayerItem($gameId, $ptg["item_id"], $pTwoId, -1*$ptg["qtyDelta"]);
-            Module::adjustQtyForPlayerItem($gameId, $ptg["item_id"], $pOneId, $ptg["qtyDelta"]);
-        }
+        dbconnection::query("DELETE FROM items WHERE item_id = '{$itemId}' LIMIT 1");
         return new returnData(0);
-    }
-
-    public static function getTag($gameId, $tagId)
-    {
-        $query = "SELECT tag as name, tag_id FROM game_object_tags WHERE game_id = '{$gameId}' AND tag_id = '{$tagId}'";
-        $result = Module::query($query);
-        $t = mysql_fetch_object($result);
-        return new returnData(0, $t);
-    }
-
-    public static function getTags($gameId)
-    {
-        $query = "SELECT tag as name, tag_id FROM game_object_tags WHERE game_id = '{$gameId}'";
-        $result = Module::query($query);
-        $ts = array();
-        while($t = mysql_fetch_object($result))
-            $ts[] = $t;
-        return new returnData(0, $ts);
-    }
-
-    public static function getItemTags($itemId)
-    {
-        $query = "SELECT game_object_tags.tag as name, game_object_tags.tag_id FROM game_object_tags RIGHT JOIN object_tags ON game_object_tags.tag_id = object_tags.tag_id WHERE object_tags.object_type = 'ITEM' AND object_tags.object_id = '{$itemId}'";
-        $result = Module::query($query);
-        $ts = array();
-        while($t = mysql_fetch_object($result))
-            $ts[] = $t;
-        return new returnData(0, $ts);
-    }
-
-    public static function addItemTag($gameId, $tag, $editorId, $editorToken)
-    {
-        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
-
-        $query = "INSERT INTO game_object_tags (game_id, tag) VALUES ('{$gameId}', '{$tag}');";
-        Module::query($query);
-        return new returnData(0, mysql_insert_id());
-    }
-
-    public static function deleteTag($gameId, $tagId, $editorId, $editorToken)
-    {
-        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
-
-        $query = "DELETE FROM object_tags WHERE tag_id = '{$tagId}'";
-        Module::query($query);
-        $query = "DELETE FROM game_object_tags WHERE tag_id = '{$tagId}'";
-        Module::query($query);
-        return new returnData(0);
-    }
-
-    public static function tagItem($gameId, $itemId, $tagId, $editorId, $editorToken)
-    {
-        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
-
-        $query = "INSERT INTO object_tags (object_type, object_id, tag_id) VALUES ('ITEM', '{$itemId}', '{$tagId}');";
-        Module::query($query);
-        return new returnData(0);
-    }
-
-    public static function untagItem($gameId, $itemId, $tagId, $editorId, $editorToken)
-    {
-        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
-
-        $query = "DELETE FROM object_tags WHERE object_type = 'ITEM' AND object_id = '{$itemId}' AND tag_id = '{$tagId}';";
-        Module::query($query);
-        return new returnData(0);
-    }
-
-    // \/ \/ \/ BACKPACK FUNCTIONS \/ \/ \/
-
-    public static function getDetailedPlayerAttributes($playerId, $gameId)
-    {
-        /* ATTRIBUTES */
-        $query = "SELECT DISTINCT i.item_id, i.name, i.description, i.max_qty_in_inventory, i.weight, i.type, i.url, pi.qty, m.file_path as media_url, m.game_id as media_game_id, im.file_path as icon_url, im.game_id as icon_game_id FROM (SELECT * FROM player_items WHERE game_id = {$gameId} AND player_id = {$playerId}) as pi LEFT JOIN (SELECT * FROM items WHERE game_id = {$gameId}) as i ON pi.item_id = i.item_id LEFT JOIN media as m ON i.media_id = m.media_id LEFT JOIN media as im ON i.icon_media_id = im.media_id WHERE i.type = 'ATTRIB' GROUP BY i.item_id";
-
-        $result = Module::query($query);
-        $contents = array();
-        while($content = mysql_fetch_object($result)) {
-            if($content->media_url)
-            {
-                $content->media_url       = Config::gamedataWWWPath . '/' . $content->media_url;
-                $content->media_thumb_url = substr($content->media_url,0,strrpos($content->media_url,'.')).'_128'.substr($content->media_url,strrpos($content->media_url,'.'));
-            }
-            if($content->icon_url)
-            {
-                $content->icon_url = Config::gamedataWWWPath . '/' . $content->icon_url;
-                $content->icon_thumb_url = substr($content-icon_url,0,strrpos($content-icon_url,'.')).'_128'.substr($content-icon_url,strrpos($content-icon_url,'.'));
-            }
-            $content->tags = Items::getItemTags($content->item_id)->data;
-            $contents[] = $content;
-        }
-        return $contents;
-    }
-
-    public static function getDetailedPlayerItems($playerId, $gameId)
-    {
-        /* OTHER ITEMS */
-        $query = "SELECT DISTINCT i.item_id, i.name, i.description, i.max_qty_in_inventory, i.weight, i.type, i.url, pi.qty, m.file_path as media_url, m.game_id as media_game_id, im.file_path as icon_url, im.game_id as icon_game_id FROM (SELECT * FROM player_items WHERE game_id={$gameId} AND player_id = {$playerId}) as pi LEFT JOIN (SELECT * FROM items WHERE game_id = {$gameId}) as i ON pi.item_id = i.item_id LEFT JOIN media as m ON i.media_id = m.media_id LEFT JOIN media as im ON i.icon_media_id = im.media_id WHERE i.type != 'ATTRIB' GROUP BY i.item_id";
-
-        $result = Module::query($query);
-        $contents = array();
-        while($content = mysql_fetch_object($result)){
-            if($content->media_url)
-            {
-                $content->media_url = Config::gamedataWWWPath . '/' . $content->media_url;
-                $content->media_thumb_url = substr($content->media_url,0,strrpos($content->media_url,'.')).'_128'.substr($content->media_url,strrpos($content->media_url,'.'));
-            }
-            if($content->icon_url)
-            {
-                $content->icon_url = Config::gamedataWWWPath . '/' . $content->icon_url;
-                $content->icon_thumb_url = substr($content-icon_url,0,strrpos($content-icon_url,'.')).'_128'.substr($content-icon_url,strrpos($content-icon_url,'.'));
-            }
-            $content->tags = Items::getItemTags($content->item_id)->data;
-            $contents[] = $content;
-        }
-
-        return $contents;
     }
 }
+?>

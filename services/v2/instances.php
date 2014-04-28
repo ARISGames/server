@@ -54,7 +54,6 @@ class instances extends dbconnection
 
         dbconnection::query(
             "UPDATE instances SET ".
-            ($pack->instance_id  ? "instance_id  = '".addslashes($pack->instance_id)."', "  : "").
             ($pack->object_id    ? "object_id    = '".addslashes($pack->object_id)."', "    : "").
             ($pack->object_type  ? "object_type  = '".addslashes($pack->object_type)."', "  : "").
             ($pack->spawnable_id ? "spawnable_id = '".addslashes($pack->spawnable_id)."', " : "").

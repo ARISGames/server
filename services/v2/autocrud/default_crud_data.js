@@ -259,6 +259,47 @@ var CRUD_DEFAULTS = [
     "deleteData":"123"
 },
 {
+    "service":"items",
+    "create":"items.createItemJSON",
+    "get":"items.getItem",
+    "update":"items.updateItemJSON",
+    "delete":"items.deleteItem",
+    "createData":
+        '\
+        {\n\
+          "game_id":123,\n\
+          "name":"itemName",\n\
+          "description":"itemDescription",\n\
+          "icon_media_id":123,\n\
+          "media_id":123,\n\
+          "droppable":1,\n\
+          "destroyable":1,\n\
+          "max_qty_in_inventory":500,\n\
+          "weight":0,\n\
+          "url":"http://www.arisgames.org",\n\
+          "type":"NORMAL"\n\
+        }\n\
+        ',
+    "getData":"123",
+    "updateData":
+        '\
+        {\n\
+          "item_id":123,\n\
+          "name":"itemName",\n\
+          "description":"itemDescription",\n\
+          "icon_media_id":123,\n\
+          "media_id":123,\n\
+          "droppable":1,\n\
+          "destroyable":1,\n\
+          "max_qty_in_inventory":500,\n\
+          "weight":0,\n\
+          "url":"http://www.arisgames.org",\n\
+          "type":"NORMAL"\n\
+        }\n\
+        ',
+    "deleteData":"123"
+},
+{
     "service":"media",
     "create":"media.createMediaJSON",
     "get":"media.getMedia",
