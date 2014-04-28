@@ -257,5 +257,30 @@ var CRUD_DEFAULTS = [
         }\n\
         ',
     "deleteData":"123"
+},
+{
+    "service":"media",
+    "create":"media.createMediaJSON",
+    "get":"media.getMedia",
+    "update":"media.updateMediaJSON",
+    "delete":"media.deleteMedia",
+    "createData":
+        '\
+        {\n\
+          "game_id":123,\n\
+          "display_name":"smiley",\n\
+          "file_name":"smiley.png",\n\
+          "data":"iVBORw0KGgoAAAANSUhEUgAAABQAAAAUBAMAAAB/pwA+AAAAA3NCSVQICAjb4U/gAAAAMFBMVEX/////7AD/4gD/2QD/zAD/xQD/vAD/sgD/qQA8/wCZmZnAlACceAA/Pz9AMQAAAADauoGxAAAAEHRSTlP///////////8A////////Xxf4pAAAAAlwSFlzAAAK8AAACvABQqw0mAAAAAh0RVh0Q29tbWVudAD2zJa/AAAAIXRFWHRTb2Z0d2FyZQBNYWNyb21lZGlhIEZpcmV3b3JrcyAzLjDvaTHwAAAAnElEQVR4nGOYCQcMQDz///+fEOb87+Xl9T/BzP9laWlp/0HM+eX/Q0P/p/8EMn+U7f7ivzusHsj8nv3f2Pj/1vyZDPPb/zsrKSkDVTDM7091VhRUdv0OZLaf/w8Ef0Ci7fkMQHAVnZm9gIGBayuQCTT3FwPDerC5P8rz3/9/mg5izm8HuaEcZPHMH+3l5eX9EEf+6Ojo/4nudBgAAKTFdNGCgV+fAAAAAElFTkSuQmCC"\n\
+        }\n\
+        ',
+    "getData":"123",
+    "updateData":
+        '\
+        {\n\
+          "media_id":123,\n\
+          "display_name":"smiley"\n\
+        }\n\
+        ',
+    "deleteData":"123"
 }
 ];

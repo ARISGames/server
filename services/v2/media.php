@@ -1,5 +1,6 @@
 <?php
 require_once("dbconnection.php");
+require_once("returnData.php");
 require_once("../../libraries/wideimage/WideImage.php");
 
 class media extends dbconnection
@@ -60,7 +61,7 @@ class media extends dbconnection
             return new returnData(6, NULL, "Failed Authentication");
         */
 
-        $filenameext = substr($pack->file_name,strrpos($pack->file_name,'.'));
+        $filenameext = substr($pack->file_name,strrpos($pack->file_name,'.')+1);
         $filename = md5((string)microtime().$pack->file_name);
         $newfilename = 'aris'.$filename.'.'.$filenameext;
         $newthumbfilename = 'aris'.$filename.'_128.'.$filenameext;
@@ -79,13 +80,13 @@ class media extends dbconnection
                 $filenameext != "caf" &&
                 $filenameext != "mp3" &&
                 $filenameext != "aac" &&
-                $filenameext != "m4a" &&
+                $filenameext != "m4a"
         )
         return new returnData(1,NULL,"Invalid filetype: '{$filenameext}'");
 
         $filefolder = "";
         if($pack->game_id) $filefolder = $pack->game_id;
-        else               $filefolder = "players"
+        else               $filefolder = "players";
         $fspath      = Config::gamedataFSPath."/".$filefolder."/".$newfilename;
         $fsthumbpath = Config::gamedataFSPath."/".$filefolder."/".$newthumbfilename;
 
