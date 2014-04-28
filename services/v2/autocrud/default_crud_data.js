@@ -242,6 +242,7 @@ var CRUD_DEFAULTS = [
         {\n\
           "game_id":123,\n\
           "object_id":123,\n\
+          "object_type":"PLAQUE",\n\
           "spawnable_id":123\n\
         }\n\
         ',
@@ -251,6 +252,7 @@ var CRUD_DEFAULTS = [
         {\n\
           "instance_id":123,\n\
           "object_id":123,\n\
+          "object_type":"PLAQUE",\n\
           "spawnable_id":123\n\
         }\n\
         ',
