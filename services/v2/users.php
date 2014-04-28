@@ -6,7 +6,7 @@ require_once("returnData.php");
 
 class users extends dbconnection
 {
-    public function createUser($username, $password) //note- password expected to be md5'd or something. don't be passing plaintext across the tubes...
+    public function createUser($username, $password)
     {
         if(dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$username}'"))
             return new returnData(1, NULL, "User already exists");
