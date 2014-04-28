@@ -300,6 +300,35 @@ var CRUD_DEFAULTS = [
     "deleteData":"123"
 },
 {
+    "service":"plaques",
+    "create":"plaques.createPlaqueJSON",
+    "get":"plaques.getPlaque",
+    "update":"plaques.updatePlaqueJSON",
+    "delete":"plaques.deletePlaque",
+    "createData":
+        '\
+        {\n\
+          "game_id":123,\n\
+          "name":"plaqueName",\n\
+          "description":"plaqueDescription",\n\
+          "icon_media_id":123,\n\
+          "media_id":123\n\
+        }\n\
+        ',
+    "getData":"123",
+    "updateData":
+        '\
+        {\n\
+          "plaque_id":123,\n\
+          "name":"plaqueName",\n\
+          "description":"plaqueDescription",\n\
+          "icon_media_id":123,\n\
+          "media_id":123\n\
+        }\n\
+        ',
+    "deleteData":"123"
+},
+{
     "service":"media",
     "create":"media.createMediaJSON",
     "get":"media.getMedia",
