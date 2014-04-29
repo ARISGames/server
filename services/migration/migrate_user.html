@@ -1,0 +1,99 @@
+<html>
+<head>
+<script type="text/javascript">
+    function parseURLParams(url) 
+    {
+        var queryStart = url.indexOf("?") + 1;
+        var queryEnd   = url.indexOf("#") + 1 || url.length + 1;
+        var query      = url.slice(queryStart, queryEnd - 1);
+
+        var params  = {};
+        if (query === url || query === "") return params;
+        var nvPairs = query.replace(/\+/g, " ").split("&");
+
+        for(var i=0; i<nvPairs.length; i++)
+        {
+            var nv = nvPairs[i].split("=");
+            var n  = decodeURIComponent(nv[0]);
+            var v  = decodeURIComponent(nv[1]);
+            if(!(n in params)) params[n] = [];
+            params[n].push(nv.length === 2 ? v : null);
+        }
+        return params;
+    }
+
+    function sendRequest(fn, params, method)
+    {
+        var xmlhttp;
+        xmlhttp=new XMLHttpRequest();
+        xmlhttp.open(method,"http://dev.arisgames.org/server/json.php/"+fn,false);
+        xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xmlhttp.send(params); //Synchronous call
+
+        return JSON.parse(xmlhttp.responseText);
+    }
+
+    var oldEditorVerified = false;
+    var oldClientVerified = false;
+    function submitMigration()
+    {
+        var clientName = document.getElementById('old_client_user').value;
+        var clientPass = document.getElementById('old_client_password').value;
+        var editorName = document.getElementById('old_editor_user').value;
+        var editorPass = document.getElementById('old_editor_password').value;
+        var newName    = document.getElementById('new_user').value;
+        var newPass    = document.getElementById('new_password').value;
+        var newDisplay = document.getElementById('new_display').value;
+        var newEmail   = document.getElementById('new_email').value;
+        var response = sendRequest('migration.migration.migrateUser/'+clientName+"/"+clientPass+"/"+editorName+"/"+editorPass+"/"+newName+"/"+newPass+"/"+newDisplay+"/"+newEmail, null, "GET");
+        if(response.data) document.getElementById('body').innerHTML = "Success!";
+        else              document.getElementById('body').innerHTML = response.returnCodeDescription;
+    }
+    function submitAuthOldEditor()
+    {
+        var response = sendRequest('v1.editors.getToken/'+document.getElementById('old_editor_user').value+"/"+document.getElementById('old_editor_password').value+"/read_write", null, "GET");
+        oldEditorVerified = response.data != null;
+        document.getElementById('auth_old_editor_verify').innerHTML = oldEditorVerified ? "VERIFIED" : "NOT VERIFIED";
+    }
+    function submitAuthOldClient()
+    {
+        var response = sendRequest('v1.players.getLoginPlayerObject/'+document.getElementById('old_client_user').value+"/"+document.getElementById('old_client_password').value, null, "GET");
+        oldClientVerified = response.data != null;
+        document.getElementById('auth_old_client_verify').innerHTML = oldClientVerified ? "VERIFIED" : "NOT VERIFIED";
+    }
+
+    function load()
+    {
+        //set up dom listeners
+        document.getElementById('old_editor_user').onkeydown     = function() { oldEditorVerified = false; document.getElementById('auth_old_editor_verify').innerHTML = "NOT VERIFIED"; };
+        document.getElementById('old_editor_password').onkeydown = function() { oldEditorVerified = false; document.getElementById('auth_old_editor_verify').innerHTML = "NOT VERIFIED"; };
+        document.getElementById('old_client_user').onkeydown     = function() { oldClientVerified = false; document.getElementById('auth_old_client_verify').innerHTML = "NOT VERIFIED"; };
+        document.getElementById('old_client_password').onkeydown = function() { oldClientVerified = false; document.getElementById('auth_old_client_verify').innerHTML = "NOT VERIFIED"; };
+    }
+
+</script>
+</head>
+<body onload="load()" id="body">
+
+<table id="old_user_inputs">
+<tr> <td> Old Editor Credentials:</td><td><button id='auth_old_editor_request_submit' onclick='submitAuthOldEditor()'>verify</button><span id='auth_old_editor_verify'>NOT VERIFIED </span></td> </tr>
+<tr> <td style='text-align:right;'>Username:</td> <td><input id='old_editor_user'     type='text'>    </input></td> </tr>
+<tr> <td style='text-align:right;'>Password:</td> <td><input id='old_editor_password' type='password'></input></td> </tr>
+<tr> <td>-</td> </tr>
+<tr> <td> Old Client Credentials:</td><td><button id='auth_old_client_request_submit' onclick='submitAuthOldClient()'>verify</button><span id='auth_old_client_verify'>NOT VERIFIED </span></td> </tr>
+<tr> <td style='text-align:right;'>Username:</td> <td><input id='old_client_user'     type='text'>    </input></td> </tr>
+<tr> <td style='text-align:right;'>Password:</td> <td><input id='old_client_password' type='password'></input></td> </tr>
+<tr> <td>-</td> </tr>
+<tr> <td> New Credentials: </td><td><button id='migrate_user_request_submit' onclick='submitMigration()'>migrate</button></td> </tr>
+<tr> <td style='text-align:right;'>Username:    </td> <td><input id='new_user'     type='text'>    </input></td> </tr>
+<tr> <td style='text-align:right;'>Password:    </td> <td><input id='new_password' type='password'></input></td> </tr>
+<tr> <td style='text-align:right;'>Display Name:</td> <td><input id='new_display'  type='text'>    </input></td> </tr>
+<tr> <td style='text-align:right;'>Email:       </td> <td><input id='new_email'    type='text'>    </input></td> </tr>
+<tr> </tr>
+<tr> <td>  </td> </tr>
+</table>
+
+
+</body>
+</html>
+

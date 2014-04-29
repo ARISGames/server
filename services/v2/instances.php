@@ -1,8 +1,7 @@
 <?php
-
 require_once("dbconnection.php");
-require_once("returnData.php");
 require_once("editors.php");
+require_once("return_package.php");
 
 class instances extends dbconnection
 {	
@@ -17,7 +16,7 @@ class instances extends dbconnection
     public static function createInstance($pack)
     {
         if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
+            return new return_package(6, NULL, "Failed Authentication");
     
         $instanceId = dbconnection::queryInsert(
             "INSERT INTO instances (".
@@ -50,7 +49,7 @@ class instances extends dbconnection
     {
         $gameId = dbconnection::queryObject("SELECT * FROM instances WHERE instance_id = '{$pack->instance_id}'")->game_id;
         if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
+            return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query(
             "UPDATE instances SET ".
@@ -75,16 +74,16 @@ class instances extends dbconnection
         $instance->object_type  = $sql_instance->object_type;
         $instance->spawnable_id = $sql_instance->spawnable_id;
 
-        return new returnData(0,$instance);
+        return new return_package(0,$instance);
     }
 
     public static function deleteInstance($instanceId, $userId, $key)
     {
         $gameId = dbconnection::queryObject("SELECT * FROM instances WHERE instance_id = '{$instanceId}'")->game_id;
-        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new returnData(6, NULL, "Failed Authentication");
+        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM instances WHERE instance_id = '{$instanceId}' LIMIT 1");
-        return new returnData(0);
+        return new return_package(0);
     }
 }
 ?>

@@ -1,8 +1,7 @@
 <?php
-
 require_once("dbconnection.php");
-require_once("returnData.php");
 require_once("editors.php");
+require_once("return_package.php");
 
 class scenes extends dbconnection
 {	
@@ -17,7 +16,7 @@ class scenes extends dbconnection
     public static function createScene($pack)
     {
         if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
+            return new return_package(6, NULL, "Failed Authentication");
 
         $sceneId = dbconnection::queryInsert(
             "INSERT INTO scenes (".
@@ -46,7 +45,7 @@ class scenes extends dbconnection
     {
         $gameId = dbconnection::queryObject("SELECT * FROM scenes WHERE scene_id = '{$pack->scene_id}'")->game_id;
         if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
+            return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query(
             "UPDATE scenes SET ".
@@ -67,13 +66,13 @@ class scenes extends dbconnection
         $scene->game_id = $sql_scene->game_id;
         $scene->name = $sql_scene->name;
 
-        return new returnData(0,$scene);
+        return new return_package(0,$scene);
     }
 
     public static function deleteScene($sceneId, $userId, $key)
     {
         $gameId = dbconnection::queryObject("SELECT * FROM scenes WHERE scene_id = '{$sceneId}'")->game_id;
-        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new returnData(6, NULL, "Failed Authentication");
+        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM scenes WHERE scene_id = '{$sceneId}' LIMIT 1");
     }

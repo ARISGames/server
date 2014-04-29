@@ -1,6 +1,7 @@
 <?php
 
 require_once("migration_dbconnection.php");
+require_once("migration_return_package.php");
 
 require_once("../v1/players.php");
 require_once("../v1/editors.php");
@@ -8,16 +9,40 @@ require_once("../v2/users.php");
 
 class migration extends migration_dbconnection
 {	
-    public function migrateUser($playerName, $playerPass, $editorName, $editorPass, $newName, $newPass)
+    public function migrateUser($playerName, $playerPass, $editorName, $editorPass, $newName, $newPass, $newDisplay, $newEmail)
     {
-        $v1Player = Players::getLoginPlayerObject($playerName, $playerPass);
-        $v1Editor = Editors::getToken($editorName, $editorPass, "read_write");
-        if($v1Player->player_id && $v1Editor->editor_id)
-            $v2User = users::createUser($newName, $newPass);
-        else return "Invalid Credentials";
+        $player = new Players;
+        $editor = new Editors;
+        $users = new users;
+        $v1Player = $player->getLoginPlayerObject($playerName, $playerPass)->data;
+        $v1Editor = $editor->getToken($editorName, $editorPass, "read_write")->data;
+        if($v1Player || $v1Editor)
+        {
+            $userpack = new stdClass();
+            $userpack->user_name = $newName;
+            $userpack->password = $newPass;
+            $userpack->display_name = $newDisplay;
+            $userpack->email = $newEmail;
+            $v2User = $users->createUser($userpack)->data;
+        }
+        else return new migration_return_package(1,NULL,"Invalid Credentials");
+
+        if(!$v1Player)
+        {
+            $v1Player = new stdClass();
+            $v1Player->player_id = 0;
+        }
+        if(!$v1Editor)
+        {
+            $v1Editor = new stdClass();
+            $v1Editor->editor_id = 0;
+        }
+
         if($v2User)
             migration_dbconnection::query("INSERT INTO user_migrations (v2_user_id, v1_player_id, v1_editor_id) VALUES ('{$v2User->user_id}', '{$v1Player->player_id}', '{$v1Editor->editor_id}')");
-        else return "New Username taken";
+        else return new migration_return_package(1,NULL,"Username Taken");
+
+        return new migration_return_package(0,true);
     }
 
     public function migrateGame($v1GameId, $v1EditorId, $v1Token, $v2Username, $v2Password)
@@ -27,6 +52,7 @@ class migration extends migration_dbconnection
 
     public function duplicateGame($gameId, $userId, $key)
     {
+    /*
         if(!users::authenticateUser($userId, $key, "read_write"))
             return new returnData(6, NULL, "Failed Authentication");
 
@@ -422,10 +448,12 @@ class migration extends migration_dbconnection
         }
 
         return new returnData(0, $newGameId, NULL);
+    */
     }
 
     static function replaceXMLIds($inputString, $newNpcIds, $newNodeIds, $newItemIds, $newAugBubbleIds, $newWebPageIds, $newMediaIds)
     {
+    /*
         $kTagExitToPlaque = "exitToPlaque";
         $kTagExitToWebPage = "exitToWebPage";
         $kTagExitToCharacter = "exitToCharacter";
@@ -505,6 +533,7 @@ class migration extends migration_dbconnection
             return $output;
         }
         return false;
+    */
     }
 }
 ?>

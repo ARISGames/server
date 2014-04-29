@@ -1,8 +1,7 @@
 <?php
-
 require_once("dbconnection.php");
 require_once("util.php");
-require_once("returnData.php");
+require_once("return_package.php");
 
 class users extends dbconnection
 {
@@ -17,7 +16,7 @@ class users extends dbconnection
     public function createUser($pack)
     {
         if(dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}'"))
-            return new returnData(1, NULL, "User already exists");
+            return new return_package(1, NULL, "User already exists");
 
         $salt       = util::rand_string(64);
         $hash       = hash("sha256",$salt.$pack->password);
@@ -69,7 +68,7 @@ class users extends dbconnection
     public function logIn($pack)
     {
         if(!($user = dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}'")) || hash("sha256",$user->salt.$pack->password) != $user->hash)
-            return new returnData(1, NULL, "Incorrect username/password");
+            return new return_package(1, NULL, "Incorrect username/password");
 
         $ret = new stdClass();
         $ret->user_id      = $user->user_id;
@@ -80,7 +79,7 @@ class users extends dbconnection
         if($pack->permission == "write")      $ret->write_key      = $user->write_key;
         if($pack->permission == "read_write") $ret->read_write_key = $user->read_write_key;
 
-        return new returnData(0, $ret);
+        return new return_package(0, $ret);
     }
 
     public function authenticateUser($userId, $key, $permission)
@@ -96,7 +95,7 @@ class users extends dbconnection
     public function changePassword($username, $oldPass, $newPass)
     {	
         $user = users::logIn($username, $oldPass, "read_write")->data;
-        if(!$user) return new returnData(1, NULL, "Incorrect username/password");
+        if(!$user) return new return_package(1, NULL, "Incorrect username/password");
 
         //if changing password, invalidate all keys
         $salt       = util::rand_string(64);
@@ -106,7 +105,7 @@ class users extends dbconnection
         $read_write = util::rand_string(64);
         dbconnection::query("UPDATE users SET salt = '{$salt}', hash = '{$hash}', read_key = '{$read_ley}', write_key = '{$write_key}', read_write_key = '{$read_write_key}' WHERE user_id = '{$user->user_id}'");
 
-        return new returnData(0, NULL);
+        return new return_package(0, NULL);
     }	
 
     public function resetAndEmailNewPassword($strEmail)
@@ -116,7 +115,7 @@ class users extends dbconnection
         if(strrpos($strEmail, "@") === false) $user = dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$strEmail}' LIMIT 1");
         else                                  $user = dbconnection::queryObject("SELECT * FROM users WHERE email = '{$strEmail}' LIMIT 1");
 
-        if(!$user) return new returnData(4, NULL, "Not a user");
+        if(!$user) return new return_package(4, NULL, "Not a user");
 
         $userId = $user->user_id;
         $username = $user->user_name;
@@ -127,20 +126,20 @@ class users extends dbconnection
         $subject = "ARIS Password Request";
         $body = "We received a forgotten password request for your ARIS account. If you did not make this request, do nothing and your account info will not change. <br><br>To reset your password, simply click the link below. Please remember that passwords are case sensitive. If you are not able to click on the link, please copy and paste it into your web browser.<br><br> <a href='".Config::serverWWWPath."/resetpassword.php?t=p&i=$userId&p=$scrambledpassword'>".Config::serverWWWPath."/resetpassword.php?t=p&i=$userId&p=$scrambledpassword</a> <br><br> Regards, <br>ARIS";
 
-        if(util::sendEmail($email, $subject, $body)) return new returnData(0, NULL);
-        else return new returnData(5, NULL, "Mail could not be sent");
+        if(util::sendEmail($email, $subject, $body)) return new return_package(0, NULL);
+        else return new return_package(5, NULL, "Mail could not be sent");
     }
 
     public function emailUserName($strEmail)
     {
         if(!$user = dbconnection::queryObject("SELECT * FROM users WHERE email = '{$strEmail}' LIMIT 1"))
-            return new returnData(4, NULL, "Email is not a user");
+            return new return_package(4, NULL, "Email is not a user");
 
         $subject = "Recover ARIS Login Information";
         $body = "Your ARIS username is: {$user->user_name}";
 
-        if(util::sendEmail($strEmail, $subject, $body)) return new returnData(0, NULL);
-        else return new returnData(5, NULL, "Mail could not be sent");
+        if(util::sendEmail($strEmail, $subject, $body)) return new return_package(0, NULL);
+        else return new return_package(5, NULL, "Mail could not be sent");
     }
 }
 ?>

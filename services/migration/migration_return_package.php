@@ -1,11 +1,11 @@
 <?php
-class ReturnData
+class migration_return_package
 {
     public $data;
     public $returnCode;
     public $returnCodeDescription;
 
-    public function ReturnData($returnCode, $data = NULL, $returnCodeDescription=NULL)
+    public function migration_return_package($returnCode, $data = NULL, $returnCodeDescription=NULL)
     {
         $this->data = $data;
         $this->returnCode = $returnCode;

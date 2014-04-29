@@ -1,6 +1,7 @@
 <?php
 require_once("dbconnection.php");
 require_once("editors.php");
+require_once("return_package.php");
 
 class npcs extends dbconnection
 {
@@ -15,7 +16,7 @@ class npcs extends dbconnection
     public static function createNpc($pack)
     {
         if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
+            return new return_package(6, NULL, "Failed Authentication");
 
         $npcId = dbconnection::queryInsert(
             "INSERT INTO npcs (".
@@ -54,7 +55,7 @@ class npcs extends dbconnection
     {
         $gameId = dbconnection::queryObject("SELECT * FROM npcs WHERE npc_id = '{$pack->npc_id}'")->game_id;
         if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
+            return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query(
             "UPDATE npcs SET ".
@@ -85,16 +86,16 @@ class npcs extends dbconnection
         $npc->opening_script_id = $sql_npc->opening_script_id;
         $npc->closing_script_id = $sql_npc->closing_script_id;
 
-        return new returnData(0,$npc);
+        return new return_package(0,$npc);
     }
 
     public static function deleteNpc($npcId, $userId, $key)
     {
         $gameId = dbconnection::queryObject("SELECT * FROM npcs WHERE npc_id = '{$npcId}'")->game_id;
-        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new returnData(6, NULL, "Failed Authentication");
+        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM npcs WHERE npc_id = '{$npcId}' LIMIT 1");
-        return new returnData(0);
+        return new return_package(0);
     }
 }
 ?>

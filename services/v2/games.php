@@ -1,9 +1,8 @@
 <?php
-
 require_once("dbconnection.php");
-require_once("returnData.php");
 require_once("users.php");
 require_once("editors.php");
+require_once("return_package.php");
 
 class games extends dbconnection
 {	
@@ -18,7 +17,7 @@ class games extends dbconnection
     public static function createGame($pack)
     {
         if(!users::authenticateUser($pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
+            return new return_package(6, NULL, "Failed Authentication");
 
         $gameId = dbconnection::queryInsert(
             "INSERT INTO games (".
@@ -83,7 +82,7 @@ class games extends dbconnection
     public static function updateGame($pack)
     {
         if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
+            return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query(
             "UPDATE games SET ".
@@ -112,7 +111,7 @@ class games extends dbconnection
     public static function getGame($gameId)
     {
         $sql_game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$gameId}' LIMIT 1");
-        if(!$sql_game) return new returnData(2, NULL, "The game you've requested does not exist");
+        if(!$sql_game) return new return_package(2, NULL, "The game you've requested does not exist");
 
         $game = new stdClass();
         $game->game_id = $sql_game->game_id;
@@ -132,19 +131,19 @@ class games extends dbconnection
         $game->inventory_weight_cap = $sql_game->inventory_weight_cap;
         $game->ready_for_public = $sql_game->ready_for_public;
 
-        return new returnData(0,$game);
+        return new return_package(0,$game);
     }
 
     public static function deleteGame($gameId, $userId, $key)
     {
-        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new returnData(6, NULL, "Failed Authentication");
+        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM games WHERE game_id = '{$gameId}' LIMIT 1");
         dbconnection::query("DELETE FROM game_tab_data WHERE game_id = '{$gameId}' LIMIT 1");
         $command = 'rm -rf '. Config::gamedataFSPath . "/{$gameId}";
         exec($command, $output, $return);
-        if($return) return new returnData(4, NULL, "unable to delete game directory");
-        return new returnData(0);
+        if($return) return new return_package(4, NULL, "unable to delete game directory");
+        return new return_package(0);
     }
 }
 ?>

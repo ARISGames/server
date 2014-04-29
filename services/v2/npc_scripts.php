@@ -1,6 +1,7 @@
 <?php
 require_once("dbconnection.php");
 require_once("editors.php");
+require_once("return_package.php");
 
 class npc_scripts extends dbconnection
 {	
@@ -15,7 +16,7 @@ class npc_scripts extends dbconnection
     public static function createNpcScript($pack)
     {
         if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
+            return new return_package(6, NULL, "Failed Authentication");
 
         $npcScriptId = dbconnection::queryInsert(
             "INSERT INTO npc_scripts (".
@@ -50,7 +51,7 @@ class npc_scripts extends dbconnection
     {
         $gameId = dbconnection::queryObject("SELECT * FROM npc_scripts WHERE npc_script_id = '{$pack->npc_script_id}'")->game_id;
         if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
+            return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query(
             "UPDATE npc_scripts SET ".
@@ -77,16 +78,16 @@ class npc_scripts extends dbconnection
         $npcScript->text          = $sql_npcScript->text;
         $npcScript->sort_index    = $sql_npcScript->sort_index;
 
-        return new returnData(0,$npcScript);
+        return new return_package(0,$npcScript);
     }
 
     public static function deleteNpcScript($npcScriptId, $userId, $key)
     {
         $gameId = dbconnection::queryObject("SELECT * FROM npc_scripts WHERE npc_script_id = '{$npcScriptId}'")->game_id;
-        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new returnData(6, NULL, "Failed Authentication");
+        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM npc_scripts WHERE npc_script_id = '{$npcScriptId}' LIMIT 1");
-        return new returnData(0);
+        return new return_package(0);
     }
 }
 ?>

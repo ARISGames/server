@@ -1,8 +1,7 @@
 <?php
-
 require_once("dbconnection.php");
-require_once("returnData.php");
 require_once("editors.php");
+require_once("return_package.php");
 
 class triggers extends dbconnection
 {	
@@ -17,7 +16,7 @@ class triggers extends dbconnection
     public static function createTrigger($pack)
     {
         if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
+            return new return_package(6, NULL, "Failed Authentication");
     
         $triggerId = dbconnection::queryInsert(
             "INSERT INTO triggers (".
@@ -66,7 +65,7 @@ class triggers extends dbconnection
     {
         $gameId = dbconnection::queryObject("SELECT * FROM triggers WHERE trigger_id = '{$pack->trigger_id}'")->game_id;
         if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
+            return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query(
             "UPDATE triggers SET ".
@@ -107,16 +106,16 @@ class triggers extends dbconnection
         $trigger->show_title                  = $sql_trigger->show_title;
         $trigger->code                        = $sql_trigger->code;
 
-        return new returnData(0,$trigger);
+        return new return_package(0,$trigger);
     }
 
     public static function deleteTrigger($triggerId, $userId, $key)
     {
         $gameId = dbconnection::queryObject("SELECT * FROM triggers WHERE trigger_id = '{$triggerId}'")->game_id;
-        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new returnData(6, NULL, "Failed Authentication");
+        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM triggers WHERE trigger_id = '{$triggerId}' LIMIT 1");
-        return new returnData(0);
+        return new return_package(0);
     }
 }
 ?>

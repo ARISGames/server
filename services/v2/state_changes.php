@@ -1,6 +1,7 @@
 <?php
 require_once("dbconnection.php");
 require_once("editors.php");
+require_once("return_package.php");
 
 class state_changes extends dbconnection
 {	
@@ -15,7 +16,7 @@ class state_changes extends dbconnection
     public static function createStateChange($pack)
     {
         if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
+            return new return_package(6, NULL, "Failed Authentication");
 
         $stateChangeId = dbconnection::queryInsert(
             "INSERT INTO state_changes (".
@@ -50,7 +51,7 @@ class state_changes extends dbconnection
     {
         $gameId = dbconnection::queryObject("SELECT * FROM state_changes WHERE state_change_id = '{$pack->state_change_id}'")->game_id;
         if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
+            return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query(
             "UPDATE state_changes SET ".
@@ -77,16 +78,16 @@ class state_changes extends dbconnection
         $stateChange->object_type     = $sql_stateChange->object_type;
         $stateChange->object_id       = $sql_stateChange->object_id;
 
-        return new returnData(0,$stateChange);
+        return new return_package(0,$stateChange);
     }
 
     public static function deleteStateChange($stateChangeId, $userId, $key)
     {
         $gameId = dbconnection::queryObject("SELECT * FROM state_changes WHERE state_change_id = '{$stateChangeId}'")->game_id;
-        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new returnData(6, NULL, "Failed Authentication");
+        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM state_changes WHERE state_change_id = '{$stateChangeId}' LIMIT 1");
-        return new returnData(0);
+        return new return_package(0);
     }
 }
 ?>

@@ -16,6 +16,7 @@ abstract class Utils
 
 	protected function query($query)
 	{
+		Utils::serverErrorLog("DCONNETION");
 		mysql_select_db(Config::dbSchema);
 		if(mysql_error()) 
 		{

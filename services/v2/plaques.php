@@ -1,6 +1,7 @@
 <?php
 require_once("dbconnection.php");
 require_once("editors.php");
+require_once("return_package.php");
 
 class plaques extends dbconnection
 {	
@@ -15,7 +16,7 @@ class plaques extends dbconnection
     public static function createPlaque($pack)
     {
         if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
+            return new return_package(6, NULL, "Failed Authentication");
 
         $plaqueId = dbconnection::queryInsert(
             "INSERT INTO plaques (".
@@ -50,7 +51,7 @@ class plaques extends dbconnection
     {
         $gameId = dbconnection::queryObject("SELECT * FROM plaques WHERE plaque_id = '{$pack->plaque_id}'")->game_id;
         if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
+            return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query(
             "UPDATE plaques SET ".
@@ -77,16 +78,16 @@ class plaques extends dbconnection
         $plaque->icon_media_id        = $sql_plaque->icon_media_id;
         $plaque->media_id             = $sql_plaque->media_id;
 
-        return new returnData(0,$plaque);
+        return new return_package(0,$plaque);
     }
 
     public static function deletePlaque($plaqueId, $userId, $key)
     {
         $gameId = dbconnection::queryObject("SELECT * FROM plaques WHERE plaque_id = '{$plaqueId}'")->game_id;
-        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new returnData(6, NULL, "Failed Authentication");
+        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM plaques WHERE plaque_id = '{$plaqueId}' LIMIT 1");
-        return new returnData(0);
+        return new return_package(0);
     }
 }
 ?>

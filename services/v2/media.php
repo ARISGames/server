@@ -1,6 +1,6 @@
 <?php
 require_once("dbconnection.php");
-require_once("returnData.php");
+require_once("return_package.php");
 require_once("../../libraries/wideimage/WideImage.php");
 
 class media extends dbconnection
@@ -41,7 +41,7 @@ class media extends dbconnection
         $medias = array();
         for($i = 0; $i < count($sql_medias); $i++)
             $medias[] = media::mediaObjectFromSQL($sql_medias[$i]);
-        return new returnData(0, $medias);
+        return new return_package(0, $medias);
     }
 
     //Takes in media JSON, all fields optional except user_id + key
@@ -58,7 +58,7 @@ class media extends dbconnection
         /*
         if(($pack->game_id && !editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write")) //game media
          || !editors::authenticateEditor($pack->auth->user_id, $pack->auth->key, "read_write")) //player media
-            return new returnData(6, NULL, "Failed Authentication");
+            return new return_package(6, NULL, "Failed Authentication");
         */
 
         $filenameext = substr($pack->file_name,strrpos($pack->file_name,'.')+1);
@@ -82,7 +82,7 @@ class media extends dbconnection
                 $filenameext != "aac" &&
                 $filenameext != "m4a"
         )
-        return new returnData(1,NULL,"Invalid filetype: '{$filenameext}'");
+        return new return_package(1,NULL,"Invalid filetype: '{$filenameext}'");
 
         $filefolder = "";
         if($pack->game_id) $filefolder = $pack->game_id;
@@ -91,7 +91,7 @@ class media extends dbconnection
         $fsthumbpath = Config::gamedataFSPath."/".$filefolder."/".$newthumbfilename;
 
         $fp = fopen($fspath, 'w');
-        if(!$fp) return new returnData(1,NULL,"Couldn't open file:$fspath");
+        if(!$fp) return new return_package(1,NULL,"Couldn't open file:$fspath");
         fwrite($fp,base64_decode($pack->data));
         fclose($fp);
 
@@ -136,7 +136,7 @@ class media extends dbconnection
         //commented out because we need to allow anyone to update media for any game due to notes...
         /*
         if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
+            return new return_package(6, NULL, "Failed Authentication");
         */
 
         //boring, but this is the only immutable property of media
@@ -153,20 +153,20 @@ class media extends dbconnection
     public function getMedia($mediaId)
     {
         if(!($sql_media = dbconnection::queryObject("SELECT * FROM media WHERE media_id = '{$mediaId}' LIMIT 1")))
-            return new returnData(0,media::defaultMediaObject($mediaId));
-        return new returnData(0, media::mediaObjectFromSQL($sql_media));
+            return new return_package(0,media::defaultMediaObject($mediaId));
+        return new return_package(0, media::mediaObjectFromSQL($sql_media));
     }	
 
     public static function deleteMedia($mediaId, $userId, $key)
     {
         $media_sql = dbconnection::queryObject("SELECT * FROM media WHERE media_id = '{$mediaId}'");
-        if(!editors::authenticateGameEditor($media_sql->gameId, $userId, $key, "read_write")) return new returnData(6, NULL, "Failed Authentication");
+        if(!editors::authenticateGameEditor($media_sql->gameId, $userId, $key, "read_write")) return new return_package(6, NULL, "Failed Authentication");
 
         if(!unlink(Config::gamedataFSPath."/".$media_sql->file_folder."/".$media_sql->file_name)) 
-            return new returnData(1, "Could not delete file.");
+            return new return_package(1, "Could not delete file.");
 
         dbconnection::query("DELETE FROM media WHERE media_id = '{$mediaId}' LIMIT 1");
-        return new returnData(0);
+        return new return_package(0);
     }
 }
 ?>

@@ -1,7 +1,7 @@
 <?php
-
 require_once("dbconnection.php");
 require_once("users.php");
+require_once("return_package.php");
 
 class editors extends dbconnection
 {
@@ -15,16 +15,16 @@ class editors extends dbconnection
     public function getGamesForEditor($userId, $key)
     {
         if(!users::authenticateUser($userId, $key, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
+            return new return_package(6, NULL, "Failed Authentication");
         $games = dbconnection::queryArray("SELECT games.* FROM (SELECT * FROM game_editors WHERE editor_id = '$userId') as ge LEFT JOIN games ON ge.game_id = games.game_id");
 
-        return new returnData(0, $games, NULL);		
+        return new return_package(0, $games, NULL);		
     }
 
     public function addEditorToGame($newEditorId, $gameId, $userId, $key)
     {
         if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
+            return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("INSERT INTO game_editors (editor_id, game_id) VALUES ('{$newEditorId}','{$gameId}')");
         $email = dbconnection::queryObject("SELECT email FROM editors WHERE editor_id = '{$newEditorId}'")->email;
@@ -33,17 +33,16 @@ class editors extends dbconnection
         $body = "An owner of ARIS Game \"".$name."\" has promoted you to editor. Go to ".Config::WWWPath."/editor and log in to begin collaborating!";
         Module::sendEmail($email, "You are now an editor of ARIS Game \"$name\"", $body);
 
-        return new returnData(0);	
+        return new return_package(0);	
     }	
 
     public function removeEditorFromGame($newEditorId, $gameId, $userId, $key)
     {
         if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
+            return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM game_editors WHERE editor_id = '{$newEditorId}' AND game_id = '{$gameId}'");
-        return new returnData(0, TRUE);
+        return new return_package(0, TRUE);
     }
-
-
 }
+?>

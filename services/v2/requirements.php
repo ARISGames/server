@@ -1,7 +1,7 @@
 <?php
 require_once("dbconnection.php");
 require_once("editors.php");
-require_once("returnData.php");
+require_once("return_package.php");
 
 class requirements extends dbconnection
 {	
@@ -16,7 +16,7 @@ class requirements extends dbconnection
     public function createRequirementPackage($pack)
     {
         if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
+            return new return_package(6, NULL, "Failed Authentication");
 
         $requirementPackageId = dbconnection::queryInsert(
             "INSERT INTO requirement_root_packages (".
@@ -45,7 +45,7 @@ class requirements extends dbconnection
     public function createRequirementAndPackage($pack)
     {
         if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
+            return new return_package(6, NULL, "Failed Authentication");
         if(!$pack->requirement_root_package_id) return;
 
         $requirementAndPackageId = dbconnection::queryInsert(
@@ -75,7 +75,7 @@ class requirements extends dbconnection
     public function createRequirementAtom($pack)
     {
         if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
+            return new return_package(6, NULL, "Failed Authentication");
         if(!$pack->requirement_and_package_id) return;
 
         dbconnection::query(
@@ -114,7 +114,7 @@ class requirements extends dbconnection
     {
         $gameId = dbconnection::queryObject("SELECT * FROM requirement_root_packages WHERE requirement_root_package_id = '{$pack->requirement_root_package_id}'")->game_id;
         if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
+            return new return_package(6, NULL, "Failed Authentication");
         if(!$pack->requirement_root_package_id) return;
 
         dbconnection::query(
@@ -163,8 +163,8 @@ class requirements extends dbconnection
     {
         $gameId = dbconnection::queryObject("SELECT * FROM requirement_and_packages WHERE requirement_and_package_id = '{$pack->requirement_and_package_id}'")->game_id;
         if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
-        if(!$pack->requirement_and_package_id) return new returnData(1,NULL,"Insufficient data");
+            return new return_package(6, NULL, "Failed Authentication");
+        if(!$pack->requirement_and_package_id) return new return_package(1,NULL,"Insufficient data");
 
         dbconnection::query(
             "UPDATE requirement_and_packages SET ".
@@ -210,8 +210,8 @@ class requirements extends dbconnection
     {
         $gameId = dbconnection::queryObject("SELECT * FROM requirement_atoms WHERE requirement_atom_id = '{$pack->requirement_atom_id}'")->game_id;
         if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
-        if(!$pack->requirement_atom_id) return new returnData(1,NULL,"Insufficient data");
+            return new return_package(6, NULL, "Failed Authentication");
+        if(!$pack->requirement_atom_id) return new return_package(1,NULL,"Insufficient data");
 
         dbconnection::query(
             "UPDATE requirement_atoms SET ".
@@ -247,7 +247,7 @@ class requirements extends dbconnection
             unset($pack->and_packages[$i]->requirement_root_package_id);
         }
 
-        return new returnData(0,$pack);
+        return new return_package(0,$pack);
     }
     public function getRequirementAndPackage($requirementAndPackageId)
     {
@@ -268,7 +268,7 @@ class requirements extends dbconnection
             unset($andPack->atoms[$i]->requirement_and_package_id);
         }
 
-        return new returnData(0,$andPack);
+        return new return_package(0,$andPack);
     }
     public function getRequirementAtom($requirementAtomId)
     {
@@ -283,7 +283,7 @@ class requirements extends dbconnection
         $atom->qty                        = $sql_atom->qty;
         $atom->latitude                   = $sql_atom->latitude;
         $atom->longitude                  = $sql_atom->longitude;
-        return new returnData(0,$atom);
+        return new return_package(0,$atom);
     }
 
     public function deleteRequirementPackage($requirementPackageId)
