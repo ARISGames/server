@@ -6,36 +6,79 @@ require_once("returnData.php");
 
 class users extends dbconnection
 {
-    public function createUser($username, $password)
+    //Takes in user JSON, all fields optional except user_id + key
+    public static function createUserJSON($glob)
     {
-        if(dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$username}'"))
+	$data = file_get_contents("php://input");
+        $glob = json_decode($data);
+        return users::createUser($glob);
+    }
+
+    public function createUser($pack)
+    {
+        if(dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}'"))
             return new returnData(1, NULL, "User already exists");
 
         $salt       = util::rand_string(64);
-        $hash       = hash("sha256",$salt.$password);
+        $hash       = hash("sha256",$salt.$pack->password);
         $read       = util::rand_string(64);
         $write      = util::rand_string(64);
         $read_write = util::rand_string(64);
-        dbconnection::query("INSERT INTO users (user_name, display_name, salt, hash, read_key, write_key, read_write_key, created) VALUES ('{$username}', '{$username}','{$salt}','{$hash}','{$read}','{$write}','{$read_write}', CURRENT_TIMESTAMP)");
-        return users::logIn($username, $password, "read_write");
+
+        $userId = dbconnection::queryInsert(
+            "INSERT INTO users (".
+            "user_name,".
+            "hash,".
+            "salt,".
+            "read_key,".
+            "write_key,".
+            "read_write_key,".
+            "display_name,".
+            ($pack->email    ? "email,"    : "").
+            ($pack->media_id ? "media_id," : "").
+            "created".
+            ") VALUES (".
+            "'".addslashes($pack->user_name)."',".
+            "'".addslashes($hash)."',".
+            "'".addslashes($salt)."',".
+            "'".addslashes($read)."',".
+            "'".addslashes($write)."',".
+            "'".addslashes($read_write)."',".
+            ($pack->display_name ? "'".addslashes($pack->display_name)."'," : "'".addslashes($pack->user_name)."',").
+            ($pack->email        ? "'".addslashes($pack->email)."',"        : "").
+            ($pack->media_id     ? "'".addslashes($pack->media_id)."',"     : "").
+            "CURRENT_TIMESTAMP".
+            ")"
+        );
+
+        $auth = new stdClass();
+        $auth->user_name = $pack->user_name;
+        $auth->password = $pack->password;
+        $auth->key = "read_write";
+        return users::logIn($auth);
     }
 
-    public function logIn($username, $password, $permission)
+    //Takes in user JSON, requires user_name and password
+    public static function logInJSON($glob)
     {
-        if(!($user = dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$username}'")) || hash("sha256",$user->salt.$password) != $user->hash)
+	$data = file_get_contents("php://input");
+        $glob = json_decode($data);
+        return users::logIn($glob);
+    }
+
+    public function logIn($pack)
+    {
+        if(!($user = dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}'")) || hash("sha256",$user->salt.$pack->password) != $user->hash)
             return new returnData(1, NULL, "Incorrect username/password");
 
         $ret = new stdClass();
-        $ret->user_id = $user->user_id;
-        $ret->user_name = $user->user_name;
+        $ret->user_id      = $user->user_id;
+        $ret->user_name    = $user->user_name;
         $ret->display_name = $user->display_name;
-        $ret->media_id = $user->media_id;
-        if($permission == "read")
-            $ret->read_key = $user->read_key;
-        if($permission == "write")
-            $ret->write_key = $user->write_key;
-        if($permission == "read_write")
-            $ret->read_write_key = $user->read_write_key;
+        $ret->media_id     = $user->media_id;
+        if($pack->permission == "read")       $ret->read_key       = $user->read_key;
+        if($pack->permission == "write")      $ret->write_key      = $user->write_key;
+        if($pack->permission == "read_write") $ret->read_write_key = $user->read_write_key;
 
         return new returnData(0, $ret);
     }
