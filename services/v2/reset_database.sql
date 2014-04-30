@@ -148,11 +148,35 @@ game_id INT(32) UNSIGNED NOT NULL,
 user_id INT(32) UNSIGNED NOT NULL,
 name VARCHAR(255) NOT NULL DEFAULT "",
 description TEXT NOT NULL,
+label_id INT(32) UNSIGNED NOT NULL,
 created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
 last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 CREATE INDEX note_game_id ON notes(game_id);
 CREATE INDEX note_user_id ON notes(user_id);
+
+DROP TABLE IF EXISTS note_labels;
+CREATE TABLE note_labels (
+label_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+game_id INT(32) UNSIGNED NOT NULL,
+text VARCHAR(255) NOT NULL DEFAULT 'New Tag',
+player_created TINYINT(1) NOT NULL DEFAULT '0',
+created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
+last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE INDEX note_label_game_id ON note_labels(game_id);
+
+DROP TABLE IF EXISTS note_media;
+CREATE TABLE note_media (
+note_id INT(32) UNSIGNED NOT NULL,
+media_id INT(32) UNSIGNED NOT NULL,
+game_id INT(32) UNSIGNED NOT NULL,
+created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
+last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+PRIMARY KEY (note_id, media_id)
+);
+CREATE INDEX note_media_game_id ON note_media(game_id);
+
 
 CREATE TABLE quests (
 quest_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -273,7 +297,6 @@ last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 CREATE INDEX atom_requirement_and_package ON requirement_atoms(requirement_and_package_id);
 CREATE INDEX atom_requirement_game ON requirement_atoms(game_id);
-
 
 /*
 USER DATA
@@ -429,63 +452,6 @@ CREATE TABLE `game_object_tags` (
   `use_for_sort` tinyint(1) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`tag_id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=20 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
-DROP TABLE IF EXISTS `game_tags`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `game_tags` (
-  `tag_id` INT(32) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `game_id` INT(32) UNSIGNED NOT NULL,
-  `tag` varchar(32) NOT NULL DEFAULT 'New Tag',
-  `player_created` tinyint(1) NOT NULL DEFAULT '0',
-  `media_id` INT(32) UNSIGNED NOT NULL DEFAULT '0',
-  PRIMARY KEY (`tag_id`),
-  KEY `game_id` (`game_id`),
-  KEY `tag` (`tag`),
-  KEY `game_id_tag` (`game_id`,`tag`)
-) ENGINE=InnoDB AUTO_INCREMENT=125 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `note_content`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `note_content` (
-  `note_id` int(11) NOT NULL,
-  `media_id` int(11) NOT NULL,
-  `type` enum('TEXT','MEDIA','PHOTO','VIDEO','AUDIO') COLLATE utf8_unicode_ci NOT NULL DEFAULT 'MEDIA',
-  `text` mediumtext COLLATE utf8_unicode_ci NOT NULL,
-  `sort_index` INT(32) UNSIGNED NOT NULL DEFAULT '0',
-  `game_id` INT(32) UNSIGNED NOT NULL DEFAULT '0',
-  `content_id` INT(32) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `title` varchar(32) COLLATE utf8_unicode_ci DEFAULT '',
-  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`content_id`),
-  KEY `note_id` (`note_id`),
-  KEY `media_id` (`media_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=1783 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
-DROP TABLE IF EXISTS `note_likes`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `note_likes` (
-  `player_id` INT(32) UNSIGNED NOT NULL DEFAULT '0',
-  `note_id` INT(32) UNSIGNED NOT NULL DEFAULT '0',
-  `created` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`player_id`,`note_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
-DROP TABLE IF EXISTS `note_tags`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `note_tags` (
-  `note_id` INT(32) UNSIGNED NOT NULL,
-  `tag_id` INT(32) UNSIGNED NOT NULL,
-  PRIMARY KEY (`note_id`,`tag_id`),
-  KEY `tag_id` (`tag_id`),
-  KEY `note_id` (`note_id`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 DROP TABLE IF EXISTS `object_tags`;

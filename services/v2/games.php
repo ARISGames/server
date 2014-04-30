@@ -16,7 +16,6 @@ class games extends dbconnection
 
     public static function createGame($pack)
     {
-        return $pack;
         if(!users::authenticateUser($pack->auth->user_id, $pack->auth->key, "read_write"))
             return new return_package(6, NULL, "Failed Authentication");
 
