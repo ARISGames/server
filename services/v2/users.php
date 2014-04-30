@@ -53,7 +53,7 @@ class users extends dbconnection
         $auth = new stdClass();
         $auth->user_name = $pack->user_name;
         $auth->password = $pack->password;
-        $auth->key = "read_write";
+        $auth->permission = "read_write";
         return users::logIn($auth);
     }
 

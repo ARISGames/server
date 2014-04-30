@@ -66,7 +66,7 @@
     var rwkey = "";
     function submitAuth()
     {
-        var package = {"user_name":document.getElementById('auth_request_user').value,"password":document.getElementById('auth_request_password').value};
+        var package = {"user_name":document.getElementById('auth_request_user').value,"password":document.getElementById('auth_request_password').value,"permission":"read_write"};
         var response = sendRequest('users.logInJSON', JSON.stringify(package), "POST");
         document.getElementById('result_text').innerHTML = JSON.stringify(response);
         console.log(response);
