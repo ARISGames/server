@@ -66,7 +66,7 @@ class npc_scripts extends dbconnection
         return npc_scripts::getNpcScript($pack->npc_script_id);
     }
 
-    private static function npcScriptObjectForSQL($sql_npcScript)
+    private static function npcScriptObjectFromSQL($sql_npcScript)
     {
         $npcScript = new stdClass();
         $npcScript->npc_script_id = $sql_npcScript->npc_script_id;
@@ -82,7 +82,7 @@ class npc_scripts extends dbconnection
     public static function getNpcScript($npcScriptId)
     {
         $sql_npcScript = dbconnection::queryObject("SELECT * FROM npc_scripts WHERE npc_script_id = '{$npcScriptId}' LIMIT 1");
-        return new return_package(0,npc_scripts::npcScriptObjectForSQL($sql_npcScript));
+        return new return_package(0,npc_scripts::npcScriptObjectFromSQL($sql_npcScript));
     }
 
     public static function getNpcScriptsForGame($gameId)
@@ -90,7 +90,16 @@ class npc_scripts extends dbconnection
         $sql_npcScripts = dbconnection::queryArray("SELECT * FROM npc_scripts WHERE game_id = '{$gameId}'");
         $npcScripts = array();
         for($i = 0; $i < count($sql_npcScripts); $i++)
-            $npcScripts[] = npc_scripts::npcScriptObjectForSQL($sql_npcScripts[$i]);
+            $npcScripts[] = npc_scripts::npcScriptObjectFromSQL($sql_npcScripts[$i]);
+        return new return_package(0,$npcScripts);
+    }
+
+    public static function getNpcScriptsForNpc($npcId)
+    {
+        $sql_npcScripts = dbconnection::queryArray("SELECT * FROM npc_scripts WHERE npc_id = '{$npcId}'");
+        $npcScripts = array();
+        for($i = 0; $i < count($sql_npcScripts); $i++)
+            $npcScripts[] = npc_scripts::npcScriptObjectFromSQL($sql_npcScripts[$i]);
         return new return_package(0,$npcScripts);
     }
 

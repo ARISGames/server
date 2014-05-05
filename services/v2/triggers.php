@@ -87,7 +87,7 @@ class triggers extends dbconnection
         return triggers::getTrigger($pack->trigger_id);
     }
 
-    private static function triggerObjectForSQL($sql_trigger)
+    private static function triggerObjectFromSQL($sql_trigger)
     {
         $trigger = new stdClass();
         $trigger->trigger_id                  = $sql_trigger->trigger_id;
@@ -110,15 +110,35 @@ class triggers extends dbconnection
     public static function getTrigger($triggerId)
     {
         $sql_trigger = dbconnection::queryObject("SELECT * FROM triggers WHERE trigger_id = '{$triggerId}' LIMIT 1");
-        return new return_package(0,triggers::triggerObjectForSQL($sql_trigger));
+        return new return_package(0,triggers::triggerObjectFromSQL($sql_trigger));
     }
 
-    public static function getTriggersForGame($GameId)
+    public static function getTriggersForGame($gameId)
     {
         $sql_triggers = dbconnection::queryArray("SELECT * FROM triggers WHERE game_id = '{$gameId}'");
         $triggers = array();
         for($i = 0; $i < count($sql_triggers); $i++)
-            $triggers[] = triggers::triggerObjectForSQL($sql_trigger);
+            $triggers[] = triggers::triggerObjectFromSQL($sql_triggers[$i]);
+
+        return new return_package(0,$triggers);
+    }
+
+    public static function getTriggersForScene($sceneId)
+    {
+        $sql_triggers = dbconnection::queryArray("SELECT * FROM triggers WHERE scene_id = '{$sceneId}'");
+        $triggers = array();
+        for($i = 0; $i < count($sql_triggers); $i++)
+            $triggers[] = triggers::triggerObjectFromSQL($sql_triggers[$i]);
+
+        return new return_package(0,$triggers);
+    }
+
+    public static function getTriggersForInstance($instanceId)
+    {
+        $sql_triggers = dbconnection::queryArray("SELECT * FROM triggers WHERE instance_id = '{$instanceId}'");
+        $triggers = array();
+        for($i = 0; $i < count($sql_triggers); $i++)
+            $triggers[] = triggers::triggerObjectFromSQL($sql_trigger);
 
         return new return_package(0,$triggers);
     }

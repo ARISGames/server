@@ -66,7 +66,7 @@ class plaques extends dbconnection
         return plaques::getPlaque($pack->plaque_id);
     }
 
-    private static function plaqueObjectForSQL($sql_plaque)
+    private static function plaqueObjectFromSQL($sql_plaque)
     {
         $plaque = new stdClass();
         $plaque->plaque_id              = $sql_plaque->plaque_id;
@@ -82,7 +82,7 @@ class plaques extends dbconnection
     public static function getPlaque($plaqueId)
     {
         $sql_plaque = dbconnection::queryObject("SELECT * FROM plaques WHERE plaque_id = '{$plaqueId}' LIMIT 1");
-        return new return_package(0,plaques::plaqueObjectForSQL($plaque));
+        return new return_package(0,plaques::plaqueObjectFromSQL($sql_plaque));
     }
 
     public static function getPlaquesForGame($gameId)
@@ -90,7 +90,7 @@ class plaques extends dbconnection
         $sql_plaques = dbconnection::queryArray("SELECT * FROM plaques WHERE game_id = '{$gameId}'");
         $plaques = array();
         for($i = 0; $i < count($sql_plaques); $i++)
-            $plaques[] = plaques::plaqueObjectForSQL($sql_plaques[$i]);
+            $plaques[] = plaques::plaqueObjectFromSQL($sql_plaques[$i]);
         
         return new return_package(0,$plaques);
     }

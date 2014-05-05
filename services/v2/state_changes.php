@@ -66,7 +66,7 @@ class state_changes extends dbconnection
         return state_changes::getStateChange($pack->state_change_id);
     }
 
-    private static function stateChangeObjectForSQL($sql_stateChange)
+    private static function stateChangeObjectFromSQL($sql_stateChange)
     {
         $stateChange = new stdClass();
         $stateChange->state_change_id = $sql_stateChange->state_change_id;
@@ -82,15 +82,25 @@ class state_changes extends dbconnection
     public static function getStateChange($stateChangeId)
     {
         $sql_stateChange = dbconnection::queryObject("SELECT * FROM state_changes WHERE state_change_id = '{$stateChangeId}' LIMIT 1");
-        return new return_package(0,state_changes::stateChangeObjectForSQL($sql_stateChange));
+        return new return_package(0,state_changes::stateChangeObjectFromSQL($sql_stateChange));
     }
 
     public static function getStateChangesForGame($gameId)
     {
-        $sql_stateChanges = dbconnection::queryArray("SELECT * FROM state_changes WHERE game_id = '{$gameId}' LIMIT 1");
+        $sql_stateChanges = dbconnection::queryArray("SELECT * FROM state_changes WHERE game_id = '{$gameId}'");
         $stateChanges = array();
         for($i = 0; $i < count($sql_stateChanges); $i++)
-            $stateChanges[] = state_changes::stateChangeObjectForSQL($sql_stateChanges[$i]);
+            $stateChanges[] = state_changes::stateChangeObjectFromSQL($sql_stateChanges[$i]);
+
+        return new return_package(0,$stateChanges);
+    }
+
+    public static function getStateChangesForObject($objectType, $objectId)
+    {
+        $sql_stateChanges = dbconnection::queryArray("SELECT * FROM state_changes WHERE object_type = '{$objectType}' AND object_id = '{$objectId}'");
+        $stateChanges = array();
+        for($i = 0; $i < count($sql_stateChanges); $i++)
+            $stateChanges[] = state_changes::stateChangeObjectFromSQL($sql_stateChanges[$i]);
 
         return new return_package(0,$stateChanges);
     }

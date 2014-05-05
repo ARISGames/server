@@ -77,12 +77,22 @@ class instances extends dbconnection
     public static function getInstance($instanceId)
     {
         $sql_instance = dbconnection::queryObject("SELECT * FROM instances WHERE instance_id = '{$instanceId}' LIMIT 1");
-        return new return_package(0,instances::instanceObjectFromSQL($instance));
+        return new return_package(0,instances::instanceObjectFromSQL($sql_instance));
     }
 
     public static function getInstancesForGame($gameId)
     {
         $sql_instances = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$gameId}'");
+        $instances = array();
+        for($i = 0; $i < count($sql_instances); $i++)
+            $instances[] = instances::instanceObjectFromSQL($sql_instances[$i]);
+
+        return new return_package(0,$instances);
+    }
+
+    public static function getInstancesForObject($objectType, $objectId)
+    {
+        $sql_instances = dbconnection::queryArray("SELECT * FROM instances WHERE object_type = '{$objectType}' AND object_id = '{$objectId}'");
         $instances = array();
         for($i = 0; $i < count($sql_instances); $i++)
             $instances[] = instances::instanceObjectFromSQL($sql_instances[$i]);

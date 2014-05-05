@@ -68,6 +68,8 @@ object_id INT(32) UNSIGNED NOT NULL,
 created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
 last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
+CREATE INDEX state_change_object ON state_changes(object_type, object_id);
+CREATE INDEX state_change_game_id ON state_changes(game_id);
 
 DROP TABLE IF EXISTS items;
 CREATE TABLE items (
@@ -236,7 +238,7 @@ spawnable_id INT(32) UNSIGNED NOT NULL,
 created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
 last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
-CREATE INDEX instance_object ON instances(object_id);
+CREATE INDEX instance_object ON instances(object_type, object_id);
 CREATE INDEX instance_game ON instances(game_id);
 
 DROP TABLE IF EXISTS triggers;
