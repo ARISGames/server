@@ -72,10 +72,8 @@ class npcs extends dbconnection
         return npcs::getNpc($pack->npc_id);
     }
 
-    public static function getNpc($npcId)
+    private static function npcObjectForSQL($sql_npc)
     {
-        $sql_npc = dbconnection::queryObject("SELECT * FROM npcs WHERE npc_id = '{$npcId}' LIMIT 1");
-
         $npc = new stdClass();
         $npc->npc_id            = $sql_npc->npc_id;
         $npc->game_id           = $sql_npc->game_id;
@@ -86,7 +84,23 @@ class npcs extends dbconnection
         $npc->opening_script_id = $sql_npc->opening_script_id;
         $npc->closing_script_id = $sql_npc->closing_script_id;
 
-        return new return_package(0,$npc);
+        return $npc;
+    }
+
+    public static function getNpc($npcId)
+    {
+        $sql_npc = dbconnection::queryObject("SELECT * FROM npcs WHERE npc_id = '{$npcId}' LIMIT 1");
+        return new return_package(0,npcs::npcObjectForSQL($sql_npc));
+    }
+
+    public static function getNpcsForGame($gameId)
+    {
+        $sql_npcs = dbconnection::queryArray("SELECT * FROM npcs WHERE game_id = '{$gameId}'");
+        $npcs = array();
+        for($i = 0; $i < count($sql_npcs); $i++)
+            $npcs[] = npcs::npcObjectForSQL($sql_npcs[$i]);
+
+        return new return_package(0,$npcs);
     }
 
     public static function deleteNpc($npcId, $userId, $key)

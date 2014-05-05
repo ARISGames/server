@@ -57,16 +57,30 @@ class scenes extends dbconnection
         return scenes::getScene($pack->scene_id);
     }
 
-    public static function getScene($sceneId)
+    private static function sceneObjectForSQL($sql_scene)
     {
-        $sql_scene = dbconnection::queryObject("SELECT * FROM scenes WHERE scene_id = '{$sceneId}' LIMIT 1");
-
         $scene = new stdClass();
         $scene->scene_id = $sql_scene->scene_id;
         $scene->game_id = $sql_scene->game_id;
         $scene->name = $sql_scene->name;
 
-        return new return_package(0,$scene);
+        return $scene;
+    }
+
+    public static function getScene($sceneId)
+    {
+        $sql_scene = dbconnection::queryObject("SELECT * FROM scenes WHERE scene_id = '{$sceneId}' LIMIT 1");
+        return new return_package(0,scenes::sceneObjectForSQL($scene));
+    }
+
+    public static function getScenesForGame($gameId)
+    {
+        $sql_scenes = dbconnection::queryArray("SELECT * FROM scenes WHERE game_id = '{$gameId}'");
+        $scenes = array();
+        for($i = 0; $i < count($sql_scenes); $i++)
+            $scenes[] = scenes::sceneObjectForSQL($sql_scenes[$i]);
+
+        return new return_package(0,$scenes);
     }
 
     public static function deleteScene($sceneId, $userId, $key)

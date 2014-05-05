@@ -66,10 +66,8 @@ class plaques extends dbconnection
         return plaques::getPlaque($pack->plaque_id);
     }
 
-    public static function getPlaque($plaqueId)
+    private static function plaqueObjectForSQL($sql_plaque)
     {
-        $sql_plaque = dbconnection::queryObject("SELECT * FROM plaques WHERE plaque_id = '{$plaqueId}' LIMIT 1");
-
         $plaque = new stdClass();
         $plaque->plaque_id              = $sql_plaque->plaque_id;
         $plaque->game_id              = $sql_plaque->game_id;
@@ -78,7 +76,23 @@ class plaques extends dbconnection
         $plaque->icon_media_id        = $sql_plaque->icon_media_id;
         $plaque->media_id             = $sql_plaque->media_id;
 
-        return new return_package(0,$plaque);
+        return $plaque;
+    }
+
+    public static function getPlaque($plaqueId)
+    {
+        $sql_plaque = dbconnection::queryObject("SELECT * FROM plaques WHERE plaque_id = '{$plaqueId}' LIMIT 1");
+        return new return_package(0,plaques::plaqueObjectForSQL($plaque));
+    }
+
+    public static function getPlaquesForGame($gameId)
+    {
+        $sql_plaques = dbconnection::queryArray("SELECT * FROM plaques WHERE game_id = '{$gameId}'");
+        $plaques = array();
+        for($i = 0; $i < count($sql_plaques); $i++)
+            $plaques[] = plaques::plaqueObjectForSQL($sql_plaques[$i]);
+        
+        return new return_package(0,$plaques);
     }
 
     public static function deletePlaque($plaqueId, $userId, $key)

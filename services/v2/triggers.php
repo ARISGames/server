@@ -87,10 +87,8 @@ class triggers extends dbconnection
         return triggers::getTrigger($pack->trigger_id);
     }
 
-    public static function getTrigger($triggerId)
+    private static function triggerObjectForSQL($sql_trigger)
     {
-        $sql_trigger = dbconnection::queryObject("SELECT * FROM triggers WHERE trigger_id = '{$triggerId}' LIMIT 1");
-
         $trigger = new stdClass();
         $trigger->trigger_id                  = $sql_trigger->trigger_id;
         $trigger->game_id                     = $sql_trigger->game_id;
@@ -106,7 +104,23 @@ class triggers extends dbconnection
         $trigger->show_title                  = $sql_trigger->show_title;
         $trigger->code                        = $sql_trigger->code;
 
-        return new return_package(0,$trigger);
+        return $trigger;
+    }
+
+    public static function getTrigger($triggerId)
+    {
+        $sql_trigger = dbconnection::queryObject("SELECT * FROM triggers WHERE trigger_id = '{$triggerId}' LIMIT 1");
+        return new return_package(0,triggers::triggerObjectForSQL($sql_trigger));
+    }
+
+    public static function getTriggersForGame($GameId)
+    {
+        $sql_triggers = dbconnection::queryArray("SELECT * FROM triggers WHERE game_id = '{$gameId}'");
+        $triggers = array();
+        for($i = 0; $i < count($sql_triggers); $i++)
+            $triggers[] = triggers::triggerObjectForSQL($sql_trigger);
+
+        return new return_package(0,$triggers);
     }
 
     public static function deleteTrigger($triggerId, $userId, $key)

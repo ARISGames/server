@@ -5,23 +5,6 @@ require_once("../../libraries/wideimage/WideImage.php");
 
 class media extends dbconnection
 {
-    //This will be the returned format of every media query
-    private function mediaObjectFromSQL($sql_media)
-    {
-        $media = new stdClass();
-        $media->media_id     = $sql_media->media_id;
-        $media->game_id      = $sql_media->game_id;
-        $media->display_name = $sql_media->display_name;
-        $media->file_name    = $sql_media->file_name;
-
-        $filenametitle = substr($sql_media->file_name,0,strrpos($sql_media->file_name,'.'));
-        $filenameext   = substr($sql_media->file_name,strrpos($sql_media->file_name,'.'));
-
-        $media->url       = Config::gamedataWWWPath."/".$sql_media->file_folder."/".$sql_media->file_name;
-        $media->thumb_url = Config::gamedataWWWPath."/".$sql_media->file_folder."/".$filenametitle."_128".$filenameext;
-
-        return $media;
-    }
 
     private function defaultMediaObject($mediaId)
     {
@@ -33,17 +16,6 @@ class media extends dbconnection
         $fake_sql_media->file_name = "npc.png";
         return media::mediaObjectFromSQL($fake_sql_media);
     }
-
-    public function getMediaForGame($gameId)
-    {
-        $sql_medias = dbconnection::queryArray("SELECT * FROM media WHERE (game_id = '{$gameId}' OR game_id = 0) AND SUBSTRING(file_path,1,1) != 'p'");
-
-        $medias = array();
-        for($i = 0; $i < count($sql_medias); $i++)
-            $medias[] = media::mediaObjectFromSQL($sql_medias[$i]);
-        return new return_package(0, $medias);
-    }
-
     //Takes in media JSON, all fields optional except user_id + key
     public static function createMediaJSON($glob)
     {
@@ -150,12 +122,39 @@ class media extends dbconnection
         return media::getMedia($pack->media_id);
     }
 
+    private static function mediaObjectFromSQL($sql_media)
+    {
+        $media = new stdClass();
+        $media->media_id     = $sql_media->media_id;
+        $media->game_id      = $sql_media->game_id;
+        $media->display_name = $sql_media->display_name;
+        $media->file_name    = $sql_media->file_name;
+
+        $filenametitle = substr($sql_media->file_name,0,strrpos($sql_media->file_name,'.'));
+        $filenameext   = substr($sql_media->file_name,strrpos($sql_media->file_name,'.'));
+
+        $media->url       = Config::gamedataWWWPath."/".$sql_media->file_folder."/".$sql_media->file_name;
+        $media->thumb_url = Config::gamedataWWWPath."/".$sql_media->file_folder."/".$filenametitle."_128".$filenameext;
+
+        return $media;
+    }
+
     public function getMedia($mediaId)
     {
         if(!($sql_media = dbconnection::queryObject("SELECT * FROM media WHERE media_id = '{$mediaId}' LIMIT 1")))
             return new return_package(0,media::defaultMediaObject($mediaId));
         return new return_package(0, media::mediaObjectFromSQL($sql_media));
     }	
+
+    public function getMediaForGame($gameId)
+    {
+        $sql_medias = dbconnection::queryArray("SELECT * FROM media WHERE (game_id = '{$gameId}' OR game_id = 0)");
+        $medias = array();
+        for($i = 0; $i < count($sql_medias); $i++)
+            $medias[] = media::mediaObjectFromSQL($sql_medias[$i]);
+
+        return new return_package(0, $medias);
+    }
 
     public static function deleteMedia($mediaId, $userId, $key)
     {

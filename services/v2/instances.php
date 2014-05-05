@@ -63,18 +63,31 @@ class instances extends dbconnection
         return instances::getInstance($pack->instance_id);
     }
 
-    public static function getInstance($instanceId)
+    private static function instanceObjectFromSQL($sql_instance)
     {
-        $sql_instance = dbconnection::queryObject("SELECT * FROM instances WHERE instance_id = '{$instanceId}' LIMIT 1");
-
         $instance = new stdClass();
         $instance->instance_id  = $sql_instance->instance_id;
         $instance->game_id      = $sql_instance->game_id;
         $instance->object_id    = $sql_instance->object_id;
         $instance->object_type  = $sql_instance->object_type;
         $instance->spawnable_id = $sql_instance->spawnable_id;
+        return $instance;
+    }
 
-        return new return_package(0,$instance);
+    public static function getInstance($instanceId)
+    {
+        $sql_instance = dbconnection::queryObject("SELECT * FROM instances WHERE instance_id = '{$instanceId}' LIMIT 1");
+        return new return_package(0,instances::instanceObjectFromSQL($instance));
+    }
+
+    public static function getInstancesForGame($gameId)
+    {
+        $sql_instances = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$gameId}'");
+        $instances = array();
+        for($i = 0; $i < count($sql_instances); $i++)
+            $instances[] = instances::instanceObjectFromSQL($sql_instances[$i]);
+
+        return new return_package(0,$instances);
     }
 
     public static function deleteInstance($instanceId, $userId, $key)

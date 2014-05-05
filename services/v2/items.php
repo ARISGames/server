@@ -84,10 +84,8 @@ class items extends dbconnection
         return items::getItem($pack->item_id);
     }
 
-    public static function getItem($itemId)
+    private static function itemObjectFromSQL($sql_item)
     {
-        $sql_item = dbconnection::queryObject("SELECT * FROM items WHERE item_id = '{$itemId}' LIMIT 1");
-
         $item = new stdClass();
         $item->item_id              = $sql_item->item_id;
         $item->game_id              = $sql_item->game_id;
@@ -102,7 +100,23 @@ class items extends dbconnection
         $item->url                  = $sql_item->url;
         $item->type                 = $sql_item->type;
 
-        return new return_package(0,$item);
+        return $item;
+    }
+
+    public static function getItem($itemId)
+    {
+        $sql_item = dbconnection::queryObject("SELECT * FROM items WHERE item_id = '{$itemId}' LIMIT 1");
+        return new return_package(0,items::itemObjectFromSQL($sql_item));
+    }
+
+    public static function getItemsForGame($gameId)
+    {
+        $sql_items = dbconnection::queryArray("SELECT * FROM items WHERE game_id = '{$gameId}'");
+        $items = array();
+        for($i = 0; $i < count($sql_items); $i++)
+            $items[] = items::itemObjctFromSQL($sql_items[$i]);
+
+        return new return_package(0,$items);
     }
 
     public static function deleteItem($itemId, $userId, $key)
