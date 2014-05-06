@@ -108,11 +108,8 @@ class games extends dbconnection
         return games::getGame($pack->game_id);
     }
 
-    public static function getGame($gameId)
+    public static function gameObjectFromSQL($sql_game)
     {
-        $sql_game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$gameId}' LIMIT 1");
-        if(!$sql_game) return new return_package(2, NULL, "The game you've requested does not exist");
-
         $game = new stdClass();
         $game->game_id = $sql_game->game_id;
         $game->name = $sql_game->name;
@@ -131,12 +128,33 @@ class games extends dbconnection
         $game->inventory_weight_cap = $sql_game->inventory_weight_cap;
         $game->ready_for_public = $sql_game->ready_for_public;
 
-        return new return_package(0,$game);
+        return $game;
+    }
+
+    public static function getGame($gameId)
+    {
+        $sql_game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$gameId}' LIMIT 1");
+        if(!$sql_game) return new return_package(2, NULL, "The game you've requested does not exist");
+        return new return_package(0,games::gameObjectFromSQL($sql_game));
+    }
+
+    public static function getGamesForUser($userId, $key)
+    {
+        if(!users::authenticateUser($userId, $key, "read_write"))
+            return new return_package(6, NULL, "Failed Authentication");
+
+        $sql_games = dbconnection::queryArray("SELECT * FROM user_games LEFT JOIN games ON user_games.game_id = games.game_id WHERE user_games.user_id = '{$userId}'");
+        $games = array();
+        for($i = 0; $i < count($sql_games); $i++)
+            $games[] = games::gameObjectFromSQL($sql_games[$i]);
+
+        return new return_package(0,$games);
     }
 
     public static function deleteGame($gameId, $userId, $key)
     {
-        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new return_package(6, NULL, "Failed Authentication");
+        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write"))
+            return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM games WHERE game_id = '{$gameId}' LIMIT 1");
         dbconnection::query("DELETE FROM game_tab_data WHERE game_id = '{$gameId}' LIMIT 1");

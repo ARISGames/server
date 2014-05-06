@@ -112,6 +112,29 @@
         document.getElementById('result_text').innerHTML = JSON.stringify(response);
     }
 
+    function submitCustom()
+    {
+        var response;
+        var request = document.getElementById('custom_request_method').value
+        if(document.getElementById('custom_request_method_get').checked)
+        {
+            request += "/"+document.getElementById('custom_request').value;
+            if(document.getElementById('custom_request_auth_do').checked)
+                request += "/"+userId+"/"+rwkey;
+            request = request.replace("//","/");
+            response = sendRequest(request, null, "GET");
+        }
+        else
+        {
+            var package = JSON.parse(document.getElementById('custom_request').value);
+            if(document.getElementById('custom_request_auth_do').checked)
+                package.auth = {"user_id":userId,"key":rwkey};
+            response = sendRequest(request, JSON.stringify(package), "POST");
+        }
+
+        document.getElementById('result_text').innerHTML = JSON.stringify(response);
+    }
+
 </script>
 </head>
 <body onload="load()">
@@ -168,6 +191,20 @@ For GET requests (delete): http://arisgames.org/server/json.php/v1.myservice.myf
     <div>
     <button id='delete_request_submit' onclick='submitDelete()'>delete</button><input id='delete_request_method' type='text'></input><br />
     <input id='delete_request' type='text'></input><br />
+    </div>
+
+    <br />
+    <div>
+    <button id='custom_request_submit' onclick='submitCustom()'>custom</button>
+    <input id='custom_request_method' type='text'></input>
+    <br />
+    <input id="custom_request_method_get" type="radio" name="method" value="GET" checked="checked">GET</input>
+    <input id="custom_request_method_post" type="radio" name="method" value="POST">POST</input>
+    <br />
+    <input id="custom_request_auth_do" type="radio" name="auth" value="do_auth" checked="checked">Add Auth</input>
+    <input id="custom_request_auth_dont" type="radio" name="auth" value="dont_auth">Don't add auth</input>
+    <br />
+    <textarea id='custom_request' style="width:100%; min-height:180px;"></textarea><br />
     </div>
 
    </div>
