@@ -6,17 +6,12 @@ require_once("return_package.php");
 class items extends dbconnection
 {
     //Takes in item JSON, all fields optional except game_id + user_id + key
-    public static function createItemJSON($glob)
+    public static function createItem($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return items::createItemPack($glob); }
+    public static function createItemPack($pack)
     {
-        $data = file_get_contents("php://input");
-        $glob = json_decode($data);
-        return items::createItem($glob);
-    }
-
-    public static function createItem($pack)
-    {
-        if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = $pack->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         $itemId = dbconnection::queryInsert(
             "INSERT INTO items (".
@@ -52,18 +47,12 @@ class items extends dbconnection
     }
 
     //Takes in game JSON, all fields optional except item_id + user_id + key
-    public static function updateItemJSON($glob)
+    public static function updateItem($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return items::updateItemPack($glob); }
+    public static function updateItemPack($pack)
     {
-        $data = file_get_contents("php://input");
-        $glob = json_decode($data);
-        return items::updateItem($glob);
-    }
-
-    public static function updateItem($pack)
-    {
-        $gameId = dbconnection::queryObject("SELECT * FROM items WHERE item_id = '{$pack->item_id}'")->game_id;
-        if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM items WHERE item_id = '{$pack->item_id}'")->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query(
             "UPDATE items SET ".
@@ -103,15 +92,17 @@ class items extends dbconnection
         return $item;
     }
 
-    public static function getItem($itemId)
+    public static function getItem($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return items::getItemPack($glob); }
+    public static function getItemPack($pack)
     {
-        $sql_item = dbconnection::queryObject("SELECT * FROM items WHERE item_id = '{$itemId}' LIMIT 1");
+        $sql_item = dbconnection::queryObject("SELECT * FROM items WHERE item_id = '{$pack->item_id}' LIMIT 1");
         return new return_package(0,items::itemObjectFromSQL($sql_item));
     }
 
-    public static function getItemsForGame($gameId)
+    public static function getItemsForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return items::getItemsForGamePack($glob); }
+    public static function getItemsForGamePack($pack)
     {
-        $sql_items = dbconnection::queryArray("SELECT * FROM items WHERE game_id = '{$gameId}'");
+        $sql_items = dbconnection::queryArray("SELECT * FROM items WHERE game_id = '{$pack->game_id}'");
         $items = array();
         for($i = 0; $i < count($sql_items); $i++)
             $items[] = items::itemObjctFromSQL($sql_items[$i]);
@@ -119,12 +110,14 @@ class items extends dbconnection
         return new return_package(0,$items);
     }
 
-    public static function deleteItem($itemId, $userId, $key)
+    public static function deleteItem($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return items::deleteItemPack($glob); }
+    public static function deleteItemPack($pack)
     {
-        $gameId = dbconnection::queryObject("SELECT * FROM items WHERE item_id = '{$itemId}'")->game_id;
-        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM items WHERE item_id = '{$pack->item_id}'")->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack)) return new return_package(6, NULL, "Failed Authentication");
 
-        dbconnection::query("DELETE FROM items WHERE item_id = '{$itemId}' LIMIT 1");
+        dbconnection::query("DELETE FROM items WHERE item_id = '{$pack->item_id}' LIMIT 1");
         return new return_package(0);
     }
 }

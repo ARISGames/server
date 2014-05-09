@@ -6,17 +6,11 @@ require_once("return_package.php");
 class npcs extends dbconnection
 {
     //Takes in npc JSON, all fields optional except game_id + user_id + key
-    public static function createNpcJSON($glob)
+    public static function createNpc($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return npcs::createNpcPack($glob); }
+    public static function createNpcPack($pack)
     {
-        $data = file_get_contents("php://input");
-        $glob = json_decode($data);
-        return npcs::createNpc($glob);
-    }
-
-    public static function createNpc($pack)
-    {
-        if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         $npcId = dbconnection::queryInsert(
             "INSERT INTO npcs (".
@@ -44,18 +38,12 @@ class npcs extends dbconnection
     }
 
     //Takes in game JSON, all fields optional except npc_id + user_id + key
-    public static function updateNpcJSON($glob)
+    public static function updateNpc($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return npcs::updateNpcPack($glob); }
+    public static function updateNpcPack($pack)
     {
-        $data = file_get_contents("php://input");
-        $glob = json_decode($data);
-        return npcs::updateNpc($glob);
-    }
-
-    public static function updateNpc($pack)
-    {
-        $gameId = dbconnection::queryObject("SELECT * FROM npcs WHERE npc_id = '{$pack->npc_id}'")->game_id;
-        if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM npcs WHERE npc_id = '{$pack->npc_id}'")->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query(
             "UPDATE npcs SET ".
@@ -87,15 +75,17 @@ class npcs extends dbconnection
         return $npc;
     }
 
-    public static function getNpc($npcId)
+    public static function getNpc($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return npcs::getNpcPack($glob); }
+    public static function getNpc($pack)
     {
-        $sql_npc = dbconnection::queryObject("SELECT * FROM npcs WHERE npc_id = '{$npcId}' LIMIT 1");
+        $sql_npc = dbconnection::queryObject("SELECT * FROM npcs WHERE npc_id = '{$pack->npc_id}' LIMIT 1");
         return new return_package(0,npcs::npcObjectFromSQL($sql_npc));
     }
 
-    public static function getNpcsForGame($gameId)
+    public static function getNpcsForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return npcs::getNpcsForGamePack($glob); }
+    public static function getNpcsForGamePack($pack)
     {
-        $sql_npcs = dbconnection::queryArray("SELECT * FROM npcs WHERE game_id = '{$gameId}'");
+        $sql_npcs = dbconnection::queryArray("SELECT * FROM npcs WHERE game_id = '{$pack->game_id}'");
         $npcs = array();
         for($i = 0; $i < count($sql_npcs); $i++)
             $npcs[] = npcs::npcObjectFromSQL($sql_npcs[$i]);
@@ -103,10 +93,12 @@ class npcs extends dbconnection
         return new return_package(0,$npcs);
     }
 
-    public static function deleteNpc($npcId, $userId, $key)
+    public static function deleteNpc($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return npcs::deleteNpcPack($glob); }
+    public static function deleteNpcPack($pack)
     {
-        $gameId = dbconnection::queryObject("SELECT * FROM npcs WHERE npc_id = '{$npcId}'")->game_id;
-        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM npcs WHERE npc_id = '{$npcId}'")->game_id;
+        $pack->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM npcs WHERE npc_id = '{$npcId}' LIMIT 1");
         return new return_package(0);

@@ -7,16 +7,12 @@ class requirements extends dbconnection
 {	
     //Takes in requirementPackage JSON, all fields optional except game_id.
     //all individual ids (requirement_root_package_id, etc...) ignored if present ( = easy duplication)
-    public function createRequirementPackageJSON($glob)
+    public function createRequirementPackage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return requirements::createRequirementPackagePack($glob); }
+    public function createRequirementPackagePack($pack)
     {
-	$data = file_get_contents("php://input");
-        $glob = json_decode($data);
-        return requirements::createRequirementPackage($glob);
-    }
-    public function createRequirementPackage($pack)
-    {
-        if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = $pack->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         $requirementPackageId = dbconnection::queryInsert(
             "INSERT INTO requirement_root_packages (".
@@ -35,17 +31,20 @@ class requirements extends dbconnection
             $pack->and_packages[$i]->requirement_root_package_id = $requirementPackageId;
             $pack->and_packages[$i]->game_id = $pack->game_id;
             $pack->and_packages[$i]->auth = $pack->auth;
-            requirements::createRequirementAndPackage($pack->and_packages[$i]);
+            requirements::createRequirementAndPackagePack($pack->and_packages[$i]);
         }
 
-        return requirements::getRequirementPackage($requirementPackageId);
+        return requirements::getRequirementPackagePack($requirementPackageId);
     }
 
     //requires game_id and requirement_root_package_id
-    public function createRequirementAndPackage($pack)
+    public function createRequirementAndPackage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return requirements::createRequirementAndPackagePack($glob); }
+    public function createRequirementAndPackagePack($pack)
     {
-        if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = $pack->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
         if(!$pack->requirement_root_package_id) return;
 
         $requirementAndPackageId = dbconnection::queryInsert(
@@ -67,15 +66,18 @@ class requirements extends dbconnection
             $pack->atoms[$i]->requirement_and_package_id = $requirementAndPackageId;
             $pack->atoms[$i]->game_id = $pack->game_id;
             $pack->atoms[$i]->auth = $pack->auth;
-            requirements::createRequirementAtom($pack->atoms[$i]);
+            requirements::createRequirementAtomPack($pack->atoms[$i]);
         }
     }
 
     //requires game_id and requirement_and_package_id
-    public function createRequirementAtom($pack)
+    public function createRequirementAtom($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return requirements::createRequirementAtomPack($glob); }
+    public function createRequirementAtomPack($pack)
     {
-        if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = $pack->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
         if(!$pack->requirement_and_package_id) return;
 
         dbconnection::query(
@@ -103,18 +105,13 @@ class requirements extends dbconnection
         );
     }
 
-    public function updateRequirementPackageJSON($glob)
-    {
-	$data = file_get_contents("php://input");
-        $glob = json_decode($data);
-        return requirements::updateRequirementPackage($glob);
-    }
-
+    public function updateRequirementPackage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return requirements::updateRequirementPackagePack($glob); }
     public function updateRequirementPackage($pack)
     {
-        $gameId = dbconnection::queryObject("SELECT * FROM requirement_root_packages WHERE requirement_root_package_id = '{$pack->requirement_root_package_id}'")->game_id;
-        if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM requirement_root_packages WHERE requirement_root_package_id = '{$pack->requirement_root_package_id}'")->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
         if(!$pack->requirement_root_package_id) return;
 
         dbconnection::query(
@@ -143,27 +140,29 @@ class requirements extends dbconnection
                 $matchingAndPack->requirement_root_package_id = $pack->requirement_root_package_id;
                 $matchingAndPack->game_id                     = $pack->game_id;
                 $matchingAndPack->auth                        = $pack->auth;
-                requirements::updateRequirementAndPackage($matchingAndPack);
+                requirements::updateRequirementAndPackagePack($matchingAndPack);
             }
             else
-                requirements::deleteRequirementAndPackage($sql_currentAndPacks[$i]->requirement_and_package_id);
+                requirements::deleteRequirementAndPackagePack($sql_currentAndPacks[$i]->requirement_and_package_id);
         }
         for($i = 0; $pack->and_packages && $i < count($pack->and_packages); $i++)
         {
             $pack->and_packages[$i]->requirement_root_package_id = $pack->requirement_root_package_id;
             $pack->and_packages[$i]->game_id                     = $pack->game_id;
             $pack->and_packages[$i]->auth                        = $pack->auth;
-            requirements::createRequirementAndPackage($pack->and_packages[$i]);
+            requirements::createRequirementAndPackagePack($pack->and_packages[$i]);
         }
 
-        return requirements::getRequirementPackage($pack->requirement_root_package_id);
+        return requirements::getRequirementPackagePack($pack->requirement_root_package_id);
     }
 
-    public function updateRequirementAndPackage($pack)
+    public function updateRequirementAndPackage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return requirements::updateRequirementAndPackagePack($glob); }
+    public function updateRequirementAndPackagePack($pack)
     {
-        $gameId = dbconnection::queryObject("SELECT * FROM requirement_and_packages WHERE requirement_and_package_id = '{$pack->requirement_and_package_id}'")->game_id;
-        if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM requirement_and_packages WHERE requirement_and_package_id = '{$pack->requirement_and_package_id}'")->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
         if(!$pack->requirement_and_package_id) return new return_package(1,NULL,"Insufficient data");
 
         dbconnection::query(
@@ -192,21 +191,22 @@ class requirements extends dbconnection
                 $matchingAtom->requirement_atom_id = $pack->atoms[$j]->requirement_atom_id;
                 $matchingAtom->game_id             = $pack->game_id;
                 $matchingAtom->auth                = $pack->auth;
-                requirements::updateRequirementAtom($matchingAtom);
+                requirements::updateRequirementAtomPack($matchingAtom);
             }
             else
-                requirements::deleteRequirementAtom($sql_currentAtoms[$i]->requirement_atom_id);
+                requirements::deleteRequirementAtomPack($sql_currentAtoms[$i]->requirement_atom_id);
         }
         for($i = 0; $pack->atoms && $i < count($pack->atoms); $i++)
         {
             $pack->atoms[$i]->requirement_atom_id = $pack->atoms[$j]->requirement_atom_id;
             $pack->atoms[$i]->game_id             = $pack->game_id;
             $pack->atoms[$i]->auth                = $pack->auth;
-            requirements::createRequirementAtom($pack->atoms[$i]);
+            requirements::createRequirementAtomPack($pack->atoms[$i]);
         }
     }
 
-    public function updateRequirementAtom($pack)
+    public function updateRequirementAtom($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return requirements::updateRequirementAtomPack($glob); }
+    public function updateRequirementAtomPack($pack)
     {
         $gameId = dbconnection::queryObject("SELECT * FROM requirement_atoms WHERE requirement_atom_id = '{$pack->requirement_atom_id}'")->game_id;
         if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
@@ -227,21 +227,22 @@ class requirements extends dbconnection
     }
 
 
-    public function getRequirementPackage($requirementPackageId)
+    public function getRequirementPackage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return requirements::getRequirementPackagePack($glob); }
+    public function getRequirementPackagePack($pack)
     {
         $pack = new stdClass();
 
-        $sql_root = dbconnection::queryObject("SELECT * FROM requirement_root_packages WHERE requirement_root_package_id = '{$requirementPackageId}'");
+        $sql_root = dbconnection::queryObject("SELECT * FROM requirement_root_packages WHERE requirement_root_package_id = '{$pack->requirement_package_id}'");
         $pack->requirement_root_package_id = $sql_root->requirement_root_package_id;
         $pack->game_id = $sql_root->game_id;
         $pack->name = $sql_root->name;
 
-        $sql_andPacks = dbconnection::queryArray("SELECT * FROM requirement_and_packages WHERE requirement_root_package_id = '{$requirementPackageId}'");
+        $sql_andPacks = dbconnection::queryArray("SELECT * FROM requirement_and_packages WHERE requirement_root_package_id = '{$pack->requirement_package_id}'");
         $pack->and_packages = array();
 
         for($i = 0; $i < count($sql_andPacks); $i++)
         {
-            $pack->and_packages[$i] = requirements::getRequirementAndPackage($sql_andPacks[$i]->requirement_and_package_id)->data;
+            $pack->and_packages[$i] = requirements::getRequirementAndPackagePack($sql_andPacks[$i]->requirement_and_package_id)->data;
             //makes for cleaner return object, as game_id,requirement_and_package_id is already in parent
             unset($pack->and_packages[$i]->game_id);
             unset($pack->and_packages[$i]->requirement_root_package_id);
@@ -249,9 +250,10 @@ class requirements extends dbconnection
 
         return new return_package(0,$pack);
     }
-    public function getRequirementAndPackage($requirementAndPackageId)
+    public function getRequirementAndPackage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return requirements::getRequirementAndPackagePack($glob); }
+    public function getRequirementAndPackagePack($pack)
     {
-        $sql_andPack = dbconnection::queryObject("SELECT * FROM requirement_and_packages WHERE requirement_and_package_id = '{$requirementAndPackageId}'");
+        $sql_andPack = dbconnection::queryObject("SELECT * FROM requirement_and_packages WHERE requirement_and_package_id = '{$pack->requirement_and_package_id}'");
         $andPack = new stdClass();
         $andPack->requirement_and_package_id  = $sql_andPack->requirement_and_package_id;
         $andPack->game_id                     = $sql_andPack->game_id;
@@ -262,7 +264,7 @@ class requirements extends dbconnection
         $andPack->atoms = array();
         for($i = 0; $i < count($sql_packAtoms); $i++)
         {
-            $andPack->atoms[$i] = requirements::getRequirementAtom($sql_packAtoms[$i]->requirement_atom_id)->data;
+            $andPack->atoms[$i] = requirements::getRequirementAtomPack($sql_packAtoms[$i]->requirement_atom_id)->data;
             //makes for cleaner return object, as game_id,requirement_and_package_id is already in parent
             unset($andPack->atoms[$i]->game_id);
             unset($andPack->atoms[$i]->requirement_and_package_id);
@@ -270,9 +272,10 @@ class requirements extends dbconnection
 
         return new return_package(0,$andPack);
     }
-    public function getRequirementAtom($requirementAtomId)
+    public function getRequirementAtom($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return requirements::getRequirementAtomPack($glob); }
+    public function getRequirementAtomPack($pack)
     {
-        $sql_atom = dbconnection::queryObject("SELECT * FROM requirement_atoms WHERE requirement_atom_id = '{$requirementAtomId}'");
+        $sql_atom = dbconnection::queryObject("SELECT * FROM requirement_atoms WHERE requirement_atom_id = '{$pack->requirement_atom_id}'");
         $atom = new stdClass();
         $atom->requirement_atom_id        = $sql_atom->requirement_atom_id;
         $atom->game_id                    = $sql_atom->game_id;
@@ -286,13 +289,17 @@ class requirements extends dbconnection
         return new return_package(0,$atom);
     }
 
-    public function deleteRequirementPackage($requirementPackageId)
+    public function deleteRequirementPackage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return requirements::deleteRequirementPackagePack($glob); }
+    public function deleteRequirementPackagePack($pack)
     {
-        $gameId = dbconnection::queryObject("SELECT game_id FROM requirement_root_packages WHERE requirement_root_package_id = '{$requirementPackageId}'")->game_id;
-        $sql_andPacks = dbconnection::queryArray("SELECT * FROM requirement_and_packages WHERE requirement_root_package_id = '{$requirementPackageId}'");
+        $pack->auth->game_id = dbconnection::queryObject("SELECT game_id FROM requirement_root_packages WHERE requirement_root_package_id = '{$pack->requirement_package_id}'")->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+         
+        $sql_andPacks = dbconnection::queryArray("SELECT * FROM requirement_and_packages WHERE requirement_root_package_id = '{$pack->requirement_package_id}'");
         for($i = 0; $i < count($sql_andPacks); $i++)
-            requirements::deleteRequirementAndPackage($sql_andPacks[$i]->requirement_and_package_id);
-        dbconnection::query("DELETE FROM requirement_root_packages WHERE requirement_root_package_id = '{$requirementPackageId}'");
+            requirements::deleteRequirementAndPackagePack($sql_andPacks[$i]->requirement_and_package_id);
+        dbconnection::query("DELETE FROM requirement_root_packages WHERE requirement_root_package_id = '{$pack->requirement_package_id}'");
 
         dbconnection::query("UPDATE quests SET complete_requirement_package_id = 0 WHERE game_id = '{$gameId}' AND complete_requirement_package_id = '{$requirementPackageId}'");
         dbconnection::query("UPDATE quests SET display_requirement_package_id = 0 WHERE game_id = '{$gameId}' AND display_requirement_package_id = '{$requirementPackageId}'");
@@ -301,40 +308,53 @@ class requirements extends dbconnection
         dbconnection::query("UPDATE overlays SET requirement_package_id = 0 WHERE game_id = '{$gameId}' AND requirement_package_id = '{$requirementPackageId}'");
     }
 
-    public function deleteRequirementAndPackage($requirementAndPackageId)
+    public function deleteRequirementAndPackage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return requirements::deleteRequirementAndPackagePack($glob); }
+    public function deleteRequirementAndPackagePack($pack)
     {
-        $sql_packAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement_and_package_id = '{$requirementAndPackageId}'");
+        $pack->auth->game_id = dbconnection::queryObject("SELECT game_id FROM requirement_and_packages WHERE requirement_and_package_id = '{$pack->requirement_and_package_id}'")->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $sql_packAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement_and_package_id = '{$pack->requirement_and_package_id}'");
         for($i = 0; $i < count($sql_packAtoms); $i++)
-            requirements::deleteRequirementAtom($sql_packAtoms[$i]->requirement_atom_id);
-        dbconnection::query("DELETE FROM requirement_and_packages WHERE requirement_and_package_id = '{$requirementAndPackageId}'");
+            requirements::deleteRequirementAtomPack($sql_packAtoms[$i]->requirement_atom_id);
+        dbconnection::query("DELETE FROM requirement_and_packages WHERE requirement_and_package_id = '{$pack->requirement_and_package_id}'");
     }
 
-    public function deleteRequirementAtom($requirementAtomId)
+    public function deleteRequirementAtom($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return requirements::deleteRequirementAtomPack($glob); }
+    public function deleteRequirementAtomPack($pack)
     {
+        $pack->auth->game_id = dbconnection::queryObject("SELECT game_id FROM requirement_atoms WHERE requirement_atom_id = '{$pack->requirement_atom_id}'")->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
         dbconnection::query("DELETE FROM requirement_atoms WHERE requirement_atom_id = '{$requirementAtomId}'");
     }
 
-    public function evaluateRequirementPackage($requirementPackageId, $userId)
+    public function evaluateRequirementPackage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return requirements::evaluateRequirementPackagePack($glob); }
+    public function evaluateRequirementPackagePack($pack)
     {
-        $andPackages = dbconnection::queryArray("SELECT requirement_and_package_id FROM requirement_and_packages WHERE requirement_root_package_id= '{$requirementPackageId}'");
+        $andPackages = dbconnection::queryArray("SELECT requirement_and_package_id FROM requirement_and_packages WHERE requirement_root_package_id= '{$pack->requirement_package_id}'");
 
         for($i = 0; $i < count($andPackages); $i++)
-            if(requirements::evaluateRequirementAndPackage($andPackages[$i]->requirement_and_package_id, $userId)) return true;
+            if(requirements::evaluateRequirementAndPackagePack($andPackages[$i]->requirement_and_package_id, $pack->auth->user_id)) return true;
         return false;
     }
 
-    public function evaluateRequirementAndPackage($requirementAndPackageId, $userId)
+    public function evaluateRequirementAndPackage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return requirements::evaluateRequirementAndPackagePack($glob); }
+    public function evaluateRequirementAndPackage($pack)
     {
-        $atoms = dbconnection::queryArray("SELECT requirement_atom_id FROM requirement_atoms WHERE requirement_and_package_id= '{$requirementAndPackageId}'");
+        $atoms = dbconnection::queryArray("SELECT requirement_atom_id FROM requirement_atoms WHERE requirement_and_package_id= '{$pack->requirement_and_package_id}'");
 
         for($i = 0; $i < count($atoms); $i++)
-            if(!requirements::evaluateRequirementAtom($atoms[$i]->requirement_atom_id, $userId)) return false;
+            if(!requirements::evaluateRequirementAtom($atoms[$i]->requirement_atom_id, $pack->user_id)) return false;
         return true;
     }
 
-    public function evaluateRequirementAtom($requirementAtomId, $userId)
+    public function evaluateRequirementAtom($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return requirements::evaluateRequirementAtomPack($glob); }
+    public function evaluateRequirementAtom($pack)
     {
-        $atom = dbconnection::queryObject("SELECT * FROM requirement_atoms WHERE requirement_atom_id = '{$requirementAtomId}'");
+        $atom = dbconnection::queryObject("SELECT * FROM requirement_atoms WHERE requirement_atom_id = '{$pack->requirement_atom_id}'");
 
         //these functions need to be defined for new schema
         switch($atom->requirement)

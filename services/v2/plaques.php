@@ -6,17 +6,12 @@ require_once("return_package.php");
 class plaques extends dbconnection
 {	
     //Takes in plaque JSON, all fields optional except game_id + user_id + key
-    public static function createPlaqueJSON($glob)
+    public static function createPlaque($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return plaques::createPlaquePack($glob); }
+    public static function createPlaquePack($pack)
     {
-        $data = file_get_contents("php://input");
-        $glob = json_decode($data);
-        return plaques::createPlaque($glob);
-    }
-
-    public static function createPlaque($pack)
-    {
-        if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = $pack->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         $plaqueId = dbconnection::queryInsert(
             "INSERT INTO plaques (".
@@ -40,18 +35,12 @@ class plaques extends dbconnection
     }
 
     //Takes in game JSON, all fields optional except plaque_id + user_id + key
-    public static function updatePlaqueJSON($glob)
+    public static function updatePlaque($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return plaques::updatePlaquePack($glob); }
+    public static function updatePlaquePack($pack)
     {
-        $data = file_get_contents("php://input");
-        $glob = json_decode($data);
-        return plaques::updatePlaque($glob);
-    }
-
-    public static function updatePlaque($pack)
-    {
-        $gameId = dbconnection::queryObject("SELECT * FROM plaques WHERE plaque_id = '{$pack->plaque_id}'")->game_id;
-        if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM plaques WHERE plaque_id = '{$pack->plaque_id}'")->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query(
             "UPDATE plaques SET ".
@@ -79,15 +68,17 @@ class plaques extends dbconnection
         return $plaque;
     }
 
-    public static function getPlaque($plaqueId)
+    public static function getPlaque($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return plaques::getPlaquePack($glob); }
+    public static function getPlaquePack($pack)
     {
-        $sql_plaque = dbconnection::queryObject("SELECT * FROM plaques WHERE plaque_id = '{$plaqueId}' LIMIT 1");
+        $sql_plaque = dbconnection::queryObject("SELECT * FROM plaques WHERE plaque_id = '{$pack->plaque_id}' LIMIT 1");
         return new return_package(0,plaques::plaqueObjectFromSQL($sql_plaque));
     }
 
-    public static function getPlaquesForGame($gameId)
+    public static function getPlaquesForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return plaques::getPlaquesForGamePack($glob); }
+    public static function getPlaquesForGamePack($pack)
     {
-        $sql_plaques = dbconnection::queryArray("SELECT * FROM plaques WHERE game_id = '{$gameId}'");
+        $sql_plaques = dbconnection::queryArray("SELECT * FROM plaques WHERE game_id = '{$pack->game_id}'");
         $plaques = array();
         for($i = 0; $i < count($sql_plaques); $i++)
             $plaques[] = plaques::plaqueObjectFromSQL($sql_plaques[$i]);
@@ -95,12 +86,14 @@ class plaques extends dbconnection
         return new return_package(0,$plaques);
     }
 
-    public static function deletePlaque($plaqueId, $userId, $key)
+    public static function deletePlaque($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return plaques::deletePlaquePack($glob); }
+    public static function deletePlaquePack($pack)
     {
-        $gameId = dbconnection::queryObject("SELECT * FROM plaques WHERE plaque_id = '{$plaqueId}'")->game_id;
-        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM plaques WHERE plaque_id = '{$pack->plaque_id}'")->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        dbconnection::query("DELETE FROM plaques WHERE plaque_id = '{$plaqueId}' LIMIT 1");
+        dbconnection::query("DELETE FROM plaques WHERE plaque_id = '{$pack->plaque_id}' LIMIT 1");
         return new return_package(0);
     }
 }

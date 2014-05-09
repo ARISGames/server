@@ -6,19 +6,14 @@ require_once("return_package.php");
 class triggers extends dbconnection
 {	
     //Takes in trigger JSON, all fields optional except user_id + key
-    public static function createTriggerJSON($glob)
+    public static function createTrigger($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return triggers::createTriggerPack($glob); }
+    public static function createTriggerPack($pack)
     {
-        $data = file_get_contents("php://input");
-        $glob = json_decode($data);
-        return triggers::createTrigger($glob);
-    }
-
-    public static function createTrigger($pack)
-    {
-        if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = $pack->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
     
-        $triggerId = dbconnection::queryInsert(
+        $pack->trigger_id = dbconnection::queryInsert(
             "INSERT INTO triggers (".
             "game_id,".
             ($pack->name                        ? "name,"                        : "").
@@ -50,22 +45,16 @@ class triggers extends dbconnection
             ")"
         );
 
-        return triggers::getTrigger($triggerId);
+        return triggers::getTrigger($pack);
     }
 
     //Takes in game JSON, all fields optional except user_id + key
-    public static function updateTriggerJSON($glob)
+    public static function updateTrigger($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return triggers::updateTriggerPack($glob); }
+    public static function updateTriggerPack($pack)
     {
-        $data = file_get_contents("php://input");
-        $glob = json_decode($data);
-        return triggers::updateTrigger($glob);
-    }
-
-    public static function updateTrigger($pack)
-    {
-        $gameId = dbconnection::queryObject("SELECT * FROM triggers WHERE trigger_id = '{$pack->trigger_id}'")->game_id;
-        if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM triggers WHERE trigger_id = '{$pack->trigger_id}'")->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query(
             "UPDATE triggers SET ".
@@ -84,7 +73,7 @@ class triggers extends dbconnection
             "WHERE trigger_id = '{$pack->trigger_id}'"
         );
 
-        return triggers::getTrigger($pack->trigger_id);
+        return triggers::getTrigger($pack);
     }
 
     private static function triggerObjectFromSQL($sql_trigger)
@@ -107,15 +96,17 @@ class triggers extends dbconnection
         return $trigger;
     }
 
-    public static function getTrigger($triggerId)
+    public static function getTrigger($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return triggers::getTriggerPack($glob); }
+    public static function getTriggerPack($pack)
     {
-        $sql_trigger = dbconnection::queryObject("SELECT * FROM triggers WHERE trigger_id = '{$triggerId}' LIMIT 1");
+        $sql_trigger = dbconnection::queryObject("SELECT * FROM triggers WHERE trigger_id = '{$pack->trigger_id}' LIMIT 1");
         return new return_package(0,triggers::triggerObjectFromSQL($sql_trigger));
     }
 
-    public static function getTriggersForGame($gameId)
+    public static function getTriggersForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return triggers::getTriggersForGamePack($glob); }
+    public static function getTriggersForGamePack($pack)
     {
-        $sql_triggers = dbconnection::queryArray("SELECT * FROM triggers WHERE game_id = '{$gameId}'");
+        $sql_triggers = dbconnection::queryArray("SELECT * FROM triggers WHERE game_id = '{$pack->game_id}'");
         $triggers = array();
         for($i = 0; $i < count($sql_triggers); $i++)
             $triggers[] = triggers::triggerObjectFromSQL($sql_triggers[$i]);
@@ -123,9 +114,10 @@ class triggers extends dbconnection
         return new return_package(0,$triggers);
     }
 
-    public static function getTriggersForScene($sceneId)
+    public static function getTriggersForScene($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return triggers::getTriggersForScenePack($glob); }
+    public static function getTriggersForScenePack($pack)
     {
-        $sql_triggers = dbconnection::queryArray("SELECT * FROM triggers WHERE scene_id = '{$sceneId}'");
+        $sql_triggers = dbconnection::queryArray("SELECT * FROM triggers WHERE scene_id = '{$pack->scene_id}'");
         $triggers = array();
         for($i = 0; $i < count($sql_triggers); $i++)
             $triggers[] = triggers::triggerObjectFromSQL($sql_triggers[$i]);
@@ -133,7 +125,8 @@ class triggers extends dbconnection
         return new return_package(0,$triggers);
     }
 
-    public static function getTriggersForInstance($instanceId)
+    public static function getTriggersForInstance($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return triggers::getTriggersForInstancePack($glob); }
+    public static function getTriggersForInstancePack($pack)
     {
         $sql_triggers = dbconnection::queryArray("SELECT * FROM triggers WHERE instance_id = '{$instanceId}'");
         $triggers = array();
@@ -143,12 +136,14 @@ class triggers extends dbconnection
         return new return_package(0,$triggers);
     }
 
-    public static function deleteTrigger($triggerId, $userId, $key)
+    public static function deleteTrigger($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return triggers::deleteTrigger($glob); }
+    public static function deleteTriggerPack($pack)
     {
-        $gameId = dbconnection::queryObject("SELECT * FROM triggers WHERE trigger_id = '{$triggerId}'")->game_id;
-        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM triggers WHERE trigger_id = '{$pack->trigger_id}'")->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        dbconnection::query("DELETE FROM triggers WHERE trigger_id = '{$triggerId}' LIMIT 1");
+        dbconnection::query("DELETE FROM triggers WHERE trigger_id = '{$pack->trigger_id}' LIMIT 1");
         return new return_package(0);
     }
 }

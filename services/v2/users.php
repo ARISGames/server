@@ -4,16 +4,22 @@ require_once("util.php");
 require_once("return_package.php");
 
 class users extends dbconnection
-{
-    //Takes in user JSON, all fields optional except user_id + key
-    public static function createUserJSON($glob)
+{    
+    //Used by other services
+    public static function authenticateUser($pack)
     {
-	$data = file_get_contents("php://input");
-        $glob = json_decode($data);
-        return users::createUser($glob);
+        $userId     = addslashes($pack->user_id);
+        $permission = addslashes($pack->permission);
+        $key        = addslashes($pack->key);
+
+        $user = dbconnection::queryObject("SELECT * FROM users WHERE user_id = '{$userId}' LIMIT 1");
+        if($user && $user->{$permission."_key"} == $key) return true;
+        util::serverErrorLog("Failed Editor Authentication!"); return false;
     }
 
-    public function createUser($pack)
+    //Takes in user JSON, all fields optional except user_id + key
+    public static function createUser($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::createUserPack($glob); }
+    public static function createUserPack($pack)
     {
         if(dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}'"))
             return new return_package(1, NULL, "User already exists");
@@ -50,22 +56,13 @@ class users extends dbconnection
             ")"
         );
 
-        $auth = new stdClass();
-        $auth->user_name = $pack->user_name;
-        $auth->password = $pack->password;
-        $auth->permission = "read_write";
-        return users::logIn($auth);
+        $pack->permission = "read_write";
+        return users::logIn($pack);
     }
 
     //Takes in user JSON, requires user_name and password
-    public static function logInJSON($glob)
-    {
-	$data = file_get_contents("php://input");
-        $glob = json_decode($data);
-        return users::logIn($glob);
-    }
-
-    public function logIn($pack)
+    public static function logIn($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::logInPack($glob); }
+    public static function logInPack($pack)
     {
         if(!($user = dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}'")) || hash("sha256",$user->salt.$pack->password) != $user->hash)
             return new return_package(1, NULL, "Incorrect username/password");
@@ -82,18 +79,13 @@ class users extends dbconnection
         return new return_package(0, $ret);
     }
 
-    public function authenticateUser($userId, $key, $permission)
-    {
-        $permission = addslashes($permission);
-        $key        = addslashes($key);
-
-        $user = dbconnection::queryObject("SELECT * FROM users WHERE user_id = '{$userId}' LIMIT 1");
-        if($user && $user->{$permission."_key"} == $key) return true;
-        util::serverErrorLog("Failed Editor Authentication!"); return false;
-    }
-
-    public function changePassword($username, $oldPass, $newPass)
+    public static function changePassword($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::changePasswordPack($glob); }
+    public static function changePasswordPack($pack)
     {	
+        $username = addslashes($pack->user_name);
+        $oldPass  = addslashes($pack->old_password);
+        $newPass  = addslashes($pack->new_password);
+
         $user = users::logIn($username, $oldPass, "read_write")->data;
         if(!$user) return new return_package(1, NULL, "Incorrect username/password");
 
@@ -108,7 +100,7 @@ class users extends dbconnection
         return new return_package(0, NULL);
     }	
 
-    public function resetAndEmailNewPassword($strEmail)
+    public static function resetAndEmailNewPassword($strEmail)
     {
         //oh god terrible email validation
         $user = null;
@@ -130,7 +122,7 @@ class users extends dbconnection
         else return new return_package(5, NULL, "Mail could not be sent");
     }
 
-    public function emailUserName($strEmail)
+    public static function emailUserName($strEmail)
     {
         if(!$user = dbconnection::queryObject("SELECT * FROM users WHERE email = '{$strEmail}' LIMIT 1"))
             return new return_package(4, NULL, "Email is not a user");

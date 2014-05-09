@@ -5,16 +5,11 @@ require_once("return_package.php");
 class notebook extends dbconnection
 {
     //Takes in game JSON, all fields optional except user_id + key
-    public static function createNoteJSON($glob)
+    public static function createNote($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::createNotePack($glob); }
+    public static function createNotePack($pack)
     {
-	$data = file_get_contents("php://input");
-        $glob = json_decode($data);
-        return notes::createNote($glob);
-    }
-
-    public static function createNote($pack)
-    {
-        if(!users::authenticateUser($pack->auth->user_id, $pack->auth->key, "read_write"))
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth))
             return new return_package(6, NULL, "Failed Authentication");
 
         $noteId = dbconnection::queryInsert(

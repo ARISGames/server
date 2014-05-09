@@ -6,14 +6,8 @@ require_once("return_package.php");
 class instances extends dbconnection
 {	
     //Takes in instance JSON, all fields optional except user_id + key
-    public static function createInstanceJSON($glob)
-    {
-        $data = file_get_contents("php://input");
-        $glob = json_decode($data);
-        return instances::createInstance($glob);
-    }
-
-    public static function createInstance($pack)
+    public static function createInstance($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return instances::createInstancePack($glob); }
+    public static function createInstancePack($pack)
     {
         if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
             return new return_package(6, NULL, "Failed Authentication");
@@ -38,13 +32,7 @@ class instances extends dbconnection
     }
 
     //Takes in game JSON, all fields optional except user_id + key
-    public static function updateInstanceJSON($glob)
-    {
-        $data = file_get_contents("php://input");
-        $glob = json_decode($data);
-        return instances::updateInstance($glob);
-    }
-
+    public static function updateInstance($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return instances::updateInstancePack($glob); }
     public static function updateInstance($pack)
     {
         $gameId = dbconnection::queryObject("SELECT * FROM instances WHERE instance_id = '{$pack->instance_id}'")->game_id;
@@ -74,15 +62,17 @@ class instances extends dbconnection
         return $instance;
     }
 
-    public static function getInstance($instanceId)
+    public static function getInstance($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return instances::getInstancePack($glob); }
+    public static function getInstancePack($pack)
     {
-        $sql_instance = dbconnection::queryObject("SELECT * FROM instances WHERE instance_id = '{$instanceId}' LIMIT 1");
+        $sql_instance = dbconnection::queryObject("SELECT * FROM instances WHERE instance_id = '{$pack->instance_id}' LIMIT 1");
         return new return_package(0,instances::instanceObjectFromSQL($sql_instance));
     }
 
-    public static function getInstancesForGame($gameId)
+    public static function getInstancesForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return instances::getInstancesForGamePack($glob); }
+    public static function getInstancesForGamePack($pack)
     {
-        $sql_instances = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$gameId}'");
+        $sql_instances = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}'");
         $instances = array();
         for($i = 0; $i < count($sql_instances); $i++)
             $instances[] = instances::instanceObjectFromSQL($sql_instances[$i]);
@@ -90,9 +80,10 @@ class instances extends dbconnection
         return new return_package(0,$instances);
     }
 
-    public static function getInstancesForObject($objectType, $objectId)
+    public static function getInstancesForObject($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return instances::getInstancesForObjectPack($glob); }
+    public static function getInstancesForObjectPack($pack)
     {
-        $sql_instances = dbconnection::queryArray("SELECT * FROM instances WHERE object_type = '{$objectType}' AND object_id = '{$objectId}'");
+        $sql_instances = dbconnection::queryArray("SELECT * FROM instances WHERE object_type = '{$pack->object_type}' AND object_id = '{$pack->object_id}'");
         $instances = array();
         for($i = 0; $i < count($sql_instances); $i++)
             $instances[] = instances::instanceObjectFromSQL($sql_instances[$i]);
@@ -100,13 +91,17 @@ class instances extends dbconnection
         return new return_package(0,$instances);
     }
 
-    public static function deleteInstance($instanceId, $userId, $key)
+    public static function deleteInstance($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return instances::deleteInstancePack($glob); }
+    public static function deleteInstancePack($pack)
     {
-        $gameId = dbconnection::queryObject("SELECT * FROM instances WHERE instance_id = '{$instanceId}'")->game_id;
-        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM instances WHERE instance_id = '{$instanceId}'")->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        dbconnection::query("DELETE FROM instances WHERE instance_id = '{$instanceId}' LIMIT 1");
+        dbconnection::query("DELETE FROM instances WHERE instance_id = '{$pack->instance_id}' LIMIT 1");
         return new return_package(0);
     }
 }
+
 ?>
+

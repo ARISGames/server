@@ -7,17 +7,11 @@ require_once("return_package.php");
 class games extends dbconnection
 {	
     //Takes in game JSON, all fields optional except user_id + key
-    public static function createGameJSON($glob)
+    public static function createGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return games::createGamePack($glob); }
+    public static function createGamePack($pack)
     {
-	$data = file_get_contents("php://input");
-        $glob = json_decode($data);
-        return games::createGame($glob);
-    }
-
-    public static function createGame($pack)
-    {
-        if(!users::authenticateUser($pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         $gameId = dbconnection::queryInsert(
             "INSERT INTO games (".
@@ -72,17 +66,12 @@ class games extends dbconnection
     }
 
     //Takes in game JSON, all fields optional except user_id + key
-    public static function updateGameJSON($glob)
+    public static function updateGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return games::updateGamePack($glob); }
+    public static function updateGamePack($pack)
     {
-	$data = file_get_contents("php://input");
-        $glob = json_decode($data);
-        return games::updateGame($glob);
-    }
-
-    public static function updateGame($pack)
-    {
-        if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = $pack->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query(
             "UPDATE games SET ".
@@ -108,7 +97,7 @@ class games extends dbconnection
         return games::getGame($pack->game_id);
     }
 
-    public static function gameObjectFromSQL($sql_game)
+    private static function gameObjectFromSQL($sql_game)
     {
         $game = new stdClass();
         $game->game_id = $sql_game->game_id;
@@ -131,17 +120,19 @@ class games extends dbconnection
         return $game;
     }
 
-    public static function getGame($gameId)
+    public static function getGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return games::getGamePack($glob); }
+    public static function getGamePack($pack)
     {
-        $sql_game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$gameId}' LIMIT 1");
+        $sql_game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$pack->game_id}' LIMIT 1");
         if(!$sql_game) return new return_package(2, NULL, "The game you've requested does not exist");
         return new return_package(0,games::gameObjectFromSQL($sql_game));
     }
 
-    public static function getGamesForUser($userId, $key)
+    public static function getGamesForUser($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return games::getGamesForUserPack($glob); }
+    public static function getGamesForUserPack($pack)
     {
-        if(!users::authenticateUser($userId, $key, "read_write"))
-            return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         $sql_games = dbconnection::queryArray("SELECT * FROM user_games LEFT JOIN games ON user_games.game_id = games.game_id WHERE user_games.user_id = '{$userId}'");
         $games = array();
@@ -151,10 +142,12 @@ class games extends dbconnection
         return new return_package(0,$games);
     }
 
-    public static function deleteGame($gameId, $userId, $key)
+    public static function deleteGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return games::deleteGamePack($glob); }
+    public static function deleteGame($pack)
     {
-        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write"))
-            return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = $pack->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM games WHERE game_id = '{$gameId}' LIMIT 1");
         dbconnection::query("DELETE FROM game_tab_data WHERE game_id = '{$gameId}' LIMIT 1");

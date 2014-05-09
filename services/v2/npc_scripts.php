@@ -6,17 +6,12 @@ require_once("return_package.php");
 class npc_scripts extends dbconnection
 {	
     //Takes in npc_script JSON, all fields optional except game_id + user_id + key
-    public static function createNpcScriptJSON($glob)
+    public static function createNpcScript($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return npc_scripts::createNpcScriptPack($glob); }
+    public static function createNpcScriptPack($pack)
     {
-        $data = file_get_contents("php://input");
-        $glob = json_decode($data);
-        return npc_scripts::createNpcScript($glob);
-    }
-
-    public static function createNpcScript($pack)
-    {
-        if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = $pack->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         $npcScriptId = dbconnection::queryInsert(
             "INSERT INTO npc_scripts (".
@@ -40,18 +35,12 @@ class npc_scripts extends dbconnection
     }
 
     //Takes in game JSON, all fields optional except npc_script_id + user_id + key
-    public static function updateNpcScriptJSON($glob)
+    public static function updateNpcScript($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return npc_scripts::updateNpcScriptPack($glob); }
+    public static function updateNpcScriptPack($pack)
     {
-        $data = file_get_contents("php://input");
-        $glob = json_decode($data);
-        return npc_scripts::updateNpcScript($glob);
-    }
-
-    public static function updateNpcScript($pack)
-    {
-        $gameId = dbconnection::queryObject("SELECT * FROM npc_scripts WHERE npc_script_id = '{$pack->npc_script_id}'")->game_id;
-        if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM npc_scripts WHERE npc_script_id = '{$pack->npc_script_id}'")->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query(
             "UPDATE npc_scripts SET ".
@@ -79,34 +68,39 @@ class npc_scripts extends dbconnection
         return $npcScript;
     }
 
-    public static function getNpcScript($npcScriptId)
+    public static function getNpcScript($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return npc_scripts::getNpcScriptPack($glob); }
+    public static function getNpcScriptPack($pack)
     {
-        $sql_npcScript = dbconnection::queryObject("SELECT * FROM npc_scripts WHERE npc_script_id = '{$npcScriptId}' LIMIT 1");
+        $sql_npcScript = dbconnection::queryObject("SELECT * FROM npc_scripts WHERE npc_script_id = '{$pack->npc_script_id}' LIMIT 1");
         return new return_package(0,npc_scripts::npcScriptObjectFromSQL($sql_npcScript));
     }
 
-    public static function getNpcScriptsForGame($gameId)
+    public static function getNpcScriptsForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return npc_scripts::getNpcScriptsForGamePack($glob); }
+    public static function getNpcScriptsForGame($pack)
     {
-        $sql_npcScripts = dbconnection::queryArray("SELECT * FROM npc_scripts WHERE game_id = '{$gameId}'");
+        $sql_npcScripts = dbconnection::queryArray("SELECT * FROM npc_scripts WHERE game_id = '{$pack->game_id}'");
         $npcScripts = array();
         for($i = 0; $i < count($sql_npcScripts); $i++)
             $npcScripts[] = npc_scripts::npcScriptObjectFromSQL($sql_npcScripts[$i]);
         return new return_package(0,$npcScripts);
     }
 
-    public static function getNpcScriptsForNpc($npcId)
+    public static function getNpcScriptsForNpc($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return npc_scripts::getNpcScriptsForNpcPack($glob); }
+    public static function getNpcScriptsForNpc($pack)
     {
-        $sql_npcScripts = dbconnection::queryArray("SELECT * FROM npc_scripts WHERE npc_id = '{$npcId}'");
+        $sql_npcScripts = dbconnection::queryArray("SELECT * FROM npc_scripts WHERE npc_id = '{$pack->npc_id}'");
         $npcScripts = array();
         for($i = 0; $i < count($sql_npcScripts); $i++)
             $npcScripts[] = npc_scripts::npcScriptObjectFromSQL($sql_npcScripts[$i]);
         return new return_package(0,$npcScripts);
     }
 
-    public static function deleteNpcScript($npcScriptId, $userId, $key)
+    public static function deleteNpcScript($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return npc_scripts::deleteNpcScriptPack($glob); }
+    public static function deleteNpcScriptPack($pack)
     {
-        $gameId = dbconnection::queryObject("SELECT * FROM npc_scripts WHERE npc_script_id = '{$npcScriptId}'")->game_id;
-        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write")) return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM npc_scripts WHERE npc_script_id = '{$npcScriptId}'")->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM npc_scripts WHERE npc_script_id = '{$npcScriptId}' LIMIT 1");
         return new return_package(0);

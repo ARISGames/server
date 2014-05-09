@@ -5,20 +5,17 @@ require_once("return_package.php");
 
 class editors extends dbconnection
 {
-    public function authenticateGameEditor($gameId, $userId, $key, $permission)
+    //Used by other services
+    public function authenticateGameEditor($pack)
     {
+        $gameId     = $pack->game_id;
+        $userId     = $pack->user_id;
+        $key        = $pack->key;
+        $permission = $pack->permission;
+
         if(!users::authenticateUser($userId, $key, $permission)) return false;
         if(dbconnection::queryObject("SELECT * FROM user_games WHERE user_id = '{$userId}' AND game_id = '{$gameId}'")) return true;
         util::serverErrorLog("Failed Game Editor Authentication!"); return false;
-    }
-
-    public function getGamesForEditor($userId, $key)
-    {
-        if(!users::authenticateUser($userId, $key, "read_write"))
-            return new return_package(6, NULL, "Failed Authentication");
-        $games = dbconnection::queryArray("SELECT games.* FROM (SELECT * FROM game_editors WHERE editor_id = '$userId') as ge LEFT JOIN games ON ge.game_id = games.game_id");
-
-        return new return_package(0, $games, NULL);		
     }
 
     public function addEditorToGame($newEditorId, $gameId, $userId, $key)
