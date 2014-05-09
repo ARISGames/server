@@ -67,7 +67,7 @@
     function submitAuth()
     {
         var package = {"user_name":document.getElementById('auth_request_user').value,"password":document.getElementById('auth_request_password').value,"permission":"read_write"};
-        var response = sendRequest('users.logInJSON', JSON.stringify(package), "POST");
+        var response = sendRequest('users.logIn', JSON.stringify(package), "POST");
         document.getElementById('result_text').innerHTML = JSON.stringify(response);
         console.log(response);
         userId = response.data.user_id; document.getElementById('auth_response_user_id').innerHTML = response.data.user_id;
@@ -76,7 +76,7 @@
     function submitNewUser()
     {
         var package = {"user_name":document.getElementById('new_user_request_user').value,"password":document.getElementById('new_user_request_password').value};
-        var response = sendRequest('users.createUserJSON', JSON.stringify(package), "POST");
+        var response = sendRequest('users.createUser', JSON.stringify(package), "POST");
         document.getElementById('auth_request_user').value = document.getElementById('new_user_request_user').value;
         document.getElementById('auth_request_password').value = document.getElementById('new_user_request_password').value;
         document.getElementById('result_text').innerHTML = JSON.stringify(response);
@@ -102,36 +102,25 @@
 
     function submitGet()
     {
-        var response = sendRequest(document.getElementById('get_request_method').value+"/"+document.getElementById('get_request').value+"/"+userId+"/"+rwkey, null, "GET");
+        var package = JSON.parse(document.getElementById('get_request').value);
+        package.auth = {"user_id":userId,"key":rwkey};
+        var response = sendRequest(document.getElementById('get_request_method').value, JSON.stringify(package), "POST");
         document.getElementById('result_text').innerHTML = JSON.stringify(response);
     }
 
     function submitDelete()
     {
-        var response = sendRequest(document.getElementById('delete_request_method').value+"/"+document.getElementById('delete_request').value+"/"+userId+"/"+rwkey, null, "GET");
+        var package = JSON.parse(document.getElementById('delete_request').value);
+        package.auth = {"user_id":userId,"key":rwkey};
+        var response = sendRequest(document.getElementById('delete_request_method').value, JSON.stringify(package), "POST");
         document.getElementById('result_text').innerHTML = JSON.stringify(response);
     }
 
     function submitCustom()
     {
-        var response;
-        var request = document.getElementById('custom_request_method').value
-        if(document.getElementById('custom_request_method_get').checked)
-        {
-            request += "/"+document.getElementById('custom_request').value;
-            if(document.getElementById('custom_request_auth_do').checked)
-                request += "/"+userId+"/"+rwkey;
-            request = request.replace("//","/");
-            response = sendRequest(request, null, "GET");
-        }
-        else
-        {
-            var package = JSON.parse(document.getElementById('custom_request').value);
-            if(document.getElementById('custom_request_auth_do').checked)
-                package.auth = {"user_id":userId,"key":rwkey};
-            response = sendRequest(request, JSON.stringify(package), "POST");
-        }
-
+        var package = JSON.parse(document.getElementById('custom_request').value);
+        package.auth = {"user_id":userId,"key":rwkey};
+        var response = sendRequest(document.getElementById('custom_request_method').value, JSON.stringify(package), "POST");
         document.getElementById('result_text').innerHTML = JSON.stringify(response);
     }
 
@@ -173,39 +162,35 @@ For GET requests (delete): http://arisgames.org/server/json.php/v1.myservice.myf
 <br />
 
 <div id="request_inputs" style="width:600px; float:left;">
-    <div style="min-height:200px;">
+    <div>
     <button id='create_request_submit' onclick='submitCreate()'>create</button><input id='create_request_method' type='text'></input><br />
-    <textarea id='create_request' style="width:100%; min-height:180px;"></textarea><br />
+    <textarea id='create_request' style="width:100%; min-height:90;"></textarea><br />
     </div>
+    <br />
 
-    <div style="min-height:200px;">
+    <div>
     <button id='update_request_submit' onclick='submitUpdate()'>update</button><input id='update_request_method' type='text'></input><br />
-    <textarea id='update_request' style="width:100%; min-height:180px;"></textarea><br />
+    <textarea id='update_request' style="width:100%; min-height:90;"></textarea><br />
     </div>
+    <br />
 
     <div>
     <button id='get_request_submit' onclick='submitGet()'>get</button><input id='get_request_method' type='text'></input><br />
-    <input id='get_request' type='text'></input><br />
+    <textarea id='get_request' style="width:100%; min-height:90;"></textarea><br />
     </div>
+    <br />
 
     <div>
     <button id='delete_request_submit' onclick='submitDelete()'>delete</button><input id='delete_request_method' type='text'></input><br />
-    <input id='delete_request' type='text'></input><br />
+    <textarea id='delete_request' style="width:100%; min-height:90;"></textarea><br />
     </div>
+    <br />
 
-    <br />
     <div>
-    <button id='custom_request_submit' onclick='submitCustom()'>custom</button>
-    <input id='custom_request_method' type='text'></input>
-    <br />
-    <input id="custom_request_method_get" type="radio" name="method" value="GET" checked="checked">GET</input>
-    <input id="custom_request_method_post" type="radio" name="method" value="POST">POST</input>
-    <br />
-    <input id="custom_request_auth_do" type="radio" name="auth" value="do_auth" checked="checked">Add Auth</input>
-    <input id="custom_request_auth_dont" type="radio" name="auth" value="dont_auth">Don't add auth</input>
-    <br />
-    <textarea id='custom_request' style="width:100%; min-height:180px;"></textarea><br />
+    <button id='custom_request_submit' onclick='submitCustom()'>custom</button> <input id='custom_request_method' type='text'></input>
+    <textarea id='custom_request' style="width:100%; min-height:90;"></textarea><br />
     </div>
+    <br />
 
    </div>
 </div>

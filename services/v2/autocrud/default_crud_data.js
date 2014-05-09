@@ -12,9 +12,9 @@ var CRUD_DEFAULTS = [
 },
 {
     "service":"games",
-    "create":"games.createGameJSON",
+    "create":"games.createGame",
     "get":"games.getGame",
-    "update":"games.updateGameJSON",
+    "update":"games.updateGame",
     "delete":"games.deleteGame",
     "createData":
         '\
@@ -30,7 +30,12 @@ var CRUD_DEFAULTS = [
           "show_player_location":true\n\
         }\n\
         ',
-    "getData":"123",
+    "getData":
+        '\
+        {\n\
+          "game_id":123\n\
+        }\n\
+        ',
     "updateData":
         '\
         {\n\
@@ -46,13 +51,18 @@ var CRUD_DEFAULTS = [
           "show_player_location":true\n\
         }\n\
         ',
-    "deleteData":"123"
+    "deleteData":
+        '\
+        {\n\
+          "game_id":123\n\
+        }\n\
+        '
 },
 {
     "service":"requirements",
-    "create":"requirements.createRequirementPackageJSON",
+    "create":"requirements.createRequirementPackage",
     "get":"requirements.getRequirementPackage",
-    "update":"requirements.updateRequirementPackageJSON",
+    "update":"requirements.updateRequirementPackage",
     "delete":"requirements.deleteRequirementPackage",
     "createData":
         '\
@@ -105,7 +115,12 @@ var CRUD_DEFAULTS = [
           ]\n\
         }\n\
         ',
-    "getData":"123",
+    "getData":
+        '\
+        {\n\
+          "requirement_root_package_id":123\n\
+        }\n\
+        ',
     "updateData":
         '\
         {\n\
@@ -163,13 +178,18 @@ var CRUD_DEFAULTS = [
           ]\n\
         }\n\
         ',
-    "deleteData":"123"
+    "deleteData":
+        '\
+        {\n\
+          "requirement_root_package_id":123\n\
+        }\n\
+        '
 },
 {
     "service":"scenes",
-    "create":"scenes.createSceneJSON",
+    "create":"scenes.createScene",
     "get":"scenes.getScene",
-    "update":"scenes.updateSceneJSON",
+    "update":"scenes.updateScene",
     "delete":"scenes.deleteScene",
     "createData":
         '\
@@ -178,7 +198,12 @@ var CRUD_DEFAULTS = [
           "name":"sceneName"\n\
         }\n\
         ',
-    "getData":"123",
+    "getData":
+        '\
+        {\n\
+          "scene_id":123\n\
+        }\n\
+        ',
     "updateData":
         '\
         {\n\
@@ -186,13 +211,18 @@ var CRUD_DEFAULTS = [
           "name":"sceneName"\n\
         }\n\
         ',
-    "deleteData":"123"
+    "deleteData":
+        '\
+        {\n\
+          "scene_id":123\n\
+        }\n\
+        '
 },
 {
     "service":"triggers",
-    "create":"triggers.createTriggerJSON",
+    "create":"triggers.createTrigger",
     "get":"triggers.getTrigger",
-    "update":"triggers.updateTriggerJSON",
+    "update":"triggers.updateTrigger",
     "delete":"triggers.deleteTrigger",
     "createData":
         '\
@@ -211,7 +241,12 @@ var CRUD_DEFAULTS = [
           "code":"abc123"\n\
         }\n\
         ',
-    "getData":"123",
+    "getData":
+        '\
+        {\n\
+          "trigger_id":123\n\
+        }\n\
+        ',
     "updateData":
         '\
         {\n\
@@ -229,13 +264,18 @@ var CRUD_DEFAULTS = [
           "code":"abc123"\n\
         }\n\
         ',
-    "deleteData":"123"
+    "deleteData":
+        '\
+        {\n\
+          "trigger_id":123\n\
+        }\n\
+        '
 },
 {
     "service":"instances",
-    "create":"instances.createInstanceJSON",
+    "create":"instances.createInstance",
     "get":"instances.getInstance",
-    "update":"instances.updateInstanceJSON",
+    "update":"instances.updateInstance",
     "delete":"instances.deleteInstance",
     "createData":
         '\
@@ -246,7 +286,12 @@ var CRUD_DEFAULTS = [
           "spawnable_id":123\n\
         }\n\
         ',
-    "getData":"123",
+    "getData":
+        '\
+        {\n\
+          "instance_id":123\n\
+        }\n\
+        ',
     "updateData":
         '\
         {\n\
@@ -256,13 +301,18 @@ var CRUD_DEFAULTS = [
           "spawnable_id":123\n\
         }\n\
         ',
-    "deleteData":"123"
+    "deleteData":
+        '\
+        {\n\
+          "instance_id":123\n\
+        }\n\
+        '
 },
 {
     "service":"items",
-    "create":"items.createItemJSON",
+    "create":"items.createItem",
     "get":"items.getItem",
-    "update":"items.updateItemJSON",
+    "update":"items.updateItem",
     "delete":"items.deleteItem",
     "createData":
         '\
@@ -280,7 +330,12 @@ var CRUD_DEFAULTS = [
           "type":"NORMAL"\n\
         }\n\
         ',
-    "getData":"123",
+    "getData":
+        '\
+        {\n\
+          "item_id":123\n\
+        }\n\
+        ',
     "updateData":
         '\
         {\n\
@@ -297,13 +352,18 @@ var CRUD_DEFAULTS = [
           "type":"NORMAL"\n\
         }\n\
         ',
-    "deleteData":"123"
+    "deleteData":
+        '\
+        {\n\
+          "item_id":123\n\
+        }\n\
+        '
 },
 {
     "service":"plaques",
-    "create":"plaques.createPlaqueJSON",
+    "create":"plaques.createPlaque",
     "get":"plaques.getPlaque",
-    "update":"plaques.updatePlaqueJSON",
+    "update":"plaques.updatePlaque",
     "delete":"plaques.deletePlaque",
     "createData":
         '\
@@ -315,7 +375,12 @@ var CRUD_DEFAULTS = [
           "media_id":123\n\
         }\n\
         ',
-    "getData":"123",
+    "getData":
+        '\
+        {\n\
+          "plaque_id":123\n\
+        }\n\
+        ',
     "updateData":
         '\
         {\n\
@@ -326,13 +391,18 @@ var CRUD_DEFAULTS = [
           "media_id":123\n\
         }\n\
         ',
-    "deleteData":"123"
+    "deleteData":
+        '\
+        {\n\
+          "plaque_id":123\n\
+        }\n\
+        '
 },
 {
     "service":"npcs",
-    "create":"npcs.createNpcJSON",
+    "create":"npcs.createNpc",
     "get":"npcs.getNpc",
-    "update":"npcs.updateNpcJSON",
+    "update":"npcs.updateNpc",
     "delete":"npcs.deleteNpc",
     "createData":
         '\
@@ -346,7 +416,12 @@ var CRUD_DEFAULTS = [
           "closing_script_id":123\n\
         }\n\
         ',
-    "getData":"123",
+    "getData":
+        '\
+        {\n\
+          "npc_id":123\n\
+        }\n\
+        ',
     "updateData":
         '\
         {\n\
@@ -359,13 +434,18 @@ var CRUD_DEFAULTS = [
           "closing_script_id":123\n\
         }\n\
         ',
-    "deleteData":"123"
+    "deleteData":
+        '\
+        {\n\
+          "npc_id":123\n\
+        }\n\
+        '
 },
 {
     "service":"npc_scripts",
-    "create":"npc_scripts.createNpcScriptJSON",
+    "create":"npc_scripts.createNpcScript",
     "get":"npc_scripts.getNpcScript",
-    "update":"npc_scripts.updateNpcScriptJSON",
+    "update":"npc_scripts.updateNpcScript",
     "delete":"npc_scripts.deleteNpcScript",
     "createData":
         '\
@@ -388,13 +468,18 @@ var CRUD_DEFAULTS = [
           "sort_index":0\n\
         }\n\
         ',
-    "deleteData":"123"
+    "deleteData":
+        '\
+        {\n\
+          "npc_script_id":123\n\
+        }\n\
+        '
 },
 {
     "service":"state_changes",
-    "create":"state_changes.createStateChangeJSON",
+    "create":"state_changes.createStateChange",
     "get":"state_changes.getStateChange",
-    "update":"state_changes.updateStateChangeJSON",
+    "update":"state_changes.updateStateChange",
     "delete":"state_changes.deleteStateChange",
     "createData":
         '\
@@ -406,7 +491,12 @@ var CRUD_DEFAULTS = [
           "object_id":123\n\
         }\n\
         ',
-    "getData":"123",
+    "getData":
+        '\
+        {\n\
+          "state_change_id":123\n\
+        }\n\
+        ',
     "updateData":
         '\
         {\n\
@@ -417,13 +507,18 @@ var CRUD_DEFAULTS = [
           "object_id":123\n\
         }\n\
         ',
-    "deleteData":"123"
+    "deleteData":
+        '\
+        {\n\
+          "state_change_id":123\n\
+        }\n\
+        '
 },
 {
     "service":"media",
-    "create":"media.createMediaJSON",
+    "create":"media.createMedia",
     "get":"media.getMedia",
-    "update":"media.updateMediaJSON",
+    "update":"media.updateMedia",
     "delete":"media.deleteMedia",
     "createData":
         '\
@@ -434,7 +529,12 @@ var CRUD_DEFAULTS = [
           "data":"iVBORw0KGgoAAAANSUhEUgAAABQAAAAUBAMAAAB/pwA+AAAAA3NCSVQICAjb4U/gAAAAMFBMVEX/////7AD/4gD/2QD/zAD/xQD/vAD/sgD/qQA8/wCZmZnAlACceAA/Pz9AMQAAAADauoGxAAAAEHRSTlP///////////8A////////Xxf4pAAAAAlwSFlzAAAK8AAACvABQqw0mAAAAAh0RVh0Q29tbWVudAD2zJa/AAAAIXRFWHRTb2Z0d2FyZQBNYWNyb21lZGlhIEZpcmV3b3JrcyAzLjDvaTHwAAAAnElEQVR4nGOYCQcMQDz///+fEOb87+Xl9T/BzP9laWlp/0HM+eX/Q0P/p/8EMn+U7f7ivzusHsj8nv3f2Pj/1vyZDPPb/zsrKSkDVTDM7091VhRUdv0OZLaf/w8Ef0Ci7fkMQHAVnZm9gIGBayuQCTT3FwPDerC5P8rz3/9/mg5izm8HuaEcZPHMH+3l5eX9EEf+6Ojo/4nudBgAAKTFdNGCgV+fAAAAAElFTkSuQmCC"\n\
         }\n\
         ',
-    "getData":"123",
+    "getData":
+        '\
+        {\n\
+          "media_id":123\n\
+        }\n\
+        ',
     "updateData":
         '\
         {\n\
@@ -442,6 +542,11 @@ var CRUD_DEFAULTS = [
           "display_name":"smiley"\n\
         }\n\
         ',
-    "deleteData":"123"
+    "deleteData":
+        '\
+        {\n\
+          "media_id":123\n\
+        }\n\
+        '
 }
 ];
