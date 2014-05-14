@@ -280,6 +280,8 @@ class PlayerLog extends Module
         $locationsH = array(); for($i = 0; $i < count($locationsA); $i++) $locationsH[$locationsA[$i]->location_id] = $locationsA[$i];
         $qrcodesA = Module::queryArray("SELECT qrcode_id, link_id, code FROM qrcodes WHERE game_id = '{$reqGameId}'");
         $qrcodesH = array(); for($i = 0; $i < count($qrcodesA); $i++) $qrcodesH[$qrcodesA[$i]->code] = $qrcodesA[$i];
+        $webhooksA = Module::queryArray("SELECT web_hook_id, name FROM web_hooks WHERE game_id = '{$reqGameId}'");
+        $webhooksH = array(); for($i = 0; $i < count($webhooksA); $i++) $webhooksH[$webhooksA[$i]->code] = $webhooksA[$i];
 
         for($i = 0; $i < count($playerLogs); $i++)
         {
@@ -363,6 +365,12 @@ class PlayerLog extends Module
                         $row->lon = $r[$j]->event_detail_2;
                         $row->timestamp = $r[$j]->timestamp;
                         $row->human = $playerLogs[$i]->player->display_name." moved to (".$row->lat.($reqOutputFormat == "csv" ? " " : ",").$row->lon.")";
+                        break;
+                    case "RECEIVE_WEBHOOK":
+                        $row->event = "Received Hook";
+                        $row->object = $webhooksH[$r[$j]->event_detail_1]->name;
+                        $row->timestamp = $r[$j]->timestamp;
+                        $row->human = $playerLogs[$i]->player->display_name." received hook '".$row->object."'";
                         break;
                     default:
                         $row->event = $r[$j]->event_type;

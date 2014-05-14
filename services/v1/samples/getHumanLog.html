@@ -50,7 +50,7 @@
             "game_id":document.getElementById("game_id").value,
             "editor_id":document.getElementById("editor_id").value,
             "editor_token":document.getElementById("editor_token").value,
-            "output_format":getSelectedFormat(),
+            "output_format":getSelectedFormat() == "human" ? "json" : getSelectedFormat(),
             "start_date":document.getElementById("start_date").value,
             "end_date":document.getElementById("end_date").value
         };
