@@ -13,7 +13,7 @@ class plaques extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        $plaqueId = dbconnection::queryInsert(
+        $pack->plaque_id = dbconnection::queryInsert(
             "INSERT INTO plaques (".
             "game_id,".
             ($pack->name          ? "name,"          : "").
@@ -31,7 +31,7 @@ class plaques extends dbconnection
             ")"
         );
 
-        return plaques::getPlaque($plaqueId);
+        return plaques::getPlaquePack($pack);
     }
 
     //Takes in game JSON, all fields optional except plaque_id + user_id + key
@@ -52,7 +52,7 @@ class plaques extends dbconnection
             "WHERE plaque_id = '{$pack->plaque_id}'"
         );
 
-        return plaques::getPlaque($pack->plaque_id);
+        return plaques::getPlaquePack($pack);
     }
 
     private static function plaqueObjectFromSQL($sql_plaque)

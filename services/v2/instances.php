@@ -9,10 +9,11 @@ class instances extends dbconnection
     public static function createInstance($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return instances::createInstancePack($glob); }
     public static function createInstancePack($pack)
     {
-        if(!editors::authenticateGameEditor($pack->game_id, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = $pack->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
     
-        $instanceId = dbconnection::queryInsert(
+        $pack->instance_id = dbconnection::queryInsert(
             "INSERT INTO instances (".
             "game_id,".
             ($pack->object_id    ? "object_id,"    : "").
@@ -28,16 +29,16 @@ class instances extends dbconnection
             ")"
         );
 
-        return instances::getInstance($instanceId);
+        return instances::getInstancePack($pack);
     }
 
     //Takes in game JSON, all fields optional except user_id + key
     public static function updateInstance($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return instances::updateInstancePack($glob); }
-    public static function updateInstance($pack)
+    public static function updateInstancePack($pack)
     {
-        $gameId = dbconnection::queryObject("SELECT * FROM instances WHERE instance_id = '{$pack->instance_id}'")->game_id;
-        if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM instances WHERE instance_id = '{$pack->instance_id}'")->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query(
             "UPDATE instances SET ".
@@ -48,7 +49,7 @@ class instances extends dbconnection
             "WHERE instance_id = '{$pack->instance_id}'"
         );
 
-        return instances::getInstance($pack->instance_id);
+        return instances::getInstancePack($pack);
     }
 
     private static function instanceObjectFromSQL($sql_instance)
@@ -94,7 +95,7 @@ class instances extends dbconnection
     public static function deleteInstance($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return instances::deleteInstancePack($glob); }
     public static function deleteInstancePack($pack)
     {
-        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM instances WHERE instance_id = '{$instanceId}'")->game_id;
+        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM instances WHERE instance_id = '{$pack->instance_id}'")->game_id;
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 

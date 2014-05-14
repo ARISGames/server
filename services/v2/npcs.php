@@ -97,11 +97,11 @@ class npcs extends dbconnection
     public static function deleteNpc($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return npcs::deleteNpcPack($glob); }
     public static function deleteNpcPack($pack)
     {
-        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM npcs WHERE npc_id = '{$npcId}'")->game_id;
-        $pack->permission = "read_write";
+        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM npcs WHERE npc_id = '{$pack->npc_id}'")->game_id;
+        $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        dbconnection::query("DELETE FROM npcs WHERE npc_id = '{$npcId}' LIMIT 1");
+        dbconnection::query("DELETE FROM npcs WHERE npc_id = '{$pack->npc_id}' LIMIT 1");
         return new return_package(0);
     }
 }

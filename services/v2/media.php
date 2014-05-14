@@ -1,5 +1,7 @@
 <?php
 require_once("dbconnection.php");
+require_once("users.php");
+require_once("editors.php");
 require_once("return_package.php");
 require_once("../../libraries/wideimage/WideImage.php");
 
@@ -65,7 +67,7 @@ class media extends dbconnection
             $thumb->saveToFile($fsthumbpath);
         }
 
-        $mediaId = dbconnection::queryInsert(
+        $pack->media_id = dbconnection::queryInsert(
             "INSERT INTO media (".
             "file_folder,".
             "file_name,".
@@ -83,7 +85,7 @@ class media extends dbconnection
             ")"
         );
 
-        return media::getMedia($mediaId);
+        return media::getMediaPack($pack);
     }
 
     //Takes in game JSON, all fields optional except user_id + key
@@ -101,7 +103,7 @@ class media extends dbconnection
             "WHERE media_id = '{$pack->media_id}'"
         );
 
-        return media::getMedia($pack->media_id);
+        return media::getMedia($pack);
     }
 
     private static function mediaObjectFromSQL($sql_media)
@@ -125,7 +127,7 @@ class media extends dbconnection
     public static function getMediaPack($pack)
     {
         if(!($sql_media = dbconnection::queryObject("SELECT * FROM media WHERE media_id = '{$pack->media_id}' LIMIT 1")))
-            return new return_package(0,media::defaultMediaObject($mediaId));
+            return new return_package(0,media::defaultMediaObject($pack->media_id));
         return new return_package(0, media::mediaObjectFromSQL($sql_media));
     }	
 
@@ -143,7 +145,7 @@ class media extends dbconnection
     public static function deleteMedia($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return media::deleteMediaPack($glob); }
     public static function deleteMediaPack($pack)
     {
-        $media_sql = dbconnection::queryObject("SELECT * FROM media WHERE media_id = '{$mediaId}'");
+        $media_sql = dbconnection::queryObject("SELECT * FROM media WHERE media_id = '{$pack->media_id}'");
 
         $pack->auth->game_id = $media_sql->game_id;
         $pack->auth->permission = "read_write";
@@ -152,7 +154,7 @@ class media extends dbconnection
         if(!unlink(Config::gamedataFSPath."/".$media_sql->file_folder."/".$media_sql->file_name)) 
             return new return_package(1, "Could not delete file.");
 
-        dbconnection::query("DELETE FROM media WHERE media_id = '{$mediaId}' LIMIT 1");
+        dbconnection::query("DELETE FROM media WHERE media_id = '{$pack->media_id}' LIMIT 1");
         return new return_package(0);
     }
 }

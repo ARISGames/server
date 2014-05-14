@@ -13,7 +13,7 @@ class items extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        $itemId = dbconnection::queryInsert(
+        $pack->item_id = dbconnection::queryInsert(
             "INSERT INTO items (".
             "game_id,".
             ($pack->name                 ? "name,"                 : "").
@@ -43,7 +43,7 @@ class items extends dbconnection
             ")"
         );
 
-        return items::getItem($itemId);
+        return items::getItemPack($pack);
     }
 
     //Takes in game JSON, all fields optional except item_id + user_id + key
@@ -70,7 +70,7 @@ class items extends dbconnection
             "WHERE item_id = '{$pack->item_id}'"
         );
 
-        return items::getItem($pack->item_id);
+        return items::getItemPack($pack);
     }
 
     private static function itemObjectFromSQL($sql_item)
@@ -105,7 +105,7 @@ class items extends dbconnection
         $sql_items = dbconnection::queryArray("SELECT * FROM items WHERE game_id = '{$pack->game_id}'");
         $items = array();
         for($i = 0; $i < count($sql_items); $i++)
-            $items[] = items::itemObjctFromSQL($sql_items[$i]);
+            $items[] = items::itemObjectFromSQL($sql_items[$i]);
 
         return new return_package(0,$items);
     }
@@ -115,7 +115,7 @@ class items extends dbconnection
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM items WHERE item_id = '{$pack->item_id}'")->game_id;
         $pack->auth->permission = "read_write";
-        if(!editors::authenticateGameEditor($pack)) return new return_package(6, NULL, "Failed Authentication");
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM items WHERE item_id = '{$pack->item_id}' LIMIT 1");
         return new return_package(0);

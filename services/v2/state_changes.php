@@ -31,7 +31,7 @@ class state_changes extends dbconnection
             ")"
         );
 
-        return state_changes::getStateChange($pack);
+        return state_changes::getStateChangePack($pack);
     }
 
     //Takes in game JSON, all fields optional except state_change_id + user_id + key
@@ -52,7 +52,7 @@ class state_changes extends dbconnection
             "WHERE state_change_id = '{$pack->state_change_id}'"
         );
 
-        return state_changes::getStateChange($pack->state_change_id);
+        return state_changes::getStateChangePack($pack);
     }
 
     private static function stateChangeObjectFromSQL($sql_stateChange)
@@ -98,7 +98,7 @@ class state_changes extends dbconnection
     }
 
     public static function deleteStateChange($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return state_changes::deleteStateChangePack($glob); }
-    public static function deleteStateChange($pack)
+    public static function deleteStateChangePack($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM state_changes WHERE state_change_id = '{$pack->state_change_id}'")->game_id;
         $pack->auth->permission = "read_write";

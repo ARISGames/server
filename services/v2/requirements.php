@@ -319,6 +319,7 @@ class requirements extends dbconnection
         dbconnection::query("UPDATE locations SET requirement_package_id = 0 WHERE game_id = '{$gameId}' AND requirement_package_id = '{$requirementPackageId}'");
         dbconnection::query("UPDATE web_hooks SET requirement_package_id = 0 WHERE game_id = '{$gameId}' AND requirement_package_id = '{$requirementPackageId}'");
         dbconnection::query("UPDATE overlays SET requirement_package_id = 0 WHERE game_id = '{$gameId}' AND requirement_package_id = '{$requirementPackageId}'");
+        return new return_package(0);
     }
 
     public function deleteRequirementAndPackage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return requirements::deleteRequirementAndPackagePack($glob); }
@@ -335,6 +336,7 @@ class requirements extends dbconnection
             requirements::deleteRequirementAtomPack($sql_packAtoms[$i]);
         }
         dbconnection::query("DELETE FROM requirement_and_packages WHERE requirement_and_package_id = '{$pack->requirement_and_package_id}'");
+        return new return_package(0);
     }
 
     public function deleteRequirementAtom($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return requirements::deleteRequirementAtomPack($glob); }
@@ -345,6 +347,7 @@ class requirements extends dbconnection
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM requirement_atoms WHERE requirement_atom_id = '{$requirementAtomId}'");
+        return new return_package(0);
     }
 
     public function evaluateRequirementPackage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return requirements::evaluateRequirementPackagePack($glob); }

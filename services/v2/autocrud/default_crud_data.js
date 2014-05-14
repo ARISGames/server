@@ -457,7 +457,12 @@ var CRUD_DEFAULTS = [
           "sort_index":0\n\
         }\n\
         ',
-    "getData":"123",
+    "getData":
+        '\
+        {\n\
+          "npc_script_id":123\n\
+        }\n\
+        ',
     "updateData":
         '\
         {\n\

@@ -45,7 +45,7 @@ class triggers extends dbconnection
             ")"
         );
 
-        return triggers::getTrigger($pack);
+        return triggers::getTriggerPack($pack);
     }
 
     //Takes in game JSON, all fields optional except user_id + key
@@ -73,7 +73,7 @@ class triggers extends dbconnection
             "WHERE trigger_id = '{$pack->trigger_id}'"
         );
 
-        return triggers::getTrigger($pack);
+        return triggers::getTriggerPack($pack);
     }
 
     private static function triggerObjectFromSQL($sql_trigger)
@@ -136,7 +136,7 @@ class triggers extends dbconnection
         return new return_package(0,$triggers);
     }
 
-    public static function deleteTrigger($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return triggers::deleteTrigger($glob); }
+    public static function deleteTrigger($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return triggers::deleteTriggerPack($glob); }
     public static function deleteTriggerPack($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM triggers WHERE trigger_id = '{$pack->trigger_id}'")->game_id;

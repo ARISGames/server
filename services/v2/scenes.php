@@ -13,7 +13,7 @@ class scenes extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        $sceneId = dbconnection::queryInsert(
+        $pack->scene_id = dbconnection::queryInsert(
             "INSERT INTO scenes (".
             "game_id,".
             ($pack->name ? "name," : "").
@@ -25,7 +25,7 @@ class scenes extends dbconnection
             ")"
         );
 
-        return scenes::getScene($sceneId);
+        return scenes::getScenePack($pack);
     }
 
     //Takes in game JSON, all fields optional except user_id + key
@@ -43,7 +43,7 @@ class scenes extends dbconnection
             "WHERE scene_id = '{$pack->scene_id}'"
         );
 
-        return scenes::getScene($pack->scene_id);
+        return scenes::getScenePack($pack);
     }
 
     private static function sceneObjectFromSQL($sql_scene)
@@ -77,7 +77,7 @@ class scenes extends dbconnection
     public static function deleteScene($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return scenes::deleteScenePack($glob); }
     public static function deleteScenePack($pack)
     {
-        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM scenes WHERE scene_id = '{$sceneId}'")->game_id;
+        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM scenes WHERE scene_id = '{$pack->scene_id}'")->game_id;
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
