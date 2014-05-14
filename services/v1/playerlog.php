@@ -373,7 +373,27 @@ class PlayerLog extends Module
                 $playerLogs[$i]->log[] = $row;
             }
         }
-        return new returnData(0,$playerLogs);
+        if($reqOutputFormat == "json")
+            return new returnData(0,$playerLogs);
+        if($reqOutputFormat == "csv")
+        {
+            $csv = ""; //oh man. this is so slow.
+            for($i = 0; $i < count($playerLogs); $i++)
+            {
+                for($j = 0; $j < count($playerLogs[$i]->log); $j++)
+                {
+                    $csv .= $playerLogs[$i]->player->group_id.",";
+                    $csv .= $playerLogs[$i]->player->player_id.",";
+                    $csv .= $playerLogs[$i]->player->display_name.",";
+                    $csv .= $playerLogs[$i]->log[$j]->timestamp.",";
+                    $csv .= $playerLogs[$i]->log[$j]->human."\n";
+                }
+            }
+        }
+
+        file_put_contents(Config::gamedataFSPath."/".$reqGameId."/mostrecentlogrequest.csv",$csv);
+
+        return new returnData(0,Config::gamedataWWWPath."/".$reqGameId."/mostrecentlogrequest.csv");
     }
 }
 ?>
