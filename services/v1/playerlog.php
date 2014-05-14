@@ -281,7 +281,7 @@ class PlayerLog extends Module
         $qrcodesA = Module::queryArray("SELECT qrcode_id, link_id, code FROM qrcodes WHERE game_id = '{$reqGameId}'");
         $qrcodesH = array(); for($i = 0; $i < count($qrcodesA); $i++) $qrcodesH[$qrcodesA[$i]->code] = $qrcodesA[$i];
         $webhooksA = Module::queryArray("SELECT web_hook_id, name FROM web_hooks WHERE game_id = '{$reqGameId}'");
-        $webhooksH = array(); for($i = 0; $i < count($webhooksA); $i++) $webhooksH[$webhooksA[$i]->code] = $webhooksA[$i];
+        $webhooksH = array(); for($i = 0; $i < count($webhooksA); $i++) $webhooksH[$webhooksA[$i]->web_hook_id] = $webhooksA[$i];
 
         for($i = 0; $i < count($playerLogs); $i++)
         {
