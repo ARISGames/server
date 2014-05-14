@@ -362,7 +362,7 @@ class PlayerLog extends Module
                         $row->lat = $r[$j]->event_detail_1;
                         $row->lon = $r[$j]->event_detail_2;
                         $row->timestamp = $r[$j]->timestamp;
-                        $row->human = $playerLogs[$i]->player->display_name." moved to (".$row->lat.",".$row->lon.")";
+                        $row->human = $playerLogs[$i]->player->display_name." moved to (".$row->lat.($reqOutputFormat == "csv" ? " " : ",").$row->lon.")";
                         break;
                     default:
                         $row->event = $r[$j]->event_type;
@@ -382,7 +382,7 @@ class PlayerLog extends Module
             {
                 for($j = 0; $j < count($playerLogs[$i]->log); $j++)
                 {
-                    $csv .= $playerLogs[$i]->player->group_id.",";
+                    $csv .= $playerLogs[$i]->player->group_name.",";
                     $csv .= $playerLogs[$i]->player->player_id.",";
                     $csv .= $playerLogs[$i]->player->display_name.",";
                     $csv .= $playerLogs[$i]->log[$j]->timestamp.",";
