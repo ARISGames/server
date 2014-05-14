@@ -76,7 +76,7 @@ class npcs extends dbconnection
     }
 
     public static function getNpc($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return npcs::getNpcPack($glob); }
-    public static function getNpc($pack)
+    public static function getNpcPack($pack)
     {
         $sql_npc = dbconnection::queryObject("SELECT * FROM npcs WHERE npc_id = '{$pack->npc_id}' LIMIT 1");
         return new return_package(0,npcs::npcObjectFromSQL($sql_npc));

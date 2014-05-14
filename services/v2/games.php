@@ -13,7 +13,7 @@ class games extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        $gameId = dbconnection::queryInsert(
+        $pack->game_id = dbconnection::queryInsert(
             "INSERT INTO games (".
             ($pack->name                   ? "name,"                   : "").
             ($pack->description            ? "description,"            : "").
@@ -51,18 +51,18 @@ class games extends dbconnection
             ")"
         );
 
-        dbconnection::queryInsert("INSERT INTO user_games (game_id, user_id, created) VALUES ('{$gameId}','{$pack->auth->user_id}',CURRENT_TIMESTAMP)");
+        dbconnection::queryInsert("INSERT INTO user_games (game_id, user_id, created) VALUES ('{$pack->game_id}','{$pack->auth->user_id}',CURRENT_TIMESTAMP)");
 
-        dbconnection::query("INSERT INTO game_tab_data (game_id, tab, tab_index) VALUES ('{$gameId}', 'QUESTS',    '1')");
-        dbconnection::query("INSERT INTO game_tab_data (game_id, tab, tab_index) VALUES ('{$gameId}', 'GPS',       '2')");
-        dbconnection::query("INSERT INTO game_tab_data (game_id, tab, tab_index) VALUES ('{$gameId}', 'INVENTORY', '3')");
-        dbconnection::query("INSERT INTO game_tab_data (game_id, tab, tab_index) VALUES ('{$gameId}', 'QR',        '4')");
-        dbconnection::query("INSERT INTO game_tab_data (game_id, tab, tab_index) VALUES ('{$gameId}', 'PLAYER',    '5')");
-        dbconnection::query("INSERT INTO game_tab_data (game_id, tab, tab_index) VALUES ('{$gameId}', 'NOTE',      '6')");
+        dbconnection::query("INSERT INTO game_tab_data (game_id, tab, tab_index) VALUES ('{$pack->game_id}', 'QUESTS',    '1')");
+        dbconnection::query("INSERT INTO game_tab_data (game_id, tab, tab_index) VALUES ('{$pack->game_id}', 'GPS',       '2')");
+        dbconnection::query("INSERT INTO game_tab_data (game_id, tab, tab_index) VALUES ('{$pack->game_id}', 'INVENTORY', '3')");
+        dbconnection::query("INSERT INTO game_tab_data (game_id, tab, tab_index) VALUES ('{$pack->game_id}', 'QR',        '4')");
+        dbconnection::query("INSERT INTO game_tab_data (game_id, tab, tab_index) VALUES ('{$pack->game_id}', 'PLAYER',    '5')");
+        dbconnection::query("INSERT INTO game_tab_data (game_id, tab, tab_index) VALUES ('{$pack->game_id}', 'NOTE',      '6')");
 
-        mkdir(Config::gamedataFSPath."/{$gameId}",0777);
+        mkdir(Config::gamedataFSPath."/{$pack->game_id}",0777);
 
-        return games::getGame($gameId);
+        return games::getGamePack($pack);
     }
 
     //Takes in game JSON, all fields optional except user_id + key
@@ -94,7 +94,7 @@ class games extends dbconnection
             "WHERE game_id = '{$pack->game_id}'"
         );
 
-        return games::getGame($pack->game_id);
+        return games::getGamePack($pack);
     }
 
     private static function gameObjectFromSQL($sql_game)
@@ -134,7 +134,7 @@ class games extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        $sql_games = dbconnection::queryArray("SELECT * FROM user_games LEFT JOIN games ON user_games.game_id = games.game_id WHERE user_games.user_id = '{$userId}'");
+        $sql_games = dbconnection::queryArray("SELECT * FROM user_games LEFT JOIN games ON user_games.game_id = games.game_id WHERE user_games.user_id = '{$pack->auth->user_id}'");
         $games = array();
         for($i = 0; $i < count($sql_games); $i++)
             $games[] = games::gameObjectFromSQL($sql_games[$i]);
@@ -143,7 +143,7 @@ class games extends dbconnection
     }
 
     public static function deleteGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return games::deleteGamePack($glob); }
-    public static function deleteGame($pack)
+    public static function deleteGamePack($pack)
     {
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";

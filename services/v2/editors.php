@@ -8,13 +8,8 @@ class editors extends dbconnection
     //Used by other services
     public function authenticateGameEditor($pack)
     {
-        $gameId     = $pack->game_id;
-        $userId     = $pack->user_id;
-        $key        = $pack->key;
-        $permission = $pack->permission;
-
-        if(!users::authenticateUser($userId, $key, $permission)) return false;
-        if(dbconnection::queryObject("SELECT * FROM user_games WHERE user_id = '{$userId}' AND game_id = '{$gameId}'")) return true;
+        if(!users::authenticateUser($pack)) return false;
+        if(dbconnection::queryObject("SELECT * FROM user_games WHERE user_id = '{$pack->user_id}' AND game_id = '{$pack->game_id}'")) return true;
         util::serverErrorLog("Failed Game Editor Authentication!"); return false;
     }
 
