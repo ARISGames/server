@@ -9,10 +9,11 @@ class npcs extends dbconnection
     public static function createNpc($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return npcs::createNpcPack($glob); }
     public static function createNpcPack($pack)
     {
+        $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        $npcId = dbconnection::queryInsert(
+        $pack->npc_id = dbconnection::queryInsert(
             "INSERT INTO npcs (".
             "game_id,".
             ($pack->name              ? "name,"              : "").
@@ -34,7 +35,7 @@ class npcs extends dbconnection
             ")"
         );
 
-        return npcs::getNpc($npcId);
+        return npcs::getNpcPack($pack);
     }
 
     //Takes in game JSON, all fields optional except npc_id + user_id + key
@@ -57,7 +58,7 @@ class npcs extends dbconnection
             "WHERE npc_id = '{$pack->npc_id}'"
         );
 
-        return npcs::getNpc($pack->npc_id);
+        return npcs::getNpcPack($pack);
     }
 
     private static function npcObjectFromSQL($sql_npc)
