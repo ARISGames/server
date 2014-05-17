@@ -150,7 +150,27 @@ class games extends dbconnection
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM games WHERE game_id = '{$pack->game_id}' LIMIT 1");
+        dbconnection::query("DELETE FROM game_users WHERE game_id = '{$pack->game_id}' LIMIT 1");
         dbconnection::query("DELETE FROM game_tab_data WHERE game_id = '{$pack->game_id}' LIMIT 1");
+        dbconnection::query("DELETE FROM state_changes WHERE game_id = '{$pack->game_id}' LIMIT 1");
+        dbconnection::query("DELETE FROM items WHERE game_id = '{$pack->game_id}' LIMIT 1");
+        dbconnection::query("DELETE FROM npcs WHERE game_id = '{$pack->game_id}' LIMIT 1");
+        dbconnection::query("DELETE FROM npc_scripts WHERE game_id = '{$pack->game_id}' LIMIT 1");
+        dbconnection::query("DELETE FROM plaques WHERE game_id = '{$pack->game_id}' LIMIT 1");
+        dbconnection::query("DELETE FROM web_pages WHERE game_id = '{$pack->game_id}' LIMIT 1");
+        dbconnection::query("DELETE FROM notes WHERE game_id = '{$pack->game_id}' LIMIT 1");
+        dbconnection::query("DELETE FROM note_labels WHERE game_id = '{$pack->game_id}' LIMIT 1");
+        dbconnection::query("DELETE FROM note_media WHERE game_id = '{$pack->game_id}' LIMIT 1");
+        dbconnection::query("DELETE FROM quests WHERE game_id = '{$pack->game_id}' LIMIT 1");
+        dbconnection::query("DELETE FROM media WHERE game_id = '{$pack->game_id}' LIMIT 1");
+        dbconnection::query("DELETE FROM scenes WHERE game_id = '{$pack->game_id}' LIMIT 1");
+        dbconnection::query("DELETE FROM instances WHERE game_id = '{$pack->game_id}' LIMIT 1");
+        dbconnection::query("DELETE FROM triggers WHERE game_id = '{$pack->game_id}' LIMIT 1");
+        dbconnection::query("DELETE FROM requirement_root_packages WHERE game_id = '{$pack->game_id}' LIMIT 1");
+        dbconnection::query("DELETE FROM requirement_and_packages WHERE game_id = '{$pack->game_id}' LIMIT 1");
+        dbconnection::query("DELETE FROM requirement_atoms WHERE game_id = '{$pack->game_id}' LIMIT 1");
+        dbconnection::query("DELETE FROM user_game_scenes WHERE game_id = '{$pack->game_id}' LIMIT 1");
+        dbconnection::query("DELETE FROM user_instances WHERE game_id = '{$pack->game_id}' LIMIT 1");
         $command = 'rm -rf '. Config::gamedataFSPath . "/{$pack->game_id}";
         exec($command, $output, $return);
         if($return) return new return_package(4, NULL, "unable to delete game directory");

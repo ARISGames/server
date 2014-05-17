@@ -180,7 +180,6 @@ PRIMARY KEY (note_id, media_id)
 );
 CREATE INDEX note_media_game_id ON note_media(game_id);
 
-
 CREATE TABLE quests (
 quest_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 game_id INT(32) UNSIGNED NOT NULL,
