@@ -26,7 +26,7 @@ class triggers extends dbconnection
             ($pack->distance                    ? "distance,"                    : "").
             ($pack->wiggle                      ? "wiggle,"                      : "").
             ($pack->show_title                  ? "show_title,"                  : "").
-            ($pack->code                        ? "code,"                        : "").
+            ($pack->qr_code                     ? "qr_code,"                     : "").
             "created".
             ") VALUES (".
             "'".$pack->game_id."',".
@@ -40,7 +40,7 @@ class triggers extends dbconnection
             ($pack->distance                    ? "'".addslashes($pack->distance)."',"                    : "").
             ($pack->wiggle                      ? "'".addslashes($pack->wiggle)."',"                      : "").
             ($pack->show_title                  ? "'".addslashes($pack->show_title)."',"                  : "").
-            ($pack->code                        ? "'".addslashes($pack->code)."',"                        : "").
+            ($pack->qr_code                     ? "'".addslashes($pack->qr_code)."',"                     : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -68,7 +68,7 @@ class triggers extends dbconnection
             ($pack->distance                    ? "distance                    = '".addslashes($pack->distance)."', "                    : "").
             ($pack->wiggle                      ? "wiggle                      = '".addslashes($pack->wiggle)."', "                      : "").
             ($pack->show_title                  ? "show_title                  = '".addslashes($pack->show_title)."', "                  : "").
-            ($pack->code                        ? "code                        = '".addslashes($pack->code)."', "                        : "").
+            ($pack->qr_code                     ? "qr_code                     = '".addslashes($pack->qr_code)."', "                     : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE trigger_id = '{$pack->trigger_id}'"
         );
@@ -91,7 +91,7 @@ class triggers extends dbconnection
         $trigger->distance                    = $sql_trigger->distance;
         $trigger->wiggle                      = $sql_trigger->wiggle;
         $trigger->show_title                  = $sql_trigger->show_title;
-        $trigger->code                        = $sql_trigger->code;
+        $trigger->qr_code                     = $sql_trigger->qr_code;
 
         return $trigger;
     }

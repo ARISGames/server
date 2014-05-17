@@ -238,7 +238,7 @@ var CRUD_DEFAULTS = [
           "distance":5,\n\
           "wiggle":1,\n\
           "show_title":1,\n\
-          "code":"abc123"\n\
+          "qr_code":"abc123"\n\
         }\n\
         ',
     "getData":
@@ -283,7 +283,7 @@ var CRUD_DEFAULTS = [
           "game_id":123,\n\
           "object_id":123,\n\
           "object_type":"PLAQUE",\n\
-          "spawnable_id":123\n\
+          "factory_id":123\n\
         }\n\
         ',
     "getData":
@@ -298,7 +298,7 @@ var CRUD_DEFAULTS = [
           "instance_id":123,\n\
           "object_id":123,\n\
           "object_type":"PLAQUE",\n\
-          "spawnable_id":123\n\
+          "factory_id":123\n\
         }\n\
         ',
     "deleteData":

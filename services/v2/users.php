@@ -30,7 +30,7 @@ class users extends dbconnection
         $write      = util::rand_string(64);
         $read_write = util::rand_string(64);
 
-        $userId = dbconnection::queryInsert(
+        $pack->user_id = dbconnection::queryInsert(
             "INSERT INTO users (".
             "user_name,".
             "hash,".
@@ -57,7 +57,7 @@ class users extends dbconnection
         );
 
         $pack->permission = "read_write";
-        return users::logIn($pack);
+        return users::logInPack($pack);
     }
 
     //Takes in user JSON, requires user_name and password
@@ -86,7 +86,7 @@ class users extends dbconnection
         $oldPass  = addslashes($pack->old_password);
         $newPass  = addslashes($pack->new_password);
 
-        $user = users::logIn($username, $oldPass, "read_write")->data;
+        $user = users::logInPack($username, $oldPass, "read_write")->data;
         if(!$user) return new return_package(1, NULL, "Incorrect username/password");
 
         //if changing password, invalidate all keys

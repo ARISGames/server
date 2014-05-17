@@ -16,15 +16,15 @@ class instances extends dbconnection
         $pack->instance_id = dbconnection::queryInsert(
             "INSERT INTO instances (".
             "game_id,".
-            ($pack->object_id    ? "object_id,"    : "").
-            ($pack->object_type  ? "object_type,"  : "").
-            ($pack->spawnable_id ? "spawnable_id," : "").
+            ($pack->object_id   ? "object_id,"    : "").
+            ($pack->object_type ? "object_type,"  : "").
+            ($pack->factory_id  ? "factory_id,"   : "").
             "created".
             ") VALUES (".
             "'".$pack->game_id."',".
-            ($pack->object_id    ? "'".addslashes($pack->object_id)."',"    : "").
-            ($pack->object_type  ? "'".addslashes($pack->object_type)."',"  : "").
-            ($pack->spawnable_id ? "'".addslashes($pack->spawnable_id)."'," : "").
+            ($pack->object_id   ? "'".addslashes($pack->object_id)."',"   : "").
+            ($pack->object_type ? "'".addslashes($pack->object_type)."'," : "").
+            ($pack->factory_id  ? "'".addslashes($pack->factory_id)."',"  : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -42,9 +42,9 @@ class instances extends dbconnection
 
         dbconnection::query(
             "UPDATE instances SET ".
-            ($pack->object_id    ? "object_id    = '".addslashes($pack->object_id)."', "    : "").
-            ($pack->object_type  ? "object_type  = '".addslashes($pack->object_type)."', "  : "").
-            ($pack->spawnable_id ? "spawnable_id = '".addslashes($pack->spawnable_id)."', " : "").
+            ($pack->object_id   ? "object_id   = '".addslashes($pack->object_id)."', "   : "").
+            ($pack->object_type ? "object_type = '".addslashes($pack->object_type)."', " : "").
+            ($pack->factory_id  ? "factory_id  = '".addslashes($pack->factory_id)."', "  : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE instance_id = '{$pack->instance_id}'"
         );
@@ -55,11 +55,11 @@ class instances extends dbconnection
     private static function instanceObjectFromSQL($sql_instance)
     {
         $instance = new stdClass();
-        $instance->instance_id  = $sql_instance->instance_id;
-        $instance->game_id      = $sql_instance->game_id;
-        $instance->object_id    = $sql_instance->object_id;
-        $instance->object_type  = $sql_instance->object_type;
-        $instance->spawnable_id = $sql_instance->spawnable_id;
+        $instance->instance_id = $sql_instance->instance_id;
+        $instance->game_id     = $sql_instance->game_id;
+        $instance->object_id   = $sql_instance->object_id;
+        $instance->object_type = $sql_instance->object_type;
+        $instance->factory_id  = $sql_instance->factory_id;
         return $instance;
     }
 

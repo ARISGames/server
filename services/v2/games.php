@@ -149,9 +149,9 @@ class games extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        dbconnection::query("DELETE FROM games WHERE game_id = '{$gameId}' LIMIT 1");
-        dbconnection::query("DELETE FROM game_tab_data WHERE game_id = '{$gameId}' LIMIT 1");
-        $command = 'rm -rf '. Config::gamedataFSPath . "/{$gameId}";
+        dbconnection::query("DELETE FROM games WHERE game_id = '{$pack->game_id}' LIMIT 1");
+        dbconnection::query("DELETE FROM game_tab_data WHERE game_id = '{$pack->game_id}' LIMIT 1");
+        $command = 'rm -rf '. Config::gamedataFSPath . "/{$pack->game_id}";
         exec($command, $output, $return);
         if($return) return new return_package(4, NULL, "unable to delete game directory");
         return new return_package(0);
