@@ -100,15 +100,15 @@ class games extends dbconnection
     private static function gameObjectFromSQL($sql_game)
     {
         $game = new stdClass();
-        $game->game_id = $sql_game->game_id;
-        $game->name = $sql_game->name;
-        $game->description = $sql_game->description;
+        $game->game_id       = $sql_game->game_id;
+        $game->name          = $sql_game->name;
+        $game->description   = $sql_game->description;
         $game->icon_media_id = $sql_game->icon_media_id;
-        $game->media_id = $sql_game->media_id;
-        $game->map_type = $sql_game->map_type;
-        $game->latitude = $sql_game->latitude;
-        $game->longitude = $sql_game->longitude;
-        $game->zoom_level = $sql_game->zoom_level;
+        $game->media_id      = $sql_game->media_id;
+        $game->map_type      = $sql_game->map_type;
+        $game->latitude      = $sql_game->latitude;
+        $game->longitude     = $sql_game->longitude;
+        $game->zoom_level    = $sql_game->zoom_level;
         $game->show_player_location = $sql_game->show_player_location;
         $game->full_quick_travel = $sql_game->full_quick_travel;
         $game->allow_note_comments = $sql_game->allow_note_comments;
