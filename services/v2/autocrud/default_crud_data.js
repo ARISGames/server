@@ -553,5 +553,62 @@ var CRUD_DEFAULTS = [
           "media_id":123\n\
         }\n\
         '
+},
+{
+    "service":"quests",
+    "create":"quests.createQuest",
+    "get":"quests.getQuest",
+    "update":"quests.updateQuest",
+    "delete":"quests.deleteQuest",
+    "createData":
+        '\
+        {\n\
+          "game_id":123,\n\
+          "name":"questName",\n\
+          "description":"questDescription",\n\
+          "active_icon_media_id":123,\n\
+          "active_media_id":123,\n\
+          "active_description":"activeDescription",\n\
+          "active_notification_type":"NONE",\n\
+          "active_function":"NONE",\n\
+          "active_requirement_package_id":1,\n\
+          "complete_icon_media_id":123,\n\
+          "complete_media_id":123,\n\
+          "complete_description":"completeDescription",\n\
+          "complete_notification_type":"NONE",\n\
+          "complete_function":"NONE",\n\
+          "complete_requirement_package_id":1\n\
+        }\n\
+        ',
+    "getData":
+        '\
+        {\n\
+          "quest_id":123\n\
+        }\n\
+        ',
+    "updateData":
+        '\
+        {\n\
+          "game_id":123,\n\
+          "quest_id":123,\n\
+          "name":"questName",\n\
+          "description":"questDescription",\n\
+          "active_icon_media_id":123,\n\
+          "active_media_id":123,\n\
+          "active_description":"activeDescription",\n\
+          "active_notification_type":"NONE",\n\
+          "complete_icon_media_id":123,\n\
+          "complete_media_id":123,\n\
+          "complete_description":"completeDescription",\n\
+          "complete_notification_type":"NONE"\n\
+        }\n\
+        ',
+    "deleteData":
+        '\
+        {\n\
+          "game_id":123,\n\
+          "quest_id":123\n\
+        }\n\
+        '
 }
 ];

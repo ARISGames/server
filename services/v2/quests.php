@@ -1,132 +1,150 @@
 <?php
-require_once("module.php");
+require_once("dbconnection.php");
+require_once("users.php");
+require_once("editors.php");
+require_once("return_package.php");
 
-class Quests extends Module
+class quests extends dbconnection
 {	
-    public function getQuests($gameId)
+    //Takes in quest JSON, all fields optional except user_id + key
+    public static function createQuest($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return quests::createQuestPack($glob); }
+    public static function createQuestPack($pack)
     {
-        $rsResult = Module::query("SELECT * FROM quests WHERE game_id = {$gameId} ORDER BY sort_index");
-        if(mysql_error()) return new returnData(3, NULL, "SQL Error");
+        $pack->auth->game_id = $pack->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        return new returnData(0, $rsResult);
+        $pack->quest_id = dbconnection::queryInsert(
+            "INSERT INTO quests (".
+            ($pack->game_id                                   ? "game_id,"                              : "").
+            ($pack->name                                      ? "name,"                                 : "").
+            ($pack->description                               ? "description,"                          : "").
+            ($pack->active_icon_media_id                      ? "active_icon_media_id,"                 : "").
+            ($pack->active_media_id                           ? "active_media_id,"                      : "").
+            ($pack->active_description                        ? "active_description,"                   : "").
+            ($pack->active_notification_type                  ? "active_notification_type,"             : "").
+            ($pack->active_function                           ? "active_function,"                      : "").
+            ($pack->active_requirement_package_id             ? "active_requirement_package_id,"        : "").
+            ($pack->complete_icon_media_id                    ? "complete_icon_media_id,"               : "").
+            ($pack->complete_media_id                         ? "complete_media_id,"                    : "").
+            ($pack->complete_description                      ? "complete_description,"                 : "").
+            ($pack->complete_notification_type                ? "complete_notification_type,"           : "").
+            ($pack->complete_function                         ? "complete_function,"                    : "").
+            ($pack->complete_requirement_package_id           ? "complete_requirement_package_id,"      : "").
+            ($pack->sort_index                                ? "sort_index,"                           : "").
+            "created".
+            ") VALUES (".
+            ($pack->game_id                                   ? "'".addslashes($pack->game_id)."',"                         : "").
+            ($pack->name                                      ? "'".addslashes($pack->name)."',"                            : "").
+            ($pack->description                               ? "'".addslashes($pack->description)."',"                     : "").
+            ($pack->active_icon_media_id                      ? "'".addslashes($pack->active_icon_media_id)."',"            : "").
+            ($pack->active_media_id                           ? "'".addslashes($pack->active_media_id)."',"                 : "").
+            ($pack->active_description                        ? "'".addslashes($pack->active_description)."',"              : "").
+            ($pack->active_notification_type                  ? "'".addslashes($pack->active_notification_type)."',"        : "").
+            ($pack->active_function                           ? "'".addslashes($pack->active_function)."',"                 : "").
+            ($pack->active_requirement_package_id             ? "'".addslashes($pack->active_requirement_package_id)."',"   : "").
+            ($pack->complete_icon_media_id                    ? "'".addslashes($pack->complete_icon_media_id)."',"          : "").
+            ($pack->complete_media_id                         ? "'".addslashes($pack->complete_media_id)."',"               : "").
+            ($pack->complete_description                      ? "'".addslashes($pack->complete_description)."',"            : "").
+            ($pack->complete_notification_type                ? "'".addslashes($pack->complete_notification_type)."',"      : "").
+            ($pack->complete_function                         ? "'".addslashes($pack->complete_function)."',"               : "").
+            ($pack->complete_requirement_package_id           ? "'".addslashes($pack->complete_requirement_package_id)."'," : "").
+            ($pack->sort_index                                ? "'".addslashes($pack->sort_index)."',"                      : "").
+            "CURRENT_TIMESTAMP".
+            ")"
+        );
+
+        return quests::getQuestPack($pack);
     }
 
-    public function getQuestsForPlayer($gameId,$playerId)
+    public static function updateQuest($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return quests::updateQuestPack($glob); }
+    public static function updateQuestPack($pack)
     {
-        $quests = Module::queryArray("SELECT * FROM quests WHERE game_id = {$gameId} ORDER BY sort_index");
-        if(mysql_error()) return new returnData(3, NULL, "SQL Error");
+        $pack->auth->game_id = $pack->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        $activeQuests = array();
-        $completedQuests = array();
+        dbconnection::query(
+            "UPDATE quests SET ".
+            ($pack->game_id                         ? "game_id                         = '".addslashes($pack->game_id)."', "                          : "").
+            ($pack->name                            ? "name                            = '".addslashes($pack->name)."', "                             : "").
+            ($pack->description                     ? "description                     = '".addslashes($pack->description)."', "                      : "").
+            ($pack->active_icon_media_id            ? "active_icon_media_id            = '".addslashes($pack->active_icon_media_id)."', "             : "").
+            ($pack->active_media_id                 ? "active_media_id                 = '".addslashes($pack->active_media_id)."', "                  : "").
+            ($pack->active_description              ? "active_description              = '".addslashes($pack->active_description)."', "               : "").
+            ($pack->active_notification_type        ? "active_notification_type        = '".addslashes($pack->active_notification_type)."', "         : "").
+            ($pack->active_function                 ? "active_function                 = '".addslashes($pack->active_function)."', "                  : "").
+            ($pack->active_requirement_package_id   ? "active_requirement_package_id   = '".addslashes($pack->active_requirement_package_id)."', "    : "").
+            ($pack->complete_icon_media_id          ? "complete_icon_media_id          = '".addslashes($pack->complete_icon_media_id)."', "           : "").
+            ($pack->complete_media_id               ? "complete_media_id               = '".addslashes($pack->complete_media_id)."', "                : "").
+            ($pack->complete_description            ? "complete_description            = '".addslashes($pack->complete_description)."', "             : "").
+            ($pack->complete_notification_type      ? "complete_notification_type      = '".addslashes($pack->complete_notification_type)."', "       : "").
+            ($pack->complete_function               ? "complete_function               = '".addslashes($pack->complete_function)."', "                : "").
+            ($pack->complete_requirement_package_id ? "complete_requirement_package_id = '".addslashes($pack->complete_requirement_package_id)."', "  : "").
+            ($pack->sort_index                      ? "sort_index                      = '".addslashes($pack->sort_index)."', "                       : "").
+            "last_active = CURRENT_TIMESTAMP ".
+            "WHERE quest_id = '{$pack->quest_id}'"
+        );
 
-        for($i = 0; $i < count($quests); $i++)
-        {
-            $quest = $quests[$i];
-            $display = Module::objectMeetsRequirements ($gameId, $playerId, "QuestDisplay", $quest->quest_id);
-            $complete = Module::playerHasLog($gameId, $playerId, Module::kLOG_COMPLETE_QUEST, $quest->quest_id);
-
-            if ($display && !$complete) $activeQuests[] = $quest;
-            if ($display && $complete) $completedQuests[] = $quest;
-        }	
-
-        $return = new stdClass();
-        $return->totalQuests = count($quests);
-        $return->active = $activeQuests;
-        $return->completed = $completedQuests;
-
-        return new returnData(0, $return);
-    }	
-
-    public function getQuest($gameId, $questId)
-    {
-        $quest = Module::queryObject("SELECT * FROM quests WHERE game_id = {$gameId} AND quest_id = {$questId} LIMIT 1");
-        if(!$quest) return new returnData(2, NULL, "invalid quest id");
-
-        return new returnData(0, $quest);
+        return quests::getQuestPack($pack);
     }
 
-    public function createQuest($gameId, $name, $index, $editorId, $editorToken)
+    private static function questObjectFromSQL($sql_quest)
     {
-        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
+        $quest = new stdClass();
+        $quest->quest_id                         = $sql_quest->quest_id;
+        $quest->game_id                          = $sql_quest->game_id;
+        $quest->name                             = $sql_quest->name;
+        $quest->description                      = $sql_quest->description;
+        $quest->active_icon_media_id             = $sql_quest->active_icon_media_id;
+        $quest->active_media_id                  = $sql_quest->active_media_id;
+        $quest->active_description               = $sql_quest->active_description;
+        $quest->active_notification_type         = $sql_quest->active_notification_type;
+        $quest->active_function                  = $sql_quest->active_function;
+        $quest->active_requirement_package_id    = $sql_quest->active_requirement_package_id;
+        $quest->complete_icon_media_id           = $sql_quest->complete_icon_media_id;
+        $quest->complete_media_id                = $sql_quest->complete_media_id;
+        $quest->complete_description             = $sql_quest->complete_description;
+        $quest->complete_notification_type       = $sql_quest->complete_notification_type;
+        $quest->complete_function                = $sql_quest->complete_function;
+        $quest->complete_requirement_package_id  = $sql_quest->complete_requirement_package_id;
+        $quest->sort_index                       = $sql_quest->sort_index;
 
-        $name = addslashes($name);	
-        Module::query("INSERT INTO quests (game_id, name, sort_index) VALUES ('{$gameId}','{$name}','{$index}')");
-
-        return new returnData(0, mysql_insert_id());
+        return $quest;
     }
 
-    public function updateQuest($gameId, $questId,
-        $name,
-        $activeText,             $completeText, 
-        $activeNotifText,        $completeNotifText,
-        $activeMediaId,          $completeMediaId, 
-        $activeIconMediaId,      $completeIconMediaId, 
-        $activeNotifMediaId,     $completeNotifMediaId,
-        $activeFunction,         $completeFunction,
-        $activeNotifFunction,    $completeNotifFunction, 
-        $activeFullScreenNotify, $completeFullScreenNotify,
-        $activeShowDismiss,      $completeShowDismiss,
-        $sortIndex,
-        $editorId, $editorToken)
+    public static function getQuest($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return quests::getQuestPack($glob); }
+    public static function getQuestPack($pack)
     {
-        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
-
-        Module::query("UPDATE quests SET
-            name                            = '".addslashes($name)."',
-            description                     = '".addslashes($activeText)."',
-            text_when_complete              = '".addslashes($completeText)."',
-            description_notification        = '".addslashes($activeNotifText)."',
-            text_when_complete_notification = '".addslashes($completeNotifText)."',
-            active_media_id                 = '".intval($activeMediaId)."',
-            complete_media_id               = '".intval($completeMediaId)."',
-            active_icon_media_id            = '".intval($activeIconMediaId)."',
-            complete_icon_media_id          = '".intval($completeIconMediaId)."',
-            active_notification_media_id    = '".intval($activeNotifMediaId)."',
-            complete_notification_media_id  = '".intval($completeNotifMediaId)."',
-            go_function                     = '".addslashes($activeFunction)."',
-            complete_go_function            = '".addslashes($completeFunction)."',
-            notif_go_function               = '".addslashes($activeNotifFunction)."',
-            complete_notif_go_function      = '".addslashes($completeNotifFunction)."',
-            full_screen_notify              = '".intval($activeFullScreenNotify)."',
-            complete_full_screen_notify     = '".intval($completeFullScreenNotify)."',
-            active_notif_show_dismiss       = '".intval($activeShowDismiss)."',
-            complete_notif_show_dismiss     = '".intval($completeShowDismiss)."',
-            sort_index                      = '".intval($sortIndex)."'
-            WHERE
-            game_id = '".intval($gameId)."' AND quest_id = '".$questId."';");
-
-        if(mysql_error()) return new returnData(3, NULL, "SQL Error");
-
-        if(mysql_affected_rows()) return new returnData(0, TRUE);
-        else return new returnData(0, FALSE);
+        $sql_quest = dbconnection::queryObject("SELECT * FROM quests WHERE quest_id = '{$pack->quest_id}' LIMIT 1");
+        if(!$sql_quest) return new return_package(2, NULL, "The quest you've requested does not exist");
+        return new return_package(0,quests::questObjectFromSQL($sql_quest));
     }
 
-    public function deleteQuest($gameId, $questId, $editorId, $editorToken)
+    public static function getQuestsForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return quests::getQuestsForGamePack($glob); }
+    public static function getQuestsForGamePack($pack)
     {
-        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        Module::query("DELETE FROM quests WHERE game_id = {$gameId} AND quest_id = {$questId}");
-        return new returnData(0, TRUE);
-    }	
-
-    public function swapSortIndex($gameId, $a, $b, $editorId, $editorToken)
-    {
-        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
-
-        $result = Module::query("SELECT * FROM quests WHERE game_id = {$gameId} AND (quest_id = '{$a}' OR quest_id = '{$b}')");
-
+        $sql_quests = dbconnection::queryArray("SELECT * FROM quests WHERE game_id = '{$pack->game_id}'");
         $quests = array();
-        while($quest = mysql_fetch_object($result))
-            $quests[$quest->quest_id] = $quest;
+        for($i = 0; $i < count($sql_quests); $i++)
+            $quests[] = quests::questObjectFromSQL($sql_quests[$i]);
 
-        Module::query("UPDATE quests SET sort_index = '{$quests[$a]->sort_index}' WHERE game_id = {$gameId} AND quest_id = '{$b}'");
-        Module::query("UPDATE quests SET sort_index = '{$quests[$b]->sort_index}' WHERE game_id = {$gameId} AND quest_id = '{$a}'");
+        return new return_package(0,$quests);
 
-        return new returnData(0);
+    }
+
+    public static function deleteQuest($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return quests::deleteQuestPack($glob); }
+    public static function deleteQuestPack($pack)
+    {
+        $pack->auth->game_id = $pack->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        dbconnection::query("DELETE FROM quests WHERE quest_id = '{$pack->quest_id}' LIMIT 1");
+        return new return_package(0);
     }
 }
-
+?>
