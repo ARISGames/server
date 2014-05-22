@@ -97,7 +97,7 @@ class games extends dbconnection
         return games::getGamePack($pack);
     }
 
-    private static function gameObjectFromSQL($sql_game)
+    public static function gameObjectFromSQL($sql_game)
     {
         $game = new stdClass();
         $game->game_id       = $sql_game->game_id;
