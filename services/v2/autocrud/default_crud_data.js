@@ -399,17 +399,17 @@ var CRUD_DEFAULTS = [
         '
 },
 {
-    "service":"npcs",
-    "create":"npcs.createNpc",
-    "get":"npcs.getNpc",
-    "update":"npcs.updateNpc",
-    "delete":"npcs.deleteNpc",
+    "service":"dialogs",
+    "create":"dialogs.createDialog",
+    "get":"dialogs.getDialog",
+    "update":"dialogs.updateDialog",
+    "delete":"dialogs.deleteDialog",
     "createData":
         '\
         {\n\
           "game_id":123,\n\
-          "name":"npcName",\n\
-          "description":"npcDescription",\n\
+          "name":"dialogName",\n\
+          "description":"dialogDescription",\n\
           "icon_media_id":123,\n\
           "media_id":123,\n\
           "opening_script_id":123,\n\
@@ -419,15 +419,15 @@ var CRUD_DEFAULTS = [
     "getData":
         '\
         {\n\
-          "npc_id":123\n\
+          "dialog_id":123\n\
         }\n\
         ',
     "updateData":
         '\
         {\n\
-          "npc_id":123,\n\
-          "name":"npcName",\n\
-          "description":"npcDescription",\n\
+          "dialog_id":123,\n\
+          "name":"dialogName",\n\
+          "description":"dialogDescription",\n\
           "icon_media_id":123,\n\
           "media_id":123,\n\
           "opening_script_id":123,\n\
@@ -437,46 +437,46 @@ var CRUD_DEFAULTS = [
     "deleteData":
         '\
         {\n\
-          "npc_id":123\n\
+          "dialog_id":123\n\
         }\n\
         '
 },
 {
-    "service":"npc_scripts",
-    "create":"npc_scripts.createNpcScript",
-    "get":"npc_scripts.getNpcScript",
-    "update":"npc_scripts.updateNpcScript",
-    "delete":"npc_scripts.deleteNpcScript",
+    "service":"dialog_scripts",
+    "create":"dialog_scripts.createDialogScript",
+    "get":"dialog_scripts.getDialogScript",
+    "update":"dialog_scripts.updateDialogScript",
+    "delete":"dialog_scripts.deleteDialogScript",
     "createData":
         '\
         {\n\
           "game_id":123,\n\
-          "npc_id":123,\n\
-          "title":"npcScriptTitle",\n\
-          "text":"npcScriptText",\n\
+          "dialog_id":123,\n\
+          "title":"dialogScriptTitle",\n\
+          "text":"dialogScriptText",\n\
           "sort_index":0\n\
         }\n\
         ',
     "getData":
         '\
         {\n\
-          "npc_script_id":123\n\
+          "dialog_script_id":123\n\
         }\n\
         ',
     "updateData":
         '\
         {\n\
-          "npc_script_id":123,\n\
-          "npc_id":123,\n\
-          "title":"npcScriptTitle",\n\
-          "text":"npcScriptText",\n\
+          "dialog_script_id":123,\n\
+          "dialog_id":123,\n\
+          "title":"dialogScriptTitle",\n\
+          "text":"dialogScriptText",\n\
           "sort_index":0\n\
         }\n\
         ',
     "deleteData":
         '\
         {\n\
-          "npc_script_id":123\n\
+          "dialog_script_id":123\n\
         }\n\
         '
 },
