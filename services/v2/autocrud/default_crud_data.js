@@ -228,7 +228,7 @@ var CRUD_DEFAULTS = [
         '\
         {\n\
           "game_id":123,\n\
-          "name":"triggerName",\n\
+          "title":"triggerTitle",\n\
           "instance_id":123,\n\
           "scene_id":123,\n\
           "requirement_root_package_id":132,\n\
@@ -251,7 +251,7 @@ var CRUD_DEFAULTS = [
         '\
         {\n\
           "trigger_id":123,\n\
-          "name":"triggerName",\n\
+          "title":"triggerTitle",\n\
           "instance_id":123,\n\
           "scene_id":123,\n\
           "requirement_root_package_id":132,\n\

@@ -16,7 +16,7 @@ class triggers extends dbconnection
         $pack->trigger_id = dbconnection::queryInsert(
             "INSERT INTO triggers (".
             "game_id,".
-            ($pack->name                        ? "name,"                        : "").
+            ($pack->title                       ? "title,"                        : "").
             ($pack->instance_id                 ? "instance_id,"                 : "").
             ($pack->scene_id                    ? "scene_id,"                    : "").
             ($pack->requirement_root_package_id ? "requirement_root_package_id," : "").
@@ -30,7 +30,7 @@ class triggers extends dbconnection
             "created".
             ") VALUES (".
             "'".$pack->game_id."',".
-            ($pack->name                        ? "'".addslashes($pack->name)."',"                        : "").
+            ($pack->title                       ? "'".addslashes($pack->title)."',"                       : "").
             ($pack->instance_id                 ? "'".addslashes($pack->instance_id)."',"                 : "").
             ($pack->scene_id                    ? "'".addslashes($pack->scene_id)."',"                    : "").
             ($pack->requirement_root_package_id ? "'".addslashes($pack->requirement_root_package_id)."'," : "").
@@ -58,7 +58,7 @@ class triggers extends dbconnection
 
         dbconnection::query(
             "UPDATE triggers SET ".
-            ($pack->name                        ? "name                        = '".addslashes($pack->name)."', "                        : "").
+            ($pack->title                       ? "title                       = '".addslashes($pack->title)."', "                       : "").
             ($pack->instance_id                 ? "instance_id                 = '".addslashes($pack->instance_id)."', "                 : "").
             ($pack->scene_id                    ? "scene_id                    = '".addslashes($pack->scene_id)."', "                    : "").
             ($pack->requirement_root_package_id ? "requirement_root_package_id = '".addslashes($pack->requirement_root_package_id)."', " : "").
@@ -81,7 +81,7 @@ class triggers extends dbconnection
         $trigger = new stdClass();
         $trigger->trigger_id                  = $sql_trigger->trigger_id;
         $trigger->game_id                     = $sql_trigger->game_id;
-        $trigger->name                        = $sql_trigger->name;
+        $trigger->title                       = $sql_trigger->title;
         $trigger->instance_id                 = $sql_trigger->instance_id;
         $trigger->scene_id                    = $sql_trigger->scene_id;
         $trigger->requirement_root_package_id = $sql_trigger->requirement_root_package_id;
