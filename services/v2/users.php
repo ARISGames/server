@@ -100,6 +100,40 @@ class users extends dbconnection
         return new return_package(0, NULL);
     }	
 
+    public static function userObjectFromSQL($sql_game)
+    {
+        //parses only public data into object
+        $game = new stdClass();
+        $game->user_id       = $sql_game->user_id;
+        $game->user_name     = $sql_game->user_name;
+        $game->display_name  = $sql_game->display_name;
+        $game->media_id      = $sql_game->media_id;
+
+        return $game;
+    }
+
+    public static function getUser($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::getUserPack($glob); }
+    public static function getUserPack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        //Note- uses $pack->user_id, NOT $pack->auth->user_id. as in, one user can request public details about another.
+        $sql_user = dbconnection::queryObject("SELECT * FROM user_games WHERE user_id = '{$pack->user_id}'");
+        return new return_package(0, users::userObjectFromSQL($sql_user));
+    }
+
+    public static function getUsersForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::getUsersForGamePack($glob); }
+    public static function getUsersForGamePack($pack)
+    {
+        $sql_users = dbconnection::queryArray("SELECT * FROM user_games WHERE game_id = '{$pack->game_id}'");
+        $users = array();
+        for($i = 0; $i < count($sql_users); $i++)
+            $users[] = users::userObjectFromSQL($sql_users[$i]);
+
+        return new return_package(0, $users);
+    }
+
     public static function resetAndEmailNewPassword($strEmail)
     {
         //oh god terrible email validation

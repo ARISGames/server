@@ -2,6 +2,7 @@
 require_once("dbconnection.php");
 require_once("users.php");
 require_once("editors.php");
+require_once("media.php");
 require_once("return_package.php");
 
 class games extends dbconnection
@@ -175,6 +176,28 @@ class games extends dbconnection
         exec($command, $output, $return);
         if($return) return new return_package(4, NULL, "unable to delete game directory");
         return new return_package(0);
+    }
+
+    public static function getFullGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return games::getFullGamePack($glob); }
+    public static function getFullGamePack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $sql_game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$pack->game_id}' LIMIT 1");
+        if(!$sql_game) return new return_package(2, NULL, "The game you've requested does not exist");
+
+        $game = games::getGamePack($pack)->data;
+
+        $game->authors = users::getUsersForGamePack($pack)->data; //pack already has auth and game_id
+
+        //heres where we just hack the pack for use in other requests without overhead of creating new packs
+        $pack->media_id = $game->media_id;
+        $game->media = media::getMediaPack($pack)->data;
+        $pack->media_id = $game->icon_media_id;
+        $game->icon_media = media::getMediaPack($pack)->data;
+
+        return new return_package(0,$game);
     }
 }
 ?>
