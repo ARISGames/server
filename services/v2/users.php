@@ -100,16 +100,16 @@ class users extends dbconnection
         return new return_package(0, NULL);
     }	
 
-    public static function userObjectFromSQL($sql_game)
+    public static function userObjectFromSQL($sql_user)
     {
         //parses only public data into object
-        $game = new stdClass();
-        $game->user_id       = $sql_game->user_id;
-        $game->user_name     = $sql_game->user_name;
-        $game->display_name  = $sql_game->display_name;
-        $game->media_id      = $sql_game->media_id;
+        $user = new stdClass();
+        $user->user_id       = $sql_user->user_id;
+        $user->user_name     = $sql_user->user_name;
+        $user->display_name  = $sql_user->display_name;
+        $user->media_id      = $sql_user->media_id;
 
-        return $game;
+        return $user;
     }
 
     public static function getUser($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::getUserPack($glob); }
@@ -126,7 +126,10 @@ class users extends dbconnection
     public static function getUsersForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::getUsersForGamePack($glob); }
     public static function getUsersForGamePack($pack)
     {
-        $sql_users = dbconnection::queryArray("SELECT * FROM user_games WHERE game_id = '{$pack->game_id}'");
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $sql_users = dbconnection::queryArray("SELECT * FROM (SELECT * FROM user_games WHERE game_id = '{$pack->game_id}') as u_gs LEFT JOIN users ON u_gs.user_id = users.user_id");
         $users = array();
         for($i = 0; $i < count($sql_users); $i++)
             $users[] = users::userObjectFromSQL($sql_users[$i]);
