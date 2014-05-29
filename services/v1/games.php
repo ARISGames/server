@@ -105,6 +105,36 @@ class Games extends Module
         return new returnData(0, $result, NULL);
     }
 
+    public function getTabBarItemsForGameAndPlayer($gameId, $playerId)
+    {
+        $tabs = Module::queryArray("SELECT * FROM game_tab_data WHERE game_id = '{$gameId}' ORDER BY tab_index ASC");
+        if(count($tabs) == 0){
+            Module::query("INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$gameId}', 'QUESTS', '1')");
+            Module::query("INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$gameId}', 'GPS', '2')");
+            Module::query("INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$gameId}', 'INVENTORY', '3')");
+            Module::query("INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$gameId}', 'QR', '4')");
+            Module::query("INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$gameId}', 'PLAYER', '5')");
+            Module::query("INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$gameId}', 'NOTE',  '6')");
+            Module::query("INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$gameId}', 'STARTOVER', '998')");
+            Module::query("INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$gameId}', 'PICKGAME', '9999')");
+            //Module::query("INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$gameId}', 'NPC', '7')");
+            //Module::query("INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$gameId}', 'ITEM', '8')");
+            //Module::query("INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$gameId}', 'NODE', '9')");
+            //Module::query("INSERT INTO `game_tab_data` (`game_id` ,`tab` ,`tab_index`) VALUES ('{$gameId}', 'WEBPAGE', '10')");
+            $tabs = Module::queryArray("SELECT * FROM game_tab_data WHERE game_id = '{$gameId}' ORDER BY tab_index ASC");
+        }
+        $tabsToReturn = array();
+        for($i = 0; $i < count($tabs); $i++){
+            $tab = $tabs[$i];
+            //REQUIRES SCHEMA CHANGE
+            $display = Module::objectMeetsRequirements ($gameId, $playerId, "Tab", $tab->id);
+            if($display){
+               $tabsToReturn[] = $tab;
+            }
+        }
+        return new returnData(0, $tabsToReturn, NULL);
+    }
+
     public function saveTab($gameId, $stringTabType, $intIndex, $editorId, $editorToken)
     {
         if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))

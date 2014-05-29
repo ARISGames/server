@@ -32,7 +32,6 @@ class Overlays extends Module
 
     public function getOverlaysForPlayer($gameId, $playerId)
     {
-        //add more logic for requirements here
         $overlays = Module::queryArray("SELECT * FROM overlays WHERE game_id = {$gameId};");
         $overlayIds = array();
         for($i = 0; $i < count($overlays); $i++){
