@@ -103,6 +103,7 @@ class users extends dbconnection
     public static function userObjectFromSQL($sql_user)
     {
         //parses only public data into object
+        if(!$sql_user) return $sql_user;
         $user = new stdClass();
         $user->user_id       = $sql_user->user_id;
         $user->user_name     = $sql_user->user_name;

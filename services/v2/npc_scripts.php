@@ -57,6 +57,7 @@ class npc_scripts extends dbconnection
 
     private static function npcScriptObjectFromSQL($sql_npcScript)
     {
+        if(!$sql_npcScript) return $sql_npcScript;
         $npcScript = new stdClass();
         $npcScript->npc_script_id = $sql_npcScript->npc_script_id;
         $npcScript->game_id       = $sql_npcScript->game_id;

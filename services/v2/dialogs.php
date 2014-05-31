@@ -63,6 +63,7 @@ class dialogs extends dbconnection
 
     private static function dialogObjectFromSQL($sql_dialog)
     {
+        if(!$sql_dialog) return $sql_dialog;
         $dialog = new stdClass();
         $dialog->dialog_id            = $sql_dialog->dialog_id;
         $dialog->game_id           = $sql_dialog->game_id;

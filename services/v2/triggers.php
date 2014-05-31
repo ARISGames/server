@@ -78,6 +78,7 @@ class triggers extends dbconnection
 
     private static function triggerObjectFromSQL($sql_trigger)
     {
+        if(!$sql_trigger) return $sql_trigger;
         $trigger = new stdClass();
         $trigger->trigger_id                  = $sql_trigger->trigger_id;
         $trigger->game_id                     = $sql_trigger->game_id;

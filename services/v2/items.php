@@ -75,6 +75,7 @@ class items extends dbconnection
 
     private static function itemObjectFromSQL($sql_item)
     {
+        if(!$sql_item) return $sql_item;
         $item = new stdClass();
         $item->item_id              = $sql_item->item_id;
         $item->game_id              = $sql_item->game_id;

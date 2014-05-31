@@ -57,6 +57,7 @@ class state_changes extends dbconnection
 
     private static function stateChangeObjectFromSQL($sql_stateChange)
     {
+        if(!$sql_stateChange) return $sql_stateChange;
         $stateChange = new stdClass();
         $stateChange->state_change_id = $sql_stateChange->state_change_id;
         $stateChange->game_id         = $sql_stateChange->game_id;

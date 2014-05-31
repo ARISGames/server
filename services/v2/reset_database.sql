@@ -232,14 +232,15 @@ instance_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 game_id INT(32) UNSIGNED NOT NULL,
 object_id INT(32) UNSIGNED NOT NULL,
 object_type ENUM('PLAQUE','ITEM','DIALOG','WEB_PAGE','NOTE'),
-qty INT(32) UNSIGNED NOT NULL,
+qty INT(32) UNSIGNED NOT NULL DEFAULT 0,
 infinite_qty TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
-factory_id INT(32) UNSIGNED NOT NULL,
+factory_id INT(32) UNSIGNED NOT NULL DEFAULT 0,
+owner_id INT(32) UNSIGNED NOT NULL DEFAULT 0, /* 0 for 'owned by the world' */
 created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
 last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 CREATE INDEX instance_object ON instances(object_type, object_id);
-CREATE INDEX instance_game ON instances(game_id);
+CREATE INDEX instance_game_owner ON instances(game_id, owner_id);
 
 DROP TABLE IF EXISTS triggers;
 CREATE TABLE triggers (
@@ -362,17 +363,6 @@ CREATE INDEX user_log_check ON user_log(user_id, game_id, event_type, deleted);
 CREATE INDEX user_log_user_id ON user_log(user_id, created);
 CREATE INDEX user_log_game_id ON user_log(game_id, created);
 
-/* Inventory, attributes, etc... */
-DROP TABLE IF EXISTS user_instances;
-CREATE TABLE user_instances (
-game_id int(11) NOT NULL,
-user_id INT(32) UNSIGNED NOT NULL DEFAULT 0,
-instance_id INT(32) UNSIGNED NOT NULL DEFAULT 0,
-created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
-last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-PRIMARY KEY (user_id, instance_id)
-);
-CREATE INDEX user_instance_user_game_id ON user_instances(user_id, game_id);
 
 
 

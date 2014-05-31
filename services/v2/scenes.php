@@ -48,6 +48,7 @@ class scenes extends dbconnection
 
     private static function sceneObjectFromSQL($sql_scene)
     {
+        if(!$sql_scene) return $sql_scene;
         $scene = new stdClass();
         $scene->scene_id = $sql_scene->scene_id;
         $scene->game_id = $sql_scene->game_id;

@@ -19,12 +19,14 @@ class instances extends dbconnection
             ($pack->object_id   ? "object_id,"    : "").
             ($pack->object_type ? "object_type,"  : "").
             ($pack->factory_id  ? "factory_id,"   : "").
+            ($pack->owner_id    ? "owner_id,"     : "").
             "created".
             ") VALUES (".
             "'".$pack->game_id."',".
             ($pack->object_id   ? "'".addslashes($pack->object_id)."',"   : "").
             ($pack->object_type ? "'".addslashes($pack->object_type)."'," : "").
             ($pack->factory_id  ? "'".addslashes($pack->factory_id)."',"  : "").
+            ($pack->owner_id    ? "'".addslashes($pack->owner_id)."',"    : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -45,6 +47,7 @@ class instances extends dbconnection
             ($pack->object_id   ? "object_id   = '".addslashes($pack->object_id)."', "   : "").
             ($pack->object_type ? "object_type = '".addslashes($pack->object_type)."', " : "").
             ($pack->factory_id  ? "factory_id  = '".addslashes($pack->factory_id)."', "  : "").
+            ($pack->owner_id    ? "owner_id    = '".addslashes($pack->owner_id)."', "    : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE instance_id = '{$pack->instance_id}'"
         );
@@ -54,12 +57,14 @@ class instances extends dbconnection
 
     private static function instanceObjectFromSQL($sql_instance)
     {
+        if(!$sql_instance) return $sql_instance;
         $instance = new stdClass();
         $instance->instance_id = $sql_instance->instance_id;
         $instance->game_id     = $sql_instance->game_id;
         $instance->object_id   = $sql_instance->object_id;
         $instance->object_type = $sql_instance->object_type;
         $instance->factory_id  = $sql_instance->factory_id;
+        $instance->owner_id    = $sql_instance->owner_id;
         return $instance;
     }
 
@@ -73,7 +78,7 @@ class instances extends dbconnection
     public static function getInstancesForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return instances::getInstancesForGamePack($glob); }
     public static function getInstancesForGamePack($pack)
     {
-        $sql_instances = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}'");
+        $sql_instances = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_id = '".($pack->owner_id ? $pack->owner_id : 0)."'");
         $instances = array();
         for($i = 0; $i < count($sql_instances); $i++)
             $instances[] = instances::instanceObjectFromSQL($sql_instances[$i]);
@@ -84,7 +89,7 @@ class instances extends dbconnection
     public static function getInstancesForObject($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return instances::getInstancesForObjectPack($glob); }
     public static function getInstancesForObjectPack($pack)
     {
-        $sql_instances = dbconnection::queryArray("SELECT * FROM instances WHERE object_type = '{$pack->object_type}' AND object_id = '{$pack->object_id}'");
+        $sql_instances = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND object_type = '{$pack->object_type}' AND object_id = '{$pack->object_id}'");
         $instances = array();
         for($i = 0; $i < count($sql_instances); $i++)
             $instances[] = instances::instanceObjectFromSQL($sql_instances[$i]);

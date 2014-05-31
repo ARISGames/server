@@ -108,6 +108,7 @@ class media extends dbconnection
 
     private static function mediaObjectFromSQL($sql_media)
     {
+        if(!$sql_media) return $sql_media;
         $media = new stdClass();
         $media->media_id     = $sql_media->media_id;
         $media->game_id      = $sql_media->game_id;

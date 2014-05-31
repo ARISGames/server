@@ -57,6 +57,7 @@ class plaques extends dbconnection
 
     private static function plaqueObjectFromSQL($sql_plaque)
     {
+        if(!$sql_plaque) return $sql_plaque;
         $plaque = new stdClass();
         $plaque->plaque_id              = $sql_plaque->plaque_id;
         $plaque->game_id              = $sql_plaque->game_id;

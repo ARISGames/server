@@ -91,6 +91,7 @@ class quests extends dbconnection
 
     private static function questObjectFromSQL($sql_quest)
     {
+        if(!$sql_quest) return $sql_quest;
         $quest = new stdClass();
         $quest->quest_id                         = $sql_quest->quest_id;
         $quest->game_id                          = $sql_quest->game_id;
