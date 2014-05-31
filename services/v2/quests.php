@@ -131,7 +131,7 @@ class quests extends dbconnection
         $sql_quests = dbconnection::queryArray("SELECT * FROM quests WHERE game_id = '{$pack->game_id}'");
         $quests = array();
         for($i = 0; $i < count($sql_quests); $i++)
-            $quests[] = quests::questObjectFromSQL($sql_quests[$i]);
+            if($ob = quests::questObjectFromSQL($sql_quests[$i])) $quests[] = $ob;
 
         return new return_package(0,$quests);
 

@@ -139,7 +139,7 @@ class games extends dbconnection
         $sql_games = dbconnection::queryArray("SELECT * FROM user_games LEFT JOIN games ON user_games.game_id = games.game_id WHERE user_games.user_id = '{$pack->auth->user_id}'");
         $games = array();
         for($i = 0; $i < count($sql_games); $i++)
-            $games[] = games::gameObjectFromSQL($sql_games[$i]);
+            if($ob = games::gameObjectFromSQL($sql_games[$i])) $games[] = $ob;
 
         return new return_package(0,$games);
     }

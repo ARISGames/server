@@ -106,7 +106,7 @@ class items extends dbconnection
         $sql_items = dbconnection::queryArray("SELECT * FROM items WHERE game_id = '{$pack->game_id}'");
         $items = array();
         for($i = 0; $i < count($sql_items); $i++)
-            $items[] = items::itemObjectFromSQL($sql_items[$i]);
+            if($ob = items::itemObjectFromSQL($sql_items[$i])) $items[] = $ob;
 
         return new return_package(0,$items);
     }

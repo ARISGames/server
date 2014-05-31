@@ -81,7 +81,7 @@ class instances extends dbconnection
         $sql_instances = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_id = '".($pack->owner_id ? $pack->owner_id : 0)."'");
         $instances = array();
         for($i = 0; $i < count($sql_instances); $i++)
-            $instances[] = instances::instanceObjectFromSQL($sql_instances[$i]);
+            if($ob = instances::instanceObjectFromSQL($sql_instances[$i])) $instances[] = $ob;
 
         return new return_package(0,$instances);
     }
@@ -92,7 +92,7 @@ class instances extends dbconnection
         $sql_instances = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND object_type = '{$pack->object_type}' AND object_id = '{$pack->object_id}'");
         $instances = array();
         for($i = 0; $i < count($sql_instances); $i++)
-            $instances[] = instances::instanceObjectFromSQL($sql_instances[$i]);
+            if($ob = instances::instanceObjectFromSQL($sql_instances[$i])) $instances[] = $ob;
 
         return new return_package(0,$instances);
     }

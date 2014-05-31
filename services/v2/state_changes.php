@@ -82,7 +82,7 @@ class state_changes extends dbconnection
         $sql_stateChanges = dbconnection::queryArray("SELECT * FROM state_changes WHERE game_id = '{$pack->game_id}'");
         $stateChanges = array();
         for($i = 0; $i < count($sql_stateChanges); $i++)
-            $stateChanges[] = state_changes::stateChangeObjectFromSQL($sql_stateChanges[$i]);
+            if($ob = state_changes::stateChangeObjectFromSQL($sql_stateChanges[$i])) $stateChanges[] = $ob;
 
         return new return_package(0,$stateChanges);
     }

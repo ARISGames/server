@@ -138,7 +138,7 @@ class media extends dbconnection
         $sql_medias = dbconnection::queryArray("SELECT * FROM media WHERE (game_id = '{$pack->game_id}' OR game_id = 0)");
         $medias = array();
         for($i = 0; $i < count($sql_medias); $i++)
-            $medias[] = media::mediaObjectFromSQL($sql_medias[$i]);
+            if($ob = media::mediaObjectFromSQL($sql_medias[$i])) $medias[] = $ob;
 
         return new return_package(0, $medias);
     }

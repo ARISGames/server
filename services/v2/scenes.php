@@ -70,7 +70,7 @@ class scenes extends dbconnection
         $sql_scenes = dbconnection::queryArray("SELECT * FROM scenes WHERE game_id = '{$pack->game_id}'");
         $scenes = array();
         for($i = 0; $i < count($sql_scenes); $i++)
-            $scenes[] = scenes::sceneObjectFromSQL($sql_scenes[$i]);
+            if($ob = scenes::sceneObjectFromSQL($sql_scenes[$i])) $scenes[] = $ob;
 
         return new return_package(0,$scenes);
     }

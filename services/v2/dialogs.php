@@ -90,7 +90,7 @@ class dialogs extends dbconnection
         $sql_dialogs = dbconnection::queryArray("SELECT * FROM dialogs WHERE game_id = '{$pack->game_id}'");
         $dialogs = array();
         for($i = 0; $i < count($sql_dialogs); $i++)
-            $dialogs[] = dialogs::dialogObjectFromSQL($sql_dialogs[$i]);
+            if($ob = dialogs::dialogObjectFromSQL($sql_dialogs[$i])) $dialogs[] = $ob;
 
         return new return_package(0,$dialogs);
     }

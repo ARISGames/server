@@ -133,7 +133,7 @@ class users extends dbconnection
         $sql_users = dbconnection::queryArray("SELECT * FROM (SELECT * FROM user_games WHERE game_id = '{$pack->game_id}') as u_gs LEFT JOIN users ON u_gs.user_id = users.user_id");
         $users = array();
         for($i = 0; $i < count($sql_users); $i++)
-            $users[] = users::userObjectFromSQL($sql_users[$i]);
+            if($ob = users::userObjectFromSQL($sql_users[$i])) $users[] = $ob;
 
         return new return_package(0, $users);
     }

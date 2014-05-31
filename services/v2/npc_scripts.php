@@ -82,7 +82,8 @@ class npc_scripts extends dbconnection
         $sql_npcScripts = dbconnection::queryArray("SELECT * FROM npc_scripts WHERE game_id = '{$pack->game_id}'");
         $npcScripts = array();
         for($i = 0; $i < count($sql_npcScripts); $i++)
-            $npcScripts[] = npc_scripts::npcScriptObjectFromSQL($sql_npcScripts[$i]);
+            if($ob = npc_scripts::npcScriptObjectFromSQL($sql_npcScripts[$i])) $npcScripts[] = $ob;
+
         return new return_package(0,$npcScripts);
     }
 
@@ -92,7 +93,8 @@ class npc_scripts extends dbconnection
         $sql_npcScripts = dbconnection::queryArray("SELECT * FROM npc_scripts WHERE npc_id = '{$pack->npc_id}'");
         $npcScripts = array();
         for($i = 0; $i < count($sql_npcScripts); $i++)
-            $npcScripts[] = npc_scripts::npcScriptObjectFromSQL($sql_npcScripts[$i]);
+            if($ob = npc_scripts::npcScriptObjectFromSQL($sql_npcScripts[$i])) $npcScripts[] = $ob;
+
         return new return_package(0,$npcScripts);
     }
 

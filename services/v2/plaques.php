@@ -82,7 +82,7 @@ class plaques extends dbconnection
         $sql_plaques = dbconnection::queryArray("SELECT * FROM plaques WHERE game_id = '{$pack->game_id}'");
         $plaques = array();
         for($i = 0; $i < count($sql_plaques); $i++)
-            $plaques[] = plaques::plaqueObjectFromSQL($sql_plaques[$i]);
+            if($ob = plaques::plaqueObjectFromSQL($sql_plaques[$i])) $plaques[] = $ob;
         
         return new return_package(0,$plaques);
     }

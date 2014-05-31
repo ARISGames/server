@@ -110,7 +110,7 @@ class triggers extends dbconnection
         $sql_triggers = dbconnection::queryArray("SELECT * FROM triggers WHERE game_id = '{$pack->game_id}'");
         $triggers = array();
         for($i = 0; $i < count($sql_triggers); $i++)
-            $triggers[] = triggers::triggerObjectFromSQL($sql_triggers[$i]);
+            if($ob = triggers::triggerObjectFromSQL($sql_triggers[$i])) $triggers[] = $ob;
 
         return new return_package(0,$triggers);
     }
@@ -121,7 +121,10 @@ class triggers extends dbconnection
         $sql_triggers = dbconnection::queryArray("SELECT * FROM triggers WHERE scene_id = '{$pack->scene_id}'");
         $triggers = array();
         for($i = 0; $i < count($sql_triggers); $i++)
-            $triggers[] = triggers::triggerObjectFromSQL($sql_triggers[$i]);
+            {
+            $ob = triggers::triggerObjectFromSQL($sql_triggers[$i]);
+            if($ob) $triggers[] = $ob;
+            }
 
         return new return_package(0,$triggers);
     }
@@ -132,7 +135,7 @@ class triggers extends dbconnection
         $sql_triggers = dbconnection::queryArray("SELECT * FROM triggers WHERE instance_id = '{$instanceId}'");
         $triggers = array();
         for($i = 0; $i < count($sql_triggers); $i++)
-            $triggers[] = triggers::triggerObjectFromSQL($sql_trigger);
+            if($ob = triggers::triggerObjectFromSQL($sql_trigger)) $triggers[] = $ob;
 
         return new return_package(0,$triggers);
     }

@@ -24,7 +24,7 @@ class client extends dbconnection
              $game = games::gameObjectFromSQL($gameObj);
              if($game->ready_for_public || $includeDev) $games[] = $game;
          }
-         var_dump($games);
+         //var_dump($games);
          return new return_package(0, $games);
       }
 
@@ -36,11 +36,11 @@ class client extends dbconnection
          else $query = "SELECT * FROM games WHERE (name LIKE '%".$textToFind."%' OR description LIKE '%".$textToFind."%') AND ready_for_public = TRUE ORDER BY name ASC LIMIT ".($page*25).",25";
          $sql_games = dbconnection::queryArray($query);
          $games = array();
+         if(!$sql_games) return new return_package(0, $games); //no games were found
          for($i = 0; $i < count($sql_games); $i++)
-         {
-             $games[] = games::gameObjectFromSQL($sql_games[$i]);
-         }
-         var_dump($games);
+             if($ob = games::gameObjectFromSQL($sql_games[$i])) $games[] = $ob;
+
+         //var_dump($games);
          return new return_package(0, $games);
       } 
 
@@ -56,27 +56,45 @@ class client extends dbconnection
 
          $sql_games = dbconnection::queryArray($query);
          $games = array();
+         if(!$sql_games) return new return_package(0, $games); //no games were found
          for($i = 0; $i < count($sql_games); $i++)
-         {
-             $games[] = games::gameObjectFromSQL($sql_games[$i]);
-         }
+             if($ob = games::gameObjectFromSQL($sql_games[$i])) $games[] = $ob;
+
+         //var_dump($games);
+         return new return_package(0, $games);
+      }
+
+      public static function getNearbyGamesForPlayer($user_id, $latitude, $longitude, $includeDev = 1)
+      {
+         if($includeDev) $query = "SELECT * FROM games WHERE games.latitude BETWEEN {$latitude}-.5 AND {$latitude}+.5 AND games.longitude BETWEEN {$longitude}-.5 AND {$longitude}+.5 GROUP BY games.game_id LIMIT 50";
+         else $query = "SELECT * FROM games WHERE games.latitude BETWEEN {$latitude}-.5 AND {$latitude}+.5 AND games.longitude BETWEEN {$longitude}-.5 AND {$longitude}+.5 AND games.ready_for_public = TRUE GROUP BY games.games_id LIMIT 50";
+        
+         $sql_games = dbconnection::queryArray($query);
+         $games = array();
+         if(!$sql_games) return new return_package(0, $games); //no games were found
+         for($i = 0; $i < count($sql_games); $i++)
+             if($ob = games::gameObjectFromSQL($sql_games[$i])) $games[] = $ob;
+
          var_dump($games);
          return new return_package(0, $games);
       }
 
-      public static function getNearbyGamesForPlayer($user_id, $latitude, $longitude, $maxDistance=99999999, $includeDev = 1)
+      /*
+      public static function getAnywhereGamesForPlayer($user_id, $includeDev = 1)
       {
-         if($includeDev) $query = "SELECT * FROM games WHERE games.latitude BETWEEN {$latitude}-.5 AND {$latitude}+.5 AND games.longitude BETWEEN {$longitude}-.5 AND {$longitude}+.5 GROUP BY games.game_id LIMIT 50";
-         else $query = "SELECT * FROM games WHERE games.latitude BETWEEN {$latitude}-.5 AND {$latitude}+.5 AND games.longitude BETWEEN {$longitude}-.5 AND {$longitude}+.5 GROUP BY games.games_id LIMIT 50";
-        
+         if($includeDev) $query = "SELECT * FROM games WHERE games.full_quick_travel = 1";
+         else $query = "SELECT * FROM games WHERE games.full_quick_travel = 1 AND games.ready_for_public = TRUE";
+
          $sql_games = dbconnection::queryArray($query);
          $games = array();
+         if(!$sql_games) return new return_package(0, $games); //no games were found
          for($i = 0; $i < count($sql_games); $i++)
-         {
-             $games[] = games::gameObjectFromSQL($sql_games[$i]);
-         }
+             if($ob = games::gameObjectFromSQL($sql_games[$i])) $games[] = $ob;
+
+         //var_dump($games);
          return new return_package(0, $games);
       }
+      */
 
 }
       
