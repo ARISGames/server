@@ -399,6 +399,43 @@ var CRUD_DEFAULTS = [
         '
 },
 {
+    "service":"web_pages",
+    "create":"web_pages.createWebPage",
+    "get":"web_pages.getWebPage",
+    "update":"web_pages.updateWebPage",
+    "delete":"web_pages.deleteWebPage",
+    "createData":
+        '\
+        {\n\
+          "game_id":123,\n\
+          "name":"webPageName",\n\
+          "url":"http://www.google.com",\n\
+          "icon_media_id":123\n\
+        }\n\
+        ',
+    "getData":
+        '\
+        {\n\
+          "web_page_id":123\n\
+        }\n\
+        ',
+    "updateData":
+        '\
+        {\n\
+          "web_page_id":123,\n\
+          "name":"webPageName",\n\
+          "url":"http://www.google.com",\n\
+          "icon_media_id":123\n\
+        }\n\
+        ',
+    "deleteData":
+        '\
+        {\n\
+          "web_page_id":123\n\
+        }\n\
+        '
+},
+{
     "service":"dialogs",
     "create":"dialogs.createDialog",
     "get":"dialogs.getDialog",
