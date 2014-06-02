@@ -5,6 +5,8 @@ require_once("editors.php");
 require_once("games.php");
 require_once("instances.php");
 require_once("triggers.php");
+require_once("quests.php");
+require_once("requirements.php");
 require_once("return_package.php");
 
 class client extends dbconnection
@@ -111,14 +113,14 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        $gameTriggers = triggers::getTriggersForGamePack($pack);
+        $gameTriggers = triggers::getTriggersForGamePack($pack)->data;
         $playerTriggers = array();
         for($i = 0; $i < count($gameTriggers); $i++)
         {
-            if(evaluateRequirementPackagePack($gameTriggers[$i]))
+            if(requirements::evaluateRequirementPackagePack($gameTriggers[$i]))
                 $playerTriggers[] = $gameTriggers[$i];
         }
-        return new returnData(0,$playerTriggers);
+        return new return_package(0, $playerTriggers);
     }
 
     public static function getQuestsForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getQuestsForPlayerPack($glob); }
@@ -127,24 +129,24 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        $gameQuests = quests::getQuestsForGamePack($pack);
+        $gameQuests = quests::getQuestsForGamePack($pack)->data;
         $playerQuests = new stdClass();
         $playerQuests->active   = array();
         $playerQuests->complete = array();
         for($i = 0; $i < count($gameQuests); $i++)
         {
             $gameQuests[$i]->requirement_root_package_id = $gameQuests[$i]->active_requirement_package_id;
-            if(!evaluateRequirementPackagePack($gameQuests[$i])) continue; //ensure quest is active/visible
+            if(!requirements::evaluateRequirementPackagePack($gameQuests[$i])) continue; //ensure quest is active/visible
 
             $gameQuests[$i]->requirement_root_package_id = $gameQuests[$i]->complete_requirement_package_id;
-            if(evaluateRequirementPackagePack($gameQuests[$i]))
+            if(requirements::evaluateRequirementPackagePack($gameQuests[$i]))
                 $playerQuests->complete[] = $gameQuests[$i];
             else
                 $playerQuests->active[] = $gameQuests[$i];
 
             unset($gameQuests[$i]->requirement_root_package_id); //get rid of redundant attrib
         }
-        return new returnData(0,$playerQuests);
+        return new return_package(0, $playerQuests);
     }
 }
 
