@@ -448,9 +448,7 @@ var CRUD_DEFAULTS = [
           "name":"dialogName",\n\
           "description":"dialogDescription",\n\
           "icon_media_id":123,\n\
-          "media_id":123,\n\
-          "opening_script_id":123,\n\
-          "closing_script_id":123\n\
+          "root_script_id":123\n\
         }\n\
         ',
     "getData":
@@ -466,9 +464,7 @@ var CRUD_DEFAULTS = [
           "name":"dialogName",\n\
           "description":"dialogDescription",\n\
           "icon_media_id":123,\n\
-          "media_id":123,\n\
-          "opening_script_id":123,\n\
-          "closing_script_id":123\n\
+          "root_script_id":123\n\
         }\n\
         ',
     "deleteData":
@@ -479,17 +475,56 @@ var CRUD_DEFAULTS = [
         '
 },
 {
+    "service":"dialog_characters",
+    "create":"dialogs.createDialogCharacter",
+    "get":"dialogs.getDialogCharacter",
+    "update":"dialogs.updateDialogCharacter",
+    "delete":"dialogs.deleteDialogCharacter",
+    "createData":
+        '\
+        {\n\
+          "game_id":123,\n\
+          "name":"dialogCharacterName",\n\
+          "title":"dialog character title",\n\
+          "media_id":123\n\
+        }\n\
+        ',
+    "getData":
+        '\
+        {\n\
+          "dialog_character_id":123\n\
+        }\n\
+        ',
+    "updateData":
+        '\
+        {\n\
+          "dialog_character_id":123,\n\
+          "name":"dialogCharacterName",\n\
+          "title":"dialog character title",\n\
+          "media_id":123\n\
+        }\n\
+        ',
+    "deleteData":
+        '\
+        {\n\
+          "dialog_character_id":123\n\
+        }\n\
+        '
+},
+{
     "service":"dialog_scripts",
-    "create":"dialog_scripts.createDialogScript",
-    "get":"dialog_scripts.getDialogScript",
-    "update":"dialog_scripts.updateDialogScript",
-    "delete":"dialog_scripts.deleteDialogScript",
+    "create":"dialogs.createDialogScript",
+    "get":"dialogs.getDialogScript",
+    "update":"dialogs.updateDialogScript",
+    "delete":"dialogs.deleteDialogScript",
     "createData":
         '\
         {\n\
           "game_id":123,\n\
           "dialog_id":123,\n\
-          "title":"dialogScriptTitle",\n\
+          "parent_dialog_script_id":123,\n\
+          "dialog_character_id":123,\n\
+          "requirement_root_package_id":123,\n\
           "text":"dialogScriptText",\n\
           "sort_index":0\n\
         }\n\
@@ -504,8 +539,9 @@ var CRUD_DEFAULTS = [
         '\
         {\n\
           "dialog_script_id":123,\n\
-          "dialog_id":123,\n\
-          "title":"dialogScriptTitle",\n\
+          "parent_dialog_script_id":123,\n\
+          "dialog_character_id":123,\n\
+          "requirement_root_package_id":123,\n\
           "text":"dialogScriptText",\n\
           "sort_index":0\n\
         }\n\
