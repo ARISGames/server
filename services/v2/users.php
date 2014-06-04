@@ -39,8 +39,8 @@ class users extends dbconnection
             "write_key,".
             "read_write_key,".
             "display_name,".
-            ($pack->email    ? "email,"    : "").
-            ($pack->media_id ? "media_id," : "").
+            (isset($pack->email)    ? "email,"    : "").
+            (isset($pack->media_id) ? "media_id," : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->user_name)."',".
@@ -49,9 +49,9 @@ class users extends dbconnection
             "'".addslashes($read)."',".
             "'".addslashes($write)."',".
             "'".addslashes($read_write)."',".
-            ($pack->display_name ? "'".addslashes($pack->display_name)."'," : "'".addslashes($pack->user_name)."',").
-            ($pack->email        ? "'".addslashes($pack->email)."',"        : "").
-            ($pack->media_id     ? "'".addslashes($pack->media_id)."',"     : "").
+            (isset($pack->display_name) ? "'".addslashes($pack->display_name)."'," : "'".addslashes($pack->user_name)."',").
+            (isset($pack->email)        ? "'".addslashes($pack->email)."',"        : "").
+            (isset($pack->media_id)     ? "'".addslashes($pack->media_id)."',"     : "").
             "CURRENT_TIMESTAMP".
             ")"
         );

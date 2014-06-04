@@ -16,40 +16,40 @@ class quests extends dbconnection
 
         $pack->quest_id = dbconnection::queryInsert(
             "INSERT INTO quests (".
-            ($pack->game_id                                   ? "game_id,"                              : "").
-            ($pack->name                                      ? "name,"                                 : "").
-            ($pack->description                               ? "description,"                          : "").
-            ($pack->active_icon_media_id                      ? "active_icon_media_id,"                 : "").
-            ($pack->active_media_id                           ? "active_media_id,"                      : "").
-            ($pack->active_description                        ? "active_description,"                   : "").
-            ($pack->active_notification_type                  ? "active_notification_type,"             : "").
-            ($pack->active_function                           ? "active_function,"                      : "").
-            ($pack->active_requirement_package_id             ? "active_requirement_package_id,"        : "").
-            ($pack->complete_icon_media_id                    ? "complete_icon_media_id,"               : "").
-            ($pack->complete_media_id                         ? "complete_media_id,"                    : "").
-            ($pack->complete_description                      ? "complete_description,"                 : "").
-            ($pack->complete_notification_type                ? "complete_notification_type,"           : "").
-            ($pack->complete_function                         ? "complete_function,"                    : "").
-            ($pack->complete_requirement_package_id           ? "complete_requirement_package_id,"      : "").
-            ($pack->sort_index                                ? "sort_index,"                           : "").
+            (isset($pack->game_id)                                   ? "game_id,"                              : "").
+            (isset($pack->name)                                      ? "name,"                                 : "").
+            (isset($pack->description)                               ? "description,"                          : "").
+            (isset($pack->active_icon_media_id)                      ? "active_icon_media_id,"                 : "").
+            (isset($pack->active_media_id)                           ? "active_media_id,"                      : "").
+            (isset($pack->active_description)                        ? "active_description,"                   : "").
+            (isset($pack->active_notification_type)                  ? "active_notification_type,"             : "").
+            (isset($pack->active_function)                           ? "active_function,"                      : "").
+            (isset($pack->active_requirement_package_id)             ? "active_requirement_package_id,"        : "").
+            (isset($pack->complete_icon_media_id)                    ? "complete_icon_media_id,"               : "").
+            (isset($pack->complete_media_id)                         ? "complete_media_id,"                    : "").
+            (isset($pack->complete_description)                      ? "complete_description,"                 : "").
+            (isset($pack->complete_notification_type)                ? "complete_notification_type,"           : "").
+            (isset($pack->complete_function)                         ? "complete_function,"                    : "").
+            (isset($pack->complete_requirement_package_id)           ? "complete_requirement_package_id,"      : "").
+            (isset($pack->sort_index)                                ? "sort_index,"                           : "").
             "created".
             ") VALUES (".
-            ($pack->game_id                                   ? "'".addslashes($pack->game_id)."',"                         : "").
-            ($pack->name                                      ? "'".addslashes($pack->name)."',"                            : "").
-            ($pack->description                               ? "'".addslashes($pack->description)."',"                     : "").
-            ($pack->active_icon_media_id                      ? "'".addslashes($pack->active_icon_media_id)."',"            : "").
-            ($pack->active_media_id                           ? "'".addslashes($pack->active_media_id)."',"                 : "").
-            ($pack->active_description                        ? "'".addslashes($pack->active_description)."',"              : "").
-            ($pack->active_notification_type                  ? "'".addslashes($pack->active_notification_type)."',"        : "").
-            ($pack->active_function                           ? "'".addslashes($pack->active_function)."',"                 : "").
-            ($pack->active_requirement_package_id             ? "'".addslashes($pack->active_requirement_package_id)."',"   : "").
-            ($pack->complete_icon_media_id                    ? "'".addslashes($pack->complete_icon_media_id)."',"          : "").
-            ($pack->complete_media_id                         ? "'".addslashes($pack->complete_media_id)."',"               : "").
-            ($pack->complete_description                      ? "'".addslashes($pack->complete_description)."',"            : "").
-            ($pack->complete_notification_type                ? "'".addslashes($pack->complete_notification_type)."',"      : "").
-            ($pack->complete_function                         ? "'".addslashes($pack->complete_function)."',"               : "").
-            ($pack->complete_requirement_package_id           ? "'".addslashes($pack->complete_requirement_package_id)."'," : "").
-            ($pack->sort_index                                ? "'".addslashes($pack->sort_index)."',"                      : "").
+            (isset($pack->game_id)                                   ? "'".addslashes($pack->game_id)."',"                         : "").
+            (isset($pack->name)                                      ? "'".addslashes($pack->name)."',"                            : "").
+            (isset($pack->description)                               ? "'".addslashes($pack->description)."',"                     : "").
+            (isset($pack->active_icon_media_id)                      ? "'".addslashes($pack->active_icon_media_id)."',"            : "").
+            (isset($pack->active_media_id)                           ? "'".addslashes($pack->active_media_id)."',"                 : "").
+            (isset($pack->active_description)                        ? "'".addslashes($pack->active_description)."',"              : "").
+            (isset($pack->active_notification_type)                  ? "'".addslashes($pack->active_notification_type)."',"        : "").
+            (isset($pack->active_function)                           ? "'".addslashes($pack->active_function)."',"                 : "").
+            (isset($pack->active_requirement_package_id)             ? "'".addslashes($pack->active_requirement_package_id)."',"   : "").
+            (isset($pack->complete_icon_media_id)                    ? "'".addslashes($pack->complete_icon_media_id)."',"          : "").
+            (isset($pack->complete_media_id)                         ? "'".addslashes($pack->complete_media_id)."',"               : "").
+            (isset($pack->complete_description)                      ? "'".addslashes($pack->complete_description)."',"            : "").
+            (isset($pack->complete_notification_type)                ? "'".addslashes($pack->complete_notification_type)."',"      : "").
+            (isset($pack->complete_function)                         ? "'".addslashes($pack->complete_function)."',"               : "").
+            (isset($pack->complete_requirement_package_id)           ? "'".addslashes($pack->complete_requirement_package_id)."'," : "").
+            (isset($pack->sort_index)                                ? "'".addslashes($pack->sort_index)."',"                      : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -66,22 +66,22 @@ class quests extends dbconnection
 
         dbconnection::query(
             "UPDATE quests SET ".
-            ($pack->game_id                         ? "game_id                         = '".addslashes($pack->game_id)."', "                          : "").
-            ($pack->name                            ? "name                            = '".addslashes($pack->name)."', "                             : "").
-            ($pack->description                     ? "description                     = '".addslashes($pack->description)."', "                      : "").
-            ($pack->active_icon_media_id            ? "active_icon_media_id            = '".addslashes($pack->active_icon_media_id)."', "             : "").
-            ($pack->active_media_id                 ? "active_media_id                 = '".addslashes($pack->active_media_id)."', "                  : "").
-            ($pack->active_description              ? "active_description              = '".addslashes($pack->active_description)."', "               : "").
-            ($pack->active_notification_type        ? "active_notification_type        = '".addslashes($pack->active_notification_type)."', "         : "").
-            ($pack->active_function                 ? "active_function                 = '".addslashes($pack->active_function)."', "                  : "").
-            ($pack->active_requirement_package_id   ? "active_requirement_package_id   = '".addslashes($pack->active_requirement_package_id)."', "    : "").
-            ($pack->complete_icon_media_id          ? "complete_icon_media_id          = '".addslashes($pack->complete_icon_media_id)."', "           : "").
-            ($pack->complete_media_id               ? "complete_media_id               = '".addslashes($pack->complete_media_id)."', "                : "").
-            ($pack->complete_description            ? "complete_description            = '".addslashes($pack->complete_description)."', "             : "").
-            ($pack->complete_notification_type      ? "complete_notification_type      = '".addslashes($pack->complete_notification_type)."', "       : "").
-            ($pack->complete_function               ? "complete_function               = '".addslashes($pack->complete_function)."', "                : "").
-            ($pack->complete_requirement_package_id ? "complete_requirement_package_id = '".addslashes($pack->complete_requirement_package_id)."', "  : "").
-            ($pack->sort_index                      ? "sort_index                      = '".addslashes($pack->sort_index)."', "                       : "").
+            (isset($pack->game_id)                         ? "game_id                         = '".addslashes($pack->game_id)."', "                          : "").
+            (isset($pack->name)                            ? "name                            = '".addslashes($pack->name)."', "                             : "").
+            (isset($pack->description)                     ? "description                     = '".addslashes($pack->description)."', "                      : "").
+            (isset($pack->active_icon_media_id)            ? "active_icon_media_id            = '".addslashes($pack->active_icon_media_id)."', "             : "").
+            (isset($pack->active_media_id)                 ? "active_media_id                 = '".addslashes($pack->active_media_id)."', "                  : "").
+            (isset($pack->active_description)              ? "active_description              = '".addslashes($pack->active_description)."', "               : "").
+            (isset($pack->active_notification_type)        ? "active_notification_type        = '".addslashes($pack->active_notification_type)."', "         : "").
+            (isset($pack->active_function)                 ? "active_function                 = '".addslashes($pack->active_function)."', "                  : "").
+            (isset($pack->active_requirement_package_id)   ? "active_requirement_package_id   = '".addslashes($pack->active_requirement_package_id)."', "    : "").
+            (isset($pack->complete_icon_media_id)          ? "complete_icon_media_id          = '".addslashes($pack->complete_icon_media_id)."', "           : "").
+            (isset($pack->complete_media_id)               ? "complete_media_id               = '".addslashes($pack->complete_media_id)."', "                : "").
+            (isset($pack->complete_description)            ? "complete_description            = '".addslashes($pack->complete_description)."', "             : "").
+            (isset($pack->complete_notification_type)      ? "complete_notification_type      = '".addslashes($pack->complete_notification_type)."', "       : "").
+            (isset($pack->complete_function)               ? "complete_function               = '".addslashes($pack->complete_function)."', "                : "").
+            (isset($pack->complete_requirement_package_id) ? "complete_requirement_package_id = '".addslashes($pack->complete_requirement_package_id)."', "  : "").
+            (isset($pack->sort_index)                      ? "sort_index                      = '".addslashes($pack->sort_index)."', "                       : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE quest_id = '{$pack->quest_id}'"
         );

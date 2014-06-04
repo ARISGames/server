@@ -1,5 +1,6 @@
 <?php
 require_once('../../config.class.php');
+require_once('util.php');
 Class dbconnection
 {
   private static $con;
@@ -11,9 +12,9 @@ Class dbconnection
     dbconnection::connect();
   }
 
-  protected static function query($query, $debug = false)
+  protected static function query($query, $debug = true)
   {
-    if($debug) echo $query;
+    if($debug) util::serverErrorLog($query);
     if(!(mysqli_query(dbconnection::$con, $query)))
     {
         return false;

@@ -71,16 +71,16 @@ class media extends dbconnection
             "INSERT INTO media (".
             "file_folder,".
             "file_name,".
-            ($pack->game_id       ? "game_id,"      : "").
-            ($pack->auth->user_id ? "user_id,"      : "").
-            ($pack->display_name  ? "display_name," : "").
+            (isset($pack->game_id)       ? "game_id,"      : "").
+            (isset($pack->auth->user_id) ? "user_id,"      : "").
+            (isset($pack->display_name)  ? "display_name," : "").
             "created".
             ") VALUES (".
             "'".$filefolder."',".
             "'".$newfilename."',".
-            ($pack->game_id       ? "'".addslashes($pack->game_id)."',"       : "").
-            ($pack->auth->user_id ? "'".addslashes($pack->auth->user_id)."'," : "").
-            ($pack->display_name  ? "'".addslashes($pack->display_name)."',"  : "").
+            (isset($pack->game_id)       ? "'".addslashes($pack->game_id)."',"       : "").
+            (isset($pack->auth->user_id) ? "'".addslashes($pack->auth->user_id)."'," : "").
+            (isset($pack->display_name)  ? "'".addslashes($pack->display_name)."',"  : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -98,7 +98,7 @@ class media extends dbconnection
         //boring, but this is the only immutable property of media
         dbconnection::query(
             "UPDATE media SET ".
-            ($pack->display_name ? "display_name = '".addslashes($pack->display_name)."', " : "").
+            (isset($pack->display_name) ? "display_name = '".addslashes($pack->display_name)."', " : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE media_id = '{$pack->media_id}'"
         );

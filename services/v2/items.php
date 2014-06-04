@@ -16,29 +16,29 @@ class items extends dbconnection
         $pack->item_id = dbconnection::queryInsert(
             "INSERT INTO items (".
             "game_id,".
-            ($pack->name                 ? "name,"                 : "").
-            ($pack->description          ? "description,"          : "").
-            ($pack->icon_media_id        ? "icon_media_id,"        : "").
-            ($pack->media_id             ? "media_id,"             : "").
-            ($pack->droppable            ? "droppable,"            : "").
-            ($pack->destroyable          ? "destroyable,"          : "").
-            ($pack->max_qty_in_inventory ? "max_qty_in_inventory," : "").
-            ($pack->weight               ? "weight,"               : "").
-            ($pack->url                  ? "url,"                  : "").
-            ($pack->type                 ? "type,"                 : "").
+            (isset($pack->name)                 ? "name,"                 : "").
+            (isset($pack->description)          ? "description,"          : "").
+            (isset($pack->icon_media_id)        ? "icon_media_id,"        : "").
+            (isset($pack->media_id)             ? "media_id,"             : "").
+            (isset($pack->droppable)            ? "droppable,"            : "").
+            (isset($pack->destroyable)          ? "destroyable,"          : "").
+            (isset($pack->max_qty_in_inventory) ? "max_qty_in_inventory," : "").
+            (isset($pack->weight)               ? "weight,"               : "").
+            (isset($pack->url)                  ? "url,"                  : "").
+            (isset($pack->type)                 ? "type,"                 : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
-            ($pack->name                 ? "'".addslashes($pack->name)."',"                 : "").
-            ($pack->description          ? "'".addslashes($pack->description)."',"          : "").
-            ($pack->icon_media_id        ? "'".addslashes($pack->icon_media_id)."',"        : "").
-            ($pack->media_id             ? "'".addslashes($pack->media_id)."',"             : "").
-            ($pack->droppable            ? "'".addslashes($pack->droppable)."',"            : "").
-            ($pack->destroyable          ? "'".addslashes($pack->destroyable)."',"          : "").
-            ($pack->max_qty_in_inventory ? "'".addslashes($pack->max_qty_in_inventory)."'," : "").
-            ($pack->weight               ? "'".addslashes($pack->weight)."',"               : "").
-            ($pack->url                  ? "'".addslashes($pack->url)."',"                  : "").
-            ($pack->type                 ? "'".addslashes($pack->type)."',"                 : "").
+            (isset($pack->name)                 ? "'".addslashes($pack->name)."',"                 : "").
+            (isset($pack->description)          ? "'".addslashes($pack->description)."',"          : "").
+            (isset($pack->icon_media_id)        ? "'".addslashes($pack->icon_media_id)."',"        : "").
+            (isset($pack->media_id)             ? "'".addslashes($pack->media_id)."',"             : "").
+            (isset($pack->droppable)            ? "'".addslashes($pack->droppable)."',"            : "").
+            (isset($pack->destroyable)          ? "'".addslashes($pack->destroyable)."',"          : "").
+            (isset($pack->max_qty_in_inventory) ? "'".addslashes($pack->max_qty_in_inventory)."'," : "").
+            (isset($pack->weight)               ? "'".addslashes($pack->weight)."',"               : "").
+            (isset($pack->url)                  ? "'".addslashes($pack->url)."',"                  : "").
+            (isset($pack->type)                 ? "'".addslashes($pack->type)."',"                 : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -56,16 +56,16 @@ class items extends dbconnection
 
         dbconnection::query(
             "UPDATE items SET ".
-            ($pack->name                 ? "name                 = '".addslashes($pack->name)."', "                 : "").
-            ($pack->description          ? "description          = '".addslashes($pack->description)."', "          : "").
-            ($pack->icon_media_id        ? "icon_media_id        = '".addslashes($pack->icon_media_id)."', "        : "").
-            ($pack->media_id             ? "media_id             = '".addslashes($pack->media_id)."', "             : "").
-            ($pack->droppable            ? "droppable            = '".addslashes($pack->droppable)."', "            : "").
-            ($pack->destroyable          ? "destroyable          = '".addslashes($pack->destroyable)."', "          : "").
-            ($pack->max_qty_in_inventory ? "max_qty_in_inventory = '".addslashes($pack->max_qty_in_inventory)."', " : "").
-            ($pack->weight               ? "weight               = '".addslashes($pack->weight)."', "               : "").
-            ($pack->url                  ? "url                  = '".addslashes($pack->url)."', "                  : "").
-            ($pack->type                 ? "type                 = '".addslashes($pack->type)."', "                 : "").
+            (isset($pack->name)                 ? "name                 = '".addslashes($pack->name)."', "                 : "").
+            (isset($pack->description)          ? "description          = '".addslashes($pack->description)."', "          : "").
+            (isset($pack->icon_media_id)        ? "icon_media_id        = '".addslashes($pack->icon_media_id)."', "        : "").
+            (isset($pack->media_id)             ? "media_id             = '".addslashes($pack->media_id)."', "             : "").
+            (isset($pack->droppable)            ? "droppable            = '".addslashes($pack->droppable)."', "            : "").
+            (isset($pack->destroyable)          ? "destroyable          = '".addslashes($pack->destroyable)."', "          : "").
+            (isset($pack->max_qty_in_inventory) ? "max_qty_in_inventory = '".addslashes($pack->max_qty_in_inventory)."', " : "").
+            (isset($pack->weight)               ? "weight               = '".addslashes($pack->weight)."', "               : "").
+            (isset($pack->url)                  ? "url                  = '".addslashes($pack->url)."', "                  : "").
+            (isset($pack->type)                 ? "type                 = '".addslashes($pack->type)."', "                 : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE item_id = '{$pack->item_id}'"
         );

@@ -16,17 +16,17 @@ class state_changes extends dbconnection
         $pack->state_change_id = dbconnection::queryInsert(
             "INSERT INTO state_changes (".
             "game_id,".
-            ($pack->action      ? "action,"      : "").
-            ($pack->amount      ? "amount,"      : "").
-            ($pack->object_type ? "object_type," : "").
-            ($pack->object_id   ? "object_id,"   : "").
+            (isset($pack->action)      ? "action,"      : "").
+            (isset($pack->amount)      ? "amount,"      : "").
+            (isset($pack->object_type) ? "object_type," : "").
+            (isset($pack->object_id)   ? "object_id,"   : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
-            ($pack->action      ? "'".addslashes($pack->action)."',"      : "").
-            ($pack->amount      ? "'".addslashes($pack->amount)."',"      : "").
-            ($pack->object_type ? "'".addslashes($pack->object_type)."'," : "").
-            ($pack->object_id   ? "'".addslashes($pack->object_id)."',"   : "").
+            (isset($pack->action)      ? "'".addslashes($pack->action)."',"      : "").
+            (isset($pack->amount)      ? "'".addslashes($pack->amount)."',"      : "").
+            (isset($pack->object_type) ? "'".addslashes($pack->object_type)."'," : "").
+            (isset($pack->object_id)   ? "'".addslashes($pack->object_id)."',"   : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -44,10 +44,10 @@ class state_changes extends dbconnection
 
         dbconnection::query(
             "UPDATE state_changes SET ".
-            ($pack->action      ? "action      = '".addslashes($pack->action)."', "      : "").
-            ($pack->amount      ? "amount      = '".addslashes($pack->amount)."', "      : "").
-            ($pack->object_type ? "object_type = '".addslashes($pack->object_type)."', " : "").
-            ($pack->object_id   ? "object_id   = '".addslashes($pack->object_id)."', "   : "").
+            (isset($pack->action)      ? "action      = '".addslashes($pack->action)."', "      : "").
+            (isset($pack->amount)      ? "amount      = '".addslashes($pack->amount)."', "      : "").
+            (isset($pack->object_type) ? "object_type = '".addslashes($pack->object_type)."', " : "").
+            (isset($pack->object_id)   ? "object_id   = '".addslashes($pack->object_id)."', "   : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE state_change_id = '{$pack->state_change_id}'"
         );

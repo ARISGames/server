@@ -16,31 +16,31 @@ class triggers extends dbconnection
         $pack->trigger_id = dbconnection::queryInsert(
             "INSERT INTO triggers (".
             "game_id,".
-            ($pack->title                       ? "title,"                        : "").
-            ($pack->instance_id                 ? "instance_id,"                 : "").
-            ($pack->scene_id                    ? "scene_id,"                    : "").
-            ($pack->requirement_root_package_id ? "requirement_root_package_id," : "").
-            ($pack->type                        ? "type,"                        : "").
-            ($pack->latitude                    ? "latitude,"                    : "").
-            ($pack->longitude                   ? "longitude,"                   : "").
-            ($pack->distance                    ? "distance,"                    : "").
-            ($pack->wiggle                      ? "wiggle,"                      : "").
-            ($pack->show_title                  ? "show_title,"                  : "").
-            ($pack->qr_code                     ? "qr_code,"                     : "").
+            (isset($pack->title)                       ? "title,"                        : "").
+            (isset($pack->instance_id)                 ? "instance_id,"                 : "").
+            (isset($pack->scene_id)                    ? "scene_id,"                    : "").
+            (isset($pack->requirement_root_package_id) ? "requirement_root_package_id," : "").
+            (isset($pack->type)                        ? "type,"                        : "").
+            (isset($pack->latitude)                    ? "latitude,"                    : "").
+            (isset($pack->longitude)                   ? "longitude,"                   : "").
+            (isset($pack->distance)                    ? "distance,"                    : "").
+            (isset($pack->wiggle)                      ? "wiggle,"                      : "").
+            (isset($pack->show_title)                  ? "show_title,"                  : "").
+            (isset($pack->qr_code)                     ? "qr_code,"                     : "").
             "created".
             ") VALUES (".
             "'".$pack->game_id."',".
-            ($pack->title                       ? "'".addslashes($pack->title)."',"                       : "").
-            ($pack->instance_id                 ? "'".addslashes($pack->instance_id)."',"                 : "").
-            ($pack->scene_id                    ? "'".addslashes($pack->scene_id)."',"                    : "").
-            ($pack->requirement_root_package_id ? "'".addslashes($pack->requirement_root_package_id)."'," : "").
-            ($pack->type                        ? "'".addslashes($pack->type)."',"                        : "").
-            ($pack->latitude                    ? "'".addslashes($pack->latitude)."',"                    : "").
-            ($pack->longitude                   ? "'".addslashes($pack->longitude)."',"                   : "").
-            ($pack->distance                    ? "'".addslashes($pack->distance)."',"                    : "").
-            ($pack->wiggle                      ? "'".addslashes($pack->wiggle)."',"                      : "").
-            ($pack->show_title                  ? "'".addslashes($pack->show_title)."',"                  : "").
-            ($pack->qr_code                     ? "'".addslashes($pack->qr_code)."',"                     : "").
+            (isset($pack->title)                       ? "'".addslashes($pack->title)."',"                       : "").
+            (isset($pack->instance_id)                 ? "'".addslashes($pack->instance_id)."',"                 : "").
+            (isset($pack->scene_id)                    ? "'".addslashes($pack->scene_id)."',"                    : "").
+            (isset($pack->requirement_root_package_id) ? "'".addslashes($pack->requirement_root_package_id)."'," : "").
+            (isset($pack->type)                        ? "'".addslashes($pack->type)."',"                        : "").
+            (isset($pack->latitude)                    ? "'".addslashes($pack->latitude)."',"                    : "").
+            (isset($pack->longitude)                   ? "'".addslashes($pack->longitude)."',"                   : "").
+            (isset($pack->distance)                    ? "'".addslashes($pack->distance)."',"                    : "").
+            (isset($pack->wiggle)                      ? "'".addslashes($pack->wiggle)."',"                      : "").
+            (isset($pack->show_title)                  ? "'".addslashes($pack->show_title)."',"                  : "").
+            (isset($pack->qr_code)                     ? "'".addslashes($pack->qr_code)."',"                     : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -58,17 +58,17 @@ class triggers extends dbconnection
 
         dbconnection::query(
             "UPDATE triggers SET ".
-            ($pack->title                       ? "title                       = '".addslashes($pack->title)."', "                       : "").
-            ($pack->instance_id                 ? "instance_id                 = '".addslashes($pack->instance_id)."', "                 : "").
-            ($pack->scene_id                    ? "scene_id                    = '".addslashes($pack->scene_id)."', "                    : "").
-            ($pack->requirement_root_package_id ? "requirement_root_package_id = '".addslashes($pack->requirement_root_package_id)."', " : "").
-            ($pack->type                        ? "type                        = '".addslashes($pack->type)."', "                        : "").
-            ($pack->latitude                    ? "latitude                    = '".addslashes($pack->latitude)."', "                    : "").
-            ($pack->longitude                   ? "longitude                   = '".addslashes($pack->longitude)."', "                   : "").
-            ($pack->distance                    ? "distance                    = '".addslashes($pack->distance)."', "                    : "").
-            ($pack->wiggle                      ? "wiggle                      = '".addslashes($pack->wiggle)."', "                      : "").
-            ($pack->show_title                  ? "show_title                  = '".addslashes($pack->show_title)."', "                  : "").
-            ($pack->qr_code                     ? "qr_code                     = '".addslashes($pack->qr_code)."', "                     : "").
+            (isset($pack->title)                       ? "title                       = '".addslashes($pack->title)."', "                       : "").
+            (isset($pack->instance_id)                 ? "instance_id                 = '".addslashes($pack->instance_id)."', "                 : "").
+            (isset($pack->scene_id)                    ? "scene_id                    = '".addslashes($pack->scene_id)."', "                    : "").
+            (isset($pack->requirement_root_package_id) ? "requirement_root_package_id = '".addslashes($pack->requirement_root_package_id)."', " : "").
+            (isset($pack->type)                        ? "type                        = '".addslashes($pack->type)."', "                        : "").
+            (isset($pack->latitude)                    ? "latitude                    = '".addslashes($pack->latitude)."', "                    : "").
+            (isset($pack->longitude)                   ? "longitude                   = '".addslashes($pack->longitude)."', "                   : "").
+            (isset($pack->distance)                    ? "distance                    = '".addslashes($pack->distance)."', "                    : "").
+            (isset($pack->wiggle)                      ? "wiggle                      = '".addslashes($pack->wiggle)."', "                      : "").
+            (isset($pack->show_title)                  ? "show_title                  = '".addslashes($pack->show_title)."', "                  : "").
+            (isset($pack->qr_code)                     ? "qr_code                     = '".addslashes($pack->qr_code)."', "                     : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE trigger_id = '{$pack->trigger_id}'"
         );

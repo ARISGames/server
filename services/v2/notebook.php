@@ -16,16 +16,16 @@ class notebook extends dbconnection
             "INSERT INTO notes (".
             "game_id,".
             "user_id,".
-            ($pack->name        ? "name,"        : "").
-            ($pack->description ? "description," : "").
-            ($pack->label_id    ? "label_id,"    : "").
+            (isset($pack->name)        ? "name,"        : "").
+            (isset($pack->description) ? "description," : "").
+            (isset($pack->label_id)    ? "label_id,"    : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
             "'".addslashes($pack->user_id)."',".
-            ($pack->name        ? "'".addslashes($pack->name)."',"        : "").
-            ($pack->description ? "'".addslashes($pack->description)."'," : "").
-            ($pack->label_id    ? "'".addslashes($pack->label_id)."',"    : "").
+            (isset($pack->name)        ? "'".addslashes($pack->name)."',"        : "").
+            (isset($pack->description) ? "'".addslashes($pack->description)."'," : "").
+            (isset($pack->label_id)    ? "'".addslashes($pack->label_id)."',"    : "").
             "CURRENT_TIMESTAMP".
             ")"
         );

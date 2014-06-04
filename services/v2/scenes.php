@@ -16,11 +16,11 @@ class scenes extends dbconnection
         $pack->scene_id = dbconnection::queryInsert(
             "INSERT INTO scenes (".
             "game_id,".
-            ($pack->name ? "name," : "").
+            (isset($pack->name) ? "name," : "").
             "created".
             ") VALUES (".
             "'".$pack->game_id."',".
-            ($pack->name ? "'".addslashes($pack->name)."'," : "").
+            (isset($pack->name) ? "'".addslashes($pack->name)."'," : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -38,7 +38,7 @@ class scenes extends dbconnection
 
         dbconnection::query(
             "UPDATE scenes SET ".
-            ($pack->name ? "name = '".addslashes($pack->name)."', " : "").
+            (isset($pack->name) ? "name = '".addslashes($pack->name)."', " : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE scene_id = '{$pack->scene_id}'"
         );

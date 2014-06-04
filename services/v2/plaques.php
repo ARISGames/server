@@ -16,17 +16,17 @@ class plaques extends dbconnection
         $pack->plaque_id = dbconnection::queryInsert(
             "INSERT INTO plaques (".
             "game_id,".
-            ($pack->name          ? "name,"          : "").
-            ($pack->description   ? "description,"   : "").
-            ($pack->icon_media_id ? "icon_media_id," : "").
-            ($pack->media_id      ? "media_id,"      : "").
+            (isset($pack->name)          ? "name,"          : "").
+            (isset($pack->description)   ? "description,"   : "").
+            (isset($pack->icon_media_id) ? "icon_media_id," : "").
+            (isset($pack->media_id)      ? "media_id,"      : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
-            ($pack->name          ? "'".addslashes($pack->name)."',"          : "").
-            ($pack->description   ? "'".addslashes($pack->description)."',"   : "").
-            ($pack->icon_media_id ? "'".addslashes($pack->icon_media_id)."'," : "").
-            ($pack->media_id      ? "'".addslashes($pack->media_id)."',"      : "").
+            (isset($pack->name)          ? "'".addslashes($pack->name)."',"          : "").
+            (isset($pack->description)   ? "'".addslashes($pack->description)."',"   : "").
+            (isset($pack->icon_media_id) ? "'".addslashes($pack->icon_media_id)."'," : "").
+            (isset($pack->media_id)      ? "'".addslashes($pack->media_id)."',"      : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -44,10 +44,10 @@ class plaques extends dbconnection
 
         dbconnection::query(
             "UPDATE plaques SET ".
-            ($pack->name                 ? "name                 = '".addslashes($pack->name)."', "                 : "").
-            ($pack->description          ? "description          = '".addslashes($pack->description)."', "          : "").
-            ($pack->icon_media_id        ? "icon_media_id        = '".addslashes($pack->icon_media_id)."', "        : "").
-            ($pack->media_id             ? "media_id             = '".addslashes($pack->media_id)."', "             : "").
+            (isset($pack->name)                 ? "name                 = '".addslashes($pack->name)."', "                 : "").
+            (isset($pack->description)          ? "description          = '".addslashes($pack->description)."', "          : "").
+            (isset($pack->icon_media_id)        ? "icon_media_id        = '".addslashes($pack->icon_media_id)."', "        : "").
+            (isset($pack->media_id)             ? "media_id             = '".addslashes($pack->media_id)."', "             : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE plaque_id = '{$pack->plaque_id}'"
         );

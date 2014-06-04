@@ -16,15 +16,15 @@ class web_pages extends dbconnection
         $pack->web_page_id = dbconnection::queryInsert(
             "INSERT INTO web_pages (".
             "game_id,".
-            ($pack->name          ? "name,"          : "").
-            ($pack->url           ? "url,"           : "").
-            ($pack->icon_media_id ? "icon_media_id," : "").
+            (isset($pack->name)          ? "name,"          : "").
+            (isset($pack->url)           ? "url,"           : "").
+            (isset($pack->icon_media_id) ? "icon_media_id," : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
-            ($pack->name          ? "'".addslashes($pack->name)."',"          : "").
-            ($pack->url           ? "'".addslashes($pack->url)."',"           : "").
-            ($pack->icon_media_id ? "'".addslashes($pack->icon_media_id)."'," : "").
+            (isset($pack->name)          ? "'".addslashes($pack->name)."',"          : "").
+            (isset($pack->url)           ? "'".addslashes($pack->url)."',"           : "").
+            (isset($pack->icon_media_id) ? "'".addslashes($pack->icon_media_id)."'," : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -42,9 +42,9 @@ class web_pages extends dbconnection
 
         dbconnection::query(
             "UPDATE web_pages SET ".
-            ($pack->name                 ? "name                 = '".addslashes($pack->name)."', "          : "").
-            ($pack->url                  ? "url                  = '".addslashes($pack->url)."', "           : "").
-            ($pack->icon_media_id        ? "icon_media_id        = '".addslashes($pack->icon_media_id)."', " : "").
+            (isset($pack->name)                 ? "name                 = '".addslashes($pack->name)."', "          : "").
+            (isset($pack->url)                  ? "url                  = '".addslashes($pack->url)."', "           : "").
+            (isset($pack->icon_media_id)        ? "icon_media_id        = '".addslashes($pack->icon_media_id)."', " : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE web_page_id = '{$pack->web_page_id}'"
         );

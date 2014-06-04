@@ -16,17 +16,17 @@ class dialogs extends dbconnection
         $pack->dialog_id = dbconnection::queryInsert(
             "INSERT INTO dialogs (".
             "game_id,".
-            ($pack->name           ? "name,"           : "").
-            ($pack->description    ? "description,"    : "").
-            ($pack->icon_media_id  ? "icon_media_id,"  : "").
-            ($pack->root_script_id ? "root_script_id," : "").
+            (isset($pack->name)           ? "name,"           : "").
+            (isset($pack->description)    ? "description,"    : "").
+            (isset($pack->icon_media_id)  ? "icon_media_id,"  : "").
+            (isset($pack->root_script_id) ? "root_script_id," : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
-            ($pack->name           ? "'".addslashes($pack->name)."',"           : "").
-            ($pack->description    ? "'".addslashes($pack->description)."',"    : "").
-            ($pack->icon_media_id  ? "'".addslashes($pack->icon_media_id)."',"  : "").
-            ($pack->root_script_id ? "'".addslashes($pack->root_script_id)."'," : "").
+            (isset($pack->name)           ? "'".addslashes($pack->name)."',"           : "").
+            (isset($pack->description)    ? "'".addslashes($pack->description)."',"    : "").
+            (isset($pack->icon_media_id)  ? "'".addslashes($pack->icon_media_id)."',"  : "").
+            (isset($pack->root_script_id) ? "'".addslashes($pack->root_script_id)."'," : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -44,10 +44,10 @@ class dialogs extends dbconnection
 
         dbconnection::query(
             "UPDATE dialogs SET ".
-            ($pack->name           ? "name           = '".addslashes($pack->name)."', "           : "").
-            ($pack->description    ? "description    = '".addslashes($pack->description)."', "    : "").
-            ($pack->icon_media_id  ? "icon_media_id  = '".addslashes($pack->icon_media_id)."', "  : "").
-            ($pack->root_script_id ? "root_script_id = '".addslashes($pack->root_script_id)."', " : "").
+            (isset($pack->name)           ? "name           = '".addslashes($pack->name)."', "           : "").
+            (isset($pack->description)    ? "description    = '".addslashes($pack->description)."', "    : "").
+            (isset($pack->icon_media_id)  ? "icon_media_id  = '".addslashes($pack->icon_media_id)."', "  : "").
+            (isset($pack->root_script_id) ? "root_script_id = '".addslashes($pack->root_script_id)."', " : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE dialog_id = '{$pack->dialog_id}'"
         );
@@ -109,15 +109,15 @@ class dialogs extends dbconnection
         $pack->dialog_character_id = dbconnection::queryInsert(
             "INSERT INTO dialog_characters (".
             "game_id,".
-            ($pack->title     ? "title,"          : "").
-            ($pack->name      ? "name,"           : "").
-            ($pack->media_id  ? "media_id,"  : "").
+            (isset($pack->title)     ? "title,"          : "").
+            (isset($pack->name)      ? "name,"           : "").
+            (isset($pack->media_id)  ? "media_id,"  : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
-            ($pack->title     ? "'".addslashes($pack->title)."',"     : "").
-            ($pack->name      ? "'".addslashes($pack->name)."',"      : "").
-            ($pack->media_id  ? "'".addslashes($pack->media_id)."',"  : "").
+            (isset($pack->title)     ? "'".addslashes($pack->title)."',"     : "").
+            (isset($pack->name)      ? "'".addslashes($pack->name)."',"      : "").
+            (isset($pack->media_id)  ? "'".addslashes($pack->media_id)."',"  : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -135,9 +135,9 @@ class dialogs extends dbconnection
 
         dbconnection::query(
             "UPDATE dialog_characters SET ".
-            ($pack->title     ? "title    = '".addslashes($pack->title)."', "     : "").
-            ($pack->name      ? "name     = '".addslashes($pack->name)."', "     : "").
-            ($pack->media_id  ? "media_id = '".addslashes($pack->media_id)."', "  : "").
+            (isset($pack->title)     ? "title    = '".addslashes($pack->title)."', "     : "").
+            (isset($pack->name)      ? "name     = '".addslashes($pack->name)."', "     : "").
+            (isset($pack->media_id)  ? "media_id = '".addslashes($pack->media_id)."', "  : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE dialog_character_id = '{$pack->dialog_character_id}'"
         );
@@ -198,21 +198,21 @@ class dialogs extends dbconnection
         $pack->dialog_script_id = dbconnection::queryInsert(
             "INSERT INTO dialog_scripts (".
             "game_id,".
-            ($pack->dialog_id                   ? "dialog_id,"                   : "").
-            ($pack->parent_dialog_script_id     ? "parent_dialog_script_id,"     : "").
-            ($pack->dialog_character_id         ? "dialog_character_id,"         : "").
-            ($pack->requirement_root_package_id ? "requirement_root_package_id," : "").
-            ($pack->text                        ? "text,"                        : "").
-            ($pack->sort_index                  ? "sort_index,"                  : "").
+            (isset($pack->dialog_id)                   ? "dialog_id,"                   : "").
+            (isset($pack->parent_dialog_script_id)     ? "parent_dialog_script_id,"     : "").
+            (isset($pack->dialog_character_id)         ? "dialog_character_id,"         : "").
+            (isset($pack->requirement_root_package_id) ? "requirement_root_package_id," : "").
+            (isset($pack->text)                        ? "text,"                        : "").
+            (isset($pack->sort_index)                  ? "sort_index,"                  : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
-            ($pack->dialog_id                   ? "'".addslashes($pack->dialog_id)."',"                   : "").
-            ($pack->parent_dialog_script_id     ? "'".addslashes($pack->parent_dialog_script_id)."',"     : "").
-            ($pack->dialog_character_id         ? "'".addslashes($pack->dialog_character_id)."',"         : "").
-            ($pack->requirement_root_package_id ? "'".addslashes($pack->requirement_root_package_id)."'," : "").
-            ($pack->text                        ? "'".addslashes($pack->text)."',"                        : "").
-            ($pack->sort_index                  ? "'".addslashes($pack->sort_index)."',"                  : "").
+            (isset($pack->dialog_id)                   ? "'".addslashes($pack->dialog_id)."',"                   : "").
+            (isset($pack->parent_dialog_script_id)     ? "'".addslashes($pack->parent_dialog_script_id)."',"     : "").
+            (isset($pack->dialog_character_id)         ? "'".addslashes($pack->dialog_character_id)."',"         : "").
+            (isset($pack->requirement_root_package_id) ? "'".addslashes($pack->requirement_root_package_id)."'," : "").
+            (isset($pack->text)                        ? "'".addslashes($pack->text)."',"                        : "").
+            (isset($pack->sort_index)                  ? "'".addslashes($pack->sort_index)."',"                  : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -230,11 +230,11 @@ class dialogs extends dbconnection
 
         dbconnection::query(
             "UPDATE dialog_scripts SET ".
-            ($pack->parent_dialog_script_id     ? "parent_dialog_script_id     = '".addslashes($pack->parent_dialog_script_id)."', "     : "").
-            ($pack->dialog_character_id         ? "dialog_character_id         = '".addslashes($pack->dialog_character_id)."', "         : "").
-            ($pack->requirement_root_package_id ? "requirement_root_package_id = '".addslashes($pack->requirement_root_package_id)."', " : "").
-            ($pack->text                        ? "text                        = '".addslashes($pack->text)."', "                        : "").
-            ($pack->sort_index                  ? "sort_index                  = '".addslashes($pack->sort_index)."', "                  : "").
+            (isset($pack->parent_dialog_script_id)     ? "parent_dialog_script_id     = '".addslashes($pack->parent_dialog_script_id)."', "     : "").
+            (isset($pack->dialog_character_id)         ? "dialog_character_id         = '".addslashes($pack->dialog_character_id)."', "         : "").
+            (isset($pack->requirement_root_package_id) ? "requirement_root_package_id = '".addslashes($pack->requirement_root_package_id)."', " : "").
+            (isset($pack->text)                        ? "text                        = '".addslashes($pack->text)."', "                        : "").
+            (isset($pack->sort_index)                  ? "sort_index                  = '".addslashes($pack->sort_index)."', "                  : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE dialog_script_id = '{$pack->dialog_script_id}'"
         );

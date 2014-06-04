@@ -16,17 +16,17 @@ class instances extends dbconnection
         $pack->instance_id = dbconnection::queryInsert(
             "INSERT INTO instances (".
             "game_id,".
-            ($pack->object_id   ? "object_id,"    : "").
-            ($pack->object_type ? "object_type,"  : "").
-            ($pack->factory_id  ? "factory_id,"   : "").
-            ($pack->owner_id    ? "owner_id,"     : "").
+            (isset($pack->object_id)   ? "object_id,"    : "").
+            (isset($pack->object_type) ? "object_type,"  : "").
+            (isset($pack->factory_id)  ? "factory_id,"   : "").
+            (isset($pack->owner_id)    ? "owner_id,"     : "").
             "created".
             ") VALUES (".
             "'".$pack->game_id."',".
-            ($pack->object_id   ? "'".addslashes($pack->object_id)."',"   : "").
-            ($pack->object_type ? "'".addslashes($pack->object_type)."'," : "").
-            ($pack->factory_id  ? "'".addslashes($pack->factory_id)."',"  : "").
-            ($pack->owner_id    ? "'".addslashes($pack->owner_id)."',"    : "").
+            (isset($pack->object_id)   ? "'".addslashes($pack->object_id)."',"   : "").
+            (isset($pack->object_type) ? "'".addslashes($pack->object_type)."'," : "").
+            (isset($pack->factory_id)  ? "'".addslashes($pack->factory_id)."',"  : "").
+            (isset($pack->owner_id)    ? "'".addslashes($pack->owner_id)."',"    : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -44,10 +44,10 @@ class instances extends dbconnection
 
         dbconnection::query(
             "UPDATE instances SET ".
-            ($pack->object_id   ? "object_id   = '".addslashes($pack->object_id)."', "   : "").
-            ($pack->object_type ? "object_type = '".addslashes($pack->object_type)."', " : "").
-            ($pack->factory_id  ? "factory_id  = '".addslashes($pack->factory_id)."', "  : "").
-            ($pack->owner_id    ? "owner_id    = '".addslashes($pack->owner_id)."', "    : "").
+            (isset($pack->object_id)   ? "object_id   = '".addslashes($pack->object_id)."', "   : "").
+            (isset($pack->object_type) ? "object_type = '".addslashes($pack->object_type)."', " : "").
+            (isset($pack->factory_id)  ? "factory_id  = '".addslashes($pack->factory_id)."', "  : "").
+            (isset($pack->owner_id)    ? "owner_id    = '".addslashes($pack->owner_id)."', "    : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE instance_id = '{$pack->instance_id}'"
         );
@@ -78,7 +78,7 @@ class instances extends dbconnection
     public static function getInstancesForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return instances::getInstancesForGamePack($glob); }
     public static function getInstancesForGamePack($pack)
     {
-        $sql_instances = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_id = '".($pack->owner_id ? $pack->owner_id : 0)."'");
+        $sql_instances = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_id = '".(isset($pack->owner_id) ? $pack->owner_id : 0)."'");
         $instances = array();
         for($i = 0; $i < count($sql_instances); $i++)
             if($ob = instances::instanceObjectFromSQL($sql_instances[$i])) $instances[] = $ob;

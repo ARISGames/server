@@ -16,38 +16,38 @@ class games extends dbconnection
 
         $pack->game_id = dbconnection::queryInsert(
             "INSERT INTO games (".
-            ($pack->name                   ? "name,"                   : "").
-            ($pack->description            ? "description,"            : "").
-            ($pack->icon_media_id          ? "icon_media_id,"          : "").
-            ($pack->media_id               ? "media_id,"               : "").
-            ($pack->map_type               ? "map_type,"               : "").
-            ($pack->latitude               ? "latitude,"               : "").
-            ($pack->longitude              ? "longitude,"              : "").
-            ($pack->zoom_level             ? "zoom_level,"             : "").
-            ($pack->show_player_location   ? "show_player_location,"   : "").
-            ($pack->full_quick_travel      ? "full_quick_travel,"      : "").
-            ($pack->allow_note_comments    ? "allow_note_comments,"    : "").
-            ($pack->allow_note_player_tags ? "allow_note_player_tags," : "").
-            ($pack->allow_note_likes       ? "allow_note_likes,"       : "").
-            ($pack->inventory_weight_cap   ? "inventory_weight_cap,"   : "").
-            ($pack->ready_for_public       ? "ready_for_public,"       : "").
+            (isset($pack->name)                   ? "name,"                   : "").
+            (isset($pack->description)            ? "description,"            : "").
+            (isset($pack->icon_media_id)          ? "icon_media_id,"          : "").
+            (isset($pack->media_id)               ? "media_id,"               : "").
+            (isset($pack->map_type)               ? "map_type,"               : "").
+            (isset($pack->latitude)               ? "latitude,"               : "").
+            (isset($pack->longitude)              ? "longitude,"              : "").
+            (isset($pack->zoom_level)             ? "zoom_level,"             : "").
+            (isset($pack->show_player_location)   ? "show_player_location,"   : "").
+            (isset($pack->full_quick_travel)      ? "full_quick_travel,"      : "").
+            (isset($pack->allow_note_comments)    ? "allow_note_comments,"    : "").
+            (isset($pack->allow_note_player_tags) ? "allow_note_player_tags," : "").
+            (isset($pack->allow_note_likes)       ? "allow_note_likes,"       : "").
+            (isset($pack->inventory_weight_cap)   ? "inventory_weight_cap,"   : "").
+            (isset($pack->ready_for_public)       ? "ready_for_public,"       : "").
             "created".
             ") VALUES (".
-            ($pack->name                   ? "'".addslashes($pack->name)."',"                   : "").
-            ($pack->description            ? "'".addslashes($pack->description)."',"            : "").
-            ($pack->icon_media_id          ? "'".addslashes($pack->icon_media_id)."',"          : "").
-            ($pack->media_id               ? "'".addslashes($pack->media_id)."',"               : "").
-            ($pack->map_type               ? "'".addslashes($pack->map_type)."',"               : "").
-            ($pack->latitude               ? "'".addslashes($pack->latitude)."',"               : "").
-            ($pack->longitude              ? "'".addslashes($pack->longitude)."',"              : "").
-            ($pack->zoom_level             ? "'".addslashes($pack->zoom_level)."',"             : "").
-            ($pack->show_player_location   ? "'".addslashes($pack->show_player_location)."',"   : "").
-            ($pack->full_quick_travel      ? "'".addslashes($pack->full_quick_travel)."',"      : "").
-            ($pack->allow_note_comments    ? "'".addslashes($pack->allow_note_comments)."',"    : "").
-            ($pack->allow_note_player_tags ? "'".addslashes($pack->allow_note_player_tags)."'," : "").
-            ($pack->allow_note_likes       ? "'".addslashes($pack->allow_note_likes)."',"       : "").
-            ($pack->inventory_weight_cap   ? "'".addslashes($pack->inventory_weight_cap)."',"   : "").
-            ($pack->ready_for_public       ? "'".addslashes($pack->ready_for_public)."',"       : "").
+            (isset($pack->name)                   ? "'".addslashes($pack->name)."',"                   : "").
+            (isset($pack->description)            ? "'".addslashes($pack->description)."',"            : "").
+            (isset($pack->icon_media_id)          ? "'".addslashes($pack->icon_media_id)."',"          : "").
+            (isset($pack->media_id)               ? "'".addslashes($pack->media_id)."',"               : "").
+            (isset($pack->map_type)               ? "'".addslashes($pack->map_type)."',"               : "").
+            (isset($pack->latitude)               ? "'".addslashes($pack->latitude)."',"               : "").
+            (isset($pack->longitude)              ? "'".addslashes($pack->longitude)."',"              : "").
+            (isset($pack->zoom_level)             ? "'".addslashes($pack->zoom_level)."',"             : "").
+            (isset($pack->show_player_location)   ? "'".addslashes($pack->show_player_location)."',"   : "").
+            (isset($pack->full_quick_travel)      ? "'".addslashes($pack->full_quick_travel)."',"      : "").
+            (isset($pack->allow_note_comments)    ? "'".addslashes($pack->allow_note_comments)."',"    : "").
+            (isset($pack->allow_note_player_tags) ? "'".addslashes($pack->allow_note_player_tags)."'," : "").
+            (isset($pack->allow_note_likes)       ? "'".addslashes($pack->allow_note_likes)."',"       : "").
+            (isset($pack->inventory_weight_cap)   ? "'".addslashes($pack->inventory_weight_cap)."',"   : "").
+            (isset($pack->ready_for_public)       ? "'".addslashes($pack->ready_for_public)."',"       : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -76,21 +76,21 @@ class games extends dbconnection
 
         dbconnection::query(
             "UPDATE games SET ".
-            ($pack->name                   ? "name                   = '".addslashes($pack->name)."', "                   : "").
-            ($pack->description            ? "description            = '".addslashes($pack->description)."', "            : "").
-            ($pack->icon_media_id          ? "icon_media_id          = '".addslashes($pack->icon_media_id)."', "          : "").
-            ($pack->media_id               ? "media_id               = '".addslashes($pack->media_id)."', "               : "").
-            ($pack->map_type               ? "map_type               = '".addslashes($pack->map_type)."', "               : "").
-            ($pack->latitude               ? "latitude               = '".addslashes($pack->latitude)."', "               : "").
-            ($pack->longitude              ? "longitude              = '".addslashes($pack->longitude)."', "              : "").
-            ($pack->zoom_level             ? "zoom_level             = '".addslashes($pack->zoom_level)."', "             : "").
-            ($pack->show_player_location   ? "show_player_location   = '".addslashes($pack->show_player_location)."', "   : "").
-            ($pack->full_quick_travel      ? "full_quick_travel      = '".addslashes($pack->full_quick_travel)."', "      : "").
-            ($pack->allow_note_comments    ? "allow_note_comments    = '".addslashes($pack->allow_note_comments)."', "    : "").
-            ($pack->allow_note_player_tags ? "allow_note_player_tags = '".addslashes($pack->allow_note_player_tags)."', " : "").
-            ($pack->allow_note_likes       ? "allow_note_likes       = '".addslashes($pack->allow_note_likes)."', "       : "").
-            ($pack->inventory_weight_cap   ? "inventory_weight_cap   = '".addslashes($pack->inventory_weight_cap)."', "   : "").
-            ($pack->ready_for_public       ? "ready_for_public       = '".addslashes($pack->ready_for_public)."', "       : "").
+            (isset($pack->name)                   ? "name                   = '".addslashes($pack->name)."', "                   : "").
+            (isset($pack->description)            ? "description            = '".addslashes($pack->description)."', "            : "").
+            (isset($pack->icon_media_id)          ? "icon_media_id          = '".addslashes($pack->icon_media_id)."', "          : "").
+            (isset($pack->media_id)               ? "media_id               = '".addslashes($pack->media_id)."', "               : "").
+            (isset($pack->map_type)               ? "map_type               = '".addslashes($pack->map_type)."', "               : "").
+            (isset($pack->latitude)               ? "latitude               = '".addslashes($pack->latitude)."', "               : "").
+            (isset($pack->longitude)              ? "longitude              = '".addslashes($pack->longitude)."', "              : "").
+            (isset($pack->zoom_level)             ? "zoom_level             = '".addslashes($pack->zoom_level)."', "             : "").
+            (isset($pack->show_player_location)   ? "show_player_location   = '".addslashes($pack->show_player_location)."', "   : "").
+            (isset($pack->full_quick_travel)      ? "full_quick_travel      = '".addslashes($pack->full_quick_travel)."', "      : "").
+            (isset($pack->allow_note_comments)    ? "allow_note_comments    = '".addslashes($pack->allow_note_comments)."', "    : "").
+            (isset($pack->allow_note_player_tags) ? "allow_note_player_tags = '".addslashes($pack->allow_note_player_tags)."', " : "").
+            (isset($pack->allow_note_likes)       ? "allow_note_likes       = '".addslashes($pack->allow_note_likes)."', "       : "").
+            (isset($pack->inventory_weight_cap)   ? "inventory_weight_cap   = '".addslashes($pack->inventory_weight_cap)."', "   : "").
+            (isset($pack->ready_for_public)       ? "ready_for_public       = '".addslashes($pack->ready_for_public)."', "       : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE game_id = '{$pack->game_id}'"
         );

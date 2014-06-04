@@ -17,11 +17,11 @@ class requirements extends dbconnection
         $pack->requirement_root_package_id = dbconnection::queryInsert(
             "INSERT INTO requirement_root_packages (".
             "game_id,".
-            ($pack->name ? "name," : "").
+            (isset($pack->name) ? "name," : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
-            ($pack->name ? "'".addslashes($pack->name)."'," : "").
+            (isset($pack->name) ? "'".addslashes($pack->name)."'," : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -51,12 +51,12 @@ class requirements extends dbconnection
             "INSERT INTO requirement_and_packages (".
             "game_id,".
             "requirement_root_package_id,".
-            ($pack->name ? "name," : "").
+            (isset($pack->name) ? "name," : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
             "'".addslashes($pack->requirement_root_package_id)."',".
-            ($pack->name ? "'".addslashes($pack->name)."'," : "").
+            (isset($pack->name) ? "'".addslashes($pack->name)."'," : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -84,22 +84,22 @@ class requirements extends dbconnection
             "INSERT INTO requirement_atoms (".
             "game_id,".
             "requirement_and_package_id,".
-            ($pack->bool_operator ? "bool_operator," : "").
-            ($pack->requirement   ? "requirement,"   : "").
-            ($pack->content_id    ? "content_id,"    : "").
-            ($pack->qty           ? "qty,"           : "").
-            ($pack->latitude      ? "latitude,"      : "").
-            ($pack->longitude     ? "longitude,"     : "").
+            (isset($pack->bool_operator) ? "bool_operator," : "").
+            (isset($pack->requirement)   ? "requirement,"   : "").
+            (isset($pack->content_id)    ? "content_id,"    : "").
+            (isset($pack->qty)           ? "qty,"           : "").
+            (isset($pack->latitude)      ? "latitude,"      : "").
+            (isset($pack->longitude)     ? "longitude,"     : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
             "'".addslashes($pack->requirement_and_package_id)."',".
-            ($pack->bool_operator ? "'".addslashes($pack->bool_operator)."'," : "").
-            ($pack->requirement   ? "'".addslashes($pack->requirement  )."'," : "").
-            ($pack->content_id    ? "'".addslashes($pack->content_id   )."'," : "").
-            ($pack->qty           ? "'".addslashes($pack->qty          )."'," : "").
-            ($pack->latitude      ? "'".addslashes($pack->latitude     )."'," : "").
-            ($pack->longitude     ? "'".addslashes($pack->longitude    )."'," : "").
+            (isset($pack->bool_operator) ? "'".addslashes($pack->bool_operator)."'," : "").
+            (isset($pack->requirement)   ? "'".addslashes($pack->requirement  )."'," : "").
+            (isset($pack->content_id)    ? "'".addslashes($pack->content_id   )."'," : "").
+            (isset($pack->qty)           ? "'".addslashes($pack->qty          )."'," : "").
+            (isset($pack->latitude)      ? "'".addslashes($pack->latitude     )."'," : "").
+            (isset($pack->longitude)     ? "'".addslashes($pack->longitude    )."'," : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -116,12 +116,10 @@ class requirements extends dbconnection
 
         dbconnection::query(
             "UPDATE requirement_root_packages SET ".
-            ($pack->name ? "name = '".addslashes($pack->name)."', " : "").
+            (isset($pack->name) ? "name = '".addslashes($pack->name)."', " : "").
             "last_updated = CURRENT_TIMESTAMP ".
             "WHERE requirement_root_package_id = '".addslashes($pack->requirement_root_package_id)."'"
         );
-
-        return $pack->and_packages;
 
         $sql_currentAndPacks = dbconnection::queryArray("SELECT * FROM requirement_and_packages WHERE requirement_root_package_id = '{$pack->requirement_root_package_id}'");
         for($i = 0; $i < count($sql_currentAndPacks); $i++)
@@ -173,7 +171,7 @@ class requirements extends dbconnection
         dbconnection::query(
             "UPDATE requirement_and_packages SET ".
             "game_id = '".addslashes($pack->game_id)."'".
-            ($pack->name ? ", name = '".addslashes($pack->name)."'" : "").
+            (isset($pack->name) ? ", name = '".addslashes($pack->name)."'" : "").
             " WHERE requirement_and_package_id = '".addslashes($pack->requirement_and_package_id)."'"
         );
 
@@ -224,12 +222,12 @@ class requirements extends dbconnection
         dbconnection::query(
             "UPDATE requirement_atoms SET ".
             "game_id = '".addslashes($pack->game_id)."'".
-            ($pack->bool_operator ? ", bool_operator = '".addslashes($pack->bool_operator)."'" : "").
-            ($pack->requirement   ? ", requirement   = '".addslashes($pack->requirement  )."'" : "").
-            ($pack->content_id    ? ", content_id    = '".addslashes($pack->content_id   )."'" : "").
-            ($pack->qty           ? ", qty           = '".addslashes($pack->qty          )."'" : "").
-            ($pack->latitude      ? ", latitude      = '".addslashes($pack->latitude     )."'" : "").
-            ($pack->longitude     ? ", longitude     = '".addslashes($pack->longitude    )."'" : "").
+            (isset($pack->bool_operator) ? ", bool_operator = '".addslashes($pack->bool_operator)."'" : "").
+            (isset($pack->requirement)   ? ", requirement   = '".addslashes($pack->requirement  )."'" : "").
+            (isset($pack->content_id)    ? ", content_id    = '".addslashes($pack->content_id   )."'" : "").
+            (isset($pack->qty)           ? ", qty           = '".addslashes($pack->qty          )."'" : "").
+            (isset($pack->latitude)      ? ", latitude      = '".addslashes($pack->latitude     )."'" : "").
+            (isset($pack->longitude)     ? ", longitude     = '".addslashes($pack->longitude    )."'" : "").
             " WHERE requirement_atom_id = '".addslashes($pack->requirement_atom_id)."'"
         );
     }
