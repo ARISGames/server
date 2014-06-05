@@ -1225,5 +1225,29 @@ class Games extends Module
         }
         return new returnData(0, $logs);
     }
+
+
+    public function getLeaderboard($gameId, $numRows, $itemIdToCount, $time = -1)
+    {
+        $players = array();
+        if ($time == 0) $queryInterval = '1 DAY';
+        else if ($time == 1) $queryInterval = '7 DAY';
+        else if ($time == 2) $queryInterval = '1 MONTH';
+        else if ($time != -1) return new returnData(1, $players, "invalid time parameter"); 
+
+        if ($time != -1) $query = "(SELECT player_id FROM player_items WHERE game_id = {$gameId} AND item_id = {$itemIdToCount} AND timestamp BETWEEN DATE_SUB(NOW(), INTERVAL ".$queryInterval.") AND NOW() ORDER BY qty DESC LIMIT {$numRows})";
+        else $query = "(SELECT player_id FROM player_items WHERE game_id = {$gameId} AND item_id = {$itemIdToCount} ORDER BY qty DESC LIMIT {$numRows})"; 
+
+        $player_ids = Module::queryArray($query);
+        for($i = 0; $i < count($player_ids); $i++){
+            $query = "SELECT * FROM players WHERE player_id = {$player_ids[$i]->player_id}";
+            $players[] = Module::query($query);
+        }
+        return new returnData(0, $players);
+    }
+
+
+
+
 }
 ?>
