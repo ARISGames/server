@@ -693,6 +693,7 @@ var CRUD_DEFAULTS = [
         {\n\
           "game_id":123,\n\
           "type":"MAP",\n\
+          "name":"Map",\n\
           "icon_media_id":123,\n\
           "enabled":1,\n\
           "tab_detail_1":0,\n\
@@ -711,6 +712,7 @@ var CRUD_DEFAULTS = [
         {\n\
           "tab_id":123,\n\
           "type":"MAP",\n\
+          "name":"Map",\n\
           "icon_media_id":123,\n\
           "enabled":1,\n\
           "tab_detail_1":0,\n\

@@ -18,6 +18,7 @@ class tabs extends dbconnection
             "INSERT INTO tabs (".
             "game_id,".
             (isset($pack->type)                        ? "type,"                        : "").
+            (isset($pack->name)                        ? "name,"                        : "").
             (isset($pack->icon_media_id)               ? "icon_media_id,"               : "").
             (isset($pack->enabled)                     ? "enabled,"                     : "").
             (isset($pack->tab_detail_1)                ? "tab_detail_1,"                : "").
@@ -27,6 +28,7 @@ class tabs extends dbconnection
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
             (isset($pack->type)                        ? "'".addslashes($pack->type)."',"                        : "").
+            (isset($pack->name)                        ? "'".addslashes($pack->name)."',"                        : "").
             (isset($pack->icon_media_id)               ? "'".addslashes($pack->icon_media_id)."',"               : "").
             (isset($pack->enabled)                     ? "'".addslashes($pack->enabled)."',"                     : "").
             (isset($pack->tab_detail_1)                ? "'".addslashes($pack->tab_detail_1)."',"                : "").
@@ -49,6 +51,7 @@ class tabs extends dbconnection
         dbconnection::query(
             "UPDATE tabs SET ".
             (isset($pack->type)                        ? "type                        = '".addslashes($pack->type)."', "                        : "").
+            (isset($pack->name)                        ? "name                        = '".addslashes($pack->name)."', "                        : "").
             (isset($pack->icon_media_id)               ? "icon_media_id               = '".addslashes($pack->icon_media_id)."', "               : "").
             (isset($pack->enabled)                     ? "enabled                     = '".addslashes($pack->enabled)."', "                     : "").
             (isset($pack->tab_detail_1)                ? "tab_detail_1                = '".addslashes($pack->tab_detail_1)."', "                : "").
@@ -68,6 +71,7 @@ class tabs extends dbconnection
         $tab->tab_id                      = $sql_tab->tab_id;
         $tab->game_id                     = $sql_tab->game_id;
         $tab->type                        = $sql_tab->type;
+        $tab->name                        = $sql_tab->name;
         $tab->icon_media_id               = $sql_tab->icon_media_id;
         $tab->enabled                     = $sql_tab->enabled;
         $tab->tab_detail_1                = $sql_tab->tab_detail_1;
