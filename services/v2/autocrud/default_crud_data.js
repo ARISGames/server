@@ -662,7 +662,6 @@ var CRUD_DEFAULTS = [
     "updateData":
         '\
         {\n\
-          "game_id":123,\n\
           "quest_id":123,\n\
           "name":"questName",\n\
           "description":"questDescription",\n\
@@ -679,8 +678,50 @@ var CRUD_DEFAULTS = [
     "deleteData":
         '\
         {\n\
-          "game_id":123,\n\
           "quest_id":123\n\
+        }\n\
+        '
+},
+{
+    "service":"tabs",
+    "create":"tabs.createTab",
+    "get":"tabs.getTab",
+    "update":"tabs.updateTab",
+    "delete":"tabs.deleteTab",
+    "createData":
+        '\
+        {\n\
+          "game_id":123,\n\
+          "type":"MAP",\n\
+          "icon_media_id":123,\n\
+          "enabled":1,\n\
+          "tab_detail_1":0,\n\
+          "requirement_root_package_id":0,\n\
+          "sort_index":0\n\
+        }\n\
+        ',
+    "getData":
+        '\
+        {\n\
+          "tab_id":123\n\
+        }\n\
+        ',
+    "updateData":
+        '\
+        {\n\
+          "tab_id":123,\n\
+          "type":"MAP",\n\
+          "icon_media_id":123,\n\
+          "enabled":1,\n\
+          "tab_detail_1":0,\n\
+          "requirement_root_package_id":0,\n\
+          "sort_index":0\n\
+        }\n\
+        ',
+    "deleteData":
+        '\
+        {\n\
+          "tab_id":123\n\
         }\n\
         '
 }

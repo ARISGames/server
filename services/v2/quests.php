@@ -16,7 +16,7 @@ class quests extends dbconnection
 
         $pack->quest_id = dbconnection::queryInsert(
             "INSERT INTO quests (".
-            (isset($pack->game_id)                                   ? "game_id,"                              : "").
+            "game_id,".
             (isset($pack->name)                                      ? "name,"                                 : "").
             (isset($pack->description)                               ? "description,"                          : "").
             (isset($pack->active_icon_media_id)                      ? "active_icon_media_id,"                 : "").
@@ -34,7 +34,7 @@ class quests extends dbconnection
             (isset($pack->sort_index)                                ? "sort_index,"                           : "").
             "created".
             ") VALUES (".
-            (isset($pack->game_id)                                   ? "'".addslashes($pack->game_id)."',"                         : "").
+            "'".addslashes($pack->game_id)."',".
             (isset($pack->name)                                      ? "'".addslashes($pack->name)."',"                            : "").
             (isset($pack->description)                               ? "'".addslashes($pack->description)."',"                     : "").
             (isset($pack->active_icon_media_id)                      ? "'".addslashes($pack->active_icon_media_id)."',"            : "").
@@ -60,13 +60,12 @@ class quests extends dbconnection
     public static function updateQuest($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return quests::updateQuestPack($glob); }
     public static function updateQuestPack($pack)
     {
-        $pack->auth->game_id = $pack->game_id;
+        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM quests WHERE quest_id = '{$pack->quest_id}'")->game_id;
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query(
             "UPDATE quests SET ".
-            (isset($pack->game_id)                         ? "game_id                         = '".addslashes($pack->game_id)."', "                          : "").
             (isset($pack->name)                            ? "name                            = '".addslashes($pack->name)."', "                             : "").
             (isset($pack->description)                     ? "description                     = '".addslashes($pack->description)."', "                      : "").
             (isset($pack->active_icon_media_id)            ? "active_icon_media_id            = '".addslashes($pack->active_icon_media_id)."', "             : "").
@@ -140,7 +139,7 @@ class quests extends dbconnection
     public static function deleteQuest($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return quests::deleteQuestPack($glob); }
     public static function deleteQuestPack($pack)
     {
-        $pack->auth->game_id = $pack->game_id;
+        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM quests WHERE quest_id = '{$pack->quest_id}'")->game_id;
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
