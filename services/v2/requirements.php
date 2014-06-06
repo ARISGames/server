@@ -353,6 +353,7 @@ class requirements extends dbconnection
     {
         $andPackages = dbconnection::queryArray("SELECT requirement_and_package_id FROM requirement_and_packages WHERE requirement_root_package_id= '{$pack->requirement_root_package_id}'");
 
+        if(count($andPackages) == 0) return true;
         for($i = 0; $i < count($andPackages); $i++)
         {
             $andPackages[$i]->auth = $pack->auth;
@@ -366,6 +367,7 @@ class requirements extends dbconnection
     {
         $atoms = dbconnection::queryArray("SELECT requirement_atom_id FROM requirement_atoms WHERE requirement_and_package_id= '{$pack->requirement_and_package_id}'");
 
+        if(count($atoms) == 0) return true;
         for($i = 0; $i < count($atoms); $i++)
         {
             $atoms[$i]->auth = $pack->auth;
@@ -378,7 +380,7 @@ class requirements extends dbconnection
     public function evaluateRequirementAtomPack($pack)
     {
         $atom = dbconnection::queryObject("SELECT * FROM requirement_atoms WHERE requirement_atom_id = '{$pack->requirement_atom_id}'");
-
+        return true;
         //these functions need to be defined for new schema
         switch($atom->requirement)
         {

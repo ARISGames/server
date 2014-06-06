@@ -6,6 +6,7 @@ require_once("games.php");
 require_once("instances.php");
 require_once("triggers.php");
 require_once("quests.php");
+require_once("tabs.php");
 require_once("requirements.php");
 require_once("return_package.php");
 
@@ -148,6 +149,23 @@ class client extends dbconnection
         }
         return new return_package(0, $playerQuests);
     }
+
+    public static function getTabsForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getTabsForPlayerPack($glob); }
+    public static function getTabsForPlayerPack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $gameTabs = tabs::getTabsForGamePack($pack)->data;
+        $playerTabs = array();
+        for($i = 0; $i < count($gameTabs); $i++)
+        {
+            if(requirements::evaluateRequirementPackagePack($gameTabs[$i])) 
+                $playerTabs[] = $gameTabs[$i];
+        }
+        return new return_package(0, $playerTabs);
+    }
+
 }
 
 ?>
