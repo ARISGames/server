@@ -101,11 +101,34 @@ class client extends dbconnection
     }
      */
 
+    public static function getLogsForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getLogsForPlayerPack($glob); }
+    public static function getLogsForPlayerPack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        return new return_package(0, array()); //return nothing, because we don't have offline mode implemented in client yet
+    }
 
     public static function getInstancesForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getInstancesForPlayerPack($glob); }
     public static function getInstancesForPlayerPack($pack)
     {
-        return instances::getInstancesForGamePack($pack);
+        return new return_package(0,instances::getInstancesForGamePack($pack)); //actually gets user instances, as owner_id is set on pack
+    }
+
+    public static function getTriggersForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getTriggersForPlayerPack($glob); }
+    public static function getTriggersForPlayerPack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $gameTriggers = triggers::getTriggersForGamePack($pack)->data;
+        $playerTriggers = array();
+        for($i = 0; $i < count($gameTriggers); $i++)
+        {
+            if(requirements::evaluateRequirementPackagePack($gameTriggers[$i]))
+                $playerTriggers[] = $gameTriggers[$i];
+        }
+        return new return_package(0, $playerTriggers);
     }
 
     public static function getTriggersForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getTriggersForPlayerPack($glob); }
