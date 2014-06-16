@@ -166,6 +166,55 @@ class client extends dbconnection
         return new return_package(0, $playerTabs);
     }
 
+    public static function logPlayerBeganGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::logPlayerBeganGamePack($glob); }
+    public static function logPlayerBeganGamePack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'BEGIN_GAME', CURRENT_TIMESTAMP);");
+        return new return_package(0);
+    }
+
+    public static function logPlayerMoved($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::logPlayerMovedPack($glob); }
+    public static function logPlayerMovedPack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, latitude, longitude, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'MOVE', '{$pack->latitude}', '{$pack->longitude}', CURRENT_TIMESTAMP);");
+        return new return_package(0);
+    }
+
+    public static function logPlayerViewedTab($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::logPlayerViewedTabPack($glob); }
+    public static function logPlayerViewedTabPack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'VIEW_TAB', '{$pack->tab_id}', CURRENT_TIMESTAMP);");
+        return new return_package(0);
+    }
+
+    public static function logPlayerViewedContent($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::logPlayerViewedContentPack($glob); }
+    public static function logPlayerViewedContentPack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'VIEW_{$pack->content_type}', '{$pack->content_id}', CURRENT_TIMESTAMP);");
+        return new return_package(0);
+    }
+
+    public static function logPlayerViewedInstance($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::logPlayerViewedInstancePack($glob); }
+    public static function logPlayerViewedInstancePack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'VIEW_INSTANCE', '{$pack->instance_id}', CURRENT_TIMESTAMP);");
+        return new return_package(0);
+    }
 }
 
 ?>
