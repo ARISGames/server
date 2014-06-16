@@ -348,6 +348,28 @@ class requirements extends dbconnection
         return new return_package(0);
     }
 
+    public function getRequirementAndPackagesForRootPackage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return requirements::getRequirementAndPackagesForRootPackagePack($glob); }
+    public function getRequirementAndPackagesForRootPackagePack($pack)
+    {
+        $sql_andPacks = dbconnection::queryObject("SELECT * FROM requirement_and_packages WHERE requirement_root_package_id = '{$pack->requirement_root_package_id}'");
+        $andPackages = array();
+        for($i = 0; $i < count($sql_andPacks); $i++)
+            $andPackages[] = requirements::getRequirementAndPackage($sql_andPacks[$i])->data;
+
+        return new return_package(0,$andPackages);
+    }
+
+    public function getRequirementAtomsForAndPackage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return requirements::getRequirementAtomsForAndPackagePack($glob); }
+    public function getRequirementAtomsForAndPackagePack($pack)
+    {
+        $sql_atoms = dbconnection::queryObject("SELECT * FROM requirement_atoms WHERE requirement_and_package_id = '{$pack->requirement_and_package_id}'");
+        $atoms = array();
+        for($i = 0; $i < count($sql_atoms); $i++)
+            $atoms[] = requirements::getRequirementAtom($sql_atoms[$i])->data;
+
+        return new return_package(0,$atoms);
+    }
+
     public function evaluateRequirementPackage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return requirements::evaluateRequirementPackagePack($glob); }
     public function evaluateRequirementPackagePack($pack)
     {
