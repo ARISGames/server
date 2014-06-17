@@ -163,6 +163,24 @@ last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 CREATE INDEX web_page_game_id ON web_pages(game_id);
 
+DROP TABLE IF EXISTS overlays;
+CREATE TABLE overlays (
+overlay_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+game_id INT(32) UNSIGNED NOT NULL,
+name VARCHAR(255) NOT NULL DEFAULT "",
+media_id INT(32) UNSIGNED NOT NULL,
+top_left_latitude DOUBLE NOT NULL DEFAULT 0.0,
+top_left_longitude DOUBLE NOT NULL DEFAULT 0.0,
+top_right_latitude DOUBLE NOT NULL DEFAULT 0.0,
+top_right_longitude DOUBLE NOT NULL DEFAULT 0.0,
+bottom_left_latitude DOUBLE NOT NULL DEFAULT 0.0,
+bottom_left_longitude DOUBLE NOT NULL DEFAULT 0.0,
+requirement_package_id INT(32) UNSIGNED NOT NULL DEFAULT 0,
+created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
+last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE INDEX overlay_game_id ON overlays(game_id);
+
 DROP TABLE IF EXISTS notes;
 CREATE TABLE notes (
 note_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -229,7 +247,7 @@ game_id INT(32) UNSIGNED NOT NULL DEFAULT 0,
 user_id INT(32) UNSIGNED NOT NULL DEFAULT 0,
 file_folder VARCHAR(255) NOT NULL DEFAULT "",
 file_name VARCHAR(255) NOT NULL DEFAULT "",
-display_name VARCHAR(255) DEFAULT '',
+display_name VARCHAR(255) DEFAULT "",
 created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
 last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -485,26 +503,6 @@ CREATE TABLE `object_tags` (
   `tag_id` INT(32) UNSIGNED NOT NULL,
   PRIMARY KEY (`object_type`,`object_id`,`tag_id`)
 ) ENGINE=MyISAM DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
-DROP TABLE IF EXISTS `overlays`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `overlays` (
-  `overlay_id` INT(32) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `game_id` INT(32) UNSIGNED NOT NULL,
-  `name` varchar(100) COLLATE utf8_unicode_ci NOT NULL DEFAULT '',
-  `media_id` INT(32) UNSIGNED NOT NULL,
-  `top_left_latitude` double NOT NULL DEFAULT '0',
-  `top_left_longitude` double NOT NULL DEFAULT '0',
-  `top_right_latitude` double NOT NULL DEFAULT '0',
-  `top_right_longitude` double NOT NULL DEFAULT '0',
-  `bottom_left_latitude` double NOT NULL DEFAULT '0',
-  `bottom_left_longitude` double NOT NULL DEFAULT '0',
-  `requirement_package_id` int(32) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`overlay_id`),
-  KEY `game_id` (`game_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=18 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 DROP TABLE IF EXISTS `web_hooks`;

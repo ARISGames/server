@@ -173,6 +173,23 @@ class client extends dbconnection
         return new return_package(0, $playerTabs);
     }
 
+    public static function getOverlaysForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getOverlaysForPlayerPack($glob); }
+    public static function getOverlaysForPlayerPack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $gameOverlays = overlays::getOverlaysForGamePack($pack)->data;
+        $playerOverlays = array();
+        for($i = 0; $i < count($gameOverlays); $i++)
+        {
+            if(requirements::evaluateRequirementPackagePack($gameOverlays[$i])) 
+                $playerOverlays[] = $gameOverlays[$i];
+        }
+        return new return_package(0, $playerOverlays);
+    }
+
+
     public static function logPlayerBeganGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::logPlayerBeganGamePack($glob); }
     public static function logPlayerBeganGamePack($pack)
     {
