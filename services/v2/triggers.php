@@ -16,11 +16,12 @@ class triggers extends dbconnection
         $pack->trigger_id = dbconnection::queryInsert(
             "INSERT INTO triggers (".
             "game_id,".
-            (isset($pack->title)                       ? "title,"                        : "").
             (isset($pack->instance_id)                 ? "instance_id,"                 : "").
             (isset($pack->scene_id)                    ? "scene_id,"                    : "").
             (isset($pack->requirement_root_package_id) ? "requirement_root_package_id," : "").
             (isset($pack->type)                        ? "type,"                        : "").
+            (isset($pack->title)                       ? "title,"                       : "").
+            (isset($pack->icon_media_id)               ? "icon_media_id,"               : "").
             (isset($pack->latitude)                    ? "latitude,"                    : "").
             (isset($pack->longitude)                   ? "longitude,"                   : "").
             (isset($pack->distance)                    ? "distance,"                    : "").
@@ -30,11 +31,12 @@ class triggers extends dbconnection
             "created".
             ") VALUES (".
             "'".$pack->game_id."',".
-            (isset($pack->title)                       ? "'".addslashes($pack->title)."',"                       : "").
             (isset($pack->instance_id)                 ? "'".addslashes($pack->instance_id)."',"                 : "").
             (isset($pack->scene_id)                    ? "'".addslashes($pack->scene_id)."',"                    : "").
             (isset($pack->requirement_root_package_id) ? "'".addslashes($pack->requirement_root_package_id)."'," : "").
             (isset($pack->type)                        ? "'".addslashes($pack->type)."',"                        : "").
+            (isset($pack->title)                       ? "'".addslashes($pack->title)."',"                       : "").
+            (isset($pack->icon_media_id)               ? "'".addslashes($pack->icon_media_id)."',"               : "").
             (isset($pack->latitude)                    ? "'".addslashes($pack->latitude)."',"                    : "").
             (isset($pack->longitude)                   ? "'".addslashes($pack->longitude)."',"                   : "").
             (isset($pack->distance)                    ? "'".addslashes($pack->distance)."',"                    : "").
@@ -58,11 +60,12 @@ class triggers extends dbconnection
 
         dbconnection::query(
             "UPDATE triggers SET ".
-            (isset($pack->title)                       ? "title                       = '".addslashes($pack->title)."', "                       : "").
             (isset($pack->instance_id)                 ? "instance_id                 = '".addslashes($pack->instance_id)."', "                 : "").
             (isset($pack->scene_id)                    ? "scene_id                    = '".addslashes($pack->scene_id)."', "                    : "").
             (isset($pack->requirement_root_package_id) ? "requirement_root_package_id = '".addslashes($pack->requirement_root_package_id)."', " : "").
             (isset($pack->type)                        ? "type                        = '".addslashes($pack->type)."', "                        : "").
+            (isset($pack->title)                       ? "title                       = '".addslashes($pack->title)."', "                       : "").
+            (isset($pack->icon_media_id)               ? "icon_media_id               = '".addslashes($pack->icon_media_id)."', "               : "").
             (isset($pack->latitude)                    ? "latitude                    = '".addslashes($pack->latitude)."', "                    : "").
             (isset($pack->longitude)                   ? "longitude                   = '".addslashes($pack->longitude)."', "                   : "").
             (isset($pack->distance)                    ? "distance                    = '".addslashes($pack->distance)."', "                    : "").
@@ -82,11 +85,12 @@ class triggers extends dbconnection
         $trigger = new stdClass();
         $trigger->trigger_id                  = $sql_trigger->trigger_id;
         $trigger->game_id                     = $sql_trigger->game_id;
-        $trigger->title                       = $sql_trigger->title;
         $trigger->instance_id                 = $sql_trigger->instance_id;
         $trigger->scene_id                    = $sql_trigger->scene_id;
         $trigger->requirement_root_package_id = $sql_trigger->requirement_root_package_id;
         $trigger->type                        = $sql_trigger->type;
+        $trigger->title                       = $sql_trigger->title;
+        $trigger->icon_media_id               = $sql_trigger->icon_media_id;
         $trigger->latitude                    = $sql_trigger->latitude;
         $trigger->longitude                   = $sql_trigger->longitude;
         $trigger->distance                    = $sql_trigger->distance;

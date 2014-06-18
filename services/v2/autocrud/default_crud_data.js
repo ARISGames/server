@@ -228,11 +228,12 @@ var CRUD_DEFAULTS = [
         '\
         {\n\
           "game_id":123,\n\
-          "title":"triggerTitle",\n\
           "instance_id":123,\n\
           "scene_id":123,\n\
           "requirement_root_package_id":132,\n\
           "type":"LOCATION",\n\
+          "title":"triggerTitle",\n\
+          "icon_media_id":123,\n\
           "latitude":1.234,\n\
           "longitude":2.468,\n\
           "distance":5,\n\
@@ -251,11 +252,12 @@ var CRUD_DEFAULTS = [
         '\
         {\n\
           "trigger_id":123,\n\
-          "title":"triggerTitle",\n\
           "instance_id":123,\n\
           "scene_id":123,\n\
           "requirement_root_package_id":132,\n\
           "type":"LOCATION",\n\
+          "title":"triggerTitle",\n\
+          "icon_media_id":123,\n\
           "latitude":1.234,\n\
           "longitude":2.468,\n\
           "distance":5,\n\
