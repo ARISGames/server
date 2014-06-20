@@ -6,6 +6,7 @@ require_once("games.php");
 require_once("instances.php");
 require_once("triggers.php");
 require_once("quests.php");
+require_once("overlays.php");
 require_once("tabs.php");
 require_once("requirements.php");
 require_once("return_package.php");

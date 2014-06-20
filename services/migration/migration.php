@@ -14,33 +14,47 @@ class migration extends migration_dbconnection
         $player = new Players;
         $editor = new Editors;
         $users = new users;
+
         $v1Player = $player->getLoginPlayerObject($playerName, $playerPass)->data;
         $v1Editor = $editor->getToken($editorName, $editorPass, "read_write")->data;
-        if($v1Player || $v1Editor)
-        {
-            $userpack = new stdClass();
-            $userpack->user_name = $newName;
-            $userpack->password = $newPass;
-            $userpack->display_name = $newDisplay;
-            $userpack->email = $newEmail;
-            $v2User = $users->createUser($userpack)->data;
-        }
-        else return new migration_return_package(1,NULL,"Invalid Credentials");
 
-        if(!$v1Player)
+        if($playerName && !$v1Player) return new migration_return_package(1,NULL,"Player Credentials Invalid");
+        if($editorName && !$v1Editor) return new migration_return_package(1,NULL,"Editor Credentials Invalid");
+        if(!$v1Player  && !$v1Editor) return new migration_return_package(1,NULL,"No Data to Migrate");
+
+        $userpack = new stdClass();
+        $userpack->user_name = $newName;
+        $userpack->password = $newPass;
+        $userpack->display_name = $newDisplay;
+        $userpack->email = $newEmail;
+        $v2User = $users->logInPack($userpack)->data;
+        if(!$v2User) //user doesn't exists
         {
-            $v1Player = new stdClass();
-            $v1Player->player_id = 0;
+            //Don't create new user if trying to migrate from already migrated data
+            if($v1Player && migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_player_id = '{$v1Player->player_id}'"))
+                return new migration_return_package(1,NULL,"Player already migrated.");
+            if($v1Editor && migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_editor_id = '{$v1Editor->editor_id}'"))
+                return new migration_return_package(1,NULL,"Editor already migrated.");
+
+            $v2User = $users->createUserPack($userpack)->data;
+            if(!$v2User) return new migration_return_package(1,NULL,"Username Taken");
         }
-        if(!$v1Editor)
+        else
         {
-            $v1Editor = new stdClass();
-            $v1Editor->editor_id = 0;
+            //Don't link existing data if already linked to other user
+            if($v1Player && migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_player_id = '{$v1Player->player_id}' AND v2_user_id != '{$v2User->user_id}'"))
+                return new migration_return_package(1,NULL,"Player already migrated.");
+            if($v1Editor && migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_editor_id = '{$v1Editor->editor_id} AND v2_user_id != '{$v2User->user_id}''"))
+                return new migration_return_package(1,NULL,"Editor already migrated.");
         }
 
-        if($v2User)
+        if(!$v1Player) { $v1Player = new stdClass(); $v1Player->player_id = 0; }
+        if(!$v1Editor) { $v1Editor = new stdClass(); $v1Editor->editor_id = 0; }
+
+        if(migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v2_user_id = '{$v2User->user_id}'")) //already in migrations
+            migration_dbconnection::query("UPDATE user_migrations SET v1_player_id = '{$v1Player->player_id}',  v1_editor_id = '{$v1Editor->editor_id}' WHERE v2_user_id = '{$v2User->user_id}'");
+        else //not in migrations
             migration_dbconnection::query("INSERT INTO user_migrations (v2_user_id, v1_player_id, v1_editor_id) VALUES ('{$v2User->user_id}', '{$v1Player->player_id}', '{$v1Editor->editor_id}')");
-        else return new migration_return_package(1,NULL,"Username Taken");
 
         return new migration_return_package(0,true);
     }
