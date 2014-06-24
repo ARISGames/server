@@ -11,8 +11,10 @@ USE migration_db;
 DROP TABLE IF EXISTS user_migrations;
 CREATE TABLE user_migrations (
 v2_user_id INT(32) UNSIGNED NOT NULL PRIMARY KEY,
+v2_read_write_key VARCHAR(255) NOT NULL,
+v1_editor_id INT(32) UNSIGNED NOT NULL,
 v1_player_id INT(32) UNSIGNED NOT NULL,
-v1_editor_id INT(32) UNSIGNED NOT NULL
+v1_read_write_token VARCHAR(255) NOT NULL
 );
 
 DROP TABLE IF EXISTS game_migrations;

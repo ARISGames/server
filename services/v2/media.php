@@ -51,8 +51,8 @@ class media extends dbconnection
         $filefolder = "";
         if($pack->game_id) $filefolder = $pack->game_id;
         else               $filefolder = "players";
-        $fspath      = Config::gamedataFSPath."/".$filefolder."/".$newfilename;
-        $fsthumbpath = Config::gamedataFSPath."/".$filefolder."/".$newthumbfilename;
+        $fspath      = Config::v2_gamedata_folder."/".$filefolder."/".$newfilename;
+        $fsthumbpath = Config::v2_gamedata_folder."/".$filefolder."/".$newthumbfilename;
 
         $fp = fopen($fspath, 'w');
         if(!$fp) return new return_package(1,NULL,"Couldn't open file:$fspath");
@@ -118,8 +118,8 @@ class media extends dbconnection
         $filenametitle = substr($sql_media->file_name,0,strrpos($sql_media->file_name,'.'));
         $filenameext   = substr($sql_media->file_name,strrpos($sql_media->file_name,'.'));
 
-        $media->url       = Config::gamedataWWWPath."/".$sql_media->file_folder."/".$sql_media->file_name;
-        $media->thumb_url = Config::gamedataWWWPath."/".$sql_media->file_folder."/".$filenametitle."_128".$filenameext;
+        $media->url       = Config::v2_gamedata_www_path."/".$sql_media->file_folder."/".$sql_media->file_name;
+        $media->thumb_url = Config::v2_gamedata_www_path."/".$sql_media->file_folder."/".$filenametitle."_128".$filenameext;
 
         return $media;
     }
@@ -152,7 +152,7 @@ class media extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        if(!unlink(Config::gamedataFSPath."/".$media_sql->file_folder."/".$media_sql->file_name)) 
+        if(!unlink(Config::v2_gamedata_folder."/".$media_sql->file_folder."/".$media_sql->file_name)) 
             return new return_package(1, "Could not delete file.");
 
         dbconnection::query("DELETE FROM media WHERE media_id = '{$pack->media_id}' LIMIT 1");

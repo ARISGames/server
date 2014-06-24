@@ -62,7 +62,7 @@ class games extends dbconnection
         dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', 'PLAYER',    'Player',    '0', '6', CURRENT_TIMESTAMP)");
         dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', 'NOTE',      'Note',      '0', '7', CURRENT_TIMESTAMP)");
 
-        mkdir(Config::gamedataFSPath."/{$pack->game_id}",0777);
+        mkdir(Config::v2_gamedata_folder."/{$pack->game_id}",0777);
 
         return games::getGamePack($pack);
     }
@@ -173,7 +173,7 @@ class games extends dbconnection
         dbconnection::query("DELETE FROM requirement_atoms WHERE game_id = '{$pack->game_id}' LIMIT 1");
         dbconnection::query("DELETE FROM user_game_scenes WHERE game_id = '{$pack->game_id}' LIMIT 1");
         dbconnection::query("DELETE FROM user_games WHERE game_id = '{$pack->game_id}' LIMIT 1");
-        $command = 'rm -rf '. Config::gamedataFSPath . "/{$pack->game_id}";
+        $command = 'rm -rf '. Config::v2_gamedata_folder . "/{$pack->game_id}";
         exec($command, $output, $return);
         if($return) return new return_package(4, NULL, "unable to delete game directory");
         return new return_package(0);

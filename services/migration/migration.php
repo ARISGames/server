@@ -1,22 +1,24 @@
 <?php
-
+//NOTE- Cannot require conflicting class names (case insensitive)!
+//query the db raw for any problematic classnames
+require_once("../v1/players.php");
+require_once("../v1/editors.php");
+require_once("../v1/games.php");
+require_once("../v2/users.php");
 require_once("migration_dbconnection.php");
 require_once("migration_return_package.php");
 
-require_once("../v1/players.php");
-require_once("../v1/editors.php");
-require_once("../v2/users.php");
-
 class migration extends migration_dbconnection
 {	
+    //Would be better if it used tokens rather than name/pass combos, but v1 player has no token
     public function migrateUser($playerName, $playerPass, $editorName, $editorPass, $newName, $newPass, $newDisplay, $newEmail)
     {
-        $player = new Players;
-        $editor = new Editors;
+        $Players = new Players;
+        $Editors = new Editors;
         $users = new users;
 
-        $v1Player = $player->getLoginPlayerObject($playerName, $playerPass)->data;
-        $v1Editor = $editor->getToken($editorName, $editorPass, "read_write")->data;
+        $v1Player = $Players->getLoginPlayerObject($playerName, $playerPass)->data;
+        $v1Editor = $Editors->getToken($editorName, $editorPass, "read_write")->data;
 
         if($playerName && !$v1Player) return new migration_return_package(1,NULL,"Player Credentials Invalid");
         if($editorName && !$v1Editor) return new migration_return_package(1,NULL,"Editor Credentials Invalid");
@@ -27,6 +29,7 @@ class migration extends migration_dbconnection
         $userpack->password = $newPass;
         $userpack->display_name = $newDisplay;
         $userpack->email = $newEmail;
+        $userpack->permission = "read_write";
         $v2User = $users->logInPack($userpack)->data;
         if(!$v2User) //user doesn't exists
         {
@@ -52,16 +55,34 @@ class migration extends migration_dbconnection
         if(!$v1Editor) { $v1Editor = new stdClass(); $v1Editor->editor_id = 0; }
 
         if(migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v2_user_id = '{$v2User->user_id}'")) //already in migrations
-            migration_dbconnection::query("UPDATE user_migrations SET v1_player_id = '{$v1Player->player_id}',  v1_editor_id = '{$v1Editor->editor_id}' WHERE v2_user_id = '{$v2User->user_id}'");
+            migration_dbconnection::query("UPDATE user_migrations SET v1_player_id = '{$v1Player->player_id}',  v1_editor_id = '{$v1Editor->editor_id}', v1_read_write_token = '{$v1Editor->read_write_token}' WHERE v2_user_id = '{$v2User->user_id}'");
         else //not in migrations
-            migration_dbconnection::query("INSERT INTO user_migrations (v2_user_id, v1_player_id, v1_editor_id) VALUES ('{$v2User->user_id}', '{$v1Player->player_id}', '{$v1Editor->editor_id}')");
+            migration_dbconnection::query("INSERT INTO user_migrations (v2_user_id, v2_read_write_key, v1_player_id, v1_editor_id, v1_read_write_token) VALUES ('{$v2User->user_id}', '{$v2User->read_write_key}', '{$v1Player->player_id}', '{$v1Editor->editor_id}', '{$v1Editor->read_write_token}')");
 
         return new migration_return_package(0,true);
     }
 
-    public function migrateGame($v1GameId, $v1EditorId, $v1Token, $v2Username, $v2Password)
+    public function migrateGame($v1GameId, $v1EditorId, $v1EditorToken)
     {
+        $Editors = new Editors;
+        $Games = new Games;
 
+        $migData = migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_editor_id = '{$v1EditorId}'");
+        if(!$migData) return new migration_return_package(1, NULL, "Editor not migrated");
+        if($migData->v1_read_write_token != $v1EditorToken) return new migration_return_package(1, NULL, "Editor Authentication Failed");
+
+        $v2Auth = new stdClass();
+        $v2Auth->user_id = $migData->v2_user_id;
+        $v2Auth->key = $migData->v2_read_write_key;
+        $v2Auth->permission = "read_write";
+        
+        $oldGame = $Games->getGame($v1GameId);
+        //conform old terminology to new
+        $oldGame->allow_note_player_tags = $oldGame->allow_player_tags;
+        $oldGame->auth = $v2Auth;
+        //$newGame = $v2Games->createGame($oldGame);
+
+        return new migration_return_package(0,true);
     }
 
     public function duplicateGame($gameId, $userId, $key)
@@ -462,7 +483,7 @@ class migration extends migration_dbconnection
         }
 
         return new returnData(0, $newGameId, NULL);
-    */
+        */
     }
 
     static function replaceXMLIds($inputString, $newNpcIds, $newNodeIds, $newItemIds, $newAugBubbleIds, $newWebPageIds, $newMediaIds)
@@ -547,7 +568,7 @@ class migration extends migration_dbconnection
             return $output;
         }
         return false;
-    */
+        */
     }
 }
 ?>

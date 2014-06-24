@@ -1,5 +1,4 @@
 <?php
-
 require_once("module.php");
 require_once("media.php");
 require_once("locations.php");

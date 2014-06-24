@@ -115,7 +115,7 @@ class meta extends dbconnection
             $backpack->owner->player_pic_thumb_url = $playerPic->thumb_url;
 
             $media->thumb_file_path = substr($media->file_path,0,strrpos($media->file_path,'.')).'_128'.substr($media->file_path,strrpos($media->file_path,'.'));
-            $media->url_path = Config::gamedataWWWPath . "/";
+            $media->url_path = Config::v2_gamedata_www_path . "/";
 
             if($getItems || $getAttributes)
             {
@@ -467,8 +467,8 @@ class meta extends dbconnection
         $game = mysql_fetch_object($result);
         if(!$game) return "Invalid Game Id";
 
-        if($game->media_url) $game->media_url = Config::gamedataWWWPath . '/' . $game->media_url;
-        if($game->icon_url) $game->icon_url = Config::gamedataWWWPath . '/' . $game->icon_url;
+        if($game->media_url) $game->media_url = Config::v2_gamedata_www_path . '/' . $game->media_url;
+        if($game->icon_url) $game->icon_url = Config::v2_gamedata_www_path . '/' . $game->icon_url;
 
         $query = "SELECT editors.name FROM game_editors JOIN editors ON editors.editor_id = game_editors.editor_id WHERE game_editors.game_id = '{$gameId}'";
         $result = dbconnection::query($query);
@@ -492,12 +492,12 @@ class meta extends dbconnection
         while($content = mysql_fetch_object($result)) {
             if($content->media_url)
             {
-                $content->media_url       = Config::gamedataWWWPath . '/' . $content->media_url;
+                $content->media_url       = Config::v2_gamedata_www_path . '/' . $content->media_url;
                 $content->media_thumb_url = substr($content->media_url,0,strrpos($content->media_url,'.')).'_128'.substr($content->media_url,strrpos($content->media_url,'.'));
             }
             if($content->icon_url)
             {
-                $content->icon_url = Config::gamedataWWWPath . '/' . $content->icon_url;
+                $content->icon_url = Config::v2_gamedata_www_path . '/' . $content->icon_url;
                 $content->icon_thumb_url = substr($content-icon_url,0,strrpos($content-icon_url,'.')).'_128'.substr($content-icon_url,strrpos($content-icon_url,'.'));
             }
             $content->tags = Items::getItemTags($content->item_id)->data;
@@ -516,12 +516,12 @@ class meta extends dbconnection
         while($content = mysql_fetch_object($result)){
             if($content->media_url)
             {
-                $content->media_url = Config::gamedataWWWPath . '/' . $content->media_url;
+                $content->media_url = Config::v2_gamedata_www_path . '/' . $content->media_url;
                 $content->media_thumb_url = substr($content->media_url,0,strrpos($content->media_url,'.')).'_128'.substr($content->media_url,strrpos($content->media_url,'.'));
             }
             if($content->icon_url)
             {
-                $content->icon_url = Config::gamedataWWWPath . '/' . $content->icon_url;
+                $content->icon_url = Config::v2_gamedata_www_path . '/' . $content->icon_url;
                 $content->icon_thumb_url = substr($content-icon_url,0,strrpos($content-icon_url,'.')).'_128'.substr($content-icon_url,strrpos($content-icon_url,'.'));
             }
             $content->tags = Items::getItemTags($content->item_id)->data;

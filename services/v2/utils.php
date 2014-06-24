@@ -101,7 +101,7 @@ abstract class Utils
 
 	protected function serverErrorLog($message)
 	{
-		$errorLogFile = fopen(Config::serverErrorLog, "a");
+		$errorLogFile = fopen(Config::v2_error_log, "a");
 		$errorData = date('c').":\nRequest:\n"."http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]"."\n".$message."\n\n";
 		fwrite($errorLogFile, $errorData);
 		fclose($errorLogFile);

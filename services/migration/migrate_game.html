@@ -1,0 +1,88 @@
+<html>
+<head>
+<script type="text/javascript">
+
+    function parseURLParams(url) 
+    {
+        var queryStart = url.indexOf("?") + 1;
+        var queryEnd   = url.indexOf("#") + 1 || url.length + 1;
+        var query      = url.slice(queryStart, queryEnd - 1);
+
+        var params  = {};
+        if (query === url || query === "") return params;
+        var nvPairs = query.replace(/\+/g, " ").split("&");
+
+        for(var i=0; i<nvPairs.length; i++)
+        {
+            var nv = nvPairs[i].split("=");
+            var n  = decodeURIComponent(nv[0]);
+            var v  = decodeURIComponent(nv[1]);
+            if(!(n in params)) params[n] = [];
+            params[n].push(nv.length === 2 ? v : null);
+        }
+        return params;
+    }
+
+    function sendRequest(fn, params, method)
+    {
+        var xmlhttp;
+        xmlhttp=new XMLHttpRequest();
+        xmlhttp.open(method,"http://dev.arisgames.org/server/json.php/"+fn,false);
+        xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xmlhttp.send(params); //Synchronous call
+
+        return JSON.parse(xmlhttp.responseText);
+    }
+
+    
+    var editor_id = 0;
+    var rw_token = "";
+    var v1_games = [];
+    function submitAuth()
+    {
+        var response = sendRequest('v1.editors.getToken/'+document.getElementById('editor_name').value+"/"+document.getElementById('editor_pass').value+"/read_write", null, "GET");
+        if(!response.data) return "NO";
+        editor_id = response.data.editor_id;
+        rw_token = response.data.read_write_token;
+        var response = sendRequest('v1.games.getGamesForEditor/'+editor_id+"/"+rw_token, null, "GET");
+        if(!response.data) return "NO";
+        v1_games = response.data;
+
+        gamesDiv = document.getElementById('games');
+        var gameDiv;
+        for(var i = 0; i < v1_games.length; i++)
+        {
+            gameDiv = document.createElement('div');
+            gameDiv.innerHTML = "<button onclick='migrateGame("+i+")'>MIGRATE</button>"+v1_games[i].name;
+            gamesDiv.appendChild(gameDiv);
+        }
+    }
+
+    function migrateGame(i)
+    {
+        if(!v1_games[i]) return;
+        var game = v1_games[i];
+
+        var response = sendRequest('migration.migration.migrateGame/'+game.game_id+"/"+editor_id+"/"+rw_token, null, "GET");
+        if(!response.data) return "NO";
+    }
+
+</script>
+</head>
+<body id="body">
+
+<div id="login">
+    <table id="user_inputs">
+    <tr> <td> Sign In v1 Editor:</td><td><button onclick='submitAuth()'>Authenticate</button></td> </tr>
+    <tr> <td style='text-align:right;'>Username:</td> <td><input id='editor_name' type='text'>    </input></td> </tr>
+    <tr> <td style='text-align:right;'>Password:</td> <td><input id='editor_pass' type='password'></input></td> </tr>
+    <tr> <td>  </td> </tr>
+    </table>
+</div>
+
+<div id="games">
+</div>
+
+</body>
+</html>
+

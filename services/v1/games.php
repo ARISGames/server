@@ -1240,7 +1240,7 @@ class Games extends Module
 
         $player_ids = Module::queryArray($query);
         for($i = 0; $i < count($player_ids); $i++){
-            $query = "SELECT * FROM players WHERE player_id = {$player_ids[$i]->player_id}";
+            $query = "SELECT DISTINCT P.*, I.qty FROM players P, player_items I WHERE P.player_id = {$player_ids[$i]->player_id} AND I.player_id = {$player_ids[$i]->player_id}";
             $players[] = Module::query($query);
         }
         return new returnData(0, $players);
