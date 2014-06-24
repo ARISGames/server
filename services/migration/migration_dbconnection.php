@@ -13,9 +13,9 @@ Class migration_dbconnection
   }
   private static function disconnect()
   {
-    mysqli_close(migration_dbconnection::$mig_con);
-    mysqli_close(migration_dbconnection::$v1_con);
-    mysqli_close(migration_dbconnection::$v2_con);
+    //mysqli_close(migration_dbconnection::$mig_con);
+    //mysqli_close(migration_dbconnection::$v1_con);
+    //mysqli_close(migration_dbconnection::$v2_con);
   }
   private static function conForString($db)
   {

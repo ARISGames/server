@@ -5,6 +5,11 @@ require_once("../v1/players.php");
 require_once("../v1/editors.php");
 require_once("../v1/games.php");
 require_once("../v2/users.php");
+
+//require gross copypastad stubs to account for above problem
+require_once("games.php");
+
+//actually meaningful migration includes
 require_once("migration_dbconnection.php");
 require_once("migration_return_package.php");
 
@@ -66,6 +71,7 @@ class migration extends migration_dbconnection
     {
         $Editors = new Editors;
         $Games = new Games;
+        $migGames = new mig_games;
 
         $migData = migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_editor_id = '{$v1EditorId}'");
         if(!$migData) return new migration_return_package(1, NULL, "Editor not migrated");
@@ -76,13 +82,36 @@ class migration extends migration_dbconnection
         $v2Auth->key = $migData->v2_read_write_key;
         $v2Auth->permission = "read_write";
         
-        $oldGame = $Games->getGame($v1GameId);
+        $oldGame = $Games->getGame($v1GameId)->data;
         //conform old terminology to new
         $oldGame->allow_note_player_tags = $oldGame->allow_player_tags;
         $oldGame->auth = $v2Auth;
-        //$newGame = $v2Games->createGame($oldGame);
+        $v2GameId = $migGames->createGame($oldGame);
 
-        return new migration_return_package(0,true);
+        $mediaIdMap = migration::migrateMedia($v1GameId, $v2GameId);
+        $v2Game = migration_dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$v2GameId}'","v2");
+        migration_dbconnection::query("UPDATE games SET media_id = '{$mediaIdMap[$v2Game->media_id]}', icon_media_id = '{$mediaIdMap[$v2Game->icon_media_id]}'","v2");
+        $v2Game = migration_dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$v2GameId}'","v2"); //get updated game data
+
+        return new migration_return_package(0,$v2Game);
+    }
+
+    public function migrateMedia($v1GameId, $v2GameId)
+    {
+        $mediaIdMap = array();
+        $mediaIdMap[0] = 0; //preserve default/no media
+
+        $media = migration_dbconnection::queryArray("SELECT * FROM media WHERE game_id = '{$v1GameId}'","v1");
+        for($i = 0; $i < count($media); $i++)
+        {
+            $mediaIdMap[$media[$i]->media_id] = 0; //set it to 0 in case of failure
+            if(!file_exists(Config::gamedataFSPath."/".$media[$i]->file_path)) continue;
+            $filename = substr($media[$i]->file_path, strpos($media[$i]->file_path,'/')+1);
+            copy(Config::gamedataFSPath."/".$media[$i]->file_path,Config::v2_gamedata_folder."/".$filename);
+            $newMediaId = migration_dbconnection::queryInsert("INSERT INTO media (game_id, file_folder, file_name, display_name, created) VALUES ('{$v1GameId}','{$v2GameId}','{$filename}','{$media[$i]->name}',CURRENT_TIMESTAMP)", "v2");
+            $mediaIdMap[$media[$i]->media_id] = $newMediaId;
+        }
+        return $mediaIdMap;
     }
 
     public function duplicateGame($gameId, $userId, $key)
