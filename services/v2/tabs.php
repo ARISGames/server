@@ -20,7 +20,6 @@ class tabs extends dbconnection
             (isset($pack->type)                        ? "type,"                        : "").
             (isset($pack->name)                        ? "name,"                        : "").
             (isset($pack->icon_media_id)               ? "icon_media_id,"               : "").
-            (isset($pack->enabled)                     ? "enabled,"                     : "").
             (isset($pack->tab_detail_1)                ? "tab_detail_1,"                : "").
             (isset($pack->requirement_root_package_id) ? "requirement_root_package_id," : "").
             (isset($pack->sort_index)                  ? "sort_index,"                  : "").
@@ -30,7 +29,6 @@ class tabs extends dbconnection
             (isset($pack->type)                        ? "'".addslashes($pack->type)."',"                        : "").
             (isset($pack->name)                        ? "'".addslashes($pack->name)."',"                        : "").
             (isset($pack->icon_media_id)               ? "'".addslashes($pack->icon_media_id)."',"               : "").
-            (isset($pack->enabled)                     ? "'".addslashes($pack->enabled)."',"                     : "").
             (isset($pack->tab_detail_1)                ? "'".addslashes($pack->tab_detail_1)."',"                : "").
             (isset($pack->requirement_root_package_id) ? "'".addslashes($pack->requirement_root_package_id)."'," : "").
             (isset($pack->sort_index)                  ? "'".addslashes($pack->sort_index)."',"                  : "").
@@ -53,7 +51,6 @@ class tabs extends dbconnection
             (isset($pack->type)                        ? "type                        = '".addslashes($pack->type)."', "                        : "").
             (isset($pack->name)                        ? "name                        = '".addslashes($pack->name)."', "                        : "").
             (isset($pack->icon_media_id)               ? "icon_media_id               = '".addslashes($pack->icon_media_id)."', "               : "").
-            (isset($pack->enabled)                     ? "enabled                     = '".addslashes($pack->enabled)."', "                     : "").
             (isset($pack->tab_detail_1)                ? "tab_detail_1                = '".addslashes($pack->tab_detail_1)."', "                : "").
             (isset($pack->requirement_root_package_id) ? "requirement_root_package_id = '".addslashes($pack->requirement_root_package_id)."', " : "").
             (isset($pack->sort_index)                  ? "sort_index                  = '".addslashes($pack->sort_index)."', "                  : "").
@@ -73,7 +70,6 @@ class tabs extends dbconnection
         $tab->type                        = $sql_tab->type;
         $tab->name                        = $sql_tab->name;
         $tab->icon_media_id               = $sql_tab->icon_media_id;
-        $tab->enabled                     = $sql_tab->enabled;
         $tab->tab_detail_1                = $sql_tab->tab_detail_1;
         $tab->requirement_root_package_id = $sql_tab->requirement_root_package_id;
         $tab->sort_index                  = $sql_tab->sort_index;

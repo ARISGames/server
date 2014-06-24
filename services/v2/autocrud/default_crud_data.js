@@ -449,8 +449,7 @@ var CRUD_DEFAULTS = [
           "game_id":123,\n\
           "name":"dialogName",\n\
           "description":"dialogDescription",\n\
-          "icon_media_id":123,\n\
-          "root_script_id":123\n\
+          "icon_media_id":123\n\
         }\n\
         ',
     "getData":
@@ -465,8 +464,7 @@ var CRUD_DEFAULTS = [
           "dialog_id":123,\n\
           "name":"dialogName",\n\
           "description":"dialogDescription",\n\
-          "icon_media_id":123,\n\
-          "root_script_id":123\n\
+          "icon_media_id":123\n\
         }\n\
         ',
     "deleteData":
@@ -527,6 +525,7 @@ var CRUD_DEFAULTS = [
           "parent_dialog_script_id":123,\n\
           "dialog_character_id":123,\n\
           "requirement_root_package_id":123,\n\
+          "prompt":"dialogScriptPrompt",\n\
           "text":"dialogScriptText",\n\
           "sort_index":0\n\
         }\n\
@@ -544,6 +543,7 @@ var CRUD_DEFAULTS = [
           "parent_dialog_script_id":123,\n\
           "dialog_character_id":123,\n\
           "requirement_root_package_id":123,\n\
+          "prompt":"dialogScriptPrompt",\n\
           "text":"dialogScriptText",\n\
           "sort_index":0\n\
         }\n\
@@ -697,7 +697,6 @@ var CRUD_DEFAULTS = [
           "type":"MAP",\n\
           "name":"Map",\n\
           "icon_media_id":123,\n\
-          "enabled":1,\n\
           "tab_detail_1":0,\n\
           "requirement_root_package_id":0,\n\
           "sort_index":0\n\
@@ -716,7 +715,6 @@ var CRUD_DEFAULTS = [
           "type":"MAP",\n\
           "name":"Map",\n\
           "icon_media_id":123,\n\
-          "enabled":1,\n\
           "tab_detail_1":0,\n\
           "requirement_root_package_id":0,\n\
           "sort_index":0\n\

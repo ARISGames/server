@@ -19,14 +19,12 @@ class dialogs extends dbconnection
             (isset($pack->name)           ? "name,"           : "").
             (isset($pack->description)    ? "description,"    : "").
             (isset($pack->icon_media_id)  ? "icon_media_id,"  : "").
-            (isset($pack->root_script_id) ? "root_script_id," : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
             (isset($pack->name)           ? "'".addslashes($pack->name)."',"           : "").
             (isset($pack->description)    ? "'".addslashes($pack->description)."',"    : "").
             (isset($pack->icon_media_id)  ? "'".addslashes($pack->icon_media_id)."',"  : "").
-            (isset($pack->root_script_id) ? "'".addslashes($pack->root_script_id)."'," : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -47,7 +45,6 @@ class dialogs extends dbconnection
             (isset($pack->name)           ? "name           = '".addslashes($pack->name)."', "           : "").
             (isset($pack->description)    ? "description    = '".addslashes($pack->description)."', "    : "").
             (isset($pack->icon_media_id)  ? "icon_media_id  = '".addslashes($pack->icon_media_id)."', "  : "").
-            (isset($pack->root_script_id) ? "root_script_id = '".addslashes($pack->root_script_id)."', " : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE dialog_id = '{$pack->dialog_id}'"
         );
@@ -64,7 +61,6 @@ class dialogs extends dbconnection
         $dialog->name           = $sql_dialog->name;
         $dialog->description    = $sql_dialog->description;
         $dialog->icon_media_id  = $sql_dialog->icon_media_id;
-        $dialog->root_script_id = $sql_dialog->root_script_id;
 
         return $dialog;
     }
@@ -202,6 +198,7 @@ class dialogs extends dbconnection
             (isset($pack->parent_dialog_script_id)     ? "parent_dialog_script_id,"     : "").
             (isset($pack->dialog_character_id)         ? "dialog_character_id,"         : "").
             (isset($pack->requirement_root_package_id) ? "requirement_root_package_id," : "").
+            (isset($pack->prompt)                      ? "prompt,"                      : "").
             (isset($pack->text)                        ? "text,"                        : "").
             (isset($pack->sort_index)                  ? "sort_index,"                  : "").
             "created".
@@ -211,6 +208,7 @@ class dialogs extends dbconnection
             (isset($pack->parent_dialog_script_id)     ? "'".addslashes($pack->parent_dialog_script_id)."',"     : "").
             (isset($pack->dialog_character_id)         ? "'".addslashes($pack->dialog_character_id)."',"         : "").
             (isset($pack->requirement_root_package_id) ? "'".addslashes($pack->requirement_root_package_id)."'," : "").
+            (isset($pack->prompt)                      ? "'".addslashes($pack->prompt)."',"                      : "").
             (isset($pack->text)                        ? "'".addslashes($pack->text)."',"                        : "").
             (isset($pack->sort_index)                  ? "'".addslashes($pack->sort_index)."',"                  : "").
             "CURRENT_TIMESTAMP".
@@ -233,6 +231,7 @@ class dialogs extends dbconnection
             (isset($pack->parent_dialog_script_id)     ? "parent_dialog_script_id     = '".addslashes($pack->parent_dialog_script_id)."', "     : "").
             (isset($pack->dialog_character_id)         ? "dialog_character_id         = '".addslashes($pack->dialog_character_id)."', "         : "").
             (isset($pack->requirement_root_package_id) ? "requirement_root_package_id = '".addslashes($pack->requirement_root_package_id)."', " : "").
+            (isset($pack->prompt)                      ? "prompt                      = '".addslashes($pack->prompt)."', "                      : "").
             (isset($pack->text)                        ? "text                        = '".addslashes($pack->text)."', "                        : "").
             (isset($pack->sort_index)                  ? "sort_index                  = '".addslashes($pack->sort_index)."', "                  : "").
             "last_active = CURRENT_TIMESTAMP ".
@@ -252,6 +251,7 @@ class dialogs extends dbconnection
         $dialogScript->parent_dialog_script_id     = $sql_dialogScript->parent_dialog_script_id;
         $dialogScript->dialog_character_id         = $sql_dialogScript->dialog_character_id;
         $dialogScript->requirement_root_package_id = $sql_dialogScript->requirement_root_package_id;
+        $dialogScript->prompt                      = $sql_dialogScript->prompt;
         $dialogScript->text                        = $sql_dialogScript->text;
         $dialogScript->sort_index                  = $sql_dialogScript->sort_index;
 

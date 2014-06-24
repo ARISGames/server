@@ -88,10 +88,20 @@ class migration extends migration_dbconnection
         $oldGame->auth = $v2Auth;
         $v2GameId = $migGames->createGame($oldGame);
 
-        $mediaIdMap = migration::migrateMedia($v1GameId, $v2GameId);
+        $maps = new stdClass();
+        $maps->media = migration::migrateMedia($v1GameId, $v2GameId);
+
+        //update game media refrences
         $v2Game = migration_dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$v2GameId}'","v2");
-        migration_dbconnection::query("UPDATE games SET media_id = '{$mediaIdMap[$v2Game->media_id]}', icon_media_id = '{$mediaIdMap[$v2Game->icon_media_id]}'","v2");
+        migration_dbconnection::query("UPDATE games SET media_id = '{$maps->media[$v2Game->media_id]}', icon_media_id = '{$maps->media[$v2Game->icon_media_id]}'","v2");
         $v2Game = migration_dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$v2GameId}'","v2"); //get updated game data
+
+        $maps->plaques = migration::migratePlaques($v1GameId, $v2GameId,$maps);
+        $maps->items = migration::migrateItems($v1GameId, $v2GameId,$maps);
+        $maps->webpages = migration::migrateWebpages($v1GameId, $v2GameId,$maps);
+        $maps->dialogs = migration::migrateDialogs($v1GameId, $v2GameId,$maps);
+        $maps->notes = migration::migrateNotes($v1GameId, $v2GameId,$maps);
+        $maps->tabs = migration::migrateTabs($v1GameId, $v2GameId,$maps);
 
         return new migration_return_package(0,$v2Game);
     }
@@ -108,10 +118,133 @@ class migration extends migration_dbconnection
             if(!file_exists(Config::gamedataFSPath."/".$media[$i]->file_path)) continue;
             $filename = substr($media[$i]->file_path, strpos($media[$i]->file_path,'/')+1);
             copy(Config::gamedataFSPath."/".$media[$i]->file_path,Config::v2_gamedata_folder."/".$filename);
-            $newMediaId = migration_dbconnection::queryInsert("INSERT INTO media (game_id, file_folder, file_name, display_name, created) VALUES ('{$v1GameId}','{$v2GameId}','{$filename}','{$media[$i]->name}',CURRENT_TIMESTAMP)", "v2");
+            $newMediaId = migration_dbconnection::queryInsert("INSERT INTO media (game_id, file_folder, file_name, display_name, created) VALUES ('{$v2GameId}','{$v2GameId}','{$filename}','{$media[$i]->name}',CURRENT_TIMESTAMP)", "v2");
             $mediaIdMap[$media[$i]->media_id] = $newMediaId;
         }
         return $mediaIdMap;
+    }
+
+    public function migratePlaques($v1GameId, $v2GameId, $maps)
+    {
+        $plaqueIdMap = array();
+        $plaqueIdMap[0] = 0;
+
+        $plaques = migration_dbconnection::queryArray("SELECT * FROM nodes WHERE game_id = '{$v1GameId}'","v1");
+
+        //find plaques that are actually npc options so we can ignore them
+        $invalidMap = array();
+        $npcPlaques = migration_dbconnection::queryArray("SELECT * FROM npc_conversations WHERE game_id = '{$v1GameId}'","v1");
+        for($i = 0; $i < count($npcPlaques); $i++)
+            $invalidMap[$npcPlaques[$i]->node_id] = true;
+
+        for($i = 0; $i < count($plaques); $i++)
+        {
+            $plaqueIdMap[$plaques[$i]->node_id] = 0; //set it to 0 in case of failure
+            if($invalidMap[$plaques[$i]->node_id]) continue; //this plaque actually an npc option- ignore
+
+            $newPlaqueId = migration_dbconnection::queryInsert("INSERT INTO plaques (game_id, name, description, icon_media_id, media_id, created) VALUES ('{$v2GameId}','{$plaques[$i]->title}','{$plaques[$i]->text}','{$maps->media[$plaques[$i]->icon_media_id]}','{$maps->media[$plaques[$i]->media_id]}',CURRENT_TIMESTAMP)", "v2");
+            $plaqueIdMap[$plaques[$i]->node_id] = $newPlaqueId;
+        }
+        return $plaqueIdMap;
+    }
+
+    public function migrateItems($v1GameId, $v2GameId, $maps)
+    {
+        $itemIdMap = array();
+        $itemIdMap[0] = 0;
+
+        $items = migration_dbconnection::queryArray("SELECT * FROM items WHERE game_id = '{$v1GameId}'","v1");
+        for($i = 0; $i < count($items); $i++)
+        {
+            $itemIdMap[$items[$i]->item_id] = 0; //set it to 0 in case of failure
+            $newItemId = migration_dbconnection::queryInsert("INSERT INTO items (game_id, name, description, icon_media_id, media_id, droppable, destroyable, max_qty_in_inventory, weight, url, type, created) VALUES ('{$v2GameId}','{$items[$i]->name}','{$items[$i]->description}','{$maps->media[$items[$i]->icon_media_id]}','{$maps->media[$items[$i]->media_id]}','{$items[$i]->dropable}','{$items[$i]->destroyable}','{$items[$i]->max_qty_in_inventory}','{$items[$i]->weight}','{$items[$i]->url}','{$items[$i]->type}',CURRENT_TIMESTAMP)", "v2");
+            $itemIdMap[$items[$i]->item_id] = $newItemId;
+        }
+        return $itemIdMap;
+    }
+
+    public function migrateWebpages($v1GameId, $v2GameId, $maps)
+    {
+        $webpageIdMap = array();
+        $webpageIdMap[0] = 0;
+
+        $webpages = migration_dbconnection::queryArray("SELECT * FROM web_pages WHERE game_id = '{$v1GameId}'","v1");
+        for($i = 0; $i < count($webpages); $i++)
+        {
+            $webpageIdMap[$webpages[$i]->web_page_id] = 0; //set it to 0 in case of failure
+            $newWebpageId = migration_dbconnection::queryInsert("INSERT INTO web_pages (game_id, name, icon_media_id, url, created) VALUES ('{$v2GameId}','{$webpages[$i]->name}','{$maps->media[$webpages[$i]->icon_media_id]}','{$webpages[$i]->url}',CURRENT_TIMESTAMP)", "v2");
+            $webpageIdMap[$webpages[$i]->web_page_id] = $newWebpageId;
+        }
+        return $webpageIdMap;
+    }
+
+    public function migrateDialogs($v1GameId, $v2GameId, $maps)
+    {
+        $dialogIdMap = array();
+        $dialogIdMap[0] = 0;
+
+        $dialogs = migration_dbconnection::queryArray("SELECT * FROM npcs WHERE game_id = '{$v1GameId}'","v1");
+        $options = migration_dbconnection::queryArray("SELECT * FROM npc_options WHERE game_id = '{$v1GameId}'","v1");
+        $texts = migration_dbconnection::queryArray("SELECT * FROM nodes WHERE game_id = '{$v1GameId}'","v1");
+        
+        for($i = 0; $i < count($dialogs); $i++)
+        {
+            $dialogIdMap[$dialogs[$i]->npc_id] = 0; //set it to 0 in case of failure
+            $newDialogId = migration_dbconnection::queryInsert("INSERT INTO dialogs (game_id, name, description, icon_media_id, created) VALUES ('{$v2GameId}','{$dialogs[$i]->name}','{$dialogs[$i]->description}','{$maps->media[$dialogs[$i]->icon_media_id]}',CURRENT_TIMESTAMP)", "v2");
+            $dialogIdMap[$dialogs[$i]->npc_id] = $newDialogId;
+
+            $newCharacterId = migration_dbconnection::queryInsert("INSERT INTO dialog_characters (game_id, name, title, media_id, created) VALUES ('{$v2GameId}','{$dialogs[$i]->name}','{$dialogs[$i]->name}','{$maps->media[$dialogs[$i]->media_id]}',CURRENT_TIMESTAMP)", "v2");
+            if($dialogs[$i]->text && $dialogs[$i]->text != "")
+                migrations::textToScript($dialogs[$i]->text, $v2GameId, $newDialogId, $newCharacterId, 0);
+        }
+        return $dialogIdMap;
+    }
+
+    //returns the id of the LAST of the newly created chain of scripts. (aka the to-be-parent of any more scripts)
+    public function textToScript($text, $gameId, $dialogId, $rootCharacterId, $parentScriptId)
+    {
+        $newScriptId = migration_dbconnection::queryInsert("INSERT INTO dialog_scripts (game_id, dialog_id, parent_dialog_script_id, dialog_character_id, text, prompt, created) VALUES ('{$v2GameId}','{$dialogId}','{$parentScriptId}','{$rootCharacterId}','{$text}','{$prompt}',CURRENT_TIMESTAMP)", "v2");
+        return $newScriptId;
+    }
+
+
+    public function migrateTabs($v1GameId, $v2GameId, $maps)
+    {
+        $tabIdMap = array();
+        $tabIdMap[0] = 0; //preserve default/no tab
+
+        //remove defaults created at game creation, just to simplify things
+        migration_dbconnection::query("DELETE FROM tabs WHERE game_id = '{$v2GameId}'","v2");
+
+        $tabs = migration_dbconnection::queryArray("SELECT * FROM game_tab_data WHERE game_id = '{$v1GameId}'","v1");
+        for($i = 0; $i < count($tabs); $i++)
+        {
+            $tabIdMap[$tabs[$i]->id] = 0; //set it to 0 in case of failure
+            if($tabs[$i]->sort_index < 1) continue; //in new model, disabled tabs are simply deleted
+
+            //old: 'GPS','NEARBY','QUESTS','INVENTORY','PLAYER','QR','NOTE','STARTOVER','PICKGAME','NPC','ITEM','NODE','WEBPAGE'
+            //new: 'MAP','DECODER','SCANNER','QUESTS','INVENTORY','PLAYER','NOTE','DIALOG','ITEM','PLAQUE','WEBPAGE'
+            $newType = $tabs[$i]->tab;
+            $newDetail = 0;
+            if($tabs[$i]->tab == "NEARBY") continue;
+            if($tabs[$i]->tab == "STARTOVER") continue;
+            if($tabs[$i]->tab == "PICKGAME") continue;
+            if($tabs[$i]->tab == "GPS")       { $newType = "MAP";      $newDetail = $tabs[$i]->tab_detail_1; }
+            if($tabs[$i]->tab == "QUESTS")    { $newType = "QUESTS";   $newDetail = $tabs[$i]->tab_detail_1; }
+            if($tabs[$i]->tab == "INVENTORY") { $newType = "MAP";      $newDetail = $tabs[$i]->tab_detail_1; }
+            if($tabs[$i]->tab == "PLAYER")    { $newType = "PLAYER";   $newDetail = $tabs[$i]->tab_detail_1; }
+            if($tabs[$i]->tab == "NOTE")      { $newType = "NOTE";     $newDetail = $maps->notes[$tabs[$i]->tab_detail_1]; }
+            if($tabs[$i]->tab == "NPC")       { $newType = "DIALOG";   $newDetail = $maps->dialogs[$tabs[$i]->tab_detail_1]; }
+            if($tabs[$i]->tab == "ITEM")      { $newType = "ITEM";     $newDetail = $maps->items[$tabs[$i]->tab_detail_1]; }
+            if($tabs[$i]->tab == "NODE")      { $newType = "PLAQUE";   $newDetail = $maps->plaques[$tabs[$i]->tab_detail_1]; }
+            if($tabs[$i]->tab == "WEBPAGE")   { $newType = "WEB_PAGE"; $newDetail = $maps->webpages[$tabs[$i]->tab_detail_1]; }
+            if($tabs[$i]->tab == "QR") $newType = ($tab[$i]->tab_detail_1 == 0 || $tab[$i]->tab_detail_1 == 2) ? "SCANNER" : "DECODER";
+
+            $newTabId = migration_dbconnection::queryInsert("INSERT INTO tabs (game_id, type, sort_index, tab_detail_1, created) VALUES 
+            ('{$v2GameId}','{$newType}','{$tabs[$i]->tab_index}','{$newDetail}',CURRENT_TIMESTAMP)", "v2");
+            $tabIdMap[$tabs[$i]->tab] = $newTabId;
+        }
+        return $tabIdMap;
     }
 
     public function duplicateGame($gameId, $userId, $key)
