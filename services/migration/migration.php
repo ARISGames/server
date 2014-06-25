@@ -100,7 +100,7 @@ class migration extends migration_dbconnection
         $maps->items = migration::migrateItems($v1GameId, $v2GameId,$maps);
         $maps->webpages = migration::migrateWebpages($v1GameId, $v2GameId,$maps);
         $maps->dialogs = migration::migrateDialogs($v1GameId, $v2GameId,$maps);
-        $maps->notes = migration::migrateNotes($v1GameId, $v2GameId,$maps);
+        //$maps->notes = migration::migrateNotes($v1GameId, $v2GameId,$maps);
         $maps->tabs = migration::migrateTabs($v1GameId, $v2GameId,$maps);
 
         return new migration_return_package(0,$v2Game);
@@ -184,29 +184,101 @@ class migration extends migration_dbconnection
         $dialogIdMap[0] = 0;
 
         $dialogs = migration_dbconnection::queryArray("SELECT * FROM npcs WHERE game_id = '{$v1GameId}'","v1");
-        $options = migration_dbconnection::queryArray("SELECT * FROM npc_options WHERE game_id = '{$v1GameId}'","v1");
-        $texts = migration_dbconnection::queryArray("SELECT * FROM nodes WHERE game_id = '{$v1GameId}'","v1");
-        
+
+        //construct map of nodes for quick recall as referenced by npc_conversations
+        $nodes = migration_dbconnection::queryArray("SELECT * FROM nodes WHERE game_id = '{$v1GameId}'","v1");
+        $nodeMap = array();
+        for($i = 0; $i < count($nodes); $i++)
+            $nodeMap[$nodes[$i]->node_id] = $nodes[$i];
+
         for($i = 0; $i < count($dialogs); $i++)
         {
             $dialogIdMap[$dialogs[$i]->npc_id] = 0; //set it to 0 in case of failure
             $newDialogId = migration_dbconnection::queryInsert("INSERT INTO dialogs (game_id, name, description, icon_media_id, created) VALUES ('{$v2GameId}','{$dialogs[$i]->name}','{$dialogs[$i]->description}','{$maps->media[$dialogs[$i]->icon_media_id]}',CURRENT_TIMESTAMP)", "v2");
-            $dialogIdMap[$dialogs[$i]->npc_id] = $newDialogId;
 
             $newCharacterId = migration_dbconnection::queryInsert("INSERT INTO dialog_characters (game_id, name, title, media_id, created) VALUES ('{$v2GameId}','{$dialogs[$i]->name}','{$dialogs[$i]->name}','{$maps->media[$dialogs[$i]->media_id]}',CURRENT_TIMESTAMP)", "v2");
+            $newScriptId = 0;
+
+            //create intro script if exists, and treat it as the root script for all others
             if($dialogs[$i]->text && $dialogs[$i]->text != "")
-                migrations::textToScript($dialogs[$i]->text, $v2GameId, $newDialogId, $newCharacterId, 0);
+                $newScriptId = migration::textToScript("Greet", $dialogs[$i]->text, $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], $newScriptId, $maps);
+
+            $options = migration_dbconnection::queryArray("SELECT * FROM npc_conversations WHERE game_id = '{$v1GameId}' AND npc_id = '{$dialogs[$i]->npc_id}'","v1");
+            for($j = 0; $j < count($options); $j++)
+                migration::textToScript($options[$j]->text, $nodeMap[$options[$j]->node_id]->text, $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], $newScriptId, $maps);
+
+            $dialogIdMap[$dialogs[$i]->npc_id] = $newDialogId;
         }
         return $dialogIdMap;
     }
 
+    //helper for migrateDialogs
     //returns the id of the LAST of the newly created chain of scripts. (aka the to-be-parent of any more scripts)
-    public function textToScript($text, $gameId, $dialogId, $rootCharacterId, $parentScriptId)
+    //disclaimer: you should probably read up on regular expressions before messing around with this...
+    public function textToScript($option, $text, $gameId, $dialogId, $rootCharacterId, $rootCharacterTitle, $rootCharacterMediaId, $parentScriptId, $maps)
     {
-        $newScriptId = migration_dbconnection::queryInsert("INSERT INTO dialog_scripts (game_id, dialog_id, parent_dialog_script_id, dialog_character_id, text, prompt, created) VALUES ('{$v2GameId}','{$dialogId}','{$parentScriptId}','{$rootCharacterId}','{$text}','{$prompt}',CURRENT_TIMESTAMP)", "v2");
+        //testing scripts
+        //$text = "<dialog banana=\"testing\" butNot=\"12\" America='555'><npc mediaId = \"59\">\nHere is the first thing I will say</npc><npc mediaId = \"60\">Second Thing!!!</npc></dialog>";
+        //$text = "<d  but >dialog </dialog>"
+
+        //The case where no parsing is necessary 
+        if(!preg_match("@<\s*dialog(ue)?\s*(\w*=[\"']\w*[\"']\s*)*>(.*?)<\s*/\s*dialog(ue)?\s*>@is",$text,$matches))
+        {
+            //phew. Nothing complicated. 
+            $newScriptId = migration_dbconnection::queryInsert("INSERT INTO dialog_scripts 
+            (game_id, dialog_id, parent_dialog_script_id, dialog_character_id, text, prompt, created) VALUES 
+            ('{$gameId}','{$dialogId}','{$parentScriptId}','{$rootCharacterId}','{$text}','{$option}',CURRENT_TIMESTAMP)", "v2");
+            return $newScriptId;
+        }
+
+        //buckle up...
+        $newScriptId = $parentScriptId;
+        $dialogContents = $matches[3]; //$dialogContents will be the string between the dialog tags
+        while(!preg_match("@^\s*$@s",$dialogContents))
+        {
+            preg_match("@<\s*([^\s>]*)([^>]*)@is",$dialogContents,$matches);
+            $tag = $matches[1]; //$tag will be the tag type (example: "npc")
+            $attribs = $matches[2]; //$attribs will be the string of attributes on tag (example: "mediaId='123' title='billy'")
+            preg_match("@<\s*".$tag."[^>]*>(.*?)<\s*\/\s*".$tag."\s*>(.*)@is",$dialogContents,$matches);
+            $tag_contents = $matches[1]; //$tag_contents will be the string between npc tags (example: "Hi!")
+            $dialogContents = $matches[2]; //$dialog_contents will be the rest of the dialog contents that still need parsing
+
+            $characterId = 0;
+            if(preg_match("@npc@i",$tag))
+            {
+                $characterId = $rootCharacterId; //assume clean npc tag, use default character
+
+                $title = "";
+                $mediaId = 0;
+                while(preg_match("@^\s*([^\s=]*)\s*=\s*[\"']([^\"']*)[\"']\s*(.*)@is",$attribs,$matches))
+                {
+                    //In the example:  mediaId="123" name="billy"
+                    $attrib_name = $matches[1]; //mediaId
+                    $attrib_value = $matches[2]; //123
+                    $attribs = $matches[3]; //name="billy"
+
+                    if(preg_match("@title@i",$attrib_name)) $title = $attrib_value;
+                    if(preg_match("@mediaId@i",$attrib_name)) $mediaId = $attrib_value;
+                }
+
+                if($title != "" || $mediaId != 0)
+                {
+                    if($title == "") $title = $rootCharacterTitle;
+                    if($mediaId == 0) $title = $rootCharacterMediaId;
+                    $characterId = migration_dbconnection::queryInsert("INSERT INTO dialog_characters (game_id, name, title, media_id, created) VALUES ('{$gameId}','{$title}','{$title}','{$rootCharacterMediaId}',CURRENT_TIMESTAMP)", "v2");
+                }
+            }
+            else
+            {
+                //while($attribs
+                //preg_match($
+            }
+
+            $newScriptId = migration_dbconnection::queryInsert("INSERT INTO dialog_scripts (game_id, dialog_id, parent_dialog_script_id, dialog_character_id, text, prompt, created) VALUES ('{$gameId}','{$dialogId}','{$newScriptId}','{$rootCharacterId}','{$tag_contents}','{$option}',CURRENT_TIMESTAMP)", "v2");
+            $option = "Continue"; //set option for all but first script to 'continue'
+        }
         return $newScriptId;
     }
-
 
     public function migrateTabs($v1GameId, $v2GameId, $maps)
     {

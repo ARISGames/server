@@ -1,2 +1,2 @@
 #!/bin/bash
-cat reset_database.sql | tee | mysql -u root -p
+cat /var/www/html/server/services/migration/reset_database.sql | tee | mysql -u root -p
