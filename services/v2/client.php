@@ -144,10 +144,10 @@ class client extends dbconnection
         $playerQuests->complete = array();
         for($i = 0; $i < count($gameQuests); $i++)
         {
-            $gameQuests[$i]->requirement_root_package_id = $gameQuests[$i]->active_requirement_package_id;
+            $gameQuests[$i]->requirement_root_package_id = $gameQuests[$i]->active_requirement_root_package_id;
             if(!requirements::evaluateRequirementPackagePack($gameQuests[$i])) continue; //ensure quest is active/visible
 
-            $gameQuests[$i]->requirement_root_package_id = $gameQuests[$i]->complete_requirement_package_id;
+            $gameQuests[$i]->requirement_root_package_id = $gameQuests[$i]->complete_requirement_root_package_id;
             if(requirements::evaluateRequirementPackagePack($gameQuests[$i]))
                 $playerQuests->complete[] = $gameQuests[$i];
             else

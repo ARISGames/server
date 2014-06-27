@@ -652,13 +652,13 @@ var CRUD_DEFAULTS = [
           "active_description":"activeDescription",\n\
           "active_notification_type":"NONE",\n\
           "active_function":"NONE",\n\
-          "active_requirement_package_id":1,\n\
+          "active_requirement_root_package_id":1,\n\
           "complete_icon_media_id":123,\n\
           "complete_media_id":123,\n\
           "complete_description":"completeDescription",\n\
           "complete_notification_type":"NONE",\n\
           "complete_function":"NONE",\n\
-          "complete_requirement_package_id":1\n\
+          "complete_requirement_root_package_id":1\n\
         }\n\
         ',
     "getData":
@@ -677,10 +677,14 @@ var CRUD_DEFAULTS = [
           "active_media_id":123,\n\
           "active_description":"activeDescription",\n\
           "active_notification_type":"NONE",\n\
+          "active_function":"NONE",\n\
+          "active_requirement_root_package_id":1,\n\
           "complete_icon_media_id":123,\n\
           "complete_media_id":123,\n\
           "complete_description":"completeDescription",\n\
-          "complete_notification_type":"NONE"\n\
+          "complete_notification_type":"NONE",\n\
+          "complete_function":"NONE",\n\
+          "complete_requirement_root_package_id":1\n\
         }\n\
         ',
     "deleteData":

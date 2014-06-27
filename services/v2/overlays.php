@@ -3,8 +3,6 @@ require_once("dbconnection.php");
 require_once("editors.php");
 require_once("return_package.php");
 
-requirement_package_id INT(32) UNSIGNED NOT NULL DEFAULT 0,
-
 class overlays extends dbconnection
 { 
     //Takes in overlay JSON, all fields optional except game_id + user_id + key
@@ -18,29 +16,29 @@ class overlays extends dbconnection
         $pack->overlay_id = dbconnection::queryInsert(
             "INSERT INTO overlays (".
             "game_id,".
-            (isset($pack->name)                   ? "name,"                   : "").
-            (isset($pack->description)            ? "description,"            : "").
-            (isset($pack->media_id)               ? "media_id,"               : "").
-            (isset($pack->top_left_latitude)      ? "top_left_latitude,"      : "").
-            (isset($pack->top_left_longitude)     ? "top_left_longitude,"     : "").
-            (isset($pack->top_right_latitude)     ? "top_right_latitude,"     : "").
-            (isset($pack->top_right_longitude)    ? "top_right_longitude,"    : "").
-            (isset($pack->bottom_left_latitude)   ? "bottom_left_latitude,"   : "").
-            (isset($pack->bottom_left_longitude)  ? "bottom_left_longitude,"  : "").
-            (isset($pack->requirement_package_id) ? "requirement_package_id," : "").
+            (isset($pack->name)                        ? "name,"                        : "").
+            (isset($pack->description)                 ? "description,"                 : "").
+            (isset($pack->media_id)                    ? "media_id,"                    : "").
+            (isset($pack->top_left_latitude)           ? "top_left_latitude,"           : "").
+            (isset($pack->top_left_longitude)          ? "top_left_longitude,"          : "").
+            (isset($pack->top_right_latitude)          ? "top_right_latitude,"          : "").
+            (isset($pack->top_right_longitude)         ? "top_right_longitude,"         : "").
+            (isset($pack->bottom_left_latitude)        ? "bottom_left_latitude,"        : "").
+            (isset($pack->bottom_left_longitude)       ? "bottom_left_longitude,"       : "").
+            (isset($pack->requirement_root_package_id) ? "requirement_root_package_id," : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
-            (isset($pack->name)                   ? "'".addslashes($pack->name)."',"                   : "").
-            (isset($pack->description)            ? "'".addslashes($pack->description)."',"            : "").
-            (isset($pack->media_id)               ? "'".addslashes($pack->media_id)."',"               : "").
-            (isset($pack->top_left_latitude)      ? "'".addslashes($pack->top_left_latitude)."',"      : "").
-            (isset($pack->top_left_longitude)     ? "'".addslashes($pack->top_left_longitude)."',"     : "").
-            (isset($pack->top_right_latitude)     ? "'".addslashes($pack->top_right_latitude)."',"     : "").
-            (isset($pack->top_right_longitude)    ? "'".addslashes($pack->top_right_longitude)."',"    : "").
-            (isset($pack->bottom_left_latitude)   ? "'".addslashes($pack->bottom_left_latitude)."',"   : "").
-            (isset($pack->bottom_left_longitude)  ? "'".addslashes($pack->bottom_left_longitude)."',"  : "").
-            (isset($pack->requirement_package_id) ? "'".addslashes($pack->requirement_package_id)."'," : "").
+            (isset($pack->name)                        ? "'".addslashes($pack->name)."',"                        : "").
+            (isset($pack->description)                 ? "'".addslashes($pack->description)."',"                 : "").
+            (isset($pack->media_id)                    ? "'".addslashes($pack->media_id)."',"                    : "").
+            (isset($pack->top_left_latitude)           ? "'".addslashes($pack->top_left_latitude)."',"           : "").
+            (isset($pack->top_left_longitude)          ? "'".addslashes($pack->top_left_longitude)."',"          : "").
+            (isset($pack->top_right_latitude)          ? "'".addslashes($pack->top_right_latitude)."',"          : "").
+            (isset($pack->top_right_longitude)         ? "'".addslashes($pack->top_right_longitude)."',"         : "").
+            (isset($pack->bottom_left_latitude)        ? "'".addslashes($pack->bottom_left_latitude)."',"        : "").
+            (isset($pack->bottom_left_longitude)       ? "'".addslashes($pack->bottom_left_longitude)."',"       : "").
+            (isset($pack->requirement_root_package_id) ? "'".addslashes($pack->requirement_root_package_id)."'," : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -58,16 +56,16 @@ class overlays extends dbconnection
 
         dbconnection::query(
             "UPDATE overlays SET ".
-            (isset($pack->name)                   ? "name                   = '".addslashes($pack->name)."', "                   : "").
-            (isset($pack->description)            ? "description            = '".addslashes($pack->description)."', "            : "").
-            (isset($pack->media_id)               ? "media_id               = '".addslashes($pack->media_id)."', "               : "").
-            (isset($pack->top_left_latitude)      ? "top_left_latitude      = '".addslashes($pack->top_left_latitude)."', "      : "").
-            (isset($pack->top_left_longitude)     ? "top_left_longitude     = '".addslashes($pack->top_left_longitude)."', "     : "").
-            (isset($pack->top_right_latitude)     ? "top_right_latitude     = '".addslashes($pack->top_right_latitude)."', "     : "").
-            (isset($pack->top_right_longitude)    ? "top_right_longitude    = '".addslashes($pack->top_right_longitude)."', "    : "").
-            (isset($pack->bottom_left_latitude)   ? "bottom_left_latitude   = '".addslashes($pack->bottom_left_latitude)."', "   : "").
-            (isset($pack->bottom_left_longitude)  ? "bottom_left_longitude  = '".addslashes($pack->bottom_left_longitude)."', "  : "").
-            (isset($pack->requirement_package_id) ? "requirement_package_id = '".addslashes($pack->requirement_package_id)."', " : "").
+            (isset($pack->name)                        ? "name                        = '".addslashes($pack->name)."', "                        : "").
+            (isset($pack->description)                 ? "description                 = '".addslashes($pack->description)."', "                 : "").
+            (isset($pack->media_id)                    ? "media_id                    = '".addslashes($pack->media_id)."', "                    : "").
+            (isset($pack->top_left_latitude)           ? "top_left_latitude           = '".addslashes($pack->top_left_latitude)."', "           : "").
+            (isset($pack->top_left_longitude)          ? "top_left_longitude          = '".addslashes($pack->top_left_longitude)."', "          : "").
+            (isset($pack->top_right_latitude)          ? "top_right_latitude          = '".addslashes($pack->top_right_latitude)."', "          : "").
+            (isset($pack->top_right_longitude)         ? "top_right_longitude         = '".addslashes($pack->top_right_longitude)."', "         : "").
+            (isset($pack->bottom_left_latitude)        ? "bottom_left_latitude        = '".addslashes($pack->bottom_left_latitude)."', "        : "").
+            (isset($pack->bottom_left_longitude)       ? "bottom_left_longitude       = '".addslashes($pack->bottom_left_longitude)."', "       : "").
+            (isset($pack->requirement_root_package_id) ? "requirement_root_package_id = '".addslashes($pack->requirement_root_package_id)."', " : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE overlay_id = '{$pack->overlay_id}'"
         );
@@ -79,18 +77,18 @@ class overlays extends dbconnection
     {
         if(!$sql_overlay) return $sql_overlay;
         $overlay = new stdClass();
-        $overlay->overlay_id             = $sql_overlay->overlay_id;
-        $overlay->game_id                = $sql_overlay->game_id;
-        $overlay->name                   = $sql_overlay->name;
-        $overlay->description            = $sql_overlay->description;
-        $overlay->media_id               = $sql_overlay->media_id;
-        $overlay->top_left_latitude      = $sql_overlay->top_left_latitude;
-        $overlay->top_left_longitude     = $sql_overlay->top_left_longitude;
-        $overlay->top_right_latitude     = $sql_overlay->top_right_latitude;
-        $overlay->top_right_longitude    = $sql_overlay->top_right_longitude;
-        $overlay->bottom_left_latitude   = $sql_overlay->bottom_left_latitude;
-        $overlay->bottom_left_longitude  = $sql_overlay->bottom_left_longitude;
-        $overlay->requirement_package_id = $sql_overlay->requirement_package_id;
+        $overlay->overlay_id                  = $sql_overlay->overlay_id;
+        $overlay->game_id                     = $sql_overlay->game_id;
+        $overlay->name                        = $sql_overlay->name;
+        $overlay->description                 = $sql_overlay->description;
+        $overlay->media_id                    = $sql_overlay->media_id;
+        $overlay->top_left_latitude           = $sql_overlay->top_left_latitude;
+        $overlay->top_left_longitude          = $sql_overlay->top_left_longitude;
+        $overlay->top_right_latitude          = $sql_overlay->top_right_latitude;
+        $overlay->top_right_longitude         = $sql_overlay->top_right_longitude;
+        $overlay->bottom_left_latitude        = $sql_overlay->bottom_left_latitude;
+        $overlay->bottom_left_longitude       = $sql_overlay->bottom_left_longitude;
+        $overlay->requirement_root_package_id = $sql_overlay->requirement_root_package_id;
 
         return $overlay;
     }

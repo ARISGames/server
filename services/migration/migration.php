@@ -101,13 +101,18 @@ class migration extends migration_dbconnection
         $maps->webpages = migration::migrateWebpages($v1GameId, $v2GameId, $maps);
         $maps->dialogs = migration::migrateDialogs($v1GameId, $v2GameId, $maps);
         //$maps->notes = migration::migrateNotes($v1GameId, $v2GameId, $maps); //don't migrate notes for now... (we'll get into if we should later)
-        $maps->tabs = migration::migrateTabs($v1GameId, $v2GameId, $maps);
+        $maps->quests = migration::migrateQuests($v1GameId, $v2GameId, $maps);
 
         $sceneId = migration_dbconnection::queryInsert("INSERT INTO scenes (game_id, name, created) VALUES ('{$v2GameId}', 'Main Scene', CURRENT_TIMESTAMP)","v2");
         $triggerMaps = migration::migrateTriggers($v1GameId, $v2GameId, $sceneId, $maps);
         //both of these maps have v1 location_id as key, v2 trigger as value
         $maps->locTriggers = $triggerMaps->locationTriggerMap;
         $maps->qrTriggers = $triggerMaps->qrTriggerMap;
+
+        $maps->tabs = migration::migrateTabs($v1GameId, $v2GameId, $maps);
+
+        //no maps generated from migrateRequirements
+        migration::migrateRequirements($v1GameId, $v2GameId, $maps);
 
         return new migration_return_package(0,$v2Game);
     }
@@ -285,13 +290,30 @@ class migration extends migration_dbconnection
         return $newScriptId;
     }
 
+    public function migrateQuests($v1GameId, $v2GameId, $maps)
+    {
+        $questIdMap = array();
+        $questIdMap[0] = 0;
+
+        $quests = migration_dbconnection::queryArray("SELECT * FROM quests WHERE game_id = '{$v1GameId}'","v1");
+        for($i = 0; $i < count($quests); $i++)
+        {
+            $questIdMap[$quests[$i]->quest_id] = 0; //set it to 0 in case of failure
+            $newQuestId = migration_dbconnection::queryInsert("INSERT INTO quests (game_id,name,description, active_icon_media_id,active_media_id,active_description,active_notification_type,active_function, complete_icon_media_id,complete_media_id,complete_description,complete_notification_type,complete_function, sort_index,created) VALUES ('{$v2GameId}','{$quests[$i]->name}','{$quests[$i]->description}', '{$maps->media[$quests[$i]->active_icon_media_id]}','{$maps->media[$quests[$i]->active_media_id]}','{$quests[$i]->description}','".($quests[$i]->full_screen_notify ? "FULL_SCREEN" : "DROP_DOWN")."','{$quests[$i]->go_function}', '{$maps->media[$quests[$i]->complete_icon_media_id]}','{$maps->media[$quests[$i]->complete_media_id]}','{$quests[$i]->text_when_complete}','".($quests[$i]->complete_full_screen_notify ? "FULL_SCREEN" : "DROP_DOWN")."','{$quests[$i]->complete_go_function}', '{$quests[$i]->sort_index}',CURRENT_TIMESTAMP)", "v2");
+            $questIdMap[$quests[$i]->quest_id] = $newQuestId;
+        }
+        return $webpageIdMap;
+    }
+
     public function migrateTriggers($v1GameId, $v2GameId, $sceneId, $maps)
     {
         //returns two trigger maps- one mapping location ids to triggers, one mapping qr codes to triggers
         //note- although 'instances' get created in this function, they are NOT needed for further migration, and no map is kept of their IDs
 
         $locTriggerMap = array();
+        $locTriggerMap[0] = 0;
         $qrTriggerMap = array();
+        $qrTriggerMap[0] = 0;
 
         $qrcodes = migration_dbconnection::queryArray("SELECT * FROM qrcodes WHERE game_id = '{$v1GameId}'","v1");
         $qrCodeLocationMap = array(); //used to find qr code from location quickly
@@ -302,6 +324,9 @@ class migration extends migration_dbconnection
 
         for($i = 0; $i < count($locations); $i++)
         {
+            $locTriggerMap[$locations[$i]->location_id] = 0;
+            $qrTriggerMap[$locations[$i]->location_id] = 0;
+
             $newType = "";
             $objectId = 0;
             $iconMediaId = 0;
@@ -375,490 +400,106 @@ class migration extends migration_dbconnection
         return $tabIdMap;
     }
 
-    public function duplicateGame($gameId, $userId, $key)
+    public function migrateRequirements($v1GameId, $v2GameId, $maps)
     {
-    /*
-        if(!users::authenticateUser($userId, $key, "read_write"))
-            return new returnData(6, NULL, "Failed Authentication");
+        //no need to return map of any kind- nothing references v1 requirements
 
-	//Add back in when requirements not being deleted is fixed, recheck for other issues
-	//$errorString = Conversations::searchGameForErrors($gameId);
-	//if($errorString) return new returnData(3, NULL, $errorString);
-        
-	Module::serverErrorLog("Duplicating Game Id:".$gameId);
-
-        $game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = {$gameId} LIMIT 1");
-        if (!$game) return new returnData(2, NULL, "invalid game id");
-
-        $compatibleName = false;
-        $appendNo = 1;
-        while(!$compatibleName)
+        //round up all v1 requirements into groups by type and by object
+        $rGroupings = new stdClass;
+        $rGroupings->dialogScripts = array();
+        $rGroupings->questCompletes = array();
+        $rGroupings->questDisplays = array();
+        $rGroupings->triggers = array();
+        $rGroupings->overlays = array();
+        $rGroupings->tabs = array();
+        $requirements = migration_dbconnection::queryArray("SELECT * FROM requirements WHERE game_id = '{$v1GameId}'","v1");
+        $q = 0;
+        for($i = 0; $i < count($requirements); $i++)
         {
-            $query = "SELECT * FROM games WHERE name = '".addslashes($game->name)."_copy".$appendNo."'";
-            $result = dbconnection::query($query);
-            if(mysql_fetch_object($result))
-                $appendNo++;
-            else
-                $compatibleName = true;
-        }
-        $game->name = $game->name."_copy".$appendNo;
+            if($requirements[$i]->content_type == "Node")          $typeGroup = &$rGroupings->dialogScripts;
+            if($requirements[$i]->content_type == "QuestDisplay")  $typeGroup = &$rGroupings->questCompletes;
+            if($requirements[$i]->content_type == "QuestComplete") $typeGroup = &$rGroupings->questDisplays;
+            if($requirements[$i]->content_type == "Location")      $typeGroup = &$rGroupings->triggers;
+            if($requirements[$i]->content_type == "CustomMap")     $typeGroup = &$rGroupings->overlays;
+            if($requirements[$i]->content_type == "Tab")           $typeGroup = &$rGroupings->tabs;
 
-        $newGameId = Games::createGame($game->name, $game->description, 
-                $game->icon_media_id, $game->media_id,
-                $game->ready_for_public, $game->is_locational,
-                $game->on_launch_node_id, $game->game_complete_node_id,
-                $game->allow_share_note_to_map, $game->allow_share_note_to_book, $game->allow_player_tags, $game->allow_player_comments, $game->allow_note_likes,
-                $game->pc_media_id, $game->use_player_pic,
-                $game->map_type, $game->show_player_location,
-                $game->full_quick_travel,
-                $game->inventory_weight_cap, $game->allow_trading, 
-                $userId, $key)->data;
-
-        //Remove the tabs created by createGame
-        dbconnection::query("DELETE FROM game_tab_data WHERE game_id = {$newGameId}");
-
-        $result = dbconnection::query("SELECT * FROM game_tab_data WHERE game_id = {$gameId}");
-        while($result && $row = mysql_fetch_object($result))
-            dbconnection::query("INSERT INTO game_tab_data (game_id, tab, tab_index, tab_detail_1) VALUES ('{$newGameId}', '{$row->tab}', '{$row->tab_index}', '{$row->tab_detail_1}')");
-
-        $query = "SELECT * FROM requirements WHERE game_id = {$gameId}";
-        $result = dbconnection::query($query);
-        while($result && $row = mysql_fetch_object($result)){
-            $query = "INSERT INTO requirements (game_id, content_type, content_id, requirement, not_operator, boolean_operator, requirement_detail_1, requirement_detail_2, requirement_detail_3, requirement_detail_4) VALUES ('{$newGameId}', '{$row->content_type}', '{$row->content_id}', '{$row->requirement}', '{$row->not_operator}', '{$row->boolean_operator}', '{$row->requirement_detail_1}', '{$row->requirement_detail_2}', '{$row->requirement_detail_3}', '{$row->requirement_detail_4}')";
-            dbconnection::query($query);
+            if(!$typeGroup[$requirements[$i]->content_id]) $typeGroup[$requirements[$i]->content_id] = array();
+            $typeGroup[$requirements[$i]->content_id][] = $requirements[$i];
         }
 
-        $query = "SELECT * FROM quests WHERE game_id = {$gameId}";
-        $result = dbconnection::query($query);
-        while($result && $row = mysql_fetch_object($result)){
-            $query = "INSERT INTO quests (game_id, name, description, text_when_complete, sort_index, go_function, active_media_id, complete_media_id, full_screen_notify, active_icon_media_id, complete_icon_media_id) VALUES ('{$newGameId}', '".addSlashes($row->name)."', '".addSlashes($row->description)."', '".addSlashes($row->text_when_complete)."', '{$row->sort_index}', '{$row->go_function}', '{$row->active_media_id}', '{$row->complete_media_id}', '{$row->full_screen_notify}', '{$row->active_icon_media_id}', '{$row->complete_icon_media_id}')";
-
-            dbconnection::query($query);
-            $newId = mysql_insert_id();
-
-            $query = "UPDATE requirements SET requirement_detail_1 = {$newId} WHERE game_id = '{$newGameId}' AND requirement = 'PLAYER_HAS_COMPLETED_QUEST' AND requirement_detail_1 = '{$row->quest_id}'";
-            dbconnection::query($query);
-
-
-            $query = "UPDATE requirements SET content_id = {$newId} WHERE game_id = '{$newGameId}' AND (content_type = 'QuestDisplay' OR content_type = 'QuestComplete') AND content_id = '{$row->quest_id}'";
-            dbconnection::query($query);
+        foreach($rGroupings->dialogScripts as $dialogId => $requirementsList)
+        {
+            $req_package_id = migration::migrateRequirementListIntoPackage($v2GameId, $requirementsList, $maps);
+            migration_dbconnection::query("UPDATE dialog_scripts SET requirement_root_package_id = '{$req_package_id}' WHERE dialog_script_id = '{$maps->nodes[$dialogId]}'","v2");
         }
-
-        $newFolderIds = array();
-        $query = "SELECT * FROM folders WHERE game_id = {$gameId}";
-        $result = dbconnection::query($query);
-        while($result && $row = mysql_fetch_object($result)){
-            $query = "INSERT INTO folders (game_id, name, parent_id, previous_id, is_open) VALUES ('{$newGameId}', '".addSlashes($row->name)."', '{$row->parent_id}', '{$row->previous_id}', '{$row->is_open}')";
-            dbconnection::query($query);
-            $newFolderIds[($row->folder_id)] = mysql_insert_id();
+        foreach($rGroupings->questCompletes as $questId => $requirementsList)
+        {
+            $req_package_id = migration::migrateRequirementListIntoPackage($v2GameId, $requirementsList, $maps);
+            migration_dbconnection::query("UPDATE quests SET complete_requirement_root_package_id = '{$req_package_id}' WHERE quest_id = '{$maps->quests[$questId]}'","v2");
         }
-
-        $query = "SELECT * FROM folders WHERE game_id = {$newGameId}";
-        $result = dbconnection::query($query);
-        while($result && $row = mysql_fetch_object($result)){
-            if($row->folder_id != 0){
-                $query = "UPDATE folders SET parent_id = {$newFolderIds[($row->parent_id)]} WHERE game_id = '{$newGameId}' AND folder_id = {$row->folder_id}";
-                dbconnection::query($query);
-            }
+        foreach($rGroupings->questDisplays as $questId => $requirementsList)
+        {
+            $req_package_id = migration::migrateRequirementListIntoPackage($v2GameId, $requirementsList, $maps);
+            migration_dbconnection::query("UPDATE quests SET active_requirement_root_package_id = '{$req_package_id}' WHERE quest_id = '{$maps->quests[$questId]}'","v2");
         }
-
-        $query = "SELECT * FROM folder_contents WHERE game_id = {$gameId}";
-        $result = dbconnection::query($query);
-        while($result && $row = mysql_fetch_object($result)){
-            $query = "INSERT INTO folder_contents (game_id, folder_id, content_type, content_id, previous_id) VALUES ('{$newGameId}', '{$newFolderIds[($row->folder_id)]}', '{$row->content_type}', '{$row->content_id}', '{$row->previous_id}')";
-            dbconnection::query($query);
-
-            if($row->folder_id != 0){
-                $query = "UPDATE folder_contents SET folder_id = {$newFolderIds[($row->folder_id)]} WHERE game_id = '{$newGameId}' AND object_content_id = {$row->object_content_id}";
-                dbconnection::query($query); 
-            }
+        foreach($rGroupings->triggers as $locationId => $requirementsList)
+        {
+            //I do this twice- once for the v2 location trigger that was generated for the v1 location...
+            $req_package_id = migration::migrateRequirementListIntoPackage($v2GameId, $requirementsList, $maps);
+            migration_dbconnection::query("UPDATE triggers SET requirement_root_package_id = '{$req_package_id}' WHERE trigger_id = '{$maps->locTriggers[$locationId]}'","v2");
+            //and once for the v2 qr trigger that was generated for the v1 location
+            $req_package_id = migration::migrateRequirementListIntoPackage($v2GameId, $requirementsList, $maps);
+            migration_dbconnection::query("UPDATE triggers SET requirement_root_package_id = '{$req_package_id}' WHERE trigger_id = '{$maps->qrTriggers[$locationId]}'","v2");
         }
-
-        $query = "SELECT * FROM qrcodes WHERE game_id = {$gameId}";
-        $result = dbconnection::query($query);
-        while($result && $row = mysql_fetch_object($result)){
-            $query = "INSERT INTO qrcodes (game_id, link_type, link_id, code, match_media_id) VALUES ('{$newGameId}', '{$row->link_type}', '{$row->link_id}', '{$row->code}', '{$row->match_media_id}')";
-            dbconnection::query($query);
+        foreach($rGroupings->overlays as $overlayId => $requirementsList)
+        {
+            $req_package_id = migration::migrateRequirementListIntoPackage($v2GameId, $requirementsList, $maps);
+            migration_dbconnection::query("UPDATE overlays SET requirement_root_package_id = '{$req_package_id}' WHERE overlay_id = '{$maps->overlays[$overlayId]}'","v2");
         }
-
-        $query = "SELECT * FROM fountains WHERE game_id = {$gameId}";
-        $result = dbconnection::query($query);
-        while($result && $row = mysql_fetch_object($result)){
-            $query = "INSERT INTO fountains (game_id, type, location_id, spawn_probability, spawn_rate, max_amount, last_spawned, active) VALUES ('{$newGameId}', '{$row->type}', '{$row->location_id}', '{$row->spawn_probability}', '{$row->spawn_rate}', '{$row->max_amount}', '{$row->last_spawned}', '{$row->active}')";
-            dbconnection::query($query);
+        foreach($rGroupings->tabs as $tabId => $requirementsList)
+        {
+            $req_package_id = migration::migrateRequirementListIntoPackage($v2GameId, $requirementsList, $maps);
+            migration_dbconnection::query("UPDATE tabs SET requirement_root_package_id = '{$req_package_id}' WHERE tab_id = '{$maps->tabs[$tabId]}'","v2");
         }
-
-        $query = "SELECT * FROM spawnables WHERE game_id = {$gameId}";
-        $result = dbconnection::query($query);
-        while($result && $row = mysql_fetch_object($result)){
-            $query = "INSERT INTO spawnables (game_id, type, type_id, amount, max_area, amount_restriction, location_bound_type, latitude, longitude, spawn_probability, spawn_rate, delete_when_viewed, last_spawned, error_range, force_view, hidden, allow_quick_travel, wiggle, time_to_live, active, location_name, show_title, min_area) VALUES ('{$newGameId}', '{$row->type}', '{$row->type_id}', '{$row->amount}', '{$row->max_area}', '{$row->amount_restriction}', '{$row->location_bound_type}', '{$row->latitude}', '{$row->longitude}', '{$row->spawn_probability}', '{$row->spawn_rate}', '{$row->delete_when_viewed}', '{$row->last_spawned}', '{$row->error_range}', '{$row->force_view}', '{$row->hidden}', '{$row->allow_quick_travel}', '{$row->wiggle}', '{$row->time_to_live}', '{$row->active}', '{$row->location_name}', '{$row->show_title}', '{$row->min_area}')";
-            dbconnection::query($query);
-            $newId = mysql_insert_id();
-
-            $query = "UPDATE fountains SET location_id = {$newId} WHERE game_id = '{$newGameId}' AND type = 'Spawnable' AND location_id = {$row->spawnable_id}";
-            dbconnection::query($query);
-        }
-
-        $query = "SELECT * FROM locations WHERE game_id = {$gameId}";
-        $result = dbconnection::query($query);
-        while($result && $row = mysql_fetch_object($result)){
-            $query = "INSERT INTO locations (game_id, name, description, latitude, longitude, error, type, type_id, icon_media_id, item_qty, hidden, force_view, allow_quick_travel) VALUES ('{$newGameId}', '".addSlashes($row->name)."', '".addSlashes($row->description)."', '{$row->latitude}', '{$row->longitude}', '{$row->error}', '{$row->type}', '{$row->type_id}', '{$row->icon_media_id}', '{$row->item_qty}', '{$row->hidden}', '{$row->force_view}', '{$row->allow_quick_travel}')";
-            dbconnection::query($query);
-            $newId = mysql_insert_id();
-
-            $query = "UPDATE fountains SET location_id = {$newId} WHERE game_id = '{$newGameId}' AND type = 'Location' AND location_id = {$row->location_id}";
-            dbconnection::query($query);
-
-            $query = "UPDATE qrcodes SET link_id = {$newId} WHERE game_id = '{$newGameId}' AND link_type = 'Location' AND link_id = {$row->location_id}";
-            dbconnection::query($query);
-
-            $query = "UPDATE requirements SET content_id = {$newId} WHERE game_id = '{$newGameId}' AND content_type = 'Location' AND content_id = {$row->location_id}";
-            dbconnection::query($query);
-        }
-
-        $query = "SELECT * FROM npc_conversations WHERE game_id = {$gameId}";
-        $result = dbconnection::query($query);
-        while($result && $row = mysql_fetch_object($result)){
-            $query = "INSERT INTO npc_conversations (game_id, npc_id, node_id, text, sort_index) VALUES ('{$newGameId}', '{$row->npc_id}', '{$row->node_id}', '".addSlashes($row->text)."', '{$row->sort_index}')";
-            dbconnection::query($query);
-        }
-
-        $query = "SELECT * FROM player_state_changes WHERE game_id = {$gameId}";
-        $result = dbconnection::query($query);
-        while($result && $row = mysql_fetch_object($result)){
-            $query = "INSERT INTO player_state_changes (game_id, event_type, event_detail, action, action_detail, action_amount) VALUES ('{$newGameId}', '{$row->event_type}', '{$row->event_detail}', '{$row->action}', '{$row->action_detail}', '{$row->action_amount}')";
-            dbconnection::query($query);
-        }
-
-        $newNpcIds = array();
-        $query = "SELECT * FROM npcs WHERE game_id = {$gameId}";
-        $result = dbconnection::query($query);
-        while($result && $row = mysql_fetch_object($result)){
-
-            $query = "INSERT INTO npcs (game_id, name, description, text, closing, media_id, icon_media_id) VALUES ('{$newGameId}', '".addSlashes($row->name)."', '".addSlashes($row->description)."', '".addSlashes($row->text)."', '".addSlashes($row->closing)."', '{$row->media_id}', '{$row->icon_media_id}')";
-            dbconnection::query($query);
-            $newId = mysql_insert_id();
-            $newNpcIds[($row->npc_id)] = $newId;
-
-            $query = "UPDATE npc_conversations SET npc_id = {$newId} WHERE game_id = '{$newGameId}' AND npc_id = {$row->npc_id}";
-            dbconnection::query($query);
-
-            $query = "UPDATE folder_contents SET content_id = {$newId} WHERE game_id = '{$newGameId}' AND content_type = 'Npc' AND content_id = {$row->npc_id}";
-            dbconnection::query($query);
-
-            $query = "UPDATE locations SET type_id = {$newId} WHERE game_id = '{$newGameId}' AND type = 'Npc' AND type_id = {$row->npc_id}";
-            dbconnection::query($query);
-
-            $query = "UPDATE player_state_changes SET event_detail = {$newId} WHERE game_id = '{$newGameId}' AND event_type = 'VIEW_NPC' AND event_detail = {$row->npc_id}";
-            dbconnection::query($query);
-
-            $query = "UPDATE requirements SET requirement_detail_1 = {$newId} WHERE game_id = '{$newGameId}' AND requirement = 'PLAYER_VIEWED_NPC' AND requirement_detail_1 = {$row->npc_id}";
-            dbconnection::query($query);
-
-            $query = "UPDATE spawnables SET type_id = {$newId} WHERE game_id = '{$newGameId}' AND type = 'Npc' AND type_id = {$row->npc_id}";
-            dbconnection::query($query);
-        }
-
-        $newNodeIds = array();
-        $query = "SELECT * FROM nodes WHERE game_id = {$gameId}";
-        $result = dbconnection::query($query);
-        while($result && $row = mysql_fetch_object($result)){
-            $query = "INSERT INTO nodes (game_id, title, text, opt1_text, opt1_node_id, opt2_text, opt2_node_id, opt3_text, opt3_node_id, require_answer_incorrect_node_id, require_answer_string, require_answer_correct_node_id, media_id, icon_media_id) VALUES ('{$newGameId}', '".addSlashes($row->title)."', '".addSlashes($row->text)."', '{$row->opt1_text}', '{$row->opt1_node_id}', '{$row->opt2_text}', '{$row->opt2_node_id}', '{$row->opt3_text}', '{$row->opt3_node_id}', '{$row->require_answer_incorrect_node_id}', '{$row->require_answer_string}', '{$row->require_answer_correct_node_id}', '{$row->media_id}', '{$row->icon_media_id}')";
-            dbconnection::query($query);
-            $newId = mysql_insert_id();
-            $newNodeIds[($row->node_id)] = $newId;
-
-            $query = "UPDATE folder_contents SET content_id = {$newId} WHERE game_id = '{$newGameId}' AND content_type = 'Node' AND content_id = {$row->node_id}";
-            dbconnection::query($query);
-
-            $query = "UPDATE locations SET type_id = {$newId} WHERE game_id = '{$newGameId}' AND type = 'Node' AND type_id = {$row->node_id}";
-            dbconnection::query($query);
-
-            $query = "UPDATE npc_conversations SET node_id = {$newId} WHERE game_id = '{$newGameId}' AND node_id = {$row->node_id}";
-            dbconnection::query($query);
-
-            $query = "UPDATE player_state_changes SET event_detail = {$newId} WHERE game_id = '{$newGameId}' AND event_type = 'VIEW_NODE' AND event_detail = {$row->node_id}";
-            dbconnection::query($query);
-
-            $query = "UPDATE requirements SET content_id = {$newId} WHERE game_id = '{$newGameId}' AND content_type = 'Node' AND content_id = {$row->node_id}";
-            dbconnection::query($query);
-
-            $query = "UPDATE requirements SET requirement_detail_1 = {$newId} WHERE game_id = '{$newGameId}' AND requirement = 'PLAYER_VIEWED_NODE' AND requirement_detail_1 = {$row->node_id}";
-            dbconnection::query($query);
-
-            $query = "UPDATE spawnables SET type_id = {$newId} WHERE game_id = '{$newGameId}' AND type = 'Node' AND type_id = {$row->node_id}";
-            dbconnection::query($query);
-
-            if ($row->node_id == $game->on_launch_node_id) {
-                $query = "UPDATE games SET on_launch_node_id = {$newId} WHERE game_id = '{$newGameId}'";
-                dbconnection::query($query);
-            }
-            if ($row->node_id == $game->game_complete_node_id) {
-                $query = "UPDATE games SET game_complete_node_id = {$newId} WHERE game_id = '{$newGameId}'";
-                dbconnection::query($query);
-            }
-        }
-
-        $newItemIds = array();
-        $query = "SELECT * FROM items WHERE game_id = {$gameId}";
-        $result = dbconnection::query($query);
-        while($result && $row = mysql_fetch_object($result)){
-            $query = "INSERT INTO items (game_id, name, description, is_attribute, icon_media_id, media_id, dropable, destroyable, max_qty_in_inventory, creator_player_id, origin_latitude, origin_longitude, origin_timestamp, weight, url, type) VALUES ('{$newGameId}', '".addSlashes($row->name)."', '".addSlashes($row->description)."', '{$row->is_attribute}', '{$row->icon_media_id}', '{$row->media_id}', '{$row->dropable}', '{$row->destroyable}', '{$row->max_qty_in_inventory}', '{$row->creator_player_id}', '{$row->origin_latitude}', '{$row->origin_longitude}', '{$row->origin_timestamp}', '{$row->weight}', '{$row->url}', '{$row->type}')";
-            dbconnection::query($query);
-            $newId = mysql_insert_id();
-            $newItemIds[($row->item_id)] = $newId;
-
-            $query = "UPDATE folder_contents SET content_id = {$newId} WHERE game_id = '{$newGameId}' AND content_type = 'Item' AND content_id = {$row->item_id}";
-            dbconnection::query($query);
-
-            $query = "UPDATE locations SET type_id = {$newId} WHERE game_id = '{$newGameId}' AND type = 'Item' AND type_id = {$row->item_id}";
-            dbconnection::query($query);
-
-            $query = "UPDATE player_state_changes SET event_detail = {$newId} WHERE game_id = '{$newGameId}' AND event_type = 'VIEW_ITEM' AND event_detail = {$row->item_id}";
-            dbconnection::query($query);
-
-            $query = "UPDATE player_state_changes SET action_detail = {$newId} WHERE game_id = '{$newGameId}' AND action_detail = {$row->item_id}";
-            dbconnection::query($query);
-
-            $query = "UPDATE requirements SET requirement_detail_1 = {$newId} WHERE game_id = '{$newGameId}' AND (requirement = 'PLAYER_HAS_ITEM' OR requirement = 'PLAYER_VIEWED_ITEM') AND requirement_detail_1 = {$row->item_id}";
-            dbconnection::query($query);
-
-            $query = "UPDATE spawnables SET type_id = {$newId} WHERE game_id = '{$newGameId}' AND type = 'Item' AND type_id = {$row->item_id}";
-            dbconnection::query($query);
-        }
-
-        $query = "SELECT * FROM aug_bubble_media WHERE game_id = {$gameId}";
-        $result = dbconnection::query($query);
-        while($result && $row = mysql_fetch_object($result)){
-            $query = "INSERT INTO aug_bubble_media (game_id, aug_bubble_id, media_id, text, index) VALUES ('{$newGameId}', '{$row->aug_bubble_id}', '{$row->media_id}', '{$row->text}', '{$row->index}')";
-            dbconnection::query($query);
-        }
-
-        $newAugBubbleIds = array();
-        $query = "SELECT * FROM aug_bubbles WHERE game_id = {$gameId}";
-        $result = dbconnection::query($query);
-        while($result && $row = mysql_fetch_object($result)){
-            $query = "INSERT INTO aug_bubbles (game_id, name, description, icon_media_id) VALUES ('{$newGameId}', '".addSlashes($row->name)."', '".addSlashes($row->description)."', '{$row->icon_media_id}')).";
-            dbconnection::query($query);
-            $newId = mysql_insert_id();
-            $newAugBubbleIds[($row->aug_bubble_id)] = $newId;
-
-            $query = "UPDATE aug_bubble_media SET aug_bubble_id = {$newId} WHERE aug_bubble_id = {$row->aug_bubble_id}";
-            dbconnection::query($query);
-            $query = "UPDATE locations SET type_id = {$newId} WHERE type = 'AugBubble' AND type_id = {$row->aug_bubble_id} AND game_id = '{$newGameId}'";
-            dbconnection::query($query);
-            $query = "UPDATE folder_contents SET content_id = {$newId} WHERE content_type = 'AugBubble' AND content_id = {$row->aug_bubble_id} AND game_id = '{$newGameId}'";
-            dbconnection::query($query);
-            $query = "UPDATE requirements SET requirement_detail_1 = {$newId} WHERE (requirement = 'PLAYER_HAS_NOT_VIEWED_AUGBUBBLE' OR requirement = 'PLAYER_VIEWED_AUGBUBBLE') AND requirement_detail_1 = {$row->aug_bubble_id}  AND game_id = '{$newGameId}'";
-            dbconnection::query($query);
-        }
-
-        $newWebPageIds = array();
-        $query = "SELECT * FROM web_pages WHERE game_id = {$gameId}";
-        $result = dbconnection::query($query);
-        while($result && $row = mysql_fetch_object($result)){
-            $query = "INSERT INTO web_pages (game_id, name, url, icon_media_id) VALUES ('{$newGameId}', '".addSlashes($row->name)."', '{$row->url}', '{$row->icon_media_id}')";
-            dbconnection::query($query);
-            $newId = mysql_insert_id();
-            $newWebPageIds[($row->web_page_id)] = $newId;
-
-            $query = "UPDATE locations SET type_id = {$newId} WHERE type = 'WebPage' AND type_id = {$row->web_page_id} AND game_id = '{$newGameId}'";
-            dbconnection::query($query);
-            $query = "UPDATE folder_contents SET content_id = {$newId} WHERE content_type = 'WebPage' AND content_id = {$row->web_page_id} AND game_id = '{$newGameId}'";
-            dbconnection::query($query);
-            $query = "UPDATE requirements SET requirement_detail_1 = {$newId} WHERE (requirement = 'PLAYER_HAS_NOT_VIEWED_WEBPAGE' OR requirement = 'PLAYER_VIEWED_WEBPAGE') AND requirement_detail_1 = {$row->web_page_id} AND game_id = '{$newGameId}'";
-            dbconnection::query($query);
-        }
-
-        $query = "SELECT * FROM web_hooks WHERE game_id = {$gameId}";
-        $result = dbconnection::query($query);
-        while($result && $row = mysql_fetch_object($result)){
-            $query = "INSERT INTO web_hooks (game_id, name, url, incoming) VALUES ('{$newGameId}', '".addSlashes($row->name)."', '".addSlashes($row->url)."', '{$row->incoming}')";
-            dbconnection::query($query);
-            $newId = mysql_insert_id();
-
-            $query = "UPDATE requirements SET content_id = {$newId} WHERE content_type = 'OutgoingWebHook' AND content_id = {$row->web_hook_id}  AND game_id = '{$newGameId}'";
-            dbconnection::query($query);
-        }
-
-        $originalMediaId = array();
-        $newMediaId = array();
-        $query = "SELECT * FROM media WHERE game_id = {$gameId}";
-        $result = dbconnection::query($query);
-        while($result && $row = mysql_fetch_object($result)){
-            $newMediaFilePath = $newGameId.substr($row->file_path,strpos($row->file_path,'/'));
-            $query = "INSERT INTO media (game_id, name, file_path, is_icon) VALUES ('{$newGameId}', '".addSlashes($row->name)."', '{$newMediaFilePath}', '{$row->is_icon}')";
-            dbconnection::query($query);
-            $newId = mysql_insert_id();
-            $newMediaIds[($row->media_id)] = $newId;
-
-            if($row->file_path != "" && substr($row->file_path,-1) != "/" && file_exists("../../gamedata/" . $row->file_path)) copy(("../../gamedata/" . $row->file_path),("../../gamedata/" . $newMediaFilePath));
-
-            $query = "UPDATE items SET icon_media_id = {$newId} WHERE icon_media_id = $row->media_id AND game_id = '{$newGameId}'";
-            dbconnection::query($query);
-            $query = "UPDATE items SET media_id = {$newId} WHERE media_id = $row->media_id AND game_id = '{$newGameId}'";
-            dbconnection::query($query);
-            $query = "UPDATE locations SET icon_media_id = {$newId} WHERE icon_media_id = $row->media_id AND game_id = '{$newGameId}'";
-            dbconnection::query($query);
-            $query = "UPDATE nodes SET icon_media_id = {$newId} WHERE icon_media_id = $row->media_id AND game_id = '{$newGameId}'";
-            dbconnection::query($query);
-            $query = "UPDATE nodes SET media_id = {$newId} WHERE media_id = $row->media_id AND game_id = '{$newGameId}'";
-            dbconnection::query($query);
-            $query = "UPDATE npcs SET icon_media_id = {$newId} WHERE icon_media_id = $row->media_id AND game_id = '{$newGameId}'";
-            dbconnection::query($query);
-            $query = "UPDATE npcs SET media_id = {$newId} WHERE media_id = $row->media_id AND game_id = '{$newGameId}'";
-            dbconnection::query($query);
-            $query = "UPDATE qrcodes SET match_media_id = {$newId} WHERE match_media_id = $row->media_id AND game_id = '{$newGameId}'";
-            dbconnection::query($query);
-            $query = "UPDATE quests SET active_icon_media_id = {$newId} WHERE active_icon_media_id = $row->media_id AND game_id = '{$newGameId}'";
-            dbconnection::query($query);
-            $query = "UPDATE quests SET complete_icon_media_id = {$newId} WHERE complete_icon_media_id = $row->media_id AND game_id = '{$newGameId}'";
-            dbconnection::query($query);
-            $query = "UPDATE quests SET active_media_id = {$newId} WHERE active_media_id = $row->media_id AND game_id = '{$newGameId}'";
-            dbconnection::query($query);
-            $query = "UPDATE quests SET complete_media_id = {$newId} WHERE complete_media_id = $row->media_id AND game_id = '{$newGameId}'";
-            dbconnection::query($query);
-            $query = "UPDATE aug_bubbles SET icon_media_id = {$newId} WHERE icon_media_id = $row->media_id AND game_id = {$newGameId}";
-            dbconnection::query($query);
-            $query = "UPDATE aug_bubble_media SET media_id = {$newId} WHERE media_id = $row->media_id AND game_id = {$newGameId}";
-            dbconnection::query($query);
-            $query = "UPDATE games SET icon_media_id = {$newId} WHERE icon_media_id = $row->media_id AND game_id = {$newGameId}";
-            dbconnection::query($query);
-            $query = "UPDATE games SET media_id = {$newId} WHERE media_id = $row->media_id AND game_id = {$newGameId}";
-            dbconnection::query($query);
-            $query = "UPDATE games SET pc_media_id = {$newId} WHERE pc_media_id = $row->media_id AND game_id = {$newGameId}";
-            dbconnection::query($query);
-            $query = "UPDATE web_pages SET icon_media_id = {$newId} WHERE icon_media_id = $row->media_id AND game_id = {$newGameId}";
-            dbconnection::query($query);
-        }
-
-        //NOTE: substr removes <?xml version="1.0" ? //> from the beginning of the text
-        $query = "SELECT node_id FROM npc_conversations WHERE game_id = {$newGameId}";
-        $result = dbconnection::query($query);
-        while($result && ($npcConvo = mysql_fetch_object($result))) {
-            $query = "SELECT node_id, text FROM nodes WHERE node_id = {$npcConvo->node_id}";
-            $resultNode = dbconnection::query($query);
-            if($result && ($node = mysql_fetch_object($resultNode))){
-                $inputString = $node->text;
-                $output = Games::replaceXMLIds($inputString, $newNpcIds, $newNodeIds, $newItemIds, $newAugBubbleIds, $newWebPageIds, $newMediaIds);
-                if($output){
-                    $output = substr($output,22);
-                    $updateQuery = "UPDATE nodes SET text = '".addslashes($output)."' WHERE node_id = {$node->node_id} AND game_id = {$newGameId}";
-                    dbconnection::query($updateQuery);
-                }
-            }
-        }
-
-        $query = "SELECT * FROM npcs WHERE game_id = {$newGameId}";
-        $result = dbconnection::query($query);
-        while($result && ($row = mysql_fetch_object($result))) {
-            if($row->text){
-                $inputString = $row->text;
-                $output = Games::replaceXMLIds($inputString, $newNpcIds, $newNodeIds, $newItemIds, $newAugBubbleIds, $newWebPageIds, $newMediaIds);
-                if($output){
-                    $output = substr($output,22);
-                    $updateQuery = "UPDATE npcs SET text = '".addslashes($output)."' WHERE npc_id = {$row->npc_id} AND game_id = {$newGameId}";
-                    dbconnection::query($updateQuery);
-                }
-            }
-            if($row->closing){
-                $inputString = $row->closing;
-                $output = Games::replaceXMLIds($inputString, $newNpcIds, $newNodeIds, $newItemIds, $newAugBubbleIds, $newWebPageIds, $newMediaIds);
-                if($output){
-                    $output = substr($output,22);
-                    $updateQuery = "UPDATE npcs SET closing = '".addslashes($output)."' WHERE npc_id = {$row->npc_id} AND game_id = {$newGameId}";
-                    dbconnection::query($updateQuery);
-                }
-            }
-        }
-
-        return new returnData(0, $newGameId, NULL);
-        */
     }
-
-    static function replaceXMLIds($inputString, $newNpcIds, $newNodeIds, $newItemIds, $newAugBubbleIds, $newWebPageIds, $newMediaIds)
+    //helper for migraterequirements
+    public function migrateRequirementListIntoPackage($gameId, $requirementsList, $maps)
     {
-    /*
-        $kTagExitToPlaque = "exitToPlaque";
-        $kTagExitToWebPage = "exitToWebPage";
-        $kTagExitToCharacter = "exitToCharacter";
-        $kTagExitToPanoramic = "exitToPanoramic";
-        $kTagExitToItem = "exitToItem";
-        $kTagVideo = "video";
-        $kTagId = "id";
-        $kTagPanoramic = "panoramic";
-        $kTagWebpage = "webpage";
-        $kTagPlaque = "plaque";
-        $kTagItem = "item";
-        $kTagMedia = "mediaId";
+        $root_req_id = migration_dbconnection::queryInsert("INSERT INTO requirement_root_packages (game_id, created) VALUES ('{$gameId}',CURRENT_TIMESTAMP)","v2");
 
-        //& sign will break xml parser, so this is necessary
-        $inputString = str_replace("&", "&#x26;", $inputString);
+        //this is the ID that all 'AND' reqs will attatch to
+        $and_group_req_id = migration_dbconnection::queryInsert("INSERT INTO requirement_and_packages (game_id, requirement_root_package_id, created) VALUES ('{$gameId}', '{$root_req_id}', CURRENT_TIMESTAMP)","v2");
 
-        libxml_use_internal_errors(true);
-        $xml = simplexml_load_string($inputString);
-        libxml_clear_errors();
-        libxml_use_internal_errors(false);
-        if($xml){
+        for($i = 0; $i < count($requirementsList); $i++)
+        {
+            $requirement = ""; $content_id = 0;
+            if($requirementsList[$i]->requirement == "PLAYER_VIEWED_AUGBUBBLE") continue; //no longer valid
+            if($requirementsList[$i]->requirement == "PLAYER_HAS_ITEM")                       { $requirement = "PLAYER_HAS_ITEM";                       $content_id = $maps->items[$requirementsList[$i]->requirement_detail_1]; }
+            if($requirementsList[$i]->requirement == "PLAYER_HAS_TAGGED_ITEM")                { $requirement = "PLAYER_HAS_TAGGED_ITEM";                $content_id = $maps->items[$requirementsList[$i]->requirement_detail_1]; }
+            if($requirementsList[$i]->requirement == "PLAYER_VIEWED_ITEM")                    { $requirement = "PLAYER_VIEWED_ITEM";                    $content_id = $maps->items[$requirementsList[$i]->requirement_detail_1];}
+            if($requirementsList[$i]->requirement == "PLAYER_VIEWED_NODE")                    { $requirement = "PLAYER_VIEWED_PLAQUE";                  $content_id = $maps->plaques[$requirementsList[$i]->requirement_detail_1];}
+            if($requirementsList[$i]->requirement == "PLAYER_VIEWED_NPC")                     { $requirement = "PLAYER_VIEWED_DIALOG";                  $content_id = $maps->dialogs[$requirementsList[$i]->requirement_detail_1];}
+            if($requirementsList[$i]->requirement == "PLAYER_VIEWED_WEBPAGE")                 { $requirement = "PLAYER_VIEWED_WEB_PAGE";                $content_id = $maps->webpages[$requirementsList[$i]->requirement_detail_1];}
+            if($requirementsList[$i]->requirement == "PLAYER_HAS_UPLOADED_MEDIA_ITEM")        { $requirement = "PLAYER_HAS_UPLOADED_MEDIA_ITEM";        }
+            if($requirementsList[$i]->requirement == "PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE")  { $requirement = "PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE";  }
+            if($requirementsList[$i]->requirement == "PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO")  { $requirement = "PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO";  }
+            if($requirementsList[$i]->requirement == "PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO")  { $requirement = "PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO";  }
+            if($requirementsList[$i]->requirement == "PLAYER_HAS_COMPLETED_QUEST")            { $requirement = "PLAYER_HAS_COMPLETED_QUEST";            $content_id = $maps->quests[$requirementsList[$i]->requirement_detail_1];}
+            if($requirementsList[$i]->requirement == "PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK") { $requirement = "PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK"; }
+            if($requirementsList[$i]->requirement == "PLAYER_HAS_NOTE")                       { $requirement = "PLAYER_HAS_NOTE";                       }
+            if($requirementsList[$i]->requirement == "PLAYER_HAS_NOTE_WITH_TAG")              { $requirement = "PLAYER_HAS_NOTE_WITH_TAG";              }
+            if($requirementsList[$i]->requirement == "PLAYER_HAS_NOTE_WITH_LIKES")            { $requirement = "PLAYER_HAS_NOTE_WITH_LIKES";            }
+            if($requirementsList[$i]->requirement == "PLAYER_HAS_NOTE_WITH_COMMENTS")         { $requirement = "PLAYER_HAS_NOTE_WITH_COMMENTS";         }
+            if($requirementsList[$i]->requirement == "PLAYER_HAS_GIVEN_NOTE_COMMENTS")        { $requirement = "PLAYER_HAS_GIVEN_NOTE_COMMENTS";        }
+                
+            $parent_and = $and_group_req_id;
+            if($requirementsList[$i]->boolean_operator == "OR")
+                $parent_and = migration_dbconnection::queryInsert("INSERT INTO requirement_and_packages (game_id, requirement_root_package_id, created) VALUES ('{$gameId}', '{$root_req_id}', CURRENT_TIMESTAMP)","v2");
 
-            foreach($xml->attributes() as $attributeTitle => $attributeValue)
-            { 
-                if(strcmp($attributeTitle, $kTagExitToWebPage) == 0)
-                    $xml[$attributeTitle] = $newWebPageIds[intval($attributeValue)];
-                else if(strcmp($attributeTitle, $kTagExitToPanoramic) == 0)
-                    $xml[$attributeTitle] = $newAugBubbleIds[intval($attributeValue)];
-                else if(strcmp($attributeTitle, $kTagMedia) == 0)
-                    $xml[$attributeTitle] = $newMediaIds[intval($attributeValue)];
-                else if(strcmp($attributeTitle, $kTagExitToPlaque) == 0)
-                    $xml[$attributeTitle] = $newNodeIds[intval($attributeValue)];
-                else if(strcmp($attributeTitle, $kTagExitToCharacter) == 0)
-                    $xml[$attributeTitle] = $newNpcIds[intval($attributeValue)];
-                else if(strcmp($attributeTitle, $kTagExitToItem) == 0)
-                    $xml[$attributeTitle] = $newItemIds[intval($attributeValue)];
-            }
-
-            foreach($xml->children() as $child)
-            {
-                foreach($child->attributes() as $attributeTitle => $attributeValue)
-                { 
-                    if(strcmp($attributeTitle, $kTagExitToWebPage) == 0)
-                        $child[$attributeTitle] = $newWebPageIds[intval($attributeValue)];
-                    else if(strcmp($attributeTitle, $kTagExitToPanoramic) == 0)
-                        $child[$attributeTitle] = $newAugBubbleIds[intval($attributeValue)];
-                    else if(strcmp($attributeTitle, $kTagMedia) == 0)
-                        $child[$attributeTitle] = $newMediaIds[intval($attributeValue)];
-                    else if(strcmp($child->getName(), $kTagVideo) == 0 && strcmp($attributeTitle, $kTagId) == 0)
-                        $child[$attributeTitle] = $newMediaIds[intval($attributeValue)];
-                    else if(strcmp($child->getName(), $kTagPanoramic) == 0 && strcmp($attributeTitle, $kTagId) == 0)
-                        $child[$attributeTitle] = $newAugBubbleIds[intval($attributeValue)];
-                    else if(strcmp($child->getName(), $kTagWebpage) == 0 && strcmp($attributeTitle, $kTagId) == 0)
-                        $child[$attributeTitle] = $newWebPageIds[intval($attributeValue)];
-                    else if(strcmp($attributeTitle, $kTagExitToPlaque) == 0)
-                        $child[$attributeTitle] = $newNodeIds[intval($attributeValue)];
-                    else if(strcmp($attributeTitle, $kTagExitToCharacter) == 0)
-                        $child[$attributeTitle] = $newNpcIds[intval($attributeValue)];
-                    else if(strcmp($attributeTitle, $kTagExitToItem) == 0)
-                        $child[$attributeTitle] = $newItemIds[intval($attributeValue)];
-                    else if(strcmp($child->getName(), $kTagPlaque) == 0 && strcmp($attributeTitle, $kTagId) == 0)
-                        $child[$attributeTitle] = $newNodeIds[intval($attributeValue)];
-                    else if(strcmp($child->getName(), $kTagItem) == 0 && strcmp($attributeTitle, $kTagId) == 0)
-                        $child[$attributeTitle] = $newItemIds[intval($attributeValue)];
-                }
-            }
-            $output = $xml->asXML();
-            $output = str_replace("&#x2019;", "'", $output);
-            $output = str_replace("&amp;", "&", $output);
-            $output = str_replace("&#x2014;", "-", $output);
-            $output = str_replace("&#x201C;", "\"", $output);
-            $output = str_replace("&#x201D;", "\"", $output);
-            $output = str_replace("&#xB0;", "°", $output);
-            $output = str_replace("&#xAE;", "®", $output);
-            $output = str_replace("&#x2122;", "™", $output);
-            $output = str_replace("&#xA9;", "©", $output);
-            return $output;
+            migration_dbconnection::queryInsert("INSERT INTO requirement_atoms (game_id, requirement_and_package_id, bool_operator, requirement, content_id, distance, qty, latitude, longitude, created) VALUES ('{$gameId}', '{$parent_and}', '".($requirementsList[$i]->not_operator == "DO")."','{$requirement}','{$content_id}','{$requirementsList[$i]->requirement_detail_1}','{$requirementsList[$i]->requirement_detail_2}','{$requirementsList[$i]->requirement_detail_3}','{$requirementsList[$i]->requirement_detail_4}',CURRENT_TIMESTAMP)","v2");
         }
-        return false;
-        */
+
+        return $root_req_id;
     }
 }
 ?>
