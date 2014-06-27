@@ -20,6 +20,7 @@ class triggers extends dbconnection
             (isset($pack->scene_id)                    ? "scene_id,"                    : "").
             (isset($pack->requirement_root_package_id) ? "requirement_root_package_id," : "").
             (isset($pack->type)                        ? "type,"                        : "").
+            (isset($pack->name)                        ? "name,"                        : "").
             (isset($pack->title)                       ? "title,"                       : "").
             (isset($pack->icon_media_id)               ? "icon_media_id,"               : "").
             (isset($pack->latitude)                    ? "latitude,"                    : "").
@@ -27,6 +28,8 @@ class triggers extends dbconnection
             (isset($pack->distance)                    ? "distance,"                    : "").
             (isset($pack->wiggle)                      ? "wiggle,"                      : "").
             (isset($pack->show_title)                  ? "show_title,"                  : "").
+            (isset($pack->hidden)                      ? "hidden,"                      : "").
+            (isset($pack->trigger_on_enter)            ? "trigger_on_enter,"            : "").
             (isset($pack->qr_code)                     ? "qr_code,"                     : "").
             "created".
             ") VALUES (".
@@ -35,6 +38,7 @@ class triggers extends dbconnection
             (isset($pack->scene_id)                    ? "'".addslashes($pack->scene_id)."',"                    : "").
             (isset($pack->requirement_root_package_id) ? "'".addslashes($pack->requirement_root_package_id)."'," : "").
             (isset($pack->type)                        ? "'".addslashes($pack->type)."',"                        : "").
+            (isset($pack->name)                        ? "'".addslashes($pack->name)."',"                        : "").
             (isset($pack->title)                       ? "'".addslashes($pack->title)."',"                       : "").
             (isset($pack->icon_media_id)               ? "'".addslashes($pack->icon_media_id)."',"               : "").
             (isset($pack->latitude)                    ? "'".addslashes($pack->latitude)."',"                    : "").
@@ -42,6 +46,8 @@ class triggers extends dbconnection
             (isset($pack->distance)                    ? "'".addslashes($pack->distance)."',"                    : "").
             (isset($pack->wiggle)                      ? "'".addslashes($pack->wiggle)."',"                      : "").
             (isset($pack->show_title)                  ? "'".addslashes($pack->show_title)."',"                  : "").
+            (isset($pack->hidden)                      ? "'".addslashes($pack->hidden)."',"                      : "").
+            (isset($pack->trigger_on_enter)            ? "'".addslashes($pack->trigger_on_enter)."',"            : "").
             (isset($pack->qr_code)                     ? "'".addslashes($pack->qr_code)."',"                     : "").
             "CURRENT_TIMESTAMP".
             ")"
@@ -64,6 +70,7 @@ class triggers extends dbconnection
             (isset($pack->scene_id)                    ? "scene_id                    = '".addslashes($pack->scene_id)."', "                    : "").
             (isset($pack->requirement_root_package_id) ? "requirement_root_package_id = '".addslashes($pack->requirement_root_package_id)."', " : "").
             (isset($pack->type)                        ? "type                        = '".addslashes($pack->type)."', "                        : "").
+            (isset($pack->name)                        ? "name                        = '".addslashes($pack->name)."', "                        : "").
             (isset($pack->title)                       ? "title                       = '".addslashes($pack->title)."', "                       : "").
             (isset($pack->icon_media_id)               ? "icon_media_id               = '".addslashes($pack->icon_media_id)."', "               : "").
             (isset($pack->latitude)                    ? "latitude                    = '".addslashes($pack->latitude)."', "                    : "").
@@ -71,6 +78,8 @@ class triggers extends dbconnection
             (isset($pack->distance)                    ? "distance                    = '".addslashes($pack->distance)."', "                    : "").
             (isset($pack->wiggle)                      ? "wiggle                      = '".addslashes($pack->wiggle)."', "                      : "").
             (isset($pack->show_title)                  ? "show_title                  = '".addslashes($pack->show_title)."', "                  : "").
+            (isset($pack->hidden)                      ? "hidden                      = '".addslashes($pack->hidden)."', "                      : "").
+            (isset($pack->trigger_on_enter)            ? "trigger_on_enter            = '".addslashes($pack->trigger_on_enter)."', "            : "").
             (isset($pack->qr_code)                     ? "qr_code                     = '".addslashes($pack->qr_code)."', "                     : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE trigger_id = '{$pack->trigger_id}'"
@@ -89,6 +98,7 @@ class triggers extends dbconnection
         $trigger->scene_id                    = $sql_trigger->scene_id;
         $trigger->requirement_root_package_id = $sql_trigger->requirement_root_package_id;
         $trigger->type                        = $sql_trigger->type;
+        $trigger->name                        = $sql_trigger->name;
         $trigger->title                       = $sql_trigger->title;
         $trigger->icon_media_id               = $sql_trigger->icon_media_id;
         $trigger->latitude                    = $sql_trigger->latitude;
@@ -96,6 +106,8 @@ class triggers extends dbconnection
         $trigger->distance                    = $sql_trigger->distance;
         $trigger->wiggle                      = $sql_trigger->wiggle;
         $trigger->show_title                  = $sql_trigger->show_title;
+        $trigger->hidden                      = $sql_trigger->hidden;
+        $trigger->trigger_on_enter            = $sql_trigger->trigger_on_enter;
         $trigger->qr_code                     = $sql_trigger->qr_code;
 
         return $trigger;

@@ -96,12 +96,18 @@ class migration extends migration_dbconnection
         migration_dbconnection::query("UPDATE games SET media_id = '{$maps->media[$v2Game->media_id]}', icon_media_id = '{$maps->media[$v2Game->icon_media_id]}'","v2");
         $v2Game = migration_dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$v2GameId}'","v2"); //get updated game data
 
-        $maps->plaques = migration::migratePlaques($v1GameId, $v2GameId,$maps);
-        $maps->items = migration::migrateItems($v1GameId, $v2GameId,$maps);
-        $maps->webpages = migration::migrateWebpages($v1GameId, $v2GameId,$maps);
-        $maps->dialogs = migration::migrateDialogs($v1GameId, $v2GameId,$maps);
-        //$maps->notes = migration::migrateNotes($v1GameId, $v2GameId,$maps);
-        $maps->tabs = migration::migrateTabs($v1GameId, $v2GameId,$maps);
+        $maps->plaques = migration::migratePlaques($v1GameId, $v2GameId, $maps);
+        $maps->items = migration::migrateItems($v1GameId, $v2GameId, $maps);
+        $maps->webpages = migration::migrateWebpages($v1GameId, $v2GameId, $maps);
+        $maps->dialogs = migration::migrateDialogs($v1GameId, $v2GameId, $maps);
+        //$maps->notes = migration::migrateNotes($v1GameId, $v2GameId, $maps); //don't migrate notes for now... (we'll get into if we should later)
+        $maps->tabs = migration::migrateTabs($v1GameId, $v2GameId, $maps);
+
+        $sceneId = migration_dbconnection::queryInsert("INSERT INTO scenes (game_id, name, created) VALUES ('{$v2GameId}', 'Main Scene', CURRENT_TIMESTAMP)","v2");
+        $triggerMaps = migration::migrateTriggers($v1GameId, $v2GameId, $sceneId, $maps);
+        //both of these maps have v1 location_id as key, v2 trigger as value
+        $maps->locTriggers = $triggerMaps->locationTriggerMap;
+        $maps->qrTriggers = $triggerMaps->qrTriggerMap;
 
         return new migration_return_package(0,$v2Game);
     }
@@ -118,7 +124,7 @@ class migration extends migration_dbconnection
             if(!file_exists(Config::gamedataFSPath."/".$media[$i]->file_path)) continue;
             $filename = substr($media[$i]->file_path, strpos($media[$i]->file_path,'/')+1);
             copy(Config::gamedataFSPath."/".$media[$i]->file_path,Config::v2_gamedata_folder."/".$filename);
-            $newMediaId = migration_dbconnection::queryInsert("INSERT INTO media (game_id, file_folder, file_name, display_name, created) VALUES ('{$v2GameId}','{$v2GameId}','{$filename}','{$media[$i]->name}',CURRENT_TIMESTAMP)", "v2");
+            $newMediaId = migration_dbconnection::queryInsert("INSERT INTO media (game_id, file_folder, file_name, name, created) VALUES ('{$v2GameId}','{$v2GameId}','{$filename}','{$media[$i]->name}',CURRENT_TIMESTAMP)", "v2");
             $mediaIdMap[$media[$i]->media_id] = $newMediaId;
         }
         return $mediaIdMap;
@@ -270,14 +276,64 @@ class migration extends migration_dbconnection
             }
             else
             {
-                //while($attribs
-                //preg_match($
+                //handle non-npc tag attributes
             }
 
             $newScriptId = migration_dbconnection::queryInsert("INSERT INTO dialog_scripts (game_id, dialog_id, parent_dialog_script_id, dialog_character_id, text, prompt, created) VALUES ('{$gameId}','{$dialogId}','{$newScriptId}','{$rootCharacterId}','{$tag_contents}','{$option}',CURRENT_TIMESTAMP)", "v2");
             $option = "Continue"; //set option for all but first script to 'continue'
         }
         return $newScriptId;
+    }
+
+    public function migrateTriggers($v1GameId, $v2GameId, $sceneId, $maps)
+    {
+        //returns two trigger maps- one mapping location ids to triggers, one mapping qr codes to triggers
+        //note- although 'instances' get created in this function, they are NOT needed for further migration, and no map is kept of their IDs
+
+        $locTriggerMap = array();
+        $qrTriggerMap = array();
+
+        $qrcodes = migration_dbconnection::queryArray("SELECT * FROM qrcodes WHERE game_id = '{$v1GameId}'","v1");
+        $qrCodeLocationMap = array(); //used to find qr code from location quickly
+        for($i = 0; $i < count($qrcodes); $i++)
+            $qrCodeLocationMap[$qrcodes[$i]->link_id] = $qrcodes[$i];
+
+        $locations = migration_dbconnection::queryArray("SELECT * FROM locations WHERE game_id = '{$v1GameId}'","v1");
+
+        for($i = 0; $i < count($locations); $i++)
+        {
+            $newType = "";
+            $objectId = 0;
+            $iconMediaId = 0;
+            if($locations[$i]->type == 'AugBubble')  continue; //doesn't exist anymore
+            if($locations[$i]->type == 'Event')      continue; //doesn't exist anymore (and never did?)
+            if($locations[$i]->type == 'Node')       { $newType = "PLAQUE";   $objectId = $maps->plaques[$locations[$i]->type_id];  $iconMediaId = $maps->plaques[$locations[$i]->type_id]; }
+            if($locations[$i]->type == 'Item')       { $newType = "ITEM";     $objectId = $maps->items[$locations[$i]->type_id];    $iconMediaId = $maps->items[$locations[$i]->type_id]; }
+            if($locations[$i]->type == 'Npc')        { $newType = "DIALOG";   $objectId = $maps->dialogs[$locations[$i]->type_id];  $iconMediaId = $maps->dialogs[$locations[$i]->type_id]; }
+            if($locations[$i]->type == 'WebPage')    { $newType = "WEB_PAGE"; $objectId = $maps->webpages[$locations[$i]->type_id]; $iconMediaId = $maps->webpages[$locations[$i]->type_id]; }
+            if($locations[$i]->type == 'PlayerNote') { $newType = "NOTE";     $objectId = $maps->notes[$locations[$i]->type_id];    $iconMediaId = $maps->notes[$locations[$i]->type_id]; }
+            if(!$objectId) continue; //either we've encountered something invalid in the DB, or we no longer support something
+
+            $newInstanceId = migration_dbconnection::queryInsert("INSERT INTO instances (game_id,object_id,object_type,qty,infinite_qty,created) VALUES ('{$v2GameId}','{$objectId}','{$newType}','{$locations[$i]->item_qty}','".(intval($locations[$i]->item_qty) < 0 ? 1 : 0)."',CURRENT_TIMESTAMP)","v2");
+            $newTriggerId = migration_dbconnection::queryInsert("INSERT INTO triggers (game_id,instance_id,scene_id,type,name,title,icon_media_id,latitude,longitude,distance,wiggle,show_title,hidden,trigger_on_enter,created) VALUES ('{$v2GameId}','{$newInstanceId}','{$sceneId}','LOCATION','{$locations[$i]->name}','{$locations[$i]->name}','{$iconMediaId}','{$locations[$i]->latitude}','{$locations[$i]->longitude}','{$locations[$i]->error}','{$locations[$i]->wiggle}','{$locations[$i]->show_title}','{$locations[$i]->hidden}','{$locations[$i]->force_view}',CURRENT_TIMESTAMP)", "v2");
+            $locTriggerMap[$locations[$i]->location_id] = $newTriggerId;
+
+            //Note that this DUPLICATES INSTANCES!!! (1 location/qr combo from v1 creates 2 instances, a location trigger, and a qr trigger)
+            $qrcode = $qrCodeLocationMap[$locations[$i]->location_id];
+            if($qrcode)
+            {
+                $newInstanceId = migration_dbconnection::queryInsert("INSERT INTO instances (game_id,object_id,object_type,qty,infinite_qty,created) VALUES ('{$v2GameId}','{$objectId}','{$newType}','{$locations[$i]->item_qty}','".(intval($locations[$i]->item_qty) < 0 ? 1 : 0)."',CURRENT_TIMESTAMP)","v2");
+                $newTriggerId = migration_dbconnection::queryInsert("INSERT INTO triggers (game_id,instance_id,scene_id,type,name,qr_code,created) VALUES ('{$v2GameId}','{$newInstanceId}','{$sceneId}','QR','{$locations[$i]->name}','{$qrcode->code}',CURRENT_TIMESTAMP)", "v2");
+                $qrTriggerMap[$locations[$i]->location_id] = $newTriggerId; //note that I'm hooking up the LOCATION id to the trigger again.
+                //^ This is because nothing in v1 links to qr codes, only locations.
+                //but locations were now split into two objects (one for their v1 location and one for their v1 qr), and both need to be recorded.
+            }
+        }
+
+        $returnMaps = new stdClass;
+        $returnMaps->locationTriggerMap = $locTriggerMap;
+        $returnMaps->qrTriggerMap = $qrTriggerMap;
+        return $returnMaps;
     }
 
     public function migrateTabs($v1GameId, $v2GameId, $maps)

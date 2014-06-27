@@ -12,7 +12,7 @@ class media extends dbconnection
         $fake_sql_media = new stdClass;
         $fake_sql_media->game_id = 0;
         $fake_sql_media->media_id = $mediaId;
-        $fake_sql_media->display_name = "Default NPC";
+        $fake_sql_media->name = "Default NPC";
         $fake_sql_media->file_folder = "0";
         $fake_sql_media->file_name = "npc.png";
         return media::mediaObjectFromSQL($fake_sql_media);
@@ -73,14 +73,14 @@ class media extends dbconnection
             "file_name,".
             (isset($pack->game_id)       ? "game_id,"      : "").
             (isset($pack->auth->user_id) ? "user_id,"      : "").
-            (isset($pack->display_name)  ? "display_name," : "").
+            (isset($pack->name)          ? "name,"         : "").
             "created".
             ") VALUES (".
             "'".$filefolder."',".
             "'".$newfilename."',".
             (isset($pack->game_id)       ? "'".addslashes($pack->game_id)."',"       : "").
             (isset($pack->auth->user_id) ? "'".addslashes($pack->auth->user_id)."'," : "").
-            (isset($pack->display_name)  ? "'".addslashes($pack->display_name)."',"  : "").
+            (isset($pack->name)          ? "'".addslashes($pack->name)."',"          : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -98,7 +98,7 @@ class media extends dbconnection
         //boring, but this is the only immutable property of media
         dbconnection::query(
             "UPDATE media SET ".
-            (isset($pack->display_name) ? "display_name = '".addslashes($pack->display_name)."', " : "").
+            (isset($pack->name) ? "name = '".addslashes($pack->name)."', " : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE media_id = '{$pack->media_id}'"
         );
@@ -112,7 +112,7 @@ class media extends dbconnection
         $media = new stdClass();
         $media->media_id     = $sql_media->media_id;
         $media->game_id      = $sql_media->game_id;
-        $media->display_name = $sql_media->display_name;
+        $media->name         = $sql_media->name;
         $media->file_name    = $sql_media->file_name;
 
         $filenametitle = substr($sql_media->file_name,0,strrpos($sql_media->file_name,'.'));

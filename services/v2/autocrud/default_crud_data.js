@@ -232,6 +232,7 @@ var CRUD_DEFAULTS = [
           "scene_id":123,\n\
           "requirement_root_package_id":132,\n\
           "type":"LOCATION",\n\
+          "name":"triggerName",\n\
           "title":"triggerTitle",\n\
           "icon_media_id":123,\n\
           "latitude":1.234,\n\
@@ -239,6 +240,8 @@ var CRUD_DEFAULTS = [
           "distance":5,\n\
           "wiggle":1,\n\
           "show_title":1,\n\
+          "hidden":0,\n\
+          "trigger_on_enter":0,\n\
           "qr_code":"abc123"\n\
         }\n\
         ',
@@ -256,6 +259,7 @@ var CRUD_DEFAULTS = [
           "scene_id":123,\n\
           "requirement_root_package_id":132,\n\
           "type":"LOCATION",\n\
+          "name":"triggerName",\n\
           "title":"triggerTitle",\n\
           "icon_media_id":123,\n\
           "latitude":1.234,\n\
@@ -263,6 +267,8 @@ var CRUD_DEFAULTS = [
           "distance":5,\n\
           "wiggle":1,\n\
           "show_title":1,\n\
+          "hidden":0,\n\
+          "trigger_on_enter":0,\n\
           "code":"abc123"\n\
         }\n\
         ',
@@ -604,7 +610,7 @@ var CRUD_DEFAULTS = [
         '\
         {\n\
           "game_id":123,\n\
-          "display_name":"smiley",\n\
+          "name":"smiley",\n\
           "file_name":"smiley.png",\n\
           "data":"iVBORw0KGgoAAAANSUhEUgAAABQAAAAUBAMAAAB/pwA+AAAAA3NCSVQICAjb4U/gAAAAMFBMVEX/////7AD/4gD/2QD/zAD/xQD/vAD/sgD/qQA8/wCZmZnAlACceAA/Pz9AMQAAAADauoGxAAAAEHRSTlP///////////8A////////Xxf4pAAAAAlwSFlzAAAK8AAACvABQqw0mAAAAAh0RVh0Q29tbWVudAD2zJa/AAAAIXRFWHRTb2Z0d2FyZQBNYWNyb21lZGlhIEZpcmV3b3JrcyAzLjDvaTHwAAAAnElEQVR4nGOYCQcMQDz///+fEOb87+Xl9T/BzP9laWlp/0HM+eX/Q0P/p/8EMn+U7f7ivzusHsj8nv3f2Pj/1vyZDPPb/zsrKSkDVTDM7091VhRUdv0OZLaf/w8Ef0Ci7fkMQHAVnZm9gIGBayuQCTT3FwPDerC5P8rz3/9/mg5izm8HuaEcZPHMH+3l5eX9EEf+6Ojo/4nudBgAAKTFdNGCgV+fAAAAAElFTkSuQmCC"\n\
         }\n\
@@ -619,7 +625,7 @@ var CRUD_DEFAULTS = [
         '\
         {\n\
           "media_id":123,\n\
-          "display_name":"smiley"\n\
+          "name":"smiley"\n\
         }\n\
         ',
     "deleteData":
