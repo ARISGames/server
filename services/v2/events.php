@@ -16,17 +16,15 @@ class events extends dbconnection
         $pack->event_id = dbconnection::queryInsert(
             "INSERT INTO events (".
             "game_id,".
-            (isset($pack->event)       ? "event,"       : "").
-            (isset($pack->amount)      ? "amount,"      : "").
-            (isset($pack->object_type) ? "object_type," : "").
-            (isset($pack->object_id)   ? "object_id,"   : "").
+            (isset($pack->event)     ? "event,"     : "").
+            (isset($pack->qty)       ? "qty,"       : "").
+            (isset($pack->object_id) ? "object_id," : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
-            (isset($pack->event)       ? "'".addslashes($pack->event)."',"       : "").
-            (isset($pack->amount)      ? "'".addslashes($pack->amount)."',"      : "").
-            (isset($pack->object_type) ? "'".addslashes($pack->object_type)."'," : "").
-            (isset($pack->object_id)   ? "'".addslashes($pack->object_id)."',"   : "").
+            (isset($pack->event)     ? "'".addslashes($pack->event)."',"     : "").
+            (isset($pack->qty)       ? "'".addslashes($pack->qty)."',"       : "").
+            (isset($pack->object_id) ? "'".addslashes($pack->object_id)."'," : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -44,10 +42,9 @@ class events extends dbconnection
 
         dbconnection::query(
             "UPDATE events SET ".
-            (isset($pack->event)       ? "event      = '".addslashes($pack->event)."', "        : "").
-            (isset($pack->amount)      ? "amount      = '".addslashes($pack->amount)."', "      : "").
-            (isset($pack->object_type) ? "object_type = '".addslashes($pack->object_type)."', " : "").
-            (isset($pack->object_id)   ? "object_id   = '".addslashes($pack->object_id)."', "   : "").
+            (isset($pack->event)     ? "event     = '".addslashes($pack->event)."', "     : "").
+            (isset($pack->qty)       ? "qty       = '".addslashes($pack->qty)."', "       : "").
+            (isset($pack->object_id) ? "object_id = '".addslashes($pack->object_id)."', " : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE event_id = '{$pack->event_id}'"
         );
@@ -59,12 +56,11 @@ class events extends dbconnection
     {
         if(!$sql_event) return $sql_event;
         $event = new stdClass();
-        $event->event_id    = $sql_event->event_id;
-        $event->game_id     = $sql_event->game_id;
-        $event->event       = $sql_event->event;
-        $event->amount      = $sql_event->amount;
-        $event->object_type = $sql_event->object_type;
-        $event->object_id   = $sql_event->object_id;
+        $event->event_id  = $sql_event->event_id;
+        $event->game_id   = $sql_event->game_id;
+        $event->event     = $sql_event->event;
+        $event->qty       = $sql_event->qty;
+        $event->object_id = $sql_event->object_id;
 
         return $event;
     }

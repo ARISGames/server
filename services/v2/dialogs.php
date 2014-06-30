@@ -197,9 +197,10 @@ class dialogs extends dbconnection
             (isset($pack->dialog_id)                   ? "dialog_id,"                   : "").
             (isset($pack->parent_dialog_script_id)     ? "parent_dialog_script_id,"     : "").
             (isset($pack->dialog_character_id)         ? "dialog_character_id,"         : "").
-            (isset($pack->requirement_root_package_id) ? "requirement_root_package_id," : "").
             (isset($pack->prompt)                      ? "prompt,"                      : "").
             (isset($pack->text)                        ? "text,"                        : "").
+            (isset($pack->requirement_root_package_id) ? "requirement_root_package_id," : "").
+            (isset($pack->event_package_id)            ? "event_package_id,"            : "").
             (isset($pack->sort_index)                  ? "sort_index,"                  : "").
             "created".
             ") VALUES (".
@@ -207,9 +208,10 @@ class dialogs extends dbconnection
             (isset($pack->dialog_id)                   ? "'".addslashes($pack->dialog_id)."',"                   : "").
             (isset($pack->parent_dialog_script_id)     ? "'".addslashes($pack->parent_dialog_script_id)."',"     : "").
             (isset($pack->dialog_character_id)         ? "'".addslashes($pack->dialog_character_id)."',"         : "").
-            (isset($pack->requirement_root_package_id) ? "'".addslashes($pack->requirement_root_package_id)."'," : "").
             (isset($pack->prompt)                      ? "'".addslashes($pack->prompt)."',"                      : "").
             (isset($pack->text)                        ? "'".addslashes($pack->text)."',"                        : "").
+            (isset($pack->requirement_root_package_id) ? "'".addslashes($pack->requirement_root_package_id)."'," : "").
+            (isset($pack->event_package_id)            ? "'".addslashes($pack->event_package_id)."',"            : "").
             (isset($pack->sort_index)                  ? "'".addslashes($pack->sort_index)."',"                  : "").
             "CURRENT_TIMESTAMP".
             ")"
@@ -230,9 +232,10 @@ class dialogs extends dbconnection
             "UPDATE dialog_scripts SET ".
             (isset($pack->parent_dialog_script_id)     ? "parent_dialog_script_id     = '".addslashes($pack->parent_dialog_script_id)."', "     : "").
             (isset($pack->dialog_character_id)         ? "dialog_character_id         = '".addslashes($pack->dialog_character_id)."', "         : "").
-            (isset($pack->requirement_root_package_id) ? "requirement_root_package_id = '".addslashes($pack->requirement_root_package_id)."', " : "").
             (isset($pack->prompt)                      ? "prompt                      = '".addslashes($pack->prompt)."', "                      : "").
             (isset($pack->text)                        ? "text                        = '".addslashes($pack->text)."', "                        : "").
+            (isset($pack->requirement_root_package_id) ? "requirement_root_package_id = '".addslashes($pack->requirement_root_package_id)."', " : "").
+            (isset($pack->event_package_id)            ? "event_package_id            = '".addslashes($pack->event_package_id)."', "            : "").
             (isset($pack->sort_index)                  ? "sort_index                  = '".addslashes($pack->sort_index)."', "                  : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE dialog_script_id = '{$pack->dialog_script_id}'"
@@ -250,9 +253,10 @@ class dialogs extends dbconnection
         $dialogScript->dialog_id                   = $sql_dialogScript->dialog_id;
         $dialogScript->parent_dialog_script_id     = $sql_dialogScript->parent_dialog_script_id;
         $dialogScript->dialog_character_id         = $sql_dialogScript->dialog_character_id;
-        $dialogScript->requirement_root_package_id = $sql_dialogScript->requirement_root_package_id;
         $dialogScript->prompt                      = $sql_dialogScript->prompt;
         $dialogScript->text                        = $sql_dialogScript->text;
+        $dialogScript->requirement_root_package_id = $sql_dialogScript->requirement_root_package_id;
+        $dialogScript->event_package_id            = $sql_dialogScript->event_package_id;
         $dialogScript->sort_index                  = $sql_dialogScript->sort_index;
 
         return $dialogScript;

@@ -530,9 +530,10 @@ var CRUD_DEFAULTS = [
           "dialog_id":123,\n\
           "parent_dialog_script_id":123,\n\
           "dialog_character_id":123,\n\
-          "requirement_root_package_id":123,\n\
           "prompt":"dialogScriptPrompt",\n\
           "text":"dialogScriptText",\n\
+          "event_package_id":123,\n\
+          "requirement_root_package_id":123,\n\
           "sort_index":0\n\
         }\n\
         ',
@@ -548,9 +549,10 @@ var CRUD_DEFAULTS = [
           "dialog_script_id":123,\n\
           "parent_dialog_script_id":123,\n\
           "dialog_character_id":123,\n\
-          "requirement_root_package_id":123,\n\
           "prompt":"dialogScriptPrompt",\n\
           "text":"dialogScriptText",\n\
+          "event_package_id":123,\n\
+          "requirement_root_package_id":123,\n\
           "sort_index":0\n\
         }\n\
         ',
@@ -572,8 +574,7 @@ var CRUD_DEFAULTS = [
         {\n\
           "game_id":123,\n\
           "event":"GIVE_ITEM",\n\
-          "amount":10,\n\
-          "object_type":"PLAQUE",\n\
+          "qty":10,\n\
           "object_id":123\n\
         }\n\
         ',
@@ -588,8 +589,7 @@ var CRUD_DEFAULTS = [
         {\n\
           "event_id":123,\n\
           "event":"GIVE_ITEM",\n\
-          "amount":10,\n\
-          "object_type":"PLAQUE",\n\
+          "qty":10,\n\
           "object_id":123\n\
         }\n\
         ',
@@ -652,12 +652,14 @@ var CRUD_DEFAULTS = [
           "active_description":"activeDescription",\n\
           "active_notification_type":"NONE",\n\
           "active_function":"NONE",\n\
+          "active_event_package_id":1,\n\
           "active_requirement_root_package_id":1,\n\
           "complete_icon_media_id":123,\n\
           "complete_media_id":123,\n\
           "complete_description":"completeDescription",\n\
           "complete_notification_type":"NONE",\n\
           "complete_function":"NONE",\n\
+          "complete_event_package_id":1\n\
           "complete_requirement_root_package_id":1\n\
         }\n\
         ',
@@ -678,12 +680,14 @@ var CRUD_DEFAULTS = [
           "active_description":"activeDescription",\n\
           "active_notification_type":"NONE",\n\
           "active_function":"NONE",\n\
+          "active_event_package_id":1,\n\
           "active_requirement_root_package_id":1,\n\
           "complete_icon_media_id":123,\n\
           "complete_media_id":123,\n\
           "complete_description":"completeDescription",\n\
           "complete_notification_type":"NONE",\n\
           "complete_function":"NONE",\n\
+          "complete_event_package_id":1\n\
           "complete_requirement_root_package_id":1\n\
         }\n\
         ',

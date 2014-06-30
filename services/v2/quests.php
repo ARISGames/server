@@ -25,12 +25,14 @@ class quests extends dbconnection
             (isset($pack->active_notification_type)             ? "active_notification_type,"             : "").
             (isset($pack->active_function)                      ? "active_function,"                      : "").
             (isset($pack->active_requirement_root_package_id)   ? "active_requirement_root_package_id,"   : "").
+            (isset($pack->active_event_package_id)              ? "active_event_package_id,"              : "").
             (isset($pack->complete_icon_media_id)               ? "complete_icon_media_id,"               : "").
             (isset($pack->complete_media_id)                    ? "complete_media_id,"                    : "").
             (isset($pack->complete_description)                 ? "complete_description,"                 : "").
             (isset($pack->complete_notification_type)           ? "complete_notification_type,"           : "").
             (isset($pack->complete_function)                    ? "complete_function,"                    : "").
             (isset($pack->complete_requirement_root_package_id) ? "complete_requirement_root_package_id," : "").
+            (isset($pack->complete_event_package_id)            ? "complete_event_package_id,"            : "").
             (isset($pack->sort_index)                           ? "sort_index,"                           : "").
             "created".
             ") VALUES (".
@@ -43,12 +45,14 @@ class quests extends dbconnection
             (isset($pack->active_notification_type)             ? "'".addslashes($pack->active_notification_type)."',"             : "").
             (isset($pack->active_function)                      ? "'".addslashes($pack->active_function)."',"                      : "").
             (isset($pack->active_requirement_root_package_id)   ? "'".addslashes($pack->active_requirement_root_package_id)."',"   : "").
+            (isset($pack->active_event_package_id)              ? "'".addslashes($pack->active_event_package_id)."',"              : "").
             (isset($pack->complete_icon_media_id)               ? "'".addslashes($pack->complete_icon_media_id)."',"               : "").
             (isset($pack->complete_media_id)                    ? "'".addslashes($pack->complete_media_id)."',"                    : "").
             (isset($pack->complete_description)                 ? "'".addslashes($pack->complete_description)."',"                 : "").
             (isset($pack->complete_notification_type)           ? "'".addslashes($pack->complete_notification_type)."',"           : "").
             (isset($pack->complete_function)                    ? "'".addslashes($pack->complete_function)."',"                    : "").
             (isset($pack->complete_requirement_root_package_id) ? "'".addslashes($pack->complete_requirement_root_package_id)."'," : "").
+            (isset($pack->complete_event_package_id)            ? "'".addslashes($pack->complete_event_package_id)."',"            : "").
             (isset($pack->sort_index)                           ? "'".addslashes($pack->sort_index)."',"                           : "").
             "CURRENT_TIMESTAMP".
             ")"
@@ -74,12 +78,14 @@ class quests extends dbconnection
             (isset($pack->active_notification_type)             ? "active_notification_type             = '".addslashes($pack->active_notification_type)."', "             : "").
             (isset($pack->active_function)                      ? "active_function                      = '".addslashes($pack->active_function)."', "                      : "").
             (isset($pack->active_requirement_root_package_id)   ? "active_requirement_root_package_id   = '".addslashes($pack->active_requirement_root_package_id)."', "   : "").
+            (isset($pack->active_event_package_id)              ? "active_event_package_id              = '".addslashes($pack->active_event_package_id)."', "              : "").
             (isset($pack->complete_icon_media_id)               ? "complete_icon_media_id               = '".addslashes($pack->complete_icon_media_id)."', "               : "").
             (isset($pack->complete_media_id)                    ? "complete_media_id                    = '".addslashes($pack->complete_media_id)."', "                    : "").
             (isset($pack->complete_description)                 ? "complete_description                 = '".addslashes($pack->complete_description)."', "                 : "").
             (isset($pack->complete_notification_type)           ? "complete_notification_type           = '".addslashes($pack->complete_notification_type)."', "           : "").
             (isset($pack->complete_function)                    ? "complete_function                    = '".addslashes($pack->complete_function)."', "                    : "").
             (isset($pack->complete_requirement_root_package_id) ? "complete_requirement_root_package_id = '".addslashes($pack->complete_requirement_root_package_id)."', " : "").
+            (isset($pack->complete_event_package_id)            ? "complete_event_package_id            = '".addslashes($pack->complete_event_package_id)."', "            : "").
             (isset($pack->sort_index)                           ? "sort_index                           = '".addslashes($pack->sort_index)."', "                           : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE quest_id = '{$pack->quest_id}'"
@@ -102,12 +108,14 @@ class quests extends dbconnection
         $quest->active_notification_type             = $sql_quest->active_notification_type;
         $quest->active_function                      = $sql_quest->active_function;
         $quest->active_requirement_root_package_id   = $sql_quest->active_requirement_root_package_id;
+        $quest->active_event_package_id              = $sql_quest->active_event_package_id;
         $quest->complete_icon_media_id               = $sql_quest->complete_icon_media_id;
         $quest->complete_media_id                    = $sql_quest->complete_media_id;
         $quest->complete_description                 = $sql_quest->complete_description;
         $quest->complete_notification_type           = $sql_quest->complete_notification_type;
         $quest->complete_function                    = $sql_quest->complete_function;
         $quest->complete_requirement_root_package_id = $sql_quest->complete_requirement_root_package_id;
+        $quest->complete_event_package_id            = $sql_quest->complete_event_package_id;
         $quest->sort_index                           = $sql_quest->sort_index;
 
         return $quest;
