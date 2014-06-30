@@ -562,16 +562,16 @@ var CRUD_DEFAULTS = [
         '
 },
 {
-    "service":"state_changes",
-    "create":"state_changes.createStateChange",
-    "get":"state_changes.getStateChange",
-    "update":"state_changes.updateStateChange",
-    "delete":"state_changes.deleteStateChange",
+    "service":"events",
+    "create":"events.createEvent",
+    "get":"events.getEvent",
+    "update":"events.updateEvent",
+    "delete":"events.deleteEvent",
     "createData":
         '\
         {\n\
           "game_id":123,\n\
-          "action":"GIVE_ITEM",\n\
+          "event":"GIVE_ITEM",\n\
           "amount":10,\n\
           "object_type":"PLAQUE",\n\
           "object_id":123\n\
@@ -580,14 +580,14 @@ var CRUD_DEFAULTS = [
     "getData":
         '\
         {\n\
-          "state_change_id":123\n\
+          "event_id":123\n\
         }\n\
         ',
     "updateData":
         '\
         {\n\
-          "state_change_id":123,\n\
-          "action":"GIVE_ITEM",\n\
+          "event_id":123,\n\
+          "event":"GIVE_ITEM",\n\
           "amount":10,\n\
           "object_type":"PLAQUE",\n\
           "object_id":123\n\
@@ -596,7 +596,7 @@ var CRUD_DEFAULTS = [
     "deleteData":
         '\
         {\n\
-          "state_change_id":123\n\
+          "event_id":123\n\
         }\n\
         '
 },

@@ -63,19 +63,19 @@ last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 CREATE INDEX tab_game_id ON tabs(game_id);
 
-DROP TABLE IF EXISTS state_changes;
-CREATE TABLE state_changes (
-state_change_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+DROP TABLE IF EXISTS events;
+CREATE TABLE events (
+event_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 game_id INT(32) UNSIGNED NOT NULL,
-action enum('GIVE_ITEM','TAKE_ITEM') NOT NULL DEFAULT 'GIVE_ITEM',
+event enum('GIVE_ITEM','TAKE_ITEM') NOT NULL DEFAULT 'GIVE_ITEM',
 amount INT(32) UNSIGNED NOT NULL DEFAULT 0,
 object_type enum('PLAQUE','SCRIPT','QUEST') NOT NULL,
 object_id INT(32) UNSIGNED NOT NULL,
 created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
 last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
-CREATE INDEX state_change_object ON state_changes(object_type, object_id);
-CREATE INDEX state_change_game_id ON state_changes(game_id);
+CREATE INDEX event_object ON events(object_type, object_id);
+CREATE INDEX event_game_id ON events(game_id);
 
 DROP TABLE IF EXISTS items;
 CREATE TABLE items (

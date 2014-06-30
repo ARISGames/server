@@ -154,7 +154,7 @@ class games extends dbconnection
 
         dbconnection::query("DELETE FROM games WHERE game_id = '{$pack->game_id}' LIMIT 1");
         dbconnection::query("DELETE FROM game_tab_data WHERE game_id = '{$pack->game_id}' LIMIT 1");
-        dbconnection::query("DELETE FROM state_changes WHERE game_id = '{$pack->game_id}' LIMIT 1");
+        dbconnection::query("DELETE FROM events WHERE game_id = '{$pack->game_id}' LIMIT 1");
         dbconnection::query("DELETE FROM items WHERE game_id = '{$pack->game_id}' LIMIT 1");
         dbconnection::query("DELETE FROM npcs WHERE game_id = '{$pack->game_id}' LIMIT 1");
         dbconnection::query("DELETE FROM npc_scripts WHERE game_id = '{$pack->game_id}' LIMIT 1");
