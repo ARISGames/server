@@ -104,6 +104,7 @@ class migration extends migration_dbconnection
         $maps->scripts = $characterMaps->scriptsMap;
         //$maps->notes = migration::migrateNotes($v1GameId, $v2GameId, $maps); //don't migrate notes for now... (we'll get into if we should later)
         $maps->quests = migration::migrateQuests($v1GameId, $v2GameId, $maps);
+        $maps->events = migration::migrateEvents($v1GameId, $v2GameId, $maps);
 
         $sceneId = migration_dbconnection::queryInsert("INSERT INTO scenes (game_id, name, created) VALUES ('{$v2GameId}', 'Main Scene', CURRENT_TIMESTAMP)","v2");
         $triggerMaps = migration::migrateTriggers($v1GameId, $v2GameId, $sceneId, $maps);
@@ -326,7 +327,24 @@ class migration extends migration_dbconnection
             $newQuestId = migration_dbconnection::queryInsert("INSERT INTO quests (game_id,name,description, active_icon_media_id,active_media_id,active_description,active_notification_type,active_function, complete_icon_media_id,complete_media_id,complete_description,complete_notification_type,complete_function, sort_index,created) VALUES ('{$v2GameId}','{$quests[$i]->name}','{$quests[$i]->description}', '{$maps->media[$quests[$i]->active_icon_media_id]}','{$maps->media[$quests[$i]->active_media_id]}','{$quests[$i]->description}','".($quests[$i]->full_screen_notify ? "FULL_SCREEN" : "DROP_DOWN")."','{$quests[$i]->go_function}', '{$maps->media[$quests[$i]->complete_icon_media_id]}','{$maps->media[$quests[$i]->complete_media_id]}','{$quests[$i]->text_when_complete}','".($quests[$i]->complete_full_screen_notify ? "FULL_SCREEN" : "DROP_DOWN")."','{$quests[$i]->complete_go_function}', '{$quests[$i]->sort_index}',CURRENT_TIMESTAMP)", "v2");
             $questIdMap[$quests[$i]->quest_id] = $newQuestId;
         }
+        return $questIdMap;
+    }
+
+    public function migrateEvents($v1GameId, $v2GameId, $maps)
+    {
+        $questIdMap = array();
+        $questIdMap[0] = 0;
+
+    /*
+        $quests = migration_dbconnection::queryArray("SELECT * FROM quests WHERE game_id = '{$v1GameId}'","v1");
+        for($i = 0; $i < count($quests); $i++)
+        {
+            $questIdMap[$quests[$i]->quest_id] = 0; //set it to 0 in case of failure
+            $newQuestId = migration_dbconnection::queryInsert("INSERT INTO quests (game_id,name,description, active_icon_media_id,active_media_id,active_description,active_notification_type,active_function, complete_icon_media_id,complete_media_id,complete_description,complete_notification_type,complete_function, sort_index,created) VALUES ('{$v2GameId}','{$quests[$i]->name}','{$quests[$i]->description}', '{$maps->media[$quests[$i]->active_icon_media_id]}','{$maps->media[$quests[$i]->active_media_id]}','{$quests[$i]->description}','".($quests[$i]->full_screen_notify ? "FULL_SCREEN" : "DROP_DOWN")."','{$quests[$i]->go_function}', '{$maps->media[$quests[$i]->complete_icon_media_id]}','{$maps->media[$quests[$i]->complete_media_id]}','{$quests[$i]->text_when_complete}','".($quests[$i]->complete_full_screen_notify ? "FULL_SCREEN" : "DROP_DOWN")."','{$quests[$i]->complete_go_function}', '{$quests[$i]->sort_index}',CURRENT_TIMESTAMP)", "v2");
+            $questIdMap[$quests[$i]->quest_id] = $newQuestId;
+        }
         return $webpageIdMap;
+    */
     }
 
     public function migrateTriggers($v1GameId, $v2GameId, $sceneId, $maps)
