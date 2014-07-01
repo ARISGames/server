@@ -131,7 +131,7 @@ class migration extends migration_dbconnection
             $mediaIdMap[$media[$i]->media_id] = 0; //set it to 0 in case of failure
             if(!file_exists(Config::gamedataFSPath."/".$media[$i]->file_path)) continue;
             $filename = substr($media[$i]->file_path, strpos($media[$i]->file_path,'/')+1);
-            copy(Config::gamedataFSPath."/".$media[$i]->file_path,Config::v2_gamedata_folder."/".$filename);
+            copy(Config::gamedataFSPath."/".$media[$i]->file_path,Config::v2_gamedata_folder."/".$v2GameId."/".$filename);
             $newMediaId = migration_dbconnection::queryInsert("INSERT INTO media (game_id, file_folder, file_name, name, created) VALUES ('{$v2GameId}','{$v2GameId}','{$filename}','{$media[$i]->name}',CURRENT_TIMESTAMP)", "v2");
             $mediaIdMap[$media[$i]->media_id] = $newMediaId;
         }
@@ -437,7 +437,7 @@ class migration extends migration_dbconnection
         for($i = 0; $i < count($tabs); $i++)
         {
             $tabIdMap[$tabs[$i]->id] = 0; //set it to 0 in case of failure
-            if($tabs[$i]->sort_index < 1) continue; //in new model, disabled tabs are simply deleted
+            if($tabs[$i]->tab_index < 1) continue; //in new model, disabled tabs are simply deleted
 
             //old: 'GPS','NEARBY','QUESTS','INVENTORY','PLAYER','QR','NOTE','STARTOVER','PICKGAME','NPC','ITEM','NODE','WEBPAGE'
             //new: 'MAP','DECODER','SCANNER','QUESTS','INVENTORY','PLAYER','NOTE','DIALOG','ITEM','PLAQUE','WEBPAGE'
@@ -446,20 +446,30 @@ class migration extends migration_dbconnection
             if($tabs[$i]->tab == "NEARBY") continue;
             if($tabs[$i]->tab == "STARTOVER") continue;
             if($tabs[$i]->tab == "PICKGAME") continue;
-            if($tabs[$i]->tab == "GPS")       { $newType = "MAP";      $newDetail = $tabs[$i]->tab_detail_1; }
-            if($tabs[$i]->tab == "QUESTS")    { $newType = "QUESTS";   $newDetail = $tabs[$i]->tab_detail_1; }
-            if($tabs[$i]->tab == "INVENTORY") { $newType = "MAP";      $newDetail = $tabs[$i]->tab_detail_1; }
-            if($tabs[$i]->tab == "PLAYER")    { $newType = "PLAYER";   $newDetail = $tabs[$i]->tab_detail_1; }
-            if($tabs[$i]->tab == "NOTE")      { $newType = "NOTE";     $newDetail = $maps->notes[$tabs[$i]->tab_detail_1]; }
-            if($tabs[$i]->tab == "NPC")       { $newType = "DIALOG";   $newDetail = $maps->dialogs[$tabs[$i]->tab_detail_1]; }
-            if($tabs[$i]->tab == "ITEM")      { $newType = "ITEM";     $newDetail = $maps->items[$tabs[$i]->tab_detail_1]; }
-            if($tabs[$i]->tab == "NODE")      { $newType = "PLAQUE";   $newDetail = $maps->plaques[$tabs[$i]->tab_detail_1]; }
-            if($tabs[$i]->tab == "WEBPAGE")   { $newType = "WEB_PAGE"; $newDetail = $maps->webpages[$tabs[$i]->tab_detail_1]; }
+            if($tabs[$i]->tab == "GPS")       { $newType = "MAP";       $newDetail = $tabs[$i]->tab_detail_1; }
+            if($tabs[$i]->tab == "QUESTS")    { $newType = "QUESTS";    $newDetail = $tabs[$i]->tab_detail_1; }
+            if($tabs[$i]->tab == "INVENTORY") { $newType = "INVENTORY"; $newDetail = $tabs[$i]->tab_detail_1; }
+            if($tabs[$i]->tab == "PLAYER")    { $newType = "PLAYER";    $newDetail = $tabs[$i]->tab_detail_1; }
+            if($tabs[$i]->tab == "NOTE")      { $newType = "NOTEBOOK";  $newDetail = $tabs[$i]->tab_detail_1; } //technically, there is a NOTE option separate from NOTEBOOK now, but was impossible in v1. so odd mapping.
+            if($tabs[$i]->tab == "NPC")       { $newType = "DIALOG";    $newDetail = $maps->dialogs[$tabs[$i]->tab_detail_1]; }
+            if($tabs[$i]->tab == "ITEM")      { $newType = "ITEM";      $newDetail = $maps->items[$tabs[$i]->tab_detail_1]; }
+            if($tabs[$i]->tab == "NODE")      { $newType = "PLAQUE";    $newDetail = $maps->plaques[$tabs[$i]->tab_detail_1]; }
+            if($tabs[$i]->tab == "WEBPAGE")   { $newType = "WEB_PAGE";  $newDetail = $maps->webpages[$tabs[$i]->tab_detail_1]; }
             if($tabs[$i]->tab == "QR") $newType = ($tab[$i]->tab_detail_1 == 0 || $tab[$i]->tab_detail_1 == 2) ? "SCANNER" : "DECODER";
 
             $newTabId = migration_dbconnection::queryInsert("INSERT INTO tabs (game_id, type, sort_index, tab_detail_1, created) VALUES 
-            ('{$v2GameId}','{$newType}','{$tabs[$i]->tab_index}','{$newDetail}',CURRENT_TIMESTAMP)", "v2");
+            ('{$v2GameId}','{$newType}','{$tabs[$i]->tab_index}','{$newDetail}',CURRENT_TIMESTAMP)", "v2",true);
             $tabIdMap[$tabs[$i]->tab] = $newTabId;
+
+            //if tab is QR in mode BOTH, we need to create two tabs in v2. above should have created SCANNER, so this will create QR
+            //(literally copied/pasted above 3 lines. so if they change, this must as well)
+            if($tabs[$i]->tab == "QR" && $tab[$i]->tab_detail_1 == 0)
+            { 
+                $newType = "DECODER";
+                $newTabId = migration_dbconnection::queryInsert("INSERT INTO tabs (game_id, type, sort_index, tab_detail_1, created) VALUES 
+                ('{$v2GameId}','{$newType}','{$tabs[$i]->tab_index}','{$newDetail}',CURRENT_TIMESTAMP)", "v2",true);
+                $tabIdMap[$tabs[$i]->tab] = $newTabId;
+            }
         }
         return $tabIdMap;
     }
