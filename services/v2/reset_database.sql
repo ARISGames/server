@@ -279,8 +279,8 @@ DROP TABLE IF EXISTS instances;
 CREATE TABLE instances (
 instance_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 game_id INT(32) UNSIGNED NOT NULL,
-object_id INT(32) UNSIGNED NOT NULL,
 object_type ENUM('PLAQUE','ITEM','DIALOG','WEB_PAGE','NOTE'),
+object_id INT(32) UNSIGNED NOT NULL,
 qty INT(32) UNSIGNED NOT NULL DEFAULT 0,
 infinite_qty TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
 factory_id INT(32) UNSIGNED NOT NULL DEFAULT 0,
@@ -316,6 +316,38 @@ last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 CREATE INDEX trigger_instance ON triggers(instance_id);
 CREATE INDEX trigger_scene ON triggers(scene_id);
 CREATE INDEX trigger_game ON triggers(game_id);
+
+DROP TABLE IF EXISTS factories;
+CREATE TABLE factories (
+factory_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+game_id INT(32) UNSIGNED NOT NULL DEFAULT 0,
+object_type ENUM('PLAQUE','ITEM','DIALOG','WEB_PAGE'),
+object_id INT(32) UNSIGNED NOT NULL,
+production_per_second INT(32) UNSIGNED NOT NULL DEFAULT 0,
+production_probability DOUBLE NOT NULL DEFAULT 1.0,
+max_production INT(32) UNSIGNED NOT NULL DEFAULT 0,
+produce_expiration_time INT(32) UNSIGNED NOT NULL DEFAULT 100,
+produce_expire_on_view TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+production_bound_type ENUM('PER_PLAYER','TOTAL'),
+location_bound_type ENUM('PLAYER','LOCATION'),
+min_production_distance INT(32) NOT NULL DEFAULT 0,
+max_production_distance INT(32) NOT NULL DEFAULT 0,
+production_timestamp TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
+requirement_root_package_id INT(32) UNSIGNED NOT NULL, /*requirement to spawn*/
+trigger_latitude DOUBLE NOT NULL DEFAULT 0.0,
+trigger_longitude DOUBLE NOT NULL DEFAULT 0.0,
+trigger_distance INT(32) NOT NULL DEFAULT 0,
+trigger_on_enter TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+trigger_hidden TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+trigger_wiggle TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+trigger_title VARCHAR(255) NOT NULL DEFAULT "",
+trigger_icon_media_id INT(32) NOT NULL DEFAULT 0,
+trigger_show_title TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
+trigger_requirement_root_package_id INT(32) UNSIGNED NOT NULL, /*requirement to view spawned trigger*/
+created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
+last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE INDEX factory_game ON factories(game_id);
 
 DROP TABLE IF EXISTS requirement_root_packages;
 CREATE TABLE requirement_root_packages (
@@ -424,60 +456,6 @@ CREATE INDEX user_log_check ON user_log(user_id, game_id, event_type, deleted);
 CREATE INDEX user_log_user_id ON user_log(user_id, created);
 CREATE INDEX user_log_game_id ON user_log(game_id, created);
 
-
-
-
-
-
-DROP TABLE IF EXISTS `spawnables`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `spawnables` (
-  `spawnable_id` int(11) NOT NULL AUTO_INCREMENT,
-  `game_id` int(11) NOT NULL,
-  `type` enum('Plaque','Item','Dialog','WebPage','PlayerNote') NOT NULL,
-  `type_id` int(11) NOT NULL,
-  `amount` int(11) NOT NULL DEFAULT '1',
-  `max_area` int(11) NOT NULL,
-  `amount_restriction` enum('PER_PLAYER','TOTAL') NOT NULL DEFAULT 'PER_PLAYER',
-  `location_bound_type` enum('PLAYER','LOCATION') NOT NULL DEFAULT 'PLAYER',
-  `latitude` double NOT NULL DEFAULT '0',
-  `longitude` double NOT NULL DEFAULT '0',
-  `spawn_probability` double NOT NULL DEFAULT '1',
-  `spawn_rate` int(11) NOT NULL DEFAULT '10',
-  `delete_when_viewed` tinyint(1) NOT NULL DEFAULT '0',
-  `time_to_live` int(11) NOT NULL DEFAULT '100',
-  `last_spawned` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
-  `error_range` int(11) NOT NULL DEFAULT '10',
-  `force_view` tinyint(1) NOT NULL DEFAULT '0',
-  `hidden` tinyint(1) NOT NULL DEFAULT '0',
-  `allow_quick_travel` tinyint(1) NOT NULL DEFAULT '0',
-  `wiggle` tinyint(1) NOT NULL DEFAULT '1',
-  `active` tinyint(1) NOT NULL DEFAULT '1',
-  `location_name` tinytext NOT NULL,
-  `show_title` tinyint(1) NOT NULL DEFAULT '0',
-  `min_area` int(11) NOT NULL,
-  `requirement_package_id` int(32) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`spawnable_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=80 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
-DROP TABLE IF EXISTS fountains;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `fountains` (
-  `fountain_id` int(11) NOT NULL AUTO_INCREMENT,
-  `game_id` int(11) NOT NULL,
-  `type` enum('Location','Spawnable') NOT NULL,
-  `location_id` int(11) NOT NULL,
-  `spawn_probability` double NOT NULL,
-  `spawn_rate` int(11) NOT NULL,
-  `max_amount` int(11) NOT NULL,
-  `last_spawned` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  `active` tinyint(1) NOT NULL DEFAULT '1',
-  PRIMARY KEY (`fountain_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=110 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
 DROP TABLE IF EXISTS `game_comments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
