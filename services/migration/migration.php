@@ -332,19 +332,41 @@ class migration extends migration_dbconnection
 
     public function migrateEvents($v1GameId, $v2GameId, $maps)
     {
-        $questIdMap = array();
-        $questIdMap[0] = 0;
-
-    /*
-        $quests = migration_dbconnection::queryArray("SELECT * FROM quests WHERE game_id = '{$v1GameId}'","v1");
-        for($i = 0; $i < count($quests); $i++)
+        //round up all v1 events into groups by type and by object
+        $eGroupings = new stdClass;
+        $eGroupings->plaques = array();
+        $eGroupings->dialogScripts = array();
+        $events = migration_dbconnection::queryArray("SELECT * FROM player_state_changes WHERE game_id = '{$v1GameId}'","v1");
+        $q = 0;
+        for($i = 0; $i < count($events); $i++)
         {
-            $questIdMap[$quests[$i]->quest_id] = 0; //set it to 0 in case of failure
-            $newQuestId = migration_dbconnection::queryInsert("INSERT INTO quests (game_id,name,description, active_icon_media_id,active_media_id,active_description,active_notification_type,active_function, complete_icon_media_id,complete_media_id,complete_description,complete_notification_type,complete_function, sort_index,created) VALUES ('{$v2GameId}','{$quests[$i]->name}','{$quests[$i]->description}', '{$maps->media[$quests[$i]->active_icon_media_id]}','{$maps->media[$quests[$i]->active_media_id]}','{$quests[$i]->description}','".($quests[$i]->full_screen_notify ? "FULL_SCREEN" : "DROP_DOWN")."','{$quests[$i]->go_function}', '{$maps->media[$quests[$i]->complete_icon_media_id]}','{$maps->media[$quests[$i]->complete_media_id]}','{$quests[$i]->text_when_complete}','".($quests[$i]->complete_full_screen_notify ? "FULL_SCREEN" : "DROP_DOWN")."','{$quests[$i]->complete_go_function}', '{$quests[$i]->sort_index}',CURRENT_TIMESTAMP)", "v2");
-            $questIdMap[$quests[$i]->quest_id] = $newQuestId;
+            if($maps->plaques[$events[$i]->event_detail]) $typeGroup = &$eGroupings->plaques;
+            if($maps->scripts[$events[$i]->event_detail]) $typeGroup = &$eGroupings->dialogScripts;
+
+            if(!$typeGroup[$events[$i]->event_detail]) $typeGroup[$events[$i]->event_detail] = array();
+            $typeGroup[$events[$i]->event_detail][] = $events[$i];
         }
-        return $webpageIdMap;
-    */
+
+        foreach($eGroupings->plaques as $plaqueId => $eventsList)
+        {
+            $event_package_id = migration::migrateEventsListIntoPackage($v2GameId, $eventsList, $maps);
+            migration_dbconnection::query("UPDATE plaques SET event_package_id = '{$event_package_id}' WHERE plaque_id = '{$maps->plaques[$plaqueId]}'","v2");
+        }
+        foreach($eGroupings->dialogScripts as $scriptId => $eventsList)
+        {
+            $event_package_id = migration::migrateEventsListIntoPackage($v2GameId, $eventsList, $maps);
+            migration_dbconnection::query("UPDATE dialog_scripts SET event_package_id = '{$event_package_id}' WHERE dialog_script_id = '{$maps->scripts[$scriptId]}'","v2");
+        }
+    }
+    //helper for migrateEvents
+    public function migrateEventsListIntoPackage($gameId, $eventsList, $maps)
+    {
+        $event_package_id = migration_dbconnection::queryInsert("INSERT INTO event_packages (game_id, created) VALUES ('{$gameId}',CURRENT_TIMESTAMP)","v2");
+
+        for($i = 0; $i < count($eventsList); $i++)
+            migration_dbconnection::queryInsert("INSERT INTO events (game_id, event_package_id, event, object_id, qty, created) VALUES ('{$gameId}', '{$event_package_id}', '{$eventsList[$i]->action}','{$eventsList[$i]->action_detail}','{$eventsList[$i]->action_amount}',CURRENT_TIMESTAMP)","v2");
+
+        return $event_package_id;
     }
 
     public function migrateTriggers($v1GameId, $v2GameId, $sceneId, $maps)
