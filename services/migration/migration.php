@@ -393,18 +393,17 @@ class migration extends migration_dbconnection
 
             $newType = "";
             $objectId = 0;
-            $iconMediaId = 0;
             if($locations[$i]->type == 'AugBubble')  continue; //doesn't exist anymore
             if($locations[$i]->type == 'Event')      continue; //doesn't exist anymore (and never did?)
-            if($locations[$i]->type == 'Node')       { $newType = "PLAQUE";   $objectId = $maps->plaques[$locations[$i]->type_id];  $iconMediaId = $maps->plaques[$locations[$i]->type_id]; }
-            if($locations[$i]->type == 'Item')       { $newType = "ITEM";     $objectId = $maps->items[$locations[$i]->type_id];    $iconMediaId = $maps->items[$locations[$i]->type_id]; }
-            if($locations[$i]->type == 'Npc')        { $newType = "DIALOG";   $objectId = $maps->dialogs[$locations[$i]->type_id];  $iconMediaId = $maps->dialogs[$locations[$i]->type_id]; }
-            if($locations[$i]->type == 'WebPage')    { $newType = "WEB_PAGE"; $objectId = $maps->webpages[$locations[$i]->type_id]; $iconMediaId = $maps->webpages[$locations[$i]->type_id]; }
-            if($locations[$i]->type == 'PlayerNote') { $newType = "NOTE";     $objectId = $maps->notes[$locations[$i]->type_id];    $iconMediaId = $maps->notes[$locations[$i]->type_id]; }
+            if($locations[$i]->type == 'Node')       { $newType = "PLAQUE";   $objectId = $maps->plaques[$locations[$i]->type_id];  }
+            if($locations[$i]->type == 'Item')       { $newType = "ITEM";     $objectId = $maps->items[$locations[$i]->type_id];    }
+            if($locations[$i]->type == 'Npc')        { $newType = "DIALOG";   $objectId = $maps->dialogs[$locations[$i]->type_id];  }
+            if($locations[$i]->type == 'WebPage')    { $newType = "WEB_PAGE"; $objectId = $maps->webpages[$locations[$i]->type_id]; }
+            if($locations[$i]->type == 'PlayerNote') { $newType = "NOTE";     $objectId = $maps->notes[$locations[$i]->type_id];    }
             if(!$objectId) continue; //either we've encountered something invalid in the DB, or we no longer support something
 
             $newInstanceId = migration_dbconnection::queryInsert("INSERT INTO instances (game_id,object_id,object_type,qty,infinite_qty,created) VALUES ('{$v2GameId}','{$objectId}','{$newType}','{$locations[$i]->item_qty}','".(intval($locations[$i]->item_qty) < 0 ? 1 : 0)."',CURRENT_TIMESTAMP)","v2");
-            $newTriggerId = migration_dbconnection::queryInsert("INSERT INTO triggers (game_id,instance_id,scene_id,type,name,title,icon_media_id,latitude,longitude,distance,wiggle,show_title,hidden,trigger_on_enter,created) VALUES ('{$v2GameId}','{$newInstanceId}','{$sceneId}','LOCATION','{$locations[$i]->name}','{$locations[$i]->name}','{$iconMediaId}','{$locations[$i]->latitude}','{$locations[$i]->longitude}','{$locations[$i]->error}','{$locations[$i]->wiggle}','{$locations[$i]->show_title}','{$locations[$i]->hidden}','{$locations[$i]->force_view}',CURRENT_TIMESTAMP)", "v2");
+            $newTriggerId = migration_dbconnection::queryInsert("INSERT INTO triggers (game_id,instance_id,scene_id,type,name,title,latitude,longitude,distance,wiggle,show_title,hidden,trigger_on_enter,created) VALUES ('{$v2GameId}','{$newInstanceId}','{$sceneId}','LOCATION','{$locations[$i]->name}','{$locations[$i]->name}','{$locations[$i]->latitude}','{$locations[$i]->longitude}','{$locations[$i]->error}','{$locations[$i]->wiggle}','{$locations[$i]->show_title}','{$locations[$i]->hidden}','{$locations[$i]->force_view}',CURRENT_TIMESTAMP)", "v2");
             $locTriggerMap[$locations[$i]->location_id] = $newTriggerId;
 
             //Note that this DUPLICATES INSTANCES!!! (1 location/qr combo from v1 creates 2 instances, a location trigger, and a qr trigger)
