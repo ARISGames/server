@@ -126,6 +126,7 @@ class client extends dbconnection
         $playerTriggers = array();
         for($i = 0; $i < count($gameTriggers); $i++)
         {
+            $gameTriggers[$i]->user_id = $pack->auth->user_id;
             if(requirements::evaluateRequirementPackagePack($gameTriggers[$i]))
                 $playerTriggers[] = $gameTriggers[$i];
         }
@@ -144,6 +145,8 @@ class client extends dbconnection
         $playerQuests->complete = array();
         for($i = 0; $i < count($gameQuests); $i++)
         {
+            $gameQuests[$i]->user_id = $pack->auth->user_id;
+
             $gameQuests[$i]->requirement_root_package_id = $gameQuests[$i]->active_requirement_root_package_id;
             if(!requirements::evaluateRequirementPackagePack($gameQuests[$i])) continue; //ensure quest is active/visible
 
@@ -168,6 +171,7 @@ class client extends dbconnection
         $playerTabs = array();
         for($i = 0; $i < count($gameTabs); $i++)
         {
+            $gameTabs[$i]->user_id = $pack->auth->user_id;
             if(requirements::evaluateRequirementPackagePack($gameTabs[$i])) 
                 $playerTabs[] = $gameTabs[$i];
         }
@@ -184,6 +188,7 @@ class client extends dbconnection
         $playerOverlays = array();
         for($i = 0; $i < count($gameOverlays); $i++)
         {
+            $gameOverlays[$i]->user_id = $pack->auth->user_id;
             if(requirements::evaluateRequirementPackagePack($gameOverlays[$i])) 
                 $playerOverlays[] = $gameOverlays[$i];
         }

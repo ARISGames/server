@@ -378,7 +378,7 @@ class requirements extends dbconnection
         if(count($andPackages) == 0) return true;
         for($i = 0; $i < count($andPackages); $i++)
         {
-            $andPackages[$i]->auth = $pack->auth;
+            $andPackages[$i]->user_id = $pack->user_id;
             if(requirements::evaluateRequirementAndPackagePack($andPackages[$i])) return true;
         }
         return false;
@@ -392,8 +392,8 @@ class requirements extends dbconnection
         if(count($atoms) == 0) return true;
         for($i = 0; $i < count($atoms); $i++)
         {
-            $atoms[$i]->auth = $pack->auth;
-            if(!requirements::evaluateRequirementAtom($atoms[$i])) return false;
+            $atoms[$i]->user_id = $pack->user_id;
+            if(!requirements::evaluateRequirementAtomPack($atoms[$i])) return false;
         }
         return true;
     }
@@ -402,32 +402,95 @@ class requirements extends dbconnection
     public function evaluateRequirementAtomPack($pack)
     {
         $atom = dbconnection::queryObject("SELECT * FROM requirement_atoms WHERE requirement_atom_id = '{$pack->requirement_atom_id}'");
-        return true;
+        if(!$atom) return false;
+
         //these functions need to be defined for new schema
         switch($atom->requirement)
         {
-        /*
-            case 'PLAYER_HAS_ITEM':                       return dbconnection::playerHasItem($gameId, $userId, $atom->content_id, $atom->qty); break;
-            case 'PLAYER_HAS_TAGGED_ITEM':                return dbconnection::playerHasTaggedItem($gameId, $userId, $atom->content_id, $atom->qty); break;
-            case 'PLAYER_VIEWED_ITEM':                    return dbconnection::playerHasLog($gameId, $userId, dbconnection::kLOG_VIEW_ITEM, $atom->content_id); break;
-            case 'PLAYER_VIEWED_NODE':                    return dbconnection::playerHasLog($gameId, $userId, dbconnection::kLOG_VIEW_NODE, $atom->content_id); break;
-            case 'PLAYER_VIEWED_NPC':                     return dbconnection::playerHasLog($gameId, $userId, dbconnection::kLOG_VIEW_NPC, $atom->content_id); break;
-            case 'PLAYER_VIEWED_WEBPAGE':                 return dbconnection::playerHasLog($gameId, $userId, dbconnection::kLOG_VIEW_WEBPAGE, $atom->content_id); break;
-            case 'PLAYER_VIEWED_AUGBUBBLE':               return dbconnection::playerHasLog($gameId, $userId, dbconnection::kLOG_VIEW_AUGBUBBLE, $atom->content_id); break;
-            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM':        return dbconnection::playerHasUploadedMediaItemWithinDistance($gameId, $userId, $atom->latitude, $atom->longitude, $atom->distance, $atom->qty, dbconnection::kLOG_UPLOAD_MEDIA_ITEM); break;
-            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE':  return dbconnection::playerHasUploadedMediaItemWithinDistance($gameId, $userId, $atom->latitude, $atom->longitude, $atom->distance, $atom->qty, dbconnection::kLOG_UPLOAD_MEDIA_ITEM_IMAGE); break;
-            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO':  return dbconnection::playerHasUploadedMediaItemWithinDistance($gameId, $userId, $atom->latitude, $atom->longitude, $atom->distance, $atom->qty, dbconnection::kLOG_UPLOAD_MEDIA_ITEM_AUDIO); break;
-            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO':  return dbconnection::playerHasUploadedMediaItemWithinDistance($gameId, $userId, $atom->latitude, $atom->longitude, $atom->distance, $atom->qty, dbconnection::kLOG_UPLOAD_MEDIA_ITEM_VIDEO); break;
-            case 'PLAYER_HAS_COMPLETED_QUEST':            return dbconnection::playerHasLog($gameId, $userId, dbconnection::kLOG_COMPLETE_QUEST, $atom->content_id); break;
-            case 'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK': return dbconnection::playerHasLog($gameId, $userId, dbconnection::kLOG_RECEIVE_WEBHOOK, $atom->content_id); break;
-            case 'PLAYER_HAS_NOTE':                       return dbconnection::playerHasNote($gameId, $userId, $atom->qty); break;
-            case 'PLAYER_HAS_NOTE_WITH_TAG':              return dbconnection::playerHasNoteWithTag($gameId, $userId, $atom->content_id, $atom->qty); break;
-            case 'PLAYER_HAS_NOTE_WITH_LIKES':            return dbconnection::playerHasNoteWithLikes($gameId, $userId, $atom->qty); break;
-            case 'PLAYER_HAS_NOTE_WITH_COMMENTS':         return dbconnection::playerHasNoteWithComments($gameId, $userId, $atom->qty); break;
-            case 'PLAYER_HAS_GIVEN_NOTE_COMMENTS':        return dbconnection::playerHasGivenNoteComments($gameId, $userId, $atom->qty); break;
-        */
+            case 'ALWAYS_TRUE': return true;
+            case 'ALWAYS_FALSE': return false;
+            case 'PLAYER_HAS_ITEM': return requirements::playerHasItem($pack);
+            case 'PLAYER_HAS_TAGGED_ITEM': return requirements::playerHasTaggedItem($pack);
+            case 'PLAYER_VIEWED_ITEM': return requirements::playerViewed($pack,"ITEM");
+            case 'PLAYER_VIEWED_PLAQUE': return requirements::playerViewed($pack,"PLAQUE");
+            case 'PLAYER_VIEWED_DIALOG': return requirements::playerViewed($pack,"DIALOG");
+            case 'PLAYER_VIEWED_DIALOG_SCRIPT': return requirements::playerViewed($pack,"DIALOG_SCRIPT");
+            case 'PLAYER_VIEWED_WEB_PAGE': return requirements::playerViewed($pack,"WEB_PAGE");
+            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM': return requirements::playerUploaded($pack,"");
+            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE': return requirements::playerUploaded($pack,"IMAGE");
+            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO': return requirements::playerUplaoded($pack,"AUDIO");
+            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO': return requirements::playerUplaoded($pack,"VIDEO");
+            case 'PLAYER_HAS_COMPLETED_QUEST': return requirements::playerCompletedQuest($pack);
+            case 'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK': return requirements::playerReceivedWebHook($pack);
+            case 'PLAYER_HAS_NOTE': return requirements::playerHasNote($pack);
+            case 'PLAYER_HAS_NOTE_WITH_TAG': return requirements::playerHasNoteWithTag($pack);
+            case 'PLAYER_HAS_NOTE_WITH_LIKES': return requirements::playerHasNoteWithLikes($pack);
+            case 'PLAYER_HAS_NOTE_WITH_COMMENTS': return requirements::playerHasNoteWithComments($pack);
+            case 'PLAYER_HAS_GIVEN_NOTE_COMMENTS': return requirements::playerHasGivenNoteComments($pack);
         }
         return false;
+    }
+
+    private function playerHasItem($pack)
+    {
+        $item = dbconnection::queryObject("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_id = '{$pack->user_id}' AND object_type = 'ITEM' AND object_id = '{$pack->content_id}' AND qty >= '{$pack->qty}'");
+        return $item ? true : false;
+    }
+    private function playerHasTaggedItem($pack)
+    {
+        //NOT DONE!!
+        $item = dbconnection::queryObject("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_id = '{$pack->user_id}' AND object_type = 'ITEM' AND object_id = '{$pack->content_id}' AND qty >= '{$pack->qty}'");
+        return $item ? true : false;
+    }
+    private function playerViewed($pack,$type)
+    {
+        $entry = dbconnection::queryObject("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}' AND event_type = 'VIEW_{$type}' AND content_id = '{$pack->content_id}'");
+        return $entry ? true : false;
+    }
+    private function PLAYER_HAS_UPLOADED_MEDIA_ITEM($pack)
+    {
+        return true;
+    }
+    private function PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE($pack)
+    {
+        return true;
+    }
+    private function PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO($pack)
+    {
+        return true;
+    }
+    private function PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO($pack)
+    {
+        return true;
+    }
+    private function PLAYER_HAS_COMPLETED_QUEST($pack)
+    {
+        $entry = dbconnection::queryObject("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}' AND event_type = 'COMPLETE_QUEST' AND content_id = '{$pack->content_id}'");
+        return $entry ? true : false;
+    }
+    private function PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK($pack)
+    {
+        return true;
+    }
+    private function PLAYER_HAS_NOTE($pack)
+    {
+        return true;
+    }
+    private function PLAYER_HAS_NOTE_WITH_TAG($pack)
+    {
+        return true;
+    }
+    private function PLAYER_HAS_NOTE_WITH_LIKES($pack)
+    {
+        return true;
+    }
+    private function PLAYER_HAS_NOTE_WITH_COMMENTS($pack)
+    {
+        return true;
+    }
+    private function PLAYER_HAS_GIVEN_NOTE_COMMENTS($pack)
+    {
+        return true;
     }
 }
 ?>
