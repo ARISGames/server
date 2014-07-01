@@ -418,6 +418,15 @@ class migration extends migration_dbconnection
             }
         }
 
+        //special case where we create an immediate trigger from intro plaque
+        $game = migration_dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$v1GameId}'","v1");
+        if($game->on_launch_node_id)
+        {
+            $newInstanceId = migration_dbconnection::queryInsert("INSERT INTO instances (game_id,object_id,object_type,created) VALUES ('{$v2GameId}','{$maps->plaques[$game->on_launch_node_id]}','PLAQUE',CURRENT_TIMESTAMP)","v2");
+            $newTriggerId = migration_dbconnection::queryInsert("INSERT INTO triggers (game_id,instance_id,scene_id,type,created) VALUES ('{$v2GameId}','{$newInstanceId}','{$sceneId}','IMMEDIATE',CURRENT_TIMESTAMP)", "v2");
+            //no need to store in map, as nothing else should reference this trigger
+        }
+
         $returnMaps = new stdClass;
         $returnMaps->locationTriggerMap = $locTriggerMap;
         $returnMaps->qrTriggerMap = $qrTriggerMap;
@@ -457,7 +466,7 @@ class migration extends migration_dbconnection
             if($tabs[$i]->tab == "QR") $newType = ($tab[$i]->tab_detail_1 == 0 || $tab[$i]->tab_detail_1 == 2) ? "SCANNER" : "DECODER";
 
             $newTabId = migration_dbconnection::queryInsert("INSERT INTO tabs (game_id, type, sort_index, tab_detail_1, created) VALUES 
-            ('{$v2GameId}','{$newType}','{$tabs[$i]->tab_index}','{$newDetail}',CURRENT_TIMESTAMP)", "v2",true);
+            ('{$v2GameId}','{$newType}','{$tabs[$i]->tab_index}','{$newDetail}',CURRENT_TIMESTAMP)", "v2");
             $tabIdMap[$tabs[$i]->tab] = $newTabId;
 
             //if tab is QR in mode BOTH, we need to create two tabs in v2. above should have created SCANNER, so this will create QR
@@ -466,7 +475,7 @@ class migration extends migration_dbconnection
             { 
                 $newType = "DECODER";
                 $newTabId = migration_dbconnection::queryInsert("INSERT INTO tabs (game_id, type, sort_index, tab_detail_1, created) VALUES 
-                ('{$v2GameId}','{$newType}','{$tabs[$i]->tab_index}','{$newDetail}',CURRENT_TIMESTAMP)", "v2",true);
+                ('{$v2GameId}','{$newType}','{$tabs[$i]->tab_index}','{$newDetail}',CURRENT_TIMESTAMP)", "v2");
                 $tabIdMap[$tabs[$i]->tab] = $newTabId;
             }
         }
