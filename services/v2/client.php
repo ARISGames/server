@@ -245,6 +245,16 @@ class client extends dbconnection
         dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'VIEW_INSTANCE', '{$pack->instance_id}', CURRENT_TIMESTAMP);");
         return new return_package(0);
     }
+
+    public static function logPlayerTriggeredTrigger($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::logPlayerTriggeredTriggerPack($glob); }
+    public static function logPlayerTriggeredTriggerPack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'TRIGGER_TRIGGER', '{$pack->trigger_id}', CURRENT_TIMESTAMP);");
+        return new return_package(0);
+    }
 }
 
 ?>
