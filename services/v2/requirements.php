@@ -403,30 +403,31 @@ class requirements extends dbconnection
     {
         $atom = dbconnection::queryObject("SELECT * FROM requirement_atoms WHERE requirement_atom_id = '{$pack->requirement_atom_id}'");
         if(!$atom) return false;
+        $atom->user_id = $pack->user_id;
 
         //these functions need to be defined for new schema
         switch($atom->requirement)
         {
             case 'ALWAYS_TRUE':                           return $atom->bool_operator == true;
             case 'ALWAYS_FALSE':                          return $atom->bool_operator == false;
-            case 'PLAYER_HAS_ITEM':                       return $atom->bool_operator == requirements::playerHasItem($pack);
-            case 'PLAYER_HAS_TAGGED_ITEM':                return $atom->bool_operator == requirements::playerHasTaggedItem($pack);
-            case 'PLAYER_VIEWED_ITEM':                    return $atom->bool_operator == requirements::playerViewed($pack,"ITEM");
-            case 'PLAYER_VIEWED_PLAQUE':                  return $atom->bool_operator == requirements::playerViewed($pack,"PLAQUE");
-            case 'PLAYER_VIEWED_DIALOG':                  return $atom->bool_operator == requirements::playerViewed($pack,"DIALOG");
-            case 'PLAYER_VIEWED_DIALOG_SCRIPT':           return $atom->bool_operator == requirements::playerViewed($pack,"DIALOG_SCRIPT");
-            case 'PLAYER_VIEWED_WEB_PAGE':                return $atom->bool_operator == requirements::playerViewed($pack,"WEB_PAGE");
-            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM':        return $atom->bool_operator == requirements::playerUploaded($pack,"");
-            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE':  return $atom->bool_operator == requirements::playerUploaded($pack,"IMAGE");
-            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO':  return $atom->bool_operator == requirements::playerUplaoded($pack,"AUDIO");
-            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO':  return $atom->bool_operator == requirements::playerUplaoded($pack,"VIDEO");
-            case 'PLAYER_HAS_COMPLETED_QUEST':            return $atom->bool_operator == requirements::playerCompletedQuest($pack);
-            case 'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK': return $atom->bool_operator == requirements::playerReceivedWebHook($pack);
-            case 'PLAYER_HAS_NOTE':                       return $atom->bool_operator == requirements::playerHasNote($pack);
-            case 'PLAYER_HAS_NOTE_WITH_TAG':              return $atom->bool_operator == requirements::playerHasNoteWithTag($pack);
-            case 'PLAYER_HAS_NOTE_WITH_LIKES':            return $atom->bool_operator == requirements::playerHasNoteWithLikes($pack);
-            case 'PLAYER_HAS_NOTE_WITH_COMMENTS':         return $atom->bool_operator == requirements::playerHasNoteWithComments($pack);
-            case 'PLAYER_HAS_GIVEN_NOTE_COMMENTS':        return $atom->bool_operator == requirements::playerHasGivenNoteComments($pack);
+            case 'PLAYER_HAS_ITEM':                       return $atom->bool_operator == requirements::playerHasItem($atom);
+            case 'PLAYER_HAS_TAGGED_ITEM':                return $atom->bool_operator == requirements::playerHasTaggedItem($atom);
+            case 'PLAYER_VIEWED_ITEM':                    return $atom->bool_operator == requirements::playerViewed($atom,"ITEM");
+            case 'PLAYER_VIEWED_PLAQUE':                  return $atom->bool_operator == requirements::playerViewed($atom,"PLAQUE");
+            case 'PLAYER_VIEWED_DIALOG':                  return $atom->bool_operator == requirements::playerViewed($atom,"DIALOG");
+            case 'PLAYER_VIEWED_DIALOG_SCRIPT':           return $atom->bool_operator == requirements::playerViewed($atom,"DIALOG_SCRIPT");
+            case 'PLAYER_VIEWED_WEB_PAGE':                return $atom->bool_operator == requirements::playerViewed($atom,"WEB_PAGE");
+            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM':        return $atom->bool_operator == requirements::playerUploaded($atom,"");
+            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE':  return $atom->bool_operator == requirements::playerUploaded($atom,"IMAGE");
+            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO':  return $atom->bool_operator == requirements::playerUplaoded($atom,"AUDIO");
+            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO':  return $atom->bool_operator == requirements::playerUplaoded($atom,"VIDEO");
+            case 'PLAYER_HAS_COMPLETED_QUEST':            return $atom->bool_operator == requirements::playerCompletedQuest($atom);
+            case 'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK': return $atom->bool_operator == requirements::playerReceivedWebHook($atom);
+            case 'PLAYER_HAS_NOTE':                       return $atom->bool_operator == requirements::playerHasNote($atom);
+            case 'PLAYER_HAS_NOTE_WITH_TAG':              return $atom->bool_operator == requirements::playerHasNoteWithTag($atom);
+            case 'PLAYER_HAS_NOTE_WITH_LIKES':            return $atom->bool_operator == requirements::playerHasNoteWithLikes($atom);
+            case 'PLAYER_HAS_NOTE_WITH_COMMENTS':         return $atom->bool_operator == requirements::playerHasNoteWithComments($atom);
+            case 'PLAYER_HAS_GIVEN_NOTE_COMMENTS':        return $atom->bool_operator == requirements::playerHasGivenNoteComments($atom);
         }
         return false;
     }
