@@ -40,4 +40,3 @@ class notebook extends dbconnection
     }
 }
 ?>
-

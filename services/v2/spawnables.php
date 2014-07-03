@@ -125,3 +125,4 @@ class Spawnables extends Module
         return new returnData(0, $spawnables);
     }
 }
+?>
