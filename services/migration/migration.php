@@ -403,7 +403,8 @@ class migration extends migration_dbconnection
             if(!$objectId) continue; //either we've encountered something invalid in the DB, or we no longer support something
 
             $newInstanceId = migration_dbconnection::queryInsert("INSERT INTO instances (game_id,object_id,object_type,qty,infinite_qty,created) VALUES ('{$v2GameId}','{$objectId}','{$newType}','{$locations[$i]->item_qty}','".(intval($locations[$i]->item_qty) < 0 ? 1 : 0)."',CURRENT_TIMESTAMP)","v2");
-            $newTriggerId = migration_dbconnection::queryInsert("INSERT INTO triggers (game_id,instance_id,scene_id,type,name,title,latitude,longitude,distance,wiggle,show_title,hidden,trigger_on_enter,created) VALUES ('{$v2GameId}','{$newInstanceId}','{$sceneId}','LOCATION','{$locations[$i]->name}','{$locations[$i]->name}','{$locations[$i]->latitude}','{$locations[$i]->longitude}','{$locations[$i]->error}','{$locations[$i]->wiggle}','{$locations[$i]->show_title}','{$locations[$i]->hidden}','{$locations[$i]->force_view}',CURRENT_TIMESTAMP)", "v2");
+            //PHIL REMEMBER TO REMOVE THE error*10 THING! THATS JUST FOR DEBUGGING MIGRATION BY MAKING ALL LOCATIONS MORE EASILY ACCESSIBLE
+            $newTriggerId = migration_dbconnection::queryInsert("INSERT INTO triggers (game_id,instance_id,scene_id,type,name,title,latitude,longitude,distance,wiggle,show_title,hidden,trigger_on_enter,created) VALUES ('{$v2GameId}','{$newInstanceId}','{$sceneId}','LOCATION','{$locations[$i]->name}','{$locations[$i]->name}','{$locations[$i]->latitude}','{$locations[$i]->longitude}','".($locations[$i]->error*20)."','{$locations[$i]->wiggle}','{$locations[$i]->show_title}','{$locations[$i]->hidden}','{$locations[$i]->force_view}',CURRENT_TIMESTAMP)", "v2");
             $locTriggerMap[$locations[$i]->location_id] = $newTriggerId;
 
             //Note that this DUPLICATES INSTANCES!!! (1 location/qr combo from v1 creates 2 instances, a location trigger, and a qr trigger)
@@ -423,8 +424,8 @@ class migration extends migration_dbconnection
         if($game->on_launch_node_id)
         {
             //create req package id to give to trigger "(haven't seen plaque)"
-            $requirementRootPackageId = migration_dbconnection::queryInsert("INSERT INTO requirement_root_packages (game_id) VALUES ('{$v2GameId}')","v2");
-            $requirementAndPackageId = migration_dbconnection::queryInsert("INSERT INTO requirement_and_packages (game_id, requirement_root_package_id) VALUES ('{$v2GameId}','{$requirementRootPackageId}')","v2");
+            $requirementRootPackageId = migration_dbconnection::queryInsert("INSERT INTO requirement_root_packages (game_id, created) VALUES ('{$v2GameId}', CURRENT_TIMESTAMP)","v2");
+            $requirementAndPackageId = migration_dbconnection::queryInsert("INSERT INTO requirement_and_packages (game_id, requirement_root_package_id, created) VALUES ('{$v2GameId}','{$requirementRootPackageId}', CURRENT_TIMESTAMP)","v2");
             $requirementAtomId = migration_dbconnection::queryInsert("INSERT INTO requirement_atoms (game_id, requirement_and_package_id, bool_operator, requirement, content_id, created) VALUES ('{$v2GameId}','{$requirementAndPackageId}', 0, 'PLAYER_VIEWED_PLAQUE','{$maps->plaques[$game->on_launch_node_id]}',CURRENT_TIMESTAMP)","v2");
 
             $newInstanceId = migration_dbconnection::queryInsert("INSERT INTO instances (game_id,object_id,object_type,created) VALUES ('{$v2GameId}','{$maps->plaques[$game->on_launch_node_id]}','PLAQUE',CURRENT_TIMESTAMP)","v2");
