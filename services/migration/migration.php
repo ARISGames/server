@@ -422,9 +422,14 @@ class migration extends migration_dbconnection
         $game = migration_dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$v1GameId}'","v1");
         if($game->on_launch_node_id)
         {
+            //create req package id to give to trigger "(haven't seen plaque)"
+            $requirementRootPackageId = migration_dbconnection::queryInsert("INSERT INTO requirement_root_packages (game_id) VALUES ('{$v2GameId}')","v2");
+            $requirementAndPackageId = migration_dbconnection::queryInsert("INSERT INTO requirement_and_packages (game_id, requirement_root_package_id) VALUES ('{$v2GameId}','{$requirementRootPackageId}')","v2");
+            $requirementAtomId = migration_dbconnection::queryInsert("INSERT INTO requirement_atoms (game_id, requirement_and_package_id, bool_operator, requirement, content_id, created) VALUES ('{$v2GameId}','{$requirementAndPackageId}', 0, 'PLAYER_VIEWED_PLAQUE','{$maps->plaques[$game->on_launch_node_id]}',CURRENT_TIMESTAMP)","v2");
+
             $newInstanceId = migration_dbconnection::queryInsert("INSERT INTO instances (game_id,object_id,object_type,created) VALUES ('{$v2GameId}','{$maps->plaques[$game->on_launch_node_id]}','PLAQUE',CURRENT_TIMESTAMP)","v2");
-            $newTriggerId = migration_dbconnection::queryInsert("INSERT INTO triggers (game_id,instance_id,scene_id,type,created) VALUES ('{$v2GameId}','{$newInstanceId}','{$sceneId}','IMMEDIATE',CURRENT_TIMESTAMP)", "v2");
-            //no need to store in map, as nothing else should reference this trigger
+            $newTriggerId = migration_dbconnection::queryInsert("INSERT INTO triggers (game_id,instance_id,scene_id,type,requirement_root_package_id,created) VALUES ('{$v2GameId}','{$newInstanceId}','{$sceneId}','IMMEDIATE','{$requirementRootPackageId}',CURRENT_TIMESTAMP)", "v2");
+            //no need to store req/instance/trigger in map, as nothing else should reference them
         }
 
         $returnMaps = new stdClass;

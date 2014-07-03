@@ -407,26 +407,26 @@ class requirements extends dbconnection
         //these functions need to be defined for new schema
         switch($atom->requirement)
         {
-            case 'ALWAYS_TRUE': return true;
-            case 'ALWAYS_FALSE': return false;
-            case 'PLAYER_HAS_ITEM': return requirements::playerHasItem($pack);
-            case 'PLAYER_HAS_TAGGED_ITEM': return requirements::playerHasTaggedItem($pack);
-            case 'PLAYER_VIEWED_ITEM': return requirements::playerViewed($pack,"ITEM");
-            case 'PLAYER_VIEWED_PLAQUE': return requirements::playerViewed($pack,"PLAQUE");
-            case 'PLAYER_VIEWED_DIALOG': return requirements::playerViewed($pack,"DIALOG");
-            case 'PLAYER_VIEWED_DIALOG_SCRIPT': return requirements::playerViewed($pack,"DIALOG_SCRIPT");
-            case 'PLAYER_VIEWED_WEB_PAGE': return requirements::playerViewed($pack,"WEB_PAGE");
-            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM': return requirements::playerUploaded($pack,"");
-            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE': return requirements::playerUploaded($pack,"IMAGE");
-            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO': return requirements::playerUplaoded($pack,"AUDIO");
-            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO': return requirements::playerUplaoded($pack,"VIDEO");
-            case 'PLAYER_HAS_COMPLETED_QUEST': return requirements::playerCompletedQuest($pack);
-            case 'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK': return requirements::playerReceivedWebHook($pack);
-            case 'PLAYER_HAS_NOTE': return requirements::playerHasNote($pack);
-            case 'PLAYER_HAS_NOTE_WITH_TAG': return requirements::playerHasNoteWithTag($pack);
-            case 'PLAYER_HAS_NOTE_WITH_LIKES': return requirements::playerHasNoteWithLikes($pack);
-            case 'PLAYER_HAS_NOTE_WITH_COMMENTS': return requirements::playerHasNoteWithComments($pack);
-            case 'PLAYER_HAS_GIVEN_NOTE_COMMENTS': return requirements::playerHasGivenNoteComments($pack);
+            case 'ALWAYS_TRUE':                           return $atom->bool_operator == true;
+            case 'ALWAYS_FALSE':                          return $atom->bool_operator == false;
+            case 'PLAYER_HAS_ITEM':                       return $atom->bool_operator == requirements::playerHasItem($pack);
+            case 'PLAYER_HAS_TAGGED_ITEM':                return $atom->bool_operator == requirements::playerHasTaggedItem($pack);
+            case 'PLAYER_VIEWED_ITEM':                    return $atom->bool_operator == requirements::playerViewed($pack,"ITEM");
+            case 'PLAYER_VIEWED_PLAQUE':                  return $atom->bool_operator == requirements::playerViewed($pack,"PLAQUE");
+            case 'PLAYER_VIEWED_DIALOG':                  return $atom->bool_operator == requirements::playerViewed($pack,"DIALOG");
+            case 'PLAYER_VIEWED_DIALOG_SCRIPT':           return $atom->bool_operator == requirements::playerViewed($pack,"DIALOG_SCRIPT");
+            case 'PLAYER_VIEWED_WEB_PAGE':                return $atom->bool_operator == requirements::playerViewed($pack,"WEB_PAGE");
+            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM':        return $atom->bool_operator == requirements::playerUploaded($pack,"");
+            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE':  return $atom->bool_operator == requirements::playerUploaded($pack,"IMAGE");
+            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO':  return $atom->bool_operator == requirements::playerUplaoded($pack,"AUDIO");
+            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO':  return $atom->bool_operator == requirements::playerUplaoded($pack,"VIDEO");
+            case 'PLAYER_HAS_COMPLETED_QUEST':            return $atom->bool_operator == requirements::playerCompletedQuest($pack);
+            case 'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK': return $atom->bool_operator == requirements::playerReceivedWebHook($pack);
+            case 'PLAYER_HAS_NOTE':                       return $atom->bool_operator == requirements::playerHasNote($pack);
+            case 'PLAYER_HAS_NOTE_WITH_TAG':              return $atom->bool_operator == requirements::playerHasNoteWithTag($pack);
+            case 'PLAYER_HAS_NOTE_WITH_LIKES':            return $atom->bool_operator == requirements::playerHasNoteWithLikes($pack);
+            case 'PLAYER_HAS_NOTE_WITH_COMMENTS':         return $atom->bool_operator == requirements::playerHasNoteWithComments($pack);
+            case 'PLAYER_HAS_GIVEN_NOTE_COMMENTS':        return $atom->bool_operator == requirements::playerHasGivenNoteComments($pack);
         }
         return false;
     }

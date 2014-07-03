@@ -12,7 +12,7 @@ Class dbconnection
     dbconnection::connect();
   }
 
-  protected static function query($query, $debug = true)
+  protected static function query($query, $debug = false)
   {
     if($debug) util::serverErrorLog($query);
     if(!(mysqli_query(dbconnection::$con, $query)))
