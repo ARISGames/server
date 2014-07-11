@@ -8,6 +8,7 @@ require_once("triggers.php");
 require_once("quests.php");
 require_once("overlays.php");
 require_once("tabs.php");
+require_once("dialogs.php");
 require_once("requirements.php");
 require_once("return_package.php");
 
@@ -193,6 +194,23 @@ class client extends dbconnection
                 $playerOverlays[] = $gameOverlays[$i];
         }
         return new return_package(0, $playerOverlays);
+    }
+
+    public static function getOptionsForPlayerForDialogScript($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getOptionsForPlayerForDialogScriptPack($glob); }
+    public static function getOptionsForPlayerForDialogScriptPack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $scriptOptions = dialogs::getDialogScriptsForDialogScript($pack)->data;
+        $playerOptions = array();
+        for($i = 0; $i < count($scriptOptions); $i++)
+        {
+            $scriptOptions[$i]->user_id = $pack->auth->user_id;
+            if(requirements::evaluateRequirementPackagePack($scriptOptions[$i])) 
+                $playerOptions[] = $scriptOptions[$i];
+        }
+        return new return_package(0, $playerOptions);
     }
 
 

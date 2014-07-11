@@ -291,6 +291,17 @@ class dialogs extends dbconnection
         return new return_package(0,$dialogScripts);
     }
 
+    public static function getDialogScriptsForDialogScript($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::getDialogScriptsForDialogScriptPack($glob); }
+    public static function getDialogScriptsForDialogScriptPack($pack)
+    {
+        $sql_dialogScripts = dbconnection::queryArray("SELECT * FROM dialog_scripts WHERE dialog_id = '{$pack->dialog_id}' AND parent_dialog_script_id =  '{$pack->dialog_script_id}'");
+        $dialogScripts = array();
+        for($i = 0; $i < count($sql_dialogScripts); $i++)
+            if($ob = dialogs::dialogScriptObjectFromSQL($sql_dialogScripts[$i])) $dialogScripts[] = $ob;
+
+        return new return_package(0,$dialogScripts);
+    }
+
     public static function deleteDialogScript($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::deleteDialogScriptPack($glob); }
     public static function deleteDialogScriptPack($pack)
     {
