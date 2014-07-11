@@ -217,15 +217,17 @@ class migration extends migration_dbconnection
 
             $newCharacterId = migration_dbconnection::queryInsert("INSERT INTO dialog_characters (game_id, name, title, media_id, created) VALUES ('{$v2GameId}','{$dialogs[$i]->name}','{$dialogs[$i]->name}','{$maps->media[$dialogs[$i]->media_id]}',CURRENT_TIMESTAMP)", "v2");
 
+            $parentScriptId = 0;
             //create intro script if exists, and treat it as the root script for all others
             if($dialogs[$i]->text && $dialogs[$i]->text != "")
                 $newScriptIds = migration::textToScript("Greet", $dialogs[$i]->text, $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], 0, $maps);
+            if($newScriptIds) $parentScriptId = $newScriptIds->last;
 
             $options = migration_dbconnection::queryArray("SELECT * FROM npc_conversations WHERE game_id = '{$v1GameId}' AND npc_id = '{$dialogs[$i]->npc_id}'","v1");
             for($j = 0; $j < count($options); $j++)
             {
                 $node = migration_dbconnection::queryObject("SELECT * FROM nodes WHERE node_id = '{$options[$j]->node_id}'","v1");
-                $newScriptIds = migration::textToScript($options[$j]->text, $node->text, $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], $newScriptIds->last, $maps);
+                $newScriptIds = migration::textToScript($options[$j]->text, $node->text, $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], $parentScriptId, $maps);
                 $scriptMap[$options[$j]->node_id] = $newScriptIds->first;
             }
 
@@ -261,7 +263,7 @@ class migration extends migration_dbconnection
             ('{$gameId}','{$dialogId}','{$parentScriptId}','{$rootCharacterId}','{$text}','{$option}',CURRENT_TIMESTAMP)", "v2");
             $newestScriptIds->first = $newestScriptId;
             $newestScriptIds->last = $newestScriptId;
-            return $newScriptIds;
+            return $newestScriptIds;
         }
 
         //buckle up...
