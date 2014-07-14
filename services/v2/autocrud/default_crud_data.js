@@ -455,7 +455,8 @@ var CRUD_DEFAULTS = [
           "game_id":123,\n\
           "name":"dialogName",\n\
           "description":"dialogDescription",\n\
-          "icon_media_id":123\n\
+          "icon_media_id":123,\n\
+          "intro_dialog_script_id":123\n\
         }\n\
         ',
     "getData":
@@ -470,7 +471,8 @@ var CRUD_DEFAULTS = [
           "dialog_id":123,\n\
           "name":"dialogName",\n\
           "description":"dialogDescription",\n\
-          "icon_media_id":123\n\
+          "icon_media_id":123,\n\
+          "intro_dialog_script_id":123\n\
         }\n\
         ',
     "deleteData":
@@ -530,8 +532,7 @@ var CRUD_DEFAULTS = [
           "dialog_id":123,\n\
           "dialog_character_id":123,\n\
           "text":"dialogScriptText",\n\
-          "event_package_id":123,\n\
-          "sort_index":0\n\
+          "event_package_id":123\n\
         }\n\
         ',
     "getData":
@@ -546,8 +547,7 @@ var CRUD_DEFAULTS = [
           "dialog_script_id":123,\n\
           "dialog_character_id":123,\n\
           "text":"dialogScriptText",\n\
-          "event_package_id":123,\n\
-          "sort_index":0\n\
+          "event_package_id":123\n\
         }\n\
         ',
     "deleteData":
