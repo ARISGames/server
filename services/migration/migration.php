@@ -261,9 +261,9 @@ class migration extends migration_dbconnection
             $newestScriptId = migration_dbconnection::queryInsert("INSERT INTO dialog_scripts 
             (game_id, dialog_id, parent_dialog_script_id, dialog_character_id, text, prompt, created) VALUES 
             ('{$gameId}','{$dialogId}','{$parentScriptId}','{$rootCharacterId}','{$text}','{$option}',CURRENT_TIMESTAMP)", "v2");
-            $newestScriptIds->first = $newestScriptId;
-            $newestScriptIds->last = $newestScriptId;
-            return $newestScriptIds;
+            $newScriptIds->first = $newestScriptId;
+            $newScriptIds->last = $newestScriptId;
+            return $newScriptIds;
         }
 
         //buckle up...
