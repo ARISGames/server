@@ -528,12 +528,9 @@ var CRUD_DEFAULTS = [
         {\n\
           "game_id":123,\n\
           "dialog_id":123,\n\
-          "parent_dialog_script_id":123,\n\
           "dialog_character_id":123,\n\
-          "prompt":"dialogScriptPrompt",\n\
           "text":"dialogScriptText",\n\
           "event_package_id":123,\n\
-          "requirement_root_package_id":123,\n\
           "sort_index":0\n\
         }\n\
         ',
@@ -547,12 +544,9 @@ var CRUD_DEFAULTS = [
         '\
         {\n\
           "dialog_script_id":123,\n\
-          "parent_dialog_script_id":123,\n\
           "dialog_character_id":123,\n\
-          "prompt":"dialogScriptPrompt",\n\
           "text":"dialogScriptText",\n\
           "event_package_id":123,\n\
-          "requirement_root_package_id":123,\n\
           "sort_index":0\n\
         }\n\
         ',
@@ -560,6 +554,48 @@ var CRUD_DEFAULTS = [
         '\
         {\n\
           "dialog_script_id":123\n\
+        }\n\
+        '
+},
+{
+    "service":"dialog_options",
+    "create":"dialogs.createDialogOption",
+    "get":"dialogs.getDialogOption",
+    "update":"dialogs.updateDialogOption",
+    "delete":"dialogs.deleteDialogOption",
+    "createData":
+        '\
+        {\n\
+          "game_id":123,\n\
+          "dialog_id":123,\n\
+          "parent_dialog_script_id":123,\n\
+          "dialog_script_id":123,\n\
+          "prompt":"dialogOptionPrompt",\n\
+          "requirement_root_package_id":123,\n\
+          "sort_index":0\n\
+        }\n\
+        ',
+    "getData":
+        '\
+        {\n\
+          "dialog_option_id":123\n\
+        }\n\
+        ',
+    "updateData":
+        '\
+        {\n\
+          "dialog_option_id":123,\n\
+          "parent_dialog_script_id":123,\n\
+          "dialog_script_id":123,\n\
+          "prompt":"dialogOptionPrompt",\n\
+          "requirement_root_package_id":123,\n\
+          "sort_index":0\n\
+        }\n\
+        ',
+    "deleteData":
+        '\
+        {\n\
+          "dialog_option_id":123\n\
         }\n\
         '
 },

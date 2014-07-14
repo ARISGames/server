@@ -202,7 +202,7 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        $scriptOptions = dialogs::getDialogScriptsForDialogScript($pack)->data;
+        $scriptOptions = dialogs::getDialogOptionsForScript($pack)->data;
         $playerOptions = array();
         for($i = 0; $i < count($scriptOptions); $i++)
         {

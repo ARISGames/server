@@ -134,18 +134,30 @@ CREATE TABLE dialog_scripts (
 dialog_script_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 game_id INT(32) UNSIGNED NOT NULL DEFAULT 0,
 dialog_id INT(32) UNSIGNED NOT NULL DEFAULT 0,
-parent_dialog_script_id INT(32) UNSIGNED NOT NULL DEFAULT 0,
 dialog_character_id INT(32) UNSIGNED NOT NULL DEFAULT 0,
-prompt VARCHAR(255) NOT NULL DEFAULT "",
 text TEXT NOT NULL,
 event_package_id INT(32) UNSIGNED NOT NULL DEFAULT 0,
-requirement_root_package_id INT(32) UNSIGNED NOT NULL,
-sort_index INT(32) UNSIGNED NOT NULL DEFAULT 0,
 created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
 last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 CREATE INDEX dialog_script_game_id ON dialog_scripts(game_id);
 CREATE INDEX dialog_script_dialog_id ON dialog_scripts(dialog_id);
+
+DROP TABLE IF EXISTS dialog_options;
+CREATE TABLE dialog_options (
+dialog_option_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+game_id INT(32) UNSIGNED NOT NULL DEFAULT 0,
+dialog_id INT(32) UNSIGNED NOT NULL DEFAULT 0,
+parent_dialog_script_id INT(32) UNSIGNED NOT NULL DEFAULT 0,
+dialog_script_id INT(32) UNSIGNED NOT NULL DEFAULT 0,
+prompt VARCHAR(255) NOT NULL DEFAULT "",
+requirement_root_package_id INT(32) UNSIGNED NOT NULL,
+sort_index INT(32) UNSIGNED NOT NULL DEFAULT 0,
+created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
+last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE INDEX dialog_option_game_id ON dialog_options(game_id);
+CREATE INDEX dialog_option_dialog_id ON dialog_options(dialog_id);
 
 DROP TABLE IF EXISTS plaques;
 CREATE TABLE plaques (

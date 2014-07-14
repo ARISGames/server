@@ -194,25 +194,19 @@ class dialogs extends dbconnection
         $pack->dialog_script_id = dbconnection::queryInsert(
             "INSERT INTO dialog_scripts (".
             "game_id,".
-            (isset($pack->dialog_id)                   ? "dialog_id,"                   : "").
-            (isset($pack->parent_dialog_script_id)     ? "parent_dialog_script_id,"     : "").
-            (isset($pack->dialog_character_id)         ? "dialog_character_id,"         : "").
-            (isset($pack->prompt)                      ? "prompt,"                      : "").
-            (isset($pack->text)                        ? "text,"                        : "").
-            (isset($pack->requirement_root_package_id) ? "requirement_root_package_id," : "").
-            (isset($pack->event_package_id)            ? "event_package_id,"            : "").
-            (isset($pack->sort_index)                  ? "sort_index,"                  : "").
+            (isset($pack->dialog_id)           ? "dialog_id,"           : "").
+            (isset($pack->dialog_character_id) ? "dialog_character_id," : "").
+            (isset($pack->text)                ? "text,"                : "").
+            (isset($pack->event_package_id)    ? "event_package_id,"    : "").
+            (isset($pack->sort_index)          ? "sort_index,"          : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
-            (isset($pack->dialog_id)                   ? "'".addslashes($pack->dialog_id)."',"                   : "").
-            (isset($pack->parent_dialog_script_id)     ? "'".addslashes($pack->parent_dialog_script_id)."',"     : "").
-            (isset($pack->dialog_character_id)         ? "'".addslashes($pack->dialog_character_id)."',"         : "").
-            (isset($pack->prompt)                      ? "'".addslashes($pack->prompt)."',"                      : "").
-            (isset($pack->text)                        ? "'".addslashes($pack->text)."',"                        : "").
-            (isset($pack->requirement_root_package_id) ? "'".addslashes($pack->requirement_root_package_id)."'," : "").
-            (isset($pack->event_package_id)            ? "'".addslashes($pack->event_package_id)."',"            : "").
-            (isset($pack->sort_index)                  ? "'".addslashes($pack->sort_index)."',"                  : "").
+            (isset($pack->dialog_id)             ? "'".addslashes($pack->dialog_id)."',"           : "").
+            (isset($pack->dialog_character_id)   ? "'".addslashes($pack->dialog_character_id)."'," : "").
+            (isset($pack->text)                  ? "'".addslashes($pack->text)."',"                : "").
+            (isset($pack->event_package_id)      ? "'".addslashes($pack->event_package_id)."',"    : "").
+            (isset($pack->sort_index)            ? "'".addslashes($pack->sort_index)."',"          : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -230,13 +224,10 @@ class dialogs extends dbconnection
 
         dbconnection::query(
             "UPDATE dialog_scripts SET ".
-            (isset($pack->parent_dialog_script_id)     ? "parent_dialog_script_id     = '".addslashes($pack->parent_dialog_script_id)."', "     : "").
-            (isset($pack->dialog_character_id)         ? "dialog_character_id         = '".addslashes($pack->dialog_character_id)."', "         : "").
-            (isset($pack->prompt)                      ? "prompt                      = '".addslashes($pack->prompt)."', "                      : "").
-            (isset($pack->text)                        ? "text                        = '".addslashes($pack->text)."', "                        : "").
-            (isset($pack->requirement_root_package_id) ? "requirement_root_package_id = '".addslashes($pack->requirement_root_package_id)."', " : "").
-            (isset($pack->event_package_id)            ? "event_package_id            = '".addslashes($pack->event_package_id)."', "            : "").
-            (isset($pack->sort_index)                  ? "sort_index                  = '".addslashes($pack->sort_index)."', "                  : "").
+            (isset($pack->dialog_character_id) ? "dialog_character_id = '".addslashes($pack->dialog_character_id)."', " : "").
+            (isset($pack->text)                ? "text                = '".addslashes($pack->text)."', "                : "").
+            (isset($pack->event_package_id)    ? "event_package_id    = '".addslashes($pack->event_package_id)."', "    : "").
+            (isset($pack->sort_index)          ? "sort_index          = '".addslashes($pack->sort_index)."', "          : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE dialog_script_id = '{$pack->dialog_script_id}'"
         );
@@ -248,16 +239,13 @@ class dialogs extends dbconnection
     {
         if(!$sql_dialogScript) return $sql_dialogScript;
         $dialogScript = new stdClass();
-        $dialogScript->dialog_script_id            = $sql_dialogScript->dialog_script_id;
-        $dialogScript->game_id                     = $sql_dialogScript->game_id;
-        $dialogScript->dialog_id                   = $sql_dialogScript->dialog_id;
-        $dialogScript->parent_dialog_script_id     = $sql_dialogScript->parent_dialog_script_id;
-        $dialogScript->dialog_character_id         = $sql_dialogScript->dialog_character_id;
-        $dialogScript->prompt                      = $sql_dialogScript->prompt;
-        $dialogScript->text                        = $sql_dialogScript->text;
-        $dialogScript->requirement_root_package_id = $sql_dialogScript->requirement_root_package_id;
-        $dialogScript->event_package_id            = $sql_dialogScript->event_package_id;
-        $dialogScript->sort_index                  = $sql_dialogScript->sort_index;
+        $dialogScript->dialog_script_id    = $sql_dialogScript->dialog_script_id;
+        $dialogScript->game_id             = $sql_dialogScript->game_id;
+        $dialogScript->dialog_id           = $sql_dialogScript->dialog_id;
+        $dialogScript->dialog_character_id = $sql_dialogScript->dialog_character_id;
+        $dialogScript->text                = $sql_dialogScript->text;
+        $dialogScript->event_package_id    = $sql_dialogScript->event_package_id;
+        $dialogScript->sort_index          = $sql_dialogScript->sort_index;
 
         return $dialogScript;
     }
@@ -291,17 +279,6 @@ class dialogs extends dbconnection
         return new return_package(0,$dialogScripts);
     }
 
-    public static function getDialogScriptsForDialogScript($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::getDialogScriptsForDialogScriptPack($glob); }
-    public static function getDialogScriptsForDialogScriptPack($pack)
-    {
-        $sql_dialogScripts = dbconnection::queryArray("SELECT * FROM dialog_scripts WHERE dialog_id = '{$pack->dialog_id}' AND parent_dialog_script_id =  '{$pack->dialog_script_id}'");
-        $dialogScripts = array();
-        for($i = 0; $i < count($sql_dialogScripts); $i++)
-            if($ob = dialogs::dialogScriptObjectFromSQL($sql_dialogScripts[$i])) $dialogScripts[] = $ob;
-
-        return new return_package(0,$dialogScripts);
-    }
-
     public static function deleteDialogScript($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::deleteDialogScriptPack($glob); }
     public static function deleteDialogScriptPack($pack)
     {
@@ -310,6 +287,128 @@ class dialogs extends dbconnection
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM dialog_scripts WHERE dialog_script_id = '{$pack->dialog_script_id}' LIMIT 1");
+        return new return_package(0);
+    }
+
+
+    public static function createDialogOption($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::createDialogOptionPack($glob); }
+    public static function createDialogOptionPack($pack)
+    {
+        $pack->auth->game_id = $pack->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $pack->dialog_option_id = dbconnection::queryInsert(
+            "INSERT INTO dialog_options (".
+            "game_id,".
+            (isset($pack->dialog_id)                   ? "dialog_id,"                   : "").
+            (isset($pack->parent_dialog_script_id)     ? "parent_dialog_script_id,"     : "").
+            (isset($pack->dialog_script_id)            ? "dialog_script_id,"            : "").
+            (isset($pack->prompt)                      ? "prompt,"                      : "").
+            (isset($pack->requirement_root_package_id) ? "requirement_root_package_id," : "").
+            (isset($pack->sort_index)                  ? "sort_index,"                  : "").
+            "created".
+            ") VALUES (".
+            "'".addslashes($pack->game_id)."',".
+            (isset($pack->dialog_id)                   ? "'".addslashes($pack->dialog_id)."',"                   : "").
+            (isset($pack->parent_dialog_script_id)     ? "'".addslashes($pack->parent_dialog_script_id)."',"     : "").
+            (isset($pack->dialog_script_id)            ? "'".addslashes($pack->dialog_script_id)."',"            : "").
+            (isset($pack->prompt)                      ? "'".addslashes($pack->prompt)."',"                      : "").
+            (isset($pack->requirement_root_package_id) ? "'".addslashes($pack->requirement_root_package_id)."'," : "").
+            (isset($pack->sort_index)                  ? "'".addslashes($pack->sort_index)."',"                  : "").
+            "CURRENT_TIMESTAMP".
+            ")"
+        );
+
+        return dialogs::getDialogOptionPack($pack);
+    }
+
+    //Takes in game JSON, all fields optional except dialog_id + user_id + key
+    public static function updateDialogOption($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::updateDialogOptionPack($glob); }
+    public static function updateDialogOptionPack($pack)
+    {
+        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM dialog_options WHERE dialog_option_id = '{$pack->dialog_option_id}'")->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        dbconnection::query(
+            "UPDATE dialog_options SET ".
+            (isset($pack->parent_dialog_script_id)     ? "parent_dialog_script_id     = '".addslashes($pack->parent_dialog_script_id)."', "     : "").
+            (isset($pack->dialog_script_id)            ? "dialog_script_id            = '".addslashes($pack->dialog_script_id)."', "            : "").
+            (isset($pack->prompt)                      ? "prompt                      = '".addslashes($pack->prompt)."', "                      : "").
+            (isset($pack->requirement_root_package_id) ? "requirement_root_package_id = '".addslashes($pack->requirement_root_package_id)."', " : "").
+            (isset($pack->sort_index)                  ? "sort_index                  = '".addslashes($pack->sort_index)."', "                  : "").
+            "last_active = CURRENT_TIMESTAMP ".
+            "WHERE dialog_option_id = '{$pack->dialog_option_id}'"
+        );
+
+        return dialogs::getDialogOptionPack($pack);
+    }
+
+    private static function dialogOptionObjectFromSQL($sql_dialogOption)
+    {
+        if(!$sql_dialogOption) return $sql_dialogOption;
+        $dialogOption = new stdClass();
+        $dialogOption->dialog_option_id            = $sql_dialogOption->dialog_option_id;
+        $dialogOption->game_id                     = $sql_dialogOption->game_id;
+        $dialogOption->dialog_id                   = $sql_dialogOption->dialog_id;
+        $dialogOption->parent_dialog_script_id     = $sql_dialogOption->parent_dialog_script_id;
+        $dialogOption->dialog_script_id            = $sql_dialogOption->dialog_script_id;
+        $dialogOption->prompt                      = $sql_dialogOption->prompt;
+        $dialogOption->requirement_root_package_id = $sql_dialogOption->requirement_root_package_id;
+        $dialogOption->sort_index                  = $sql_dialogOption->sort_index;
+
+        return $dialogOption;
+    }
+
+    public static function getDialogOption($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::getDialogOptionPack($glob); }
+    public static function getDialogOptionPack($pack)
+    {
+        $sql_dialogOption = dbconnection::queryObject("SELECT * FROM dialog_options WHERE dialog_option_id = '{$pack->dialog_option_id}' LIMIT 1");
+        return new return_package(0,dialogs::dialogOptionObjectFromSQL($sql_dialogOption));
+    }
+
+    public static function getDialogOptionsForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::getDialogOptionsForGamePack($glob); }
+    public static function getDialogOptionsForGamePack($pack)
+    {
+        $sql_dialogOptions = dbconnection::queryArray("SELECT * FROM dialog_options WHERE game_id = '{$pack->game_id}'");
+        $dialogOptions = array();
+        for($i = 0; $i < count($sql_dialogOptions); $i++)
+            if($ob = dialogs::dialogOptionObjectFromSQL($sql_dialogOptions[$i])) $dialogOptions[] = $ob;
+
+        return new return_package(0,$dialogOptions);
+    }
+
+    public static function getDialogOptionsForDialog($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::getDialogOptionsForDialogPack($glob); }
+    public static function getDialogOptionsForDialogPack($pack)
+    {
+        $sql_dialogOptions = dbconnection::queryArray("SELECT * FROM dialog_options WHERE dialog_id = '{$pack->dialog_id}'");
+        $dialogOptions = array();
+        for($i = 0; $i < count($sql_dialogOptions); $i++)
+            if($ob = dialogs::dialogOptionObjectFromSQL($sql_dialogOptions[$i])) $dialogOptions[] = $ob;
+
+        return new return_package(0,$dialogOptions);
+    }
+
+    public static function getDialogOptionsForScript($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::getDialogOptionsForDialogOptionPack($glob); }
+    public static function getDialogOptionsForScript($pack)
+    {
+        $sql_dialogOptions = dbconnection::queryArray("SELECT * FROM dialog_options WHERE dialog_id = '{$pack->dialog_id}' AND parent_dialog_script_id = '{$pack->dialog_script_id}'");
+        $dialogOptions = array();
+        for($i = 0; $i < count($sql_dialogOptions); $i++)
+            if($ob = dialogs::dialogOptionObjectFromSQL($sql_dialogOptions[$i])) $dialogOptions[] = $ob;
+
+        return new return_package(0,$dialogOptions);
+    }
+
+    public static function deleteDialogOption($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::deleteDialogOptionPack($glob); }
+    public static function deleteDialogOptionPack($pack)
+    {
+        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM dialog_options WHERE dialog_option_id = '{$pack->dialog_option_id}'")->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        dbconnection::query("DELETE FROM dialog_options WHERE dialog_option_id = '{$pack->dialog_option_id}' LIMIT 1");
         return new return_package(0);
     }
 
