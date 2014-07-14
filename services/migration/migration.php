@@ -102,6 +102,7 @@ class migration extends migration_dbconnection
         $characterMaps = migration::migrateDialogs($v1GameId, $v2GameId, $maps);
         $maps->dialogs = $characterMaps->dialogsMap;
         $maps->scripts = $characterMaps->scriptsMap;
+        $maps->options = $characterMaps->optionsMap;
         //$maps->notes = migration::migrateNotes($v1GameId, $v2GameId, $maps); //don't migrate notes for now... (we'll get into if we should later)
         $maps->quests = migration::migrateQuests($v1GameId, $v2GameId, $maps);
         $maps->events = migration::migrateEvents($v1GameId, $v2GameId, $maps);
@@ -201,6 +202,8 @@ class migration extends migration_dbconnection
         $dialogMap[0] = 0;
         $scriptMap = array();
         $scriptMap[0] = 0;
+        $optionMap = array();
+        $optionMap[0] = 0;
 
         $dialogs = migration_dbconnection::queryArray("SELECT * FROM npcs WHERE game_id = '{$v1GameId}'","v1");
 
@@ -220,15 +223,18 @@ class migration extends migration_dbconnection
             $parentScriptId = 0;
             //create intro script if exists, and treat it as the root script for all others
             if($dialogs[$i]->text && $dialogs[$i]->text != "")
-                $newScriptIds = migration::textToScript("Greet", $dialogs[$i]->text, $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], 0, $maps);
-            if($newScriptIds) $parentScriptId = $newScriptIds->last;
+            {
+                $newIds = migration::textToScript("Greet", $dialogs[$i]->text, $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], 0, $maps);
+                $parentScriptId = $newIds->lastScriptId;
+            }
 
             $options = migration_dbconnection::queryArray("SELECT * FROM npc_conversations WHERE game_id = '{$v1GameId}' AND npc_id = '{$dialogs[$i]->npc_id}'","v1");
             for($j = 0; $j < count($options); $j++)
             {
                 $node = migration_dbconnection::queryObject("SELECT * FROM nodes WHERE node_id = '{$options[$j]->node_id}'","v1");
-                $newScriptIds = migration::textToScript($options[$j]->text, $node->text, $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], $parentScriptId, $maps);
-                $scriptMap[$options[$j]->node_id] = $newScriptIds->first;
+                $newIds = migration::textToScript($options[$j]->text, $node->text, $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], $parentScriptId, $maps);
+                $optionMap[$options[$j]->node_id] = $newIds->firstOptionId;
+                $newestOptionId = migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, dialog_script_id, prompt, created) VALUES ('{$gameId}','{$dialogId}','{$newIds->lastScriptId}','{$parentScriptId}','Continue',CURRENT_TIMESTAMP)", "v2");
             }
 
             $dialogMap[$dialogs[$i]->npc_id] = $newDialogId;
@@ -237,6 +243,7 @@ class migration extends migration_dbconnection
         $returnMaps = new stdClass;
         $returnMaps->dialogsMap = $dialogMap;
         $returnMaps->scriptsMap = $scriptMap;
+        $returnMaps->optionsMap = $optionMap;
         return $returnMaps;
     }
 
@@ -249,25 +256,22 @@ class migration extends migration_dbconnection
         //testing scripts
         //$text = "<dialog banana=\"testing\" butNot=\"12\" America='555'><npc mediaId = \"59\">\nHere is the first thing I will say</npc><npc mediaId = \"60\">Second Thing!!!</npc></dialog>";
         //$text = "<d  but >dialog </dialog>"
-        
-        $newScriptIds = new stdClass;
-        $newScriptIds->firstScriptId = 0;
-        $newScriptIds->lastScriptId = 0;
 
+        $newIds = new stdClass;
+        $newIds->firstOptionId = 0;
+        $newIds->lastScriptId = $parentScriptId;
+        
         //The case where no parsing is necessary 
         if(!preg_match("@<\s*dialog(ue)?\s*(\w*=[\"']\w*[\"']\s*)*>(.*?)<\s*/\s*dialog(ue)?\s*>@is",$text,$matches))
         {
             //phew. Nothing complicated. 
-            $newestScriptId = migration_dbconnection::queryInsert("INSERT INTO dialog_scripts 
-            (game_id, dialog_id, parent_dialog_script_id, dialog_character_id, text, prompt, created) VALUES 
-            ('{$gameId}','{$dialogId}','{$parentScriptId}','{$rootCharacterId}','{$text}','{$option}',CURRENT_TIMESTAMP)", "v2");
-            $newScriptIds->first = $newestScriptId;
-            $newScriptIds->last = $newestScriptId;
-            return $newScriptIds;
+            $tmpScriptId = migration_dbconnection::queryInsert("INSERT INTO dialog_scripts (game_id, dialog_id, dialog_character_id, text, created) VALUES ('{$gameId}','{$dialogId}','{$rootCharacterId}','{$text}',CURRENT_TIMESTAMP)", "v2");
+            $newIds->firstOptionId = migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, dialog_script_id, prompt, created) VALUES ('{$gameId}','{$dialogId}','{$newIds->lastScriptId}','{$tmpScriptId}','{$option}',CURRENT_TIMESTAMP)", "v2");
+            $newIds->lastScriptId = $tmpScriptId;
+            return $newIds;
         }
 
         //buckle up...
-        $newestScriptId = $parentScriptId;
         $dialogContents = $matches[3]; //$dialogContents will be the string between the dialog tags
         while(!preg_match("@^\s*$@s",$dialogContents))
         {
@@ -294,6 +298,7 @@ class migration extends migration_dbconnection
 
                     if(preg_match("@title@i",$attrib_name)) $title = $attrib_value;
                     if(preg_match("@mediaId@i",$attrib_name)) $mediaId = $attrib_value;
+                    //etc... (check for other attribs here)
                 }
 
                 if($title != "" || $mediaId != 0)
@@ -308,13 +313,14 @@ class migration extends migration_dbconnection
                 //handle non-npc tag attributes
             }
 
-            $newestScriptId = migration_dbconnection::queryInsert("INSERT INTO dialog_scripts (game_id, dialog_id, parent_dialog_script_id, dialog_character_id, text, prompt, created) VALUES ('{$gameId}','{$dialogId}','{$newestScriptId}','{$rootCharacterId}','{$tag_contents}','{$option}',CURRENT_TIMESTAMP)", "v2");
+            $tmpScriptId = migration_dbconnection::queryInsert("INSERT INTO dialog_scripts (game_id, dialog_id,  dialog_character_id, text, created) VALUES ('{$gameId}','{$dialogId}','{$characterId}','{$tag_contents}',CURRENT_TIMESTAMP)", "v2");
+            $newestOptionId = migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, dialog_script_id, prompt, created) VALUES ('{$gameId}','{$dialogId}','{$newIds->lastScriptId}','{$tmpScriptId}','{$option}',CURRENT_TIMESTAMP)", "v2");
 
-            if(!$newScriptIds->first) $newScriptIds->first = $newestScriptId;
-            $newScriptIds->last = $newestScriptId;
+            if(!$newIds->firstOptionId) $newIds->firstOptionId = $newestOptionId;
+            $newIds->lastScriptId = $tmpScriptId;
             $option = "Continue"; //set option for all but first script to 'continue'
         }
-        return $newScriptIds;
+        return $newIds;
     }
 
     public function migrateQuests($v1GameId, $v2GameId, $maps)
@@ -496,7 +502,7 @@ class migration extends migration_dbconnection
 
         //round up all v1 requirements into groups by type and by object
         $rGroupings = new stdClass;
-        $rGroupings->dialogScripts = array();
+        $rGroupings->dialogOptions = array();
         $rGroupings->questCompletes = array();
         $rGroupings->questDisplays = array();
         $rGroupings->triggers = array();
@@ -506,7 +512,7 @@ class migration extends migration_dbconnection
         $q = 0;
         for($i = 0; $i < count($requirements); $i++)
         {
-            if($requirements[$i]->content_type == "Node")          $typeGroup = &$rGroupings->dialogScripts;
+            if($requirements[$i]->content_type == "Node")          $typeGroup = &$rGroupings->dialogOptions;
             if($requirements[$i]->content_type == "QuestDisplay")  $typeGroup = &$rGroupings->questCompletes;
             if($requirements[$i]->content_type == "QuestComplete") $typeGroup = &$rGroupings->questDisplays;
             if($requirements[$i]->content_type == "Location")      $typeGroup = &$rGroupings->triggers;
@@ -517,10 +523,10 @@ class migration extends migration_dbconnection
             $typeGroup[$requirements[$i]->content_id][] = $requirements[$i];
         }
 
-        foreach($rGroupings->dialogScripts as $scriptId => $requirementsList)
+        foreach($rGroupings->dialogOptions as $optionId => $requirementsList)
         {
             $req_package_id = migration::migrateRequirementListIntoPackage($v2GameId, $requirementsList, $maps);
-            migration_dbconnection::query("UPDATE dialog_scripts SET requirement_root_package_id = '{$req_package_id}' WHERE dialog_script_id = '{$maps->scripts[$scriptId]}'","v2");
+            migration_dbconnection::query("UPDATE dialog_options SET requirement_root_package_id = '{$req_package_id}' WHERE dialog_option_id = '{$maps->options[$optionId]}'","v2");
         }
         foreach($rGroupings->questCompletes as $questId => $requirementsList)
         {
