@@ -390,8 +390,8 @@ class dialogs extends dbconnection
         return new return_package(0,$dialogOptions);
     }
 
-    public static function getDialogOptionsForScript($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::getDialogOptionsForDialogOptionPack($glob); }
-    public static function getDialogOptionsForScript($pack)
+    public static function getDialogOptionsForScript($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::getDialogOptionsForScriptPack($glob); }
+    public static function getDialogOptionsForScriptPack($pack)
     {
         $sql_dialogOptions = dbconnection::queryArray("SELECT * FROM dialog_options WHERE dialog_id = '{$pack->dialog_id}' AND parent_dialog_script_id = '{$pack->dialog_script_id}'");
         $dialogOptions = array();

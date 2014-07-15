@@ -133,7 +133,7 @@ class migration extends migration_dbconnection
             if(!file_exists(Config::gamedataFSPath."/".$media[$i]->file_path)) continue;
             $filename = substr($media[$i]->file_path, strpos($media[$i]->file_path,'/')+1);
             copy(Config::gamedataFSPath."/".$media[$i]->file_path,Config::v2_gamedata_folder."/".$v2GameId."/".$filename);
-            $newMediaId = migration_dbconnection::queryInsert("INSERT INTO media (game_id, file_folder, file_name, name, created) VALUES ('{$v2GameId}','{$v2GameId}','{$filename}','{$media[$i]->name}',CURRENT_TIMESTAMP)", "v2");
+            $newMediaId = migration_dbconnection::queryInsert("INSERT INTO media (game_id, file_folder, file_name, name, created) VALUES ('{$v2GameId}','{$v2GameId}','".addslashes($filename)."','".addslashes($media[$i]->name)."',CURRENT_TIMESTAMP)", "v2");
             $mediaIdMap[$media[$i]->media_id] = $newMediaId;
         }
         return $mediaIdMap;
@@ -157,7 +157,7 @@ class migration extends migration_dbconnection
             $plaqueIdMap[$plaques[$i]->node_id] = 0; //set it to 0 in case of failure
             if($invalidMap[$plaques[$i]->node_id]) continue; //this plaque actually an npc option- ignore
 
-            $newPlaqueId = migration_dbconnection::queryInsert("INSERT INTO plaques (game_id, name, description, icon_media_id, media_id, created) VALUES ('{$v2GameId}','{$plaques[$i]->title}','{$plaques[$i]->text}','{$maps->media[$plaques[$i]->icon_media_id]}','{$maps->media[$plaques[$i]->media_id]}',CURRENT_TIMESTAMP)", "v2");
+            $newPlaqueId = migration_dbconnection::queryInsert("INSERT INTO plaques (game_id, name, description, icon_media_id, media_id, created) VALUES ('{$v2GameId}','".addslashes($plaques[$i]->title)."','".addslashes($plaques[$i]->text)."','{$maps->media[$plaques[$i]->icon_media_id]}','{$maps->media[$plaques[$i]->media_id]}',CURRENT_TIMESTAMP)", "v2");
             $plaqueIdMap[$plaques[$i]->node_id] = $newPlaqueId;
         }
         return $plaqueIdMap;
@@ -172,7 +172,7 @@ class migration extends migration_dbconnection
         for($i = 0; $i < count($items); $i++)
         {
             $itemIdMap[$items[$i]->item_id] = 0; //set it to 0 in case of failure
-            $newItemId = migration_dbconnection::queryInsert("INSERT INTO items (game_id, name, description, icon_media_id, media_id, droppable, destroyable, max_qty_in_inventory, weight, url, type, created) VALUES ('{$v2GameId}','{$items[$i]->name}','{$items[$i]->description}','{$maps->media[$items[$i]->icon_media_id]}','{$maps->media[$items[$i]->media_id]}','{$items[$i]->dropable}','{$items[$i]->destroyable}','{$items[$i]->max_qty_in_inventory}','{$items[$i]->weight}','{$items[$i]->url}','{$items[$i]->type}',CURRENT_TIMESTAMP)", "v2");
+            $newItemId = migration_dbconnection::queryInsert("INSERT INTO items (game_id, name, description, icon_media_id, media_id, droppable, destroyable, max_qty_in_inventory, weight, url, type, created) VALUES ('{$v2GameId}','".addslashes($items[$i]->name)."','".addslashes($items[$i]->description)."','{$maps->media[$items[$i]->icon_media_id]}','{$maps->media[$items[$i]->media_id]}','{$items[$i]->dropable}','{$items[$i]->destroyable}','{$items[$i]->max_qty_in_inventory}','{$items[$i]->weight}','{$items[$i]->url}','{$items[$i]->type}',CURRENT_TIMESTAMP)", "v2");
             $itemIdMap[$items[$i]->item_id] = $newItemId;
         }
         return $itemIdMap;
@@ -216,9 +216,9 @@ class migration extends migration_dbconnection
         for($i = 0; $i < count($dialogs); $i++)
         {
             $dialogMap[$dialogs[$i]->npc_id] = 0; //set it to 0 in case of failure
-            $newDialogId = migration_dbconnection::queryInsert("INSERT INTO dialogs (game_id, name, description, icon_media_id, created) VALUES ('{$v2GameId}','{$dialogs[$i]->name}','{$dialogs[$i]->description}','{$maps->media[$dialogs[$i]->icon_media_id]}',CURRENT_TIMESTAMP)", "v2");
+            $newDialogId = migration_dbconnection::queryInsert("INSERT INTO dialogs (game_id, name, description, icon_media_id, created) VALUES ('{$v2GameId}','".addslashes($dialogs[$i]->name)."','".addslashes($dialogs[$i]->description)."','{$maps->media[$dialogs[$i]->icon_media_id]}',CURRENT_TIMESTAMP)", "v2");
 
-            $newCharacterId = migration_dbconnection::queryInsert("INSERT INTO dialog_characters (game_id, name, title, media_id, created) VALUES ('{$v2GameId}','{$dialogs[$i]->name}','{$dialogs[$i]->name}','{$maps->media[$dialogs[$i]->media_id]}',CURRENT_TIMESTAMP)", "v2");
+            $newCharacterId = migration_dbconnection::queryInsert("INSERT INTO dialog_characters (game_id, name, title, media_id, created) VALUES ('{$v2GameId}','".addslashes($dialogs[$i]->name)."','".addslashes($dialogs[$i]->name)."','{$maps->media[$dialogs[$i]->media_id]}',CURRENT_TIMESTAMP)", "v2");
 
             $parentScriptId = 0;
             //create intro script if exists, and treat it as the root script for all others
@@ -234,7 +234,7 @@ class migration extends migration_dbconnection
                 $node = migration_dbconnection::queryObject("SELECT * FROM nodes WHERE node_id = '{$options[$j]->node_id}'","v1");
                 $newIds = migration::textToScript($options[$j]->text, $node->text, $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], $parentScriptId, $maps);
                 $optionMap[$options[$j]->node_id] = $newIds->firstOptionId;
-                $newestOptionId = migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, dialog_script_id, prompt, created) VALUES ('{$gameId}','{$dialogId}','{$newIds->lastScriptId}','{$parentScriptId}','Continue',CURRENT_TIMESTAMP)", "v2");
+                $newestOptionId = migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, dialog_script_id, prompt, created) VALUES ('{$v2GameId}','{$newDialogId}','{$newIds->lastScriptId}','{$parentScriptId}','Continue',CURRENT_TIMESTAMP)", "v2");
             }
 
             $dialogMap[$dialogs[$i]->npc_id] = $newDialogId;
@@ -265,8 +265,8 @@ class migration extends migration_dbconnection
         if(!preg_match("@<\s*dialog(ue)?\s*(\w*=[\"']\w*[\"']\s*)*>(.*?)<\s*/\s*dialog(ue)?\s*>@is",$text,$matches))
         {
             //phew. Nothing complicated. 
-            $tmpScriptId = migration_dbconnection::queryInsert("INSERT INTO dialog_scripts (game_id, dialog_id, dialog_character_id, text, created) VALUES ('{$gameId}','{$dialogId}','{$rootCharacterId}','{$text}',CURRENT_TIMESTAMP)", "v2");
-            $newIds->firstOptionId = migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, dialog_script_id, prompt, created) VALUES ('{$gameId}','{$dialogId}','{$newIds->lastScriptId}','{$tmpScriptId}','{$option}',CURRENT_TIMESTAMP)", "v2");
+            $tmpScriptId = migration_dbconnection::queryInsert("INSERT INTO dialog_scripts (game_id, dialog_id, dialog_character_id, text, created) VALUES ('{$gameId}','{$dialogId}','{$rootCharacterId}','".addslashes($text)."',CURRENT_TIMESTAMP)", "v2");
+            $newIds->firstOptionId = migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, dialog_script_id, prompt, created) VALUES ('{$gameId}','{$dialogId}','{$newIds->lastScriptId}','{$tmpScriptId}','".addslashes($option)."',CURRENT_TIMESTAMP)", "v2");
             $newIds->lastScriptId = $tmpScriptId;
             return $newIds;
         }
@@ -305,7 +305,7 @@ class migration extends migration_dbconnection
                 {
                     if($title == "") $title = $rootCharacterTitle;
                     if($mediaId == 0) $title = $rootCharacterMediaId;
-                    $characterId = migration_dbconnection::queryInsert("INSERT INTO dialog_characters (game_id, name, title, media_id, created) VALUES ('{$gameId}','{$title}','{$title}','{$rootCharacterMediaId}',CURRENT_TIMESTAMP)", "v2");
+                    $characterId = migration_dbconnection::queryInsert("INSERT INTO dialog_characters (game_id, name, title, media_id, created) VALUES ('{$gameId}','".addslashes($title)."','".addslashes($title)."','{$rootCharacterMediaId}',CURRENT_TIMESTAMP)", "v2");
                 }
             }
             else
@@ -313,8 +313,8 @@ class migration extends migration_dbconnection
                 //handle non-npc tag attributes
             }
 
-            $tmpScriptId = migration_dbconnection::queryInsert("INSERT INTO dialog_scripts (game_id, dialog_id,  dialog_character_id, text, created) VALUES ('{$gameId}','{$dialogId}','{$characterId}','{$tag_contents}',CURRENT_TIMESTAMP)", "v2");
-            $newestOptionId = migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, dialog_script_id, prompt, created) VALUES ('{$gameId}','{$dialogId}','{$newIds->lastScriptId}','{$tmpScriptId}','{$option}',CURRENT_TIMESTAMP)", "v2");
+            $tmpScriptId = migration_dbconnection::queryInsert("INSERT INTO dialog_scripts (game_id, dialog_id,  dialog_character_id, text, created) VALUES ('{$gameId}','{$dialogId}','{$characterId}','".addslashes($tag_contents)."',CURRENT_TIMESTAMP)", "v2");
+            $newestOptionId = migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, dialog_script_id, prompt, created) VALUES ('{$gameId}','{$dialogId}','{$newIds->lastScriptId}','{$tmpScriptId}','".addslashes($option)."',CURRENT_TIMESTAMP)", "v2");
 
             if(!$newIds->firstOptionId) $newIds->firstOptionId = $newestOptionId;
             $newIds->lastScriptId = $tmpScriptId;
@@ -332,7 +332,7 @@ class migration extends migration_dbconnection
         for($i = 0; $i < count($quests); $i++)
         {
             $questIdMap[$quests[$i]->quest_id] = 0; //set it to 0 in case of failure
-            $newQuestId = migration_dbconnection::queryInsert("INSERT INTO quests (game_id,name,description, active_icon_media_id,active_media_id,active_description,active_notification_type,active_function, complete_icon_media_id,complete_media_id,complete_description,complete_notification_type,complete_function, sort_index,created) VALUES ('{$v2GameId}','{$quests[$i]->name}','{$quests[$i]->description}', '{$maps->media[$quests[$i]->active_icon_media_id]}','{$maps->media[$quests[$i]->active_media_id]}','{$quests[$i]->description}','".($quests[$i]->full_screen_notify ? "FULL_SCREEN" : "DROP_DOWN")."','{$quests[$i]->go_function}', '{$maps->media[$quests[$i]->complete_icon_media_id]}','{$maps->media[$quests[$i]->complete_media_id]}','{$quests[$i]->text_when_complete}','".($quests[$i]->complete_full_screen_notify ? "FULL_SCREEN" : "DROP_DOWN")."','{$quests[$i]->complete_go_function}', '{$quests[$i]->sort_index}',CURRENT_TIMESTAMP)", "v2");
+            $newQuestId = migration_dbconnection::queryInsert("INSERT INTO quests (game_id,name,description, active_icon_media_id,active_media_id,active_description,active_notification_type,active_function, complete_icon_media_id,complete_media_id,complete_description,complete_notification_type,complete_function, sort_index,created) VALUES ('{$v2GameId}','".addslashes($quests[$i]->name)."','".addslashes($quests[$i]->description)."', '{$maps->media[$quests[$i]->active_icon_media_id]}','{$maps->media[$quests[$i]->active_media_id]}','".addslashes($quests[$i]->description)."','".($quests[$i]->full_screen_notify ? "FULL_SCREEN" : "DROP_DOWN")."','{$quests[$i]->go_function}', '{$maps->media[$quests[$i]->complete_icon_media_id]}','{$maps->media[$quests[$i]->complete_media_id]}','".addslashes($quests[$i]->text_when_complete)."','".($quests[$i]->complete_full_screen_notify ? "FULL_SCREEN" : "DROP_DOWN")."','{$quests[$i]->complete_go_function}', '{$quests[$i]->sort_index}',CURRENT_TIMESTAMP)", "v2");
             $questIdMap[$quests[$i]->quest_id] = $newQuestId;
         }
         return $questIdMap;
@@ -412,7 +412,7 @@ class migration extends migration_dbconnection
 
             $newInstanceId = migration_dbconnection::queryInsert("INSERT INTO instances (game_id,object_id,object_type,qty,infinite_qty,created) VALUES ('{$v2GameId}','{$objectId}','{$newType}','{$locations[$i]->item_qty}','".(intval($locations[$i]->item_qty) < 0 ? 1 : 0)."',CURRENT_TIMESTAMP)","v2");
             //PHIL REMEMBER TO REMOVE THE error*10 THING! THATS JUST FOR DEBUGGING MIGRATION BY MAKING ALL LOCATIONS MORE EASILY ACCESSIBLE
-            $newTriggerId = migration_dbconnection::queryInsert("INSERT INTO triggers (game_id,instance_id,scene_id,type,name,title,latitude,longitude,distance,wiggle,show_title,hidden,trigger_on_enter,created) VALUES ('{$v2GameId}','{$newInstanceId}','{$sceneId}','LOCATION','{$locations[$i]->name}','{$locations[$i]->name}','{$locations[$i]->latitude}','{$locations[$i]->longitude}','".($locations[$i]->error*20)."','{$locations[$i]->wiggle}','{$locations[$i]->show_title}','{$locations[$i]->hidden}','{$locations[$i]->force_view}',CURRENT_TIMESTAMP)", "v2");
+            $newTriggerId = migration_dbconnection::queryInsert("INSERT INTO triggers (game_id,instance_id,scene_id,type,name,title,latitude,longitude,distance,wiggle,show_title,hidden,trigger_on_enter,created) VALUES ('{$v2GameId}','{$newInstanceId}','{$sceneId}','LOCATION','".addslashes($locations[$i]->name)."','".addslashes($locations[$i]->name)."','{$locations[$i]->latitude}','{$locations[$i]->longitude}','".($locations[$i]->error*20)."','{$locations[$i]->wiggle}','{$locations[$i]->show_title}','{$locations[$i]->hidden}','{$locations[$i]->force_view}',CURRENT_TIMESTAMP)", "v2");
             $locTriggerMap[$locations[$i]->location_id] = $newTriggerId;
 
             //Note that this DUPLICATES INSTANCES!!! (1 location/qr combo from v1 creates 2 instances, a location trigger, and a qr trigger)
@@ -420,7 +420,7 @@ class migration extends migration_dbconnection
             if($qrcode)
             {
                 $newInstanceId = migration_dbconnection::queryInsert("INSERT INTO instances (game_id,object_id,object_type,qty,infinite_qty,created) VALUES ('{$v2GameId}','{$objectId}','{$newType}','{$locations[$i]->item_qty}','".(intval($locations[$i]->item_qty) < 0 ? 1 : 0)."',CURRENT_TIMESTAMP)","v2");
-                $newTriggerId = migration_dbconnection::queryInsert("INSERT INTO triggers (game_id,instance_id,scene_id,type,name,qr_code,created) VALUES ('{$v2GameId}','{$newInstanceId}','{$sceneId}','QR','{$locations[$i]->name}','{$qrcode->code}',CURRENT_TIMESTAMP)", "v2");
+                $newTriggerId = migration_dbconnection::queryInsert("INSERT INTO triggers (game_id,instance_id,scene_id,type,name,qr_code,created) VALUES ('{$v2GameId}','{$newInstanceId}','{$sceneId}','QR','".addslashes($locations[$i]->name)."','".addslashes($qrcode->code)."',CURRENT_TIMESTAMP)", "v2");
                 $qrTriggerMap[$locations[$i]->location_id] = $newTriggerId; //note that I'm hooking up the LOCATION id to the trigger again.
                 //^ This is because nothing in v1 links to qr codes, only locations.
                 //but locations were now split into two objects (one for their v1 location and one for their v1 qr), and both need to be recorded.
