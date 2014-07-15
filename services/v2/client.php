@@ -103,6 +103,18 @@ class client extends dbconnection
     }
      */
 
+    public static function getPlayerPlayedGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getPlayerPlayedGamePack($glob); }
+    public static function getPlayerPlayedGamePack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        $record = dbconnection::queryObject("SELECT * FROM user_log WHERE user_id = '{$pack->auth->user_id}' AND game_id = '{$pack->game_id}' AND deleted = '0' LIMIT 1");
+        $retObj = new stdClass();
+        $retObj->game_id = $pack->game_id;
+        $retObj->has_played = ($record != null);
+        return new return_package(0,$retObj);
+    }
+
     public static function getLogsForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getLogsForPlayerPack($glob); }
     public static function getLogsForPlayerPack($pack)
     {
