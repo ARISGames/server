@@ -93,7 +93,7 @@ class migration extends migration_dbconnection
 
         //update game media refrences
         $v2Game = migration_dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$v2GameId}'","v2");
-        migration_dbconnection::query("UPDATE games SET media_id = '{$maps->media[$v2Game->media_id]}', icon_media_id = '{$maps->media[$v2Game->icon_media_id]}'","v2");
+        migration_dbconnection::query("UPDATE games SET media_id = '{$maps->media[$v2Game->media_id]}', icon_media_id = '{$maps->media[$v2Game->icon_media_id]}' WHERE game_id = '{$v2GameId}'","v2");
         $v2Game = migration_dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$v2GameId}'","v2"); //get updated game data
 
         $maps->plaques = migration::migratePlaques($v1GameId, $v2GameId, $maps);
