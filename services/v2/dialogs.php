@@ -303,8 +303,9 @@ class dialogs extends dbconnection
             "game_id,".
             (isset($pack->dialog_id)                   ? "dialog_id,"                   : "").
             (isset($pack->parent_dialog_script_id)     ? "parent_dialog_script_id,"     : "").
-            (isset($pack->dialog_script_id)            ? "dialog_script_id,"            : "").
             (isset($pack->prompt)                      ? "prompt,"                      : "").
+            (isset($pack->link_type)                   ? "link_type,"                   : "").
+            (isset($pack->link_id)                     ? "link_id,"                     : "").
             (isset($pack->requirement_root_package_id) ? "requirement_root_package_id," : "").
             (isset($pack->sort_index)                  ? "sort_index,"                  : "").
             "created".
@@ -312,8 +313,9 @@ class dialogs extends dbconnection
             "'".addslashes($pack->game_id)."',".
             (isset($pack->dialog_id)                   ? "'".addslashes($pack->dialog_id)."',"                   : "").
             (isset($pack->parent_dialog_script_id)     ? "'".addslashes($pack->parent_dialog_script_id)."',"     : "").
-            (isset($pack->dialog_script_id)            ? "'".addslashes($pack->dialog_script_id)."',"            : "").
             (isset($pack->prompt)                      ? "'".addslashes($pack->prompt)."',"                      : "").
+            (isset($pack->link_type)                   ? "'".addslashes($pack->link_type)."',"                   : "").
+            (isset($pack->link_id)                     ? "'".addslashes($pack->link_id)."',"                     : "").
             (isset($pack->requirement_root_package_id) ? "'".addslashes($pack->requirement_root_package_id)."'," : "").
             (isset($pack->sort_index)                  ? "'".addslashes($pack->sort_index)."',"                  : "").
             "CURRENT_TIMESTAMP".
@@ -334,8 +336,9 @@ class dialogs extends dbconnection
         dbconnection::query(
             "UPDATE dialog_options SET ".
             (isset($pack->parent_dialog_script_id)     ? "parent_dialog_script_id     = '".addslashes($pack->parent_dialog_script_id)."', "     : "").
-            (isset($pack->dialog_script_id)            ? "dialog_script_id            = '".addslashes($pack->dialog_script_id)."', "            : "").
             (isset($pack->prompt)                      ? "prompt                      = '".addslashes($pack->prompt)."', "                      : "").
+            (isset($pack->link_type)                   ? "link_type                   = '".addslashes($pack->link_type)."', "                   : "").
+            (isset($pack->link_id)                     ? "link_id                     = '".addslashes($pack->link_id)."', "                     : "").
             (isset($pack->requirement_root_package_id) ? "requirement_root_package_id = '".addslashes($pack->requirement_root_package_id)."', " : "").
             (isset($pack->sort_index)                  ? "sort_index                  = '".addslashes($pack->sort_index)."', "                  : "").
             "last_active = CURRENT_TIMESTAMP ".
@@ -353,8 +356,9 @@ class dialogs extends dbconnection
         $dialogOption->game_id                     = $sql_dialogOption->game_id;
         $dialogOption->dialog_id                   = $sql_dialogOption->dialog_id;
         $dialogOption->parent_dialog_script_id     = $sql_dialogOption->parent_dialog_script_id;
-        $dialogOption->dialog_script_id            = $sql_dialogOption->dialog_script_id;
         $dialogOption->prompt                      = $sql_dialogOption->prompt;
+        $dialogOption->link_type                   = $sql_dialogOption->link_type;
+        $dialogOption->link_id                     = $sql_dialogOption->link_id;
         $dialogOption->requirement_root_package_id = $sql_dialogOption->requirement_root_package_id;
         $dialogOption->sort_index                  = $sql_dialogOption->sort_index;
 

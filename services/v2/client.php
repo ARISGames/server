@@ -225,6 +225,18 @@ class client extends dbconnection
         return new return_package(0, $playerOptions);
     }
 
+    public static function logPlayerResetGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::logPlayerResetGamePack($glob); }
+    public static function logPlayerResetGamePack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'RESET_GAME', CURRENT_TIMESTAMP);");
+        dbconnection::query("UPDATE user_log SET deleted = 1 WHERE user_id = '{$pack->auth->user_id}' AND game_id = '{$pack->game_id}'");
+        //ok technically does more than just 'logs'
+        dbconnection::query("DELETE FROM instances WHERE game_id = '{$pack->game_id}' AND owner_id = '{$pack->auth->user_id}' AND owner_id != 0"); //extra '!= 0' to prevent accidentally deleting all non player instances
+        return new return_package(0);
+    }
 
     public static function logPlayerBeganGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::logPlayerBeganGamePack($glob); }
     public static function logPlayerBeganGamePack($pack)

@@ -76,7 +76,7 @@ class users extends dbconnection
         if($pack->permission == "write")      $ret->write_key      = $user->write_key;
         if($pack->permission == "read_write") $ret->read_write_key = $user->read_write_key;
 
-        dbconnection::queryInsert("INSERT INTO user_log (user_id, event_type, created) VALUES ('{$pack->auth->user_id}', 'LOG_IN', CURRENT_TIMESTAMP);");
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, event_type, created) VALUES ('{$ret->user_id}', 'LOG_IN', CURRENT_TIMESTAMP);");
         return new return_package(0, $ret);
     }
 

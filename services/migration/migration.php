@@ -234,7 +234,7 @@ class migration extends migration_dbconnection
                 $node = migration_dbconnection::queryObject("SELECT * FROM nodes WHERE node_id = '{$options[$j]->node_id}'","v1");
                 $newIds = migration::textToScript($options[$j]->text, $node->text, $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], $parentScriptId, $maps);
                 $optionMap[$options[$j]->node_id] = $newIds->firstOptionId;
-                $newestOptionId = migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, dialog_script_id, prompt, created) VALUES ('{$v2GameId}','{$newDialogId}','{$newIds->lastScriptId}','{$parentScriptId}','Continue',CURRENT_TIMESTAMP)", "v2");
+                $newestOptionId = migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, link_id, prompt, created) VALUES ('{$v2GameId}','{$newDialogId}','{$newIds->lastScriptId}','{$parentScriptId}','Continue',CURRENT_TIMESTAMP)", "v2");
             }
 
             $dialogMap[$dialogs[$i]->npc_id] = $newDialogId;
@@ -266,7 +266,7 @@ class migration extends migration_dbconnection
         {
             //phew. Nothing complicated. 
             $tmpScriptId = migration_dbconnection::queryInsert("INSERT INTO dialog_scripts (game_id, dialog_id, dialog_character_id, text, created) VALUES ('{$gameId}','{$dialogId}','{$rootCharacterId}','".addslashes($text)."',CURRENT_TIMESTAMP)", "v2");
-            $newIds->firstOptionId = migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, dialog_script_id, prompt, created) VALUES ('{$gameId}','{$dialogId}','{$newIds->lastScriptId}','{$tmpScriptId}','".addslashes($option)."',CURRENT_TIMESTAMP)", "v2");
+            $newIds->firstOptionId = migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, link_id, prompt, created) VALUES ('{$gameId}','{$dialogId}','{$newIds->lastScriptId}','{$tmpScriptId}','".addslashes($option)."',CURRENT_TIMESTAMP)", "v2");
             $newIds->lastScriptId = $tmpScriptId;
             return $newIds;
         }
@@ -314,7 +314,7 @@ class migration extends migration_dbconnection
             }
 
             $tmpScriptId = migration_dbconnection::queryInsert("INSERT INTO dialog_scripts (game_id, dialog_id,  dialog_character_id, text, created) VALUES ('{$gameId}','{$dialogId}','{$characterId}','".addslashes($tag_contents)."',CURRENT_TIMESTAMP)", "v2");
-            $newestOptionId = migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, dialog_script_id, prompt, created) VALUES ('{$gameId}','{$dialogId}','{$newIds->lastScriptId}','{$tmpScriptId}','".addslashes($option)."',CURRENT_TIMESTAMP)", "v2");
+            $newestOptionId = migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, link_id, prompt, created) VALUES ('{$gameId}','{$dialogId}','{$newIds->lastScriptId}','{$tmpScriptId}','".addslashes($option)."',CURRENT_TIMESTAMP)", "v2");
 
             if(!$newIds->firstOptionId) $newIds->firstOptionId = $newestOptionId;
             $newIds->lastScriptId = $tmpScriptId;

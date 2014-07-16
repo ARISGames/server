@@ -569,8 +569,9 @@ var CRUD_DEFAULTS = [
           "game_id":123,\n\
           "dialog_id":123,\n\
           "parent_dialog_script_id":123,\n\
-          "dialog_script_id":123,\n\
           "prompt":"dialogOptionPrompt",\n\
+          "link_type":"DIALOG_SCRIPT",\n\
+          "link_id":123,\n\
           "requirement_root_package_id":123,\n\
           "sort_index":0\n\
         }\n\
@@ -586,8 +587,9 @@ var CRUD_DEFAULTS = [
         {\n\
           "dialog_option_id":123,\n\
           "parent_dialog_script_id":123,\n\
-          "dialog_script_id":123,\n\
           "prompt":"dialogOptionPrompt",\n\
+          "link_type":"DIALOG_SCRIPT",\n\
+          "link_id":123,\n\
           "requirement_root_package_id":123,\n\
           "sort_index":0\n\
         }\n\
