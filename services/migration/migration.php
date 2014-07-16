@@ -227,6 +227,8 @@ class migration extends migration_dbconnection
                 $newIds = migration::textToScript("Greet", $dialogs[$i]->text, $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], 0, $maps);
                 $parentScriptId = $newIds->lastScriptId;
             }
+            //add exit option from greeting
+            migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, link_type, prompt, created) VALUES ('{$v2GameId}','{$newDialogId}','0','EXIT','Exit',CURRENT_TIMESTAMP)", "v2");
 
             $options = migration_dbconnection::queryArray("SELECT * FROM npc_conversations WHERE game_id = '{$v1GameId}' AND npc_id = '{$dialogs[$i]->npc_id}'","v1");
             for($j = 0; $j < count($options); $j++)
@@ -234,7 +236,7 @@ class migration extends migration_dbconnection
                 $node = migration_dbconnection::queryObject("SELECT * FROM nodes WHERE node_id = '{$options[$j]->node_id}'","v1");
                 $newIds = migration::textToScript($options[$j]->text, $node->text, $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], $parentScriptId, $maps);
                 $optionMap[$options[$j]->node_id] = $newIds->firstOptionId;
-                $newestOptionId = migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, link_id, prompt, created) VALUES ('{$v2GameId}','{$newDialogId}','{$newIds->lastScriptId}','{$parentScriptId}','Continue',CURRENT_TIMESTAMP)", "v2");
+                $newestOptionId = migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, link_id, prompt, created) VALUES ('{$v2GameId}','{$newDialogId}','{$newIds->lastScriptId}','0','Continue',CURRENT_TIMESTAMP)", "v2");
             }
 
             $dialogMap[$dialogs[$i]->npc_id] = $newDialogId;
