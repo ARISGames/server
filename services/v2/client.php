@@ -43,7 +43,7 @@ class client extends dbconnection
         $debugString .= "SELECT: ".(microtime(true)-$sTime)."\n";
 */
 
-        return new return_package(0, $debugString);
+        return new return_package(0, $games);
     }
 
     public static function getSearchGamesForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getSearchGamesForPlayerPack($glob); }
@@ -54,10 +54,10 @@ class client extends dbconnection
 
         $text = urldecode(addSlashes($pack->text));
 
-        $sql_games = dbconnection::queryArray("SELECT * FROM games WHERE (name LIKE '%{$text}%' OR description LIKE '%{$textToFind}%') ".($pack->includeDev ? "AND ready_for_public = TRUE" : "")." ORDER BY name ASC LIMIT ".($pack->page*25).",25");
+        $sql_games = dbconnection::queryArray("SELECT * FROM games WHERE (name LIKE '%{$text}%' OR description LIKE '%{$text}%') ".($pack->includeDev ? "AND ready_for_public = TRUE" : "")." ORDER BY name ASC LIMIT ".($pack->page*25).",25");
         $games = array();
         for($i = 0; $i < count($sql_games); $i++)
-            $game[] = games::gameObjectFromSQL($sql_games[$i]);
+            $games[] = games::gameObjectFromSQL($sql_games[$i]);
 
         return new return_package(0, $games);
     }
@@ -107,7 +107,7 @@ class client extends dbconnection
         $sql_games = dbconnection::queryArray("SELECT * FROM games WHERE latitude BETWEEN {$pack->latitude}-.5 AND {$pack->latitude}+.5 AND longitude BETWEEN {$pack->longitude}-.5 AND {$pack->longitude}+.5 ".($pack->includeDev ? "AND ready_for_public = TRUE" : "")." GROUP BY game_id LIMIT 50");
         $games = array();
         for($i = 0; $i < count($sql_games); $i++)
-            $game[] = games::gameObjectFromSQL($sql_games[$i]);
+            $games[] = games::gameObjectFromSQL($sql_games[$i]);
 
         return new return_package(0, $games);
     }
@@ -122,6 +122,23 @@ class client extends dbconnection
         $games = array();
         for($i = 0; $i < count($sql_games); $i++)
             $game[] = games::gameObjectFromSQL($sql_games[$i]);
+
+        return new return_package(0, $games);
+    }
+
+    public static function getPlayerGamesForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getPlayerGamesForPlayerPack($glob); }
+    public static function getPlayerGamesForPlayerPack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $sql_user_games = dbconnection::queryArray("SELECT * FROM user_games WHERE user_id = '{$pack->auth->user_id}'");
+        $games = array();
+        for($i = 0; $i < count($sql_user_games); $i++)
+        {
+            $game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$sql_user_games[$i]->game_id}'");
+            $games[] = games::gameObjectFromSQL($game);
+        }
 
         return new return_package(0, $games);
     }
