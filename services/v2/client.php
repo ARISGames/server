@@ -14,94 +14,117 @@ require_once("return_package.php");
 
 class client extends dbconnection
 {
-    public static function getRecentGamesForPlayer($userId, $includeDev = 1)
+    //Phil tested on 7/17/14 determined method 1 (JOIN) was consistently ~3x as fast. //NOTE- ABNORMALLY SMALL DATA SET: NEEDS FURTHER TESTING
+    public static function getRecentGamesForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getRecentGamesForPlayerPack($glob); }
+    public static function getRecentGamesForPlayerPack($pack)
     {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        //method 1 (JOIN)
         $sTime = microtime(true);
-        $query = "SELECT * FROM (SELECT game_id, MAX(created) as ts FROM user_log 
-            WHERE user_id = '".$userId."' AND game_id != 0 
-            GROUP BY game_id ORDER BY ts DESC LIMIT 20) as u_log LEFT JOIN games
-            ON u_log.game_id = games.game_id";
-        $logs = dbconnection::queryArray($query);
+        $sql_games = dbconnection::queryArray("SELECT * FROM (SELECT game_id, MAX(created) as ts FROM user_log WHERE user_id = '{$pack->auth->user_id}' AND game_id != 0 GROUP BY game_id ORDER BY ts DESC LIMIT 20) as u_log LEFT JOIN games ON u_log.game_id = games.game_id ".($pack->includeDev ? "WHERE games.ready_for_public = TRUE" : ""));
         $games = array();
-        if(!$logs) return new return_package(0, $games); //no recent games were found
-        for($i = 0; $i < count($logs); $i++)
+        for($i = 0; $i < count($sql_games); $i++)
+            $games[] = games::gameObjectFromSQL($sql_games[$i]);
+        $debugString = "JOIN: ".(microtime(true)-$sTime)."\n";
+
+/*
+        //method 2 (SELECT)
+        $sTime = microtime(true);
+        $sql_logs = dbconnection::queryArray("SELECT game_id, MAX(created) FROM user_log WHERE user_id = '{$pack->auth->user_id}' AND game_id != 0 GROUP BY game_id ORDER BY ts DESC LIMIT 20");
+        $games = array();
+        for($i = 0; $i < count($sql_logs); $i++)
         {
-            $sTime = microtime(true);
-            $gameObj = $logs[$i];
-            $game = games::gameObjectFromSQL($gameObj);
-            if($game->ready_for_public || $includeDev) $games[] = $game;
+            $game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$sql_logs[$i]->game_id}'");
+            if($game->ready_for_public || $pack->includeDev)
+                $games[] = games::gameObjectFromSQL($game);
         }
-        //var_dump($games);
-        return new return_package(0, $games);
+        $debugString .= "SELECT: ".(microtime(true)-$sTime)."\n";
+*/
+
+        return new return_package(0, $debugString);
     }
 
-    public static function getSearchGamesForPlayer($userId, $textToFind, $includeDev = 1)
+    public static function getSearchGamesForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getSearchGamesForPlayerPack($glob); }
+    public static function getSearchGamesForPlayerPack($pack)
     {
-        $textToFind = addSlashes($textToFind);
-        $textToFind = urldecode($textToFind);
-        if($includeDev) $query = "SELECT * FROM games WHERE (name LIKE '%".$textToFind."%' OR description LIKE '%".$textToFind."%') ORDER BY name ASC LIMIT ".($page*25).",25";
-        else $query = "SELECT * FROM games WHERE (name LIKE '%".$textToFind."%' OR description LIKE '%".$textToFind."%') AND ready_for_public = TRUE ORDER BY name ASC LIMIT ".($page*25).",25";
-        $sql_games = dbconnection::queryArray($query);
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $text = urldecode(addSlashes($pack->text));
+
+        $sql_games = dbconnection::queryArray("SELECT * FROM games WHERE (name LIKE '%{$text}%' OR description LIKE '%{$textToFind}%') ".($pack->includeDev ? "AND ready_for_public = TRUE" : "")." ORDER BY name ASC LIMIT ".($pack->page*25).",25");
         $games = array();
-        if(!$sql_games) return new return_package(0, $games); //no games were found
         for($i = 0; $i < count($sql_games); $i++)
-            if($ob = games::gameObjectFromSQL($sql_games[$i])) $games[] = $ob;
+            $game[] = games::gameObjectFromSQL($sql_games[$i]);
 
-        //var_dump($games);
         return new return_package(0, $games);
-    } 
+    }
 
-    public static function getPopularGamesForPlayer($user_id, $time, $includeDev = 1)
+    //Phil tested on 7/17/14 determined method 2 (SELECT) was consistently nearly twice as fast. //NOTE- ABNORMALLY SMALL DATA SET: NEEDS FURTHER TESTING
+    public static function getPopularGamesForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getPopularGamesForPlayerPack($glob); }
+    public static function getPopularGamesForPlayerPack($pack)
     {
-        if($time == 0) $queryInterval = '1 DAY';
-        else if ($time == 1) $queryInterval = '7 DAY';
-        else if ($time == 2) $queryInterval = '1 MONTH';
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        if ($includeDev) $query = "SELECT *, COUNT(DISTINCT user_id) as count FROM games INNER JOIN user_log ON games.game_id = user_log.game_id WHERE user_log.created BETWEEN DATE_SUB(NOW(), INTERVAL ".$queryInterval.") AND NOW() GROUP BY games.game_id HAVING count > 1 ORDER BY count DESC LIMIT 20;";
-        else $query = "SELECT *, COUNT(DISTINCT user_id) as count FROM games INNER JOIN user_log ON games.game_id = user_log.game_id WHERE ready_for_public = TRUE AND user_log.created BETWEEN DATE_SUB(NOW(), INTERVAL ".$queryInterval.") AND NOW() GROUP BY games.game_id HAVING count > 1 ORDER BY count DESC LIMIT 20;";
+        else if ($pack->interval == "MONTH") $interval = '1 MONTH';
+        else if ($pack->interval == "WEEK")  $interval = '7 DAY';
+        else                                 $interval = '1 DAY';
 
-
-        $sql_games = dbconnection::queryArray($query);
+        /*
+        //method 1 (JOIN)
+        $sTime = microtime(true);
+        $sql_games = dbconnection::queryArray("SELECT *, COUNT(DISTINCT user_id) as count FROM games INNER JOIN user_log ON games.game_id = user_log.game_id WHERE user_log.created BETWEEN DATE_SUB(NOW(), INTERVAL {$interval}) AND NOW() ".($pack->includeDev ? "AND games.ready_for_public = TRUE" : "")." GROUP BY games.game_id HAVING count > 1 ORDER BY count DESC LIMIT 20");
         $games = array();
-        if(!$sql_games) return new return_package(0, $games); //no games were found
         for($i = 0; $i < count($sql_games); $i++)
-            if($ob = games::gameObjectFromSQL($sql_games[$i])) $games[] = $ob;
+            $game[] = games::gameObjectFromSQL($sql_games[$i]);
+        $debugString = "JOIN: ".(microtime(true)-$sTime)."\n";
+        */
 
-        //var_dump($games);
+        //method 2 (SELECT)
+        $sTime = microtime(true);
+        $sql_logs = dbconnection::queryArray("SELECT game_id, COUNT(DISTINCT user_id) as count FROM user_log WHERE created BETWEEN DATE_SUB(NOW(), INTERVAL {$interval}) AND NOW() GROUP BY game_id HAVING count > 0 ORDER BY count DESC LIMIT 20");
+        $games = array();
+        for($i = 0; $i < count($sql_logs); $i++)
+        {
+            $game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$sql_logs[$i]->game_id}'");
+            if($game->ready_for_public || $pack->includeDev)
+                $games[] = games::gameObjectFromSQL($game);
+        }
+        $debugString .= "SELECT: ".(microtime(true)-$sTime)."\n";
+
         return new return_package(0, $games);
     }
 
-    public static function getNearbyGamesForPlayer($user_id, $latitude, $longitude, $includeDev = 1)
+    public static function getNearbyGamesForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getNearbyGamesForPlayerPack($glob); }
+    public static function getNearbyGamesForPlayerPack($pack)
     {
-        if($includeDev) $query = "SELECT * FROM games WHERE games.latitude BETWEEN {$latitude}-.5 AND {$latitude}+.5 AND games.longitude BETWEEN {$longitude}-.5 AND {$longitude}+.5 GROUP BY games.game_id LIMIT 50";
-        else $query = "SELECT * FROM games WHERE games.latitude BETWEEN {$latitude}-.5 AND {$latitude}+.5 AND games.longitude BETWEEN {$longitude}-.5 AND {$longitude}+.5 AND games.ready_for_public = TRUE GROUP BY games.games_id LIMIT 50";
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        $sql_games = dbconnection::queryArray($query);
+        $sql_games = dbconnection::queryArray("SELECT * FROM games WHERE latitude BETWEEN {$pack->latitude}-.5 AND {$pack->latitude}+.5 AND longitude BETWEEN {$pack->longitude}-.5 AND {$pack->longitude}+.5 ".($pack->includeDev ? "AND ready_for_public = TRUE" : "")." GROUP BY game_id LIMIT 50");
         $games = array();
-        if(!$sql_games) return new return_package(0, $games); //no games were found
         for($i = 0; $i < count($sql_games); $i++)
-            if($ob = games::gameObjectFromSQL($sql_games[$i])) $games[] = $ob;
+            $game[] = games::gameObjectFromSQL($sql_games[$i]);
 
-        var_dump($games);
         return new return_package(0, $games);
     }
 
-    /*
-       public static function getAnywhereGamesForPlayer($user_id, $includeDev = 1)
-       {
-       if($includeDev) $query = "SELECT * FROM games WHERE games.full_quick_travel = 1";
-       else $query = "SELECT * FROM games WHERE games.full_quick_travel = 1 AND games.ready_for_public = TRUE";
+    public static function getAnywhereGamesForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getAnywhereGamesForPlayerPack($glob); }
+    public static function getAnywhereGamesForPlayerPack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-       $sql_games = dbconnection::queryArray($query);
-       $games = array();
-       if(!$sql_games) return new return_package(0, $games); //no games were found
-       for($i = 0; $i < count($sql_games); $i++)
-       if($ob = games::gameObjectFromSQL($sql_games[$i])) $games[] = $ob;
+        $sql_games = dbconnection::queryArray("SELECT * FROM games WHERE full_quick_travel = 1 ".($pack->includeDev ? "AND ready_for_public = TRUE" : ""));
+        $games = array();
+        for($i = 0; $i < count($sql_games); $i++)
+            $game[] = games::gameObjectFromSQL($sql_games[$i]);
 
-    //var_dump($games);
-    return new return_package(0, $games);
+        return new return_package(0, $games);
     }
-     */
 
     public static function getPlayerPlayedGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getPlayerPlayedGamePack($glob); }
     public static function getPlayerPlayedGamePack($pack)
