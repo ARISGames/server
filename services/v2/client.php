@@ -37,7 +37,7 @@ class client extends dbconnection
         for($i = 0; $i < count($sql_logs); $i++)
         {
             $game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$sql_logs[$i]->game_id}'");
-            if($game->ready_for_public || $pack->includeDev)
+            if($game && ($game->ready_for_public || $pack->includeDev))
                 $games[] = games::gameObjectFromSQL($game);
         }
         $debugString .= "SELECT: ".(microtime(true)-$sTime)."\n";
@@ -53,6 +53,7 @@ class client extends dbconnection
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         $text = urldecode(addSlashes($pack->text));
+        if($text == "") return new return_package(0, array()); //technically, returns ALL games. but that's ridiculous, so return none.
 
         $sql_games = dbconnection::queryArray("SELECT * FROM games WHERE (name LIKE '%{$text}%' OR description LIKE '%{$text}%') ".($pack->includeDev ? "AND ready_for_public = TRUE" : "")." ORDER BY name ASC LIMIT ".($pack->page*25).",25");
         $games = array();
@@ -90,7 +91,7 @@ class client extends dbconnection
         for($i = 0; $i < count($sql_logs); $i++)
         {
             $game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$sql_logs[$i]->game_id}'");
-            if($game->ready_for_public || $pack->includeDev)
+            if($game && ($game->ready_for_public || $pack->includeDev))
                 $games[] = games::gameObjectFromSQL($game);
         }
         $debugString .= "SELECT: ".(microtime(true)-$sTime)."\n";
