@@ -445,7 +445,7 @@ class requirements extends dbconnection
     }
     private function playerViewed($pack,$type)
     {
-        $entry = dbconnection::queryObject("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}' AND event_type = 'VIEW_{$type}' AND content_id = '{$pack->content_id}'");
+        $entry = dbconnection::queryObject("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}' AND event_type = 'VIEW_{$type}' AND content_id = '{$pack->content_id}' AND deleted = 0");
         return $entry ? true : false;
     }
     private function PLAYER_HAS_UPLOADED_MEDIA_ITEM($pack)
@@ -466,7 +466,7 @@ class requirements extends dbconnection
     }
     private function PLAYER_HAS_COMPLETED_QUEST($pack)
     {
-        $entry = dbconnection::queryObject("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}' AND event_type = 'COMPLETE_QUEST' AND content_id = '{$pack->content_id}'");
+        $entry = dbconnection::queryObject("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}' AND event_type = 'COMPLETE_QUEST' AND content_id = '{$pack->content_id}' AND deleted = 0");
         return $entry ? true : false;
     }
     private function PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK($pack)
