@@ -187,6 +187,33 @@ last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 CREATE INDEX web_page_game_id ON web_pages(game_id);
 
+DROP TABLE IF EXISTS tags;
+CREATE TABLE tags (
+tag_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+game_id INT(32) UNSIGNED NOT NULL,
+tag VARCHAR(255) NOT NULL DEFAULT '',
+media_id INT(32) UNSIGNED NOT NULL DEFAULT '0',
+player_created TINYINT(1) UNSIGNED NOT NULL DEFAULT '0',
+visible TINYINT(1) UNSIGNED NOT NULL DEFAULT '1',
+sort_index INT(32) NOT NULL,
+created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
+last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE INDEX tag_game_id ON tags(game_id);
+
+DROP TABLE IF EXISTS object_tags;
+CREATE TABLE object_tags (
+object_tag_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+game_id INT(32) UNSIGNED NOT NULL,
+object_type ENUM('PLAQUE','ITEM','DIALOG','WEB_PAGE'),
+object_id INT(32) UNSIGNED NOT NULL,
+tag_id INT(32) UNSIGNED NOT NULL,
+created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
+last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE INDEX object_tag_object ON object_tags(game_id, object_type, object_id);
+CREATE INDEX object_tag_tag ON object_tags(game_id, tag_id);
+
 DROP TABLE IF EXISTS overlays;
 CREATE TABLE overlays (
 overlay_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -223,7 +250,7 @@ DROP TABLE IF EXISTS note_labels;
 CREATE TABLE note_labels (
 label_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 game_id INT(32) UNSIGNED NOT NULL,
-text VARCHAR(255) NOT NULL DEFAULT 'New Tag',
+text VARCHAR(255) NOT NULL DEFAULT 'Label',
 player_created TINYINT(1) NOT NULL DEFAULT '0',
 created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
 last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -487,30 +514,6 @@ CREATE TABLE `game_comments` (
   KEY `player_id` (`player_id`),
   KEY `time_stamp` (`time_stamp`)
 ) ENGINE=InnoDB AUTO_INCREMENT=276 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
-DROP TABLE IF EXISTS `game_object_tags`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `game_object_tags` (
-  `tag_id` INT(32) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `game_id` INT(32) UNSIGNED NOT NULL,
-  `tag` varchar(32) NOT NULL DEFAULT '',
-  `media_id` INT(32) UNSIGNED NOT NULL DEFAULT '0',
-  `use_for_sort` tinyint(1) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`tag_id`)
-) ENGINE=MyISAM AUTO_INCREMENT=20 DEFAULT CHARSET=latin1;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
-DROP TABLE IF EXISTS `object_tags`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `object_tags` (
-  `object_type` enum('ITEM') NOT NULL DEFAULT 'ITEM',
-  `object_id` INT(32) UNSIGNED NOT NULL,
-  `tag_id` INT(32) UNSIGNED NOT NULL,
-  PRIMARY KEY (`object_type`,`object_id`,`tag_id`)
-) ENGINE=MyISAM DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 DROP TABLE IF EXISTS `web_hooks`;

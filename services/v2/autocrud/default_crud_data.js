@@ -444,6 +444,47 @@ var CRUD_DEFAULTS = [
         '
 },
 {
+    "service":"tags",
+    "create":"tags.createTag",
+    "get":"tags.getTag",
+    "update":"tags.updateTag",
+    "delete":"tags.deleteTag",
+    "createData":
+        '\
+        {\n\
+          "game_id":123,\n\
+          "tag":"myTag",\n\
+          "media_id":123,\n\
+          "player_created":0,\n\
+          "visible":1,\n\
+          "sort_index":0\n\
+        }\n\
+        ',
+    "getData":
+        '\
+        {\n\
+          "tag_id":123\n\
+        }\n\
+        ',
+    "updateData":
+        '\
+        {\n\
+          "tag_id":123,\n\
+          "tag":"myTag",\n\
+          "media_id":123,\n\
+          "player_created":0\n\
+          "visible":1\n\
+          "sort_index":0\n\
+        }\n\
+        ',
+    "deleteData":
+        '\
+        {\n\
+          "tag_id":123\n\
+        }\n\
+        '
+},
+{
     "service":"dialogs",
     "create":"dialogs.createDialog",
     "get":"dialogs.getDialog",
