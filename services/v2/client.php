@@ -316,6 +316,7 @@ class client extends dbconnection
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'VIEW_{$pack->content_type}', '{$pack->content_id}', CURRENT_TIMESTAMP);");
+        client::checkForCascadingLogs($pack);
         return new return_package(0);
     }
 
@@ -337,6 +338,46 @@ class client extends dbconnection
 
         dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'TRIGGER_TRIGGER', '{$pack->trigger_id}', CURRENT_TIMESTAMP);");
         return new return_package(0);
+    }
+
+    public static function logPlayerCompletedQuest($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::logPlayerCompletedQuestPack($glob); }
+    public static function logPlayerCompletedQuestPack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'COMPLETE_QUEST', '{$pack->quest_id}', CURRENT_TIMESTAMP);");
+        client::checkForCascadingLogs($pack);
+        return new return_package(0);
+    }
+
+    //analyzes the player log to see if any other logs should exist (QUEST_COMPLETE for example is deterministic on the existence of other logs)
+    public static function checkForCascadingLogs($pack)
+    {
+        $quests = dbconnection::queryArray("SELECT * FROM quests WHERE game_id = '{$pack->game_id}'");
+        $completedRecords = dbconnection::queryArray("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->auth->user_id}' AND event_type = 'COMPLETE_QUEST' AND deleted = 0 GROUP BY content_id");
+
+        $incompleteQuests = array();
+        for($i = 0; $i < count($quests); $i++)
+        {
+            $completed = false;
+            for($j = 0; $j < count($completedRecords); $j++)
+                if($quests[$i]->quest_id == $completedRecords[$j]->content_id) $completed = true;
+            if(!$completed) $incompleteQuests[] = $quests[$i];
+        }
+
+        $reqQueryPack = new stdClass();
+        $reqQueryPack->game_id = $pack->game_id;
+        $reqQueryPack->auth = $pack->auth;
+        $questQueryPack = new stdClass();
+        $questQueryPack->game_id = $pack->game_id;
+        $questQueryPack->auth = $pack->auth;
+        for($i = 0; $i < count($incompleteQuests); $i++)
+        {
+            $reqQueryPack->requirement_root_package_id = $incompleteQuests[$i]->complete_requirement_root_package;
+            $questQueryPack->quest_id = $incompleteQuests[$i]->quest_id;
+            if(requirements::evaluateRequirementPackagePack($reqQueryPack)) client::logPlayerCompletedQuestPack($questQueryPack);
+        }
     }
 }
 
