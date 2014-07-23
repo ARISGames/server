@@ -39,16 +39,16 @@ class events extends dbconnection
             "INSERT INTO events (".
             "game_id,".
             "event_package_id,".
-            (isset($pack->event)     ? "event,"     : "").
-            (isset($pack->qty)       ? "qty,"       : "").
-            (isset($pack->object_id) ? "object_id," : "").
+            (isset($pack->event)      ? "event,"      : "").
+            (isset($pack->qty)        ? "qty,"        : "").
+            (isset($pack->content_id) ? "content_id," : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
             "'".addslashes($pack->event_package_id)."',".
-            (isset($pack->event)     ? "'".addslashes($pack->event)."',"     : "").
-            (isset($pack->qty)       ? "'".addslashes($pack->qty)."',"       : "").
-            (isset($pack->object_id) ? "'".addslashes($pack->object_id)."'," : "").
+            (isset($pack->event)      ? "'".addslashes($pack->event)."',"      : "").
+            (isset($pack->qty)        ? "'".addslashes($pack->qty)."',"        : "").
+            (isset($pack->content_id) ? "'".addslashes($pack->content_id)."'," : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -85,9 +85,9 @@ class events extends dbconnection
 
         dbconnection::query(
             "UPDATE events SET ".
-            (isset($pack->event)     ? "event     = '".addslashes($pack->event)."', "     : "").
-            (isset($pack->qty)       ? "qty       = '".addslashes($pack->qty)."', "       : "").
-            (isset($pack->object_id) ? "object_id = '".addslashes($pack->object_id)."', " : "").
+            (isset($pack->event)      ? "event      = '".addslashes($pack->event)."', "      : "").
+            (isset($pack->qty)        ? "qty        = '".addslashes($pack->qty)."', "        : "").
+            (isset($pack->content_id) ? "content_id = '".addslashes($pack->content_id)."', " : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE event_id = '{$pack->event_id}'"
         );
@@ -104,7 +104,7 @@ class events extends dbconnection
         $event->event_package_id = $sql_event->event_package_id;
         $event->event            = $sql_event->event;
         $event->qty              = $sql_event->qty;
-        $event->object_id        = $sql_event->object_id;
+        $event->content_id       = $sql_event->content_id;
 
         return $event;
     }
@@ -162,7 +162,7 @@ class events extends dbconnection
     public static function getEventsForObject($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return events::getEventsForObjectPack($glob); }
     public static function getEventsForObjectPack($pack)
     {
-        $sql_events = dbconnection::queryArray("SELECT * FROM events WHERE object_type = '{$pack->object_type}' AND object_id = '{$pack->object_id}'");
+        $sql_events = dbconnection::queryArray("SELECT * FROM events WHERE object_type = '{$pack->object_type}' AND content_id = '{$pack->content_id}'");
         $events = array();
         for($i = 0; $i < count($sql_events); $i++)
             $events[] = events::eventObjectFromSQL($sql_events[$i]);

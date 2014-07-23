@@ -376,7 +376,7 @@ class migration extends migration_dbconnection
         $event_package_id = migration_dbconnection::queryInsert("INSERT INTO event_packages (game_id, created) VALUES ('{$gameId}',CURRENT_TIMESTAMP)","v2");
 
         for($i = 0; $i < count($eventsList); $i++)
-            migration_dbconnection::queryInsert("INSERT INTO events (game_id, event_package_id, event, object_id, qty, created) VALUES ('{$gameId}', '{$event_package_id}', '{$eventsList[$i]->action}','{$eventsList[$i]->action_detail}','{$eventsList[$i]->action_amount}',CURRENT_TIMESTAMP)","v2");
+            migration_dbconnection::queryInsert("INSERT INTO events (game_id, event_package_id, event, content_id, qty, created) VALUES ('{$gameId}', '{$event_package_id}', '{$eventsList[$i]->action}','{$eventsList[$i]->action_detail}','{$eventsList[$i]->action_amount}',CURRENT_TIMESTAMP)","v2");
 
         return $event_package_id;
     }

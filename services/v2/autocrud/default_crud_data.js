@@ -654,7 +654,7 @@ var CRUD_DEFAULTS = [
           "game_id":123,\n\
           "event":"GIVE_ITEM",\n\
           "qty":10,\n\
-          "object_id":123\n\
+          "content_id":123\n\
         }\n\
         ',
     "getData":
@@ -669,7 +669,7 @@ var CRUD_DEFAULTS = [
           "event_id":123,\n\
           "event":"GIVE_ITEM",\n\
           "qty":10,\n\
-          "object_id":123\n\
+          "content_id":123\n\
         }\n\
         ',
     "deleteData":
