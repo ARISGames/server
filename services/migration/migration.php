@@ -237,6 +237,7 @@ class migration extends migration_dbconnection
                 $node = migration_dbconnection::queryObject("SELECT * FROM nodes WHERE node_id = '{$options[$j]->node_id}'","v1");
                 $newIds = migration::textToScript($options[$j]->text, $options[$j]->sort_index, $node->text, $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], $parentScriptId, $maps);
                 $optionMap[$options[$j]->node_id] = $newIds->firstOptionId;
+                $scriptMap[$options[$j]->node_id] = $newIds->lastScriptId;
                 $newestOptionId = migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, link_id, prompt, sort_index, created) VALUES ('{$v2GameId}','{$newDialogId}','{$newIds->lastScriptId}','{$parentScriptId}','Continue','998',CURRENT_TIMESTAMP)", "v2");
             }
 
@@ -577,7 +578,7 @@ class migration extends migration_dbconnection
             if($requirementsList[$i]->requirement == "PLAYER_HAS_ITEM")                       { $requirement = "PLAYER_HAS_ITEM";                       $content_id = $maps->items[$requirementsList[$i]->requirement_detail_1]; }
             if($requirementsList[$i]->requirement == "PLAYER_HAS_TAGGED_ITEM")                { $requirement = "PLAYER_HAS_TAGGED_ITEM";                $content_id = $maps->items[$requirementsList[$i]->requirement_detail_1]; }
             if($requirementsList[$i]->requirement == "PLAYER_VIEWED_ITEM")                    { $requirement = "PLAYER_VIEWED_ITEM";                    $content_id = $maps->items[$requirementsList[$i]->requirement_detail_1];}
-            if($requirementsList[$i]->requirement == "PLAYER_VIEWED_NODE")                    { $requirement = "PLAYER_VIEWED_PLAQUE";                  $content_id = $maps->plaques[$requirementsList[$i]->requirement_detail_1];}
+            if($requirementsList[$i]->requirement == "PLAYER_VIEWED_NODE")                    { if($maps->plaques[$requirementsList[$i]->requirement_detail_1]) { $requirement = "PLAYER_VIEWED_PLAQUE"; $content_id = $maps->plaques[$requirementsList[$i]->requirement_detail_1]; } else { $requirement = "PLAYER_VIEWED_DIALOG_SCRIPT"; $content_id = $maps->scripts[$requirementsList[$i]->requirement_detail_1]; } }
             if($requirementsList[$i]->requirement == "PLAYER_VIEWED_NPC")                     { $requirement = "PLAYER_VIEWED_DIALOG";                  $content_id = $maps->dialogs[$requirementsList[$i]->requirement_detail_1];}
             if($requirementsList[$i]->requirement == "PLAYER_VIEWED_WEBPAGE")                 { $requirement = "PLAYER_VIEWED_WEB_PAGE";                $content_id = $maps->webpages[$requirementsList[$i]->requirement_detail_1];}
             if($requirementsList[$i]->requirement == "PLAYER_HAS_UPLOADED_MEDIA_ITEM")        { $requirement = "PLAYER_HAS_UPLOADED_MEDIA_ITEM";        }

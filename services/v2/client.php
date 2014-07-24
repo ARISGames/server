@@ -382,7 +382,7 @@ class client extends dbconnection
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'COMPLETE_QUEST', '{$pack->quest_id}', CURRENT_TIMESTAMP);");
-        client::checkForCascadingLogs($pack);
+        if(!$pack->silent) client::checkForCascadingLogs($pack);
         return new return_package(0);
     }
 
@@ -425,12 +425,19 @@ class client extends dbconnection
         $questQueryPack = new stdClass();
         $questQueryPack->game_id = $pack->game_id;
         $questQueryPack->auth = $pack->auth;
+        $questQueryPack->silent = true; //logPlayerCompletedQuest would otherwise recursively call this function. Might as well save it for the end.
+        $dirty = false;
         for($i = 0; $i < count($incompleteQuests); $i++)
         {
             $reqQueryPack->requirement_root_package_id = $incompleteQuests[$i]->complete_requirement_root_package;
             $questQueryPack->quest_id = $incompleteQuests[$i]->quest_id;
-            if(requirements::evaluateRequirementPackagePack($reqQueryPack)) client::logPlayerCompletedQuestPack($questQueryPack);
+            if(requirements::evaluateRequirementPackagePack($reqQueryPack))
+            {
+                client::logPlayerCompletedQuestPack($questQueryPack);
+                $dirty = true;
+            }
         }
+        if($dirty) client::checkForCascadingLogs($pack); //log changed, potentially requiring more logs
     }
 }
 
