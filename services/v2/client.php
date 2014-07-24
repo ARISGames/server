@@ -156,6 +156,32 @@ class client extends dbconnection
         return new return_package(0,$retObj);
     }
 
+    //an odd request...
+    //Creates player-owned instances for every item not already player-instantiated, with qty = 0. Makes qty transactions a million times easier.
+    public static function touchItemsForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::touchItemsForPlayerPack($glob); }
+    public static function touchItemsForPlayerPack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        $items = dbconnection::queryArray("SELECT * FROM items WHERE game_id = '{$pack->game_id}'");
+        $instances = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_id = '{$pack->auth->user_id}'");
+
+        for($i = 0; $i < count($items); $i++)
+        {
+            $exists = false;
+            for($j = 0; $j < count($instances); $j++)
+            {
+                if($items[$i]->item_id == $instances[$j]->object_id)
+                    $exists = true;
+            }
+            if(!$exists)
+                dbconnection::queryInsert("INSERT INTO instances (game_id, object_type, object_id, qty, owner_id, created) VALUES ('{$pack->game_id}', 'ITEM', '{$items[$i]->item_id}', 0, '{$pack->auth->user_id}', CURRENT_TIMESTAMP)");
+        }
+
+        return new return_package(0);
+    }
+
+
     public static function getLogsForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getLogsForPlayerPack($glob); }
     public static function getLogsForPlayerPack($pack)
     {
@@ -266,6 +292,15 @@ class client extends dbconnection
         return new return_package(0, $playerOptions);
     }
 
+    public static function setQtyForInstance($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::setQtyForInstancePack($glob); }
+    public static function setQtyForInstancePack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        dbconnection::query("UPDATE instances SET qty = '{$pack->qty}' WHERE instance_id = '{$pack->instance_id}'");
+        return new return_package(0);
+    }
+
     public static function logPlayerResetGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::logPlayerResetGamePack($glob); }
     public static function logPlayerResetGamePack($pack)
     {
@@ -348,6 +383,24 @@ class client extends dbconnection
 
         dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'COMPLETE_QUEST', '{$pack->quest_id}', CURRENT_TIMESTAMP);");
         client::checkForCascadingLogs($pack);
+        return new return_package(0);
+    }
+
+    public static function logPlayerReceivedItem($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::logPlayerReceivedItemPack($glob); }
+    public static function logPlayerReceivedItemPack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, qty, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'RECEIVE_ITEM', '{$pack->item_id}', '{$pack->qty}', CURRENT_TIMESTAMP);");
+        return new return_package(0);
+    }
+
+    public static function logPlayerLostItem($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::logPlayerLostItemPack($glob); }
+    public static function logPlayerLostItemPack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, qty, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'LOSE_ITEM', '{$pack->item_id}', '{$pack->qty}', CURRENT_TIMESTAMP);");
         return new return_package(0);
     }
 
