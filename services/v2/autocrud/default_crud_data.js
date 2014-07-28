@@ -819,5 +819,84 @@ var CRUD_DEFAULTS = [
           "tab_id":123\n\
         }\n\
         '
+},
+{
+    "service":"factories",
+    "create":"factories.createFactory",
+    "get":"factories.getFactory",
+    "update":"factories.updateFactory",
+    "delete":"factories.deleteFactory",
+    "createData":
+        '\
+        {\n\
+          "game_id":123,\n\
+          "name":"MyFactory",\n\
+          "description":"This is my factory",\n\
+          "object_type":"ITEM",\n\
+          "object_id":123,\n\
+          "seconds_per_production":10,\n\
+          "production_probability":0.5,\n\
+          "max_production":100,\n\
+          "produce_expiration_time":20,\n\
+          "produce_expire_on_view":1,\n\
+          "production_bound_type":"PER_PLAYER",\n\
+          "location_bound_type":"PLAYER",\n\
+          "min_production_distance":5,\n\
+          "max_production_distance":10,\n\
+          "requirement_root_package_id":123,\n\
+          "trigger_latitude":0.0,\n\
+          "trigger_longitude":0.0,\n\
+          "trigger_distance":3,\n\
+          "trigger_on_enter":0,\n\
+          "trigger_hidden":0,\n\
+          "trigger_wiggle":1,\n\
+          "trigger_title":"My Produced Trigger",\n\
+          "trigger_icon_media_id":123,\n\
+          "trigger_show_title":1,\n\
+          "trigger_requirement_root_package_id":123\n\
+        }\n\
+        ',
+    "getData":
+        '\
+        {\n\
+          "factory_id":123\n\
+        }\n\
+        ',
+    "updateData":
+        '\
+        {\n\
+          "factory_id":123,\n\
+          "name":"MyFactory",\n\
+          "description":"This is my factory",\n\
+          "object_type":"ITEM",\n\
+          "object_id":123,\n\
+          "seconds_per_production":10,\n\
+          "production_probability":0.5,\n\
+          "max_production":100,\n\
+          "produce_expiration_time":20,\n\
+          "produce_expire_on_view":1,\n\
+          "production_bound_type":"PER_PLAYER",\n\
+          "location_bound_type":"PLAYER",\n\
+          "min_production_distance":5,\n\
+          "max_production_distance":10,\n\
+          "requirement_root_package_id":123,\n\
+          "trigger_latitude":0.0,\n\
+          "trigger_longitude":0.0,\n\
+          "trigger_distance":3,\n\
+          "trigger_on_enter":0,\n\
+          "trigger_hidden":0,\n\
+          "trigger_wiggle":1,\n\
+          "trigger_title":"My Produced Trigger",\n\
+          "trigger_icon_media_id":123,\n\
+          "trigger_show_title":1,\n\
+          "trigger_requirement_root_package_id":123\n\
+        }\n\
+        ',
+    "deleteData":
+        '\
+        {\n\
+          "factory_id":123\n\
+        }\n\
+        '
 }
 ];
