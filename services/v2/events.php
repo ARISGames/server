@@ -24,6 +24,14 @@ class events extends dbconnection
             ")"
         );
 
+        for($i = 0; $pack->events && $i < count($pack->events); $i++)
+        {
+            $pack->events[$i]->event_package_id = $pack->event_package_id;
+            $pack->events[$i]->game_id = $pack->game_id;
+            $pack->events[$i]->auth = $pack->auth;
+            events::createEventPack($pack->events[$i]);
+        }
+
         return events::getEventPackagePack($pack);
     }
 
@@ -71,6 +79,44 @@ class events extends dbconnection
             "last_updated = CURRENT_TIMESTAMP ".
             "WHERE event_package_id = '".addslashes($pack->event_package_id)."'"
         );
+
+        $auth = $pack->auth; //save for later (getEventPackagePack unsets it)
+        $reqEvents = $pack->events;
+        $curEvents = events::getEventPackagePack($pack)->data->events;
+
+        $eventsToDelete = array();
+        $eventsToAdd = array();
+        $eventsToUpdate = array();
+        for($i = 0; $i < count($curEvents); $i++)
+        {
+            $found = false;
+            for($j = 0; $j < count($reqEvents); $j++)
+            {
+                if($curEvents[$i]->event_id == $reqEvents[$j]->event_id)
+                {
+                    $eventsToUpdate[] = $reqEvents[$j];
+                    $found = true;
+                }
+            }
+            if(!$found) $eventsToDelete[] = $curEvents[$i];
+        }
+        for($i = 0; $i < count($reqEvents); $i++)
+        {
+            $found = false;
+            for($j = 0; $j < count($curEvents); $j++)
+            {
+                if($reqEvents[$i]->event_id == $curEvents[$j]->event_id)
+                    $found = true;
+            }
+            if(!$found) $eventsToAdd[] = $reqEvents[$i];
+        }
+
+        for($i = 0; $i < count($eventsToDelete); $i++)
+        { $eventsToDelete[$i]->auth = $auth; events::deleteEventPack($eventsToDelete[$i]); }
+        for($i = 0; $i < count($eventsToUpdate); $i++)
+        { $eventsToUpdate[$i]->auth = $auth; events::updateEventPack($eventsToUpdate[$i]); }
+        for($i = 0; $i < count($eventsToAdd); $i++)
+        { $eventsToAdd[$i]->event_package_id = $pack->event_package_id; $eventsToAdd[$i]->auth = $auth; events::createEventPack($eventsToAdd[$i]); }
 
         return events::getEventPackagePack($pack);
     }
