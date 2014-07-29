@@ -539,8 +539,8 @@ class migration extends migration_dbconnection
         for($i = 0; $i < count($requirements); $i++)
         {
             if($requirements[$i]->content_type == "Node")          $typeGroup = &$rGroupings->dialogOptions;
-            if($requirements[$i]->content_type == "QuestDisplay")  $typeGroup = &$rGroupings->questCompletes;
-            if($requirements[$i]->content_type == "QuestComplete") $typeGroup = &$rGroupings->questDisplays;
+            if($requirements[$i]->content_type == "QuestDisplay")  $typeGroup = &$rGroupings->questDisplays;
+            if($requirements[$i]->content_type == "QuestComplete") $typeGroup = &$rGroupings->questCompletes;
             if($requirements[$i]->content_type == "Location")      $typeGroup = &$rGroupings->triggers;
             if($requirements[$i]->content_type == "CustomMap")     $typeGroup = &$rGroupings->overlays;
             if($requirements[$i]->content_type == "Tab")           $typeGroup = &$rGroupings->tabs;
