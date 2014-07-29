@@ -106,6 +106,7 @@ class migration extends migration_dbconnection
         //$maps->notes = migration::migrateNotes($v1GameId, $v2GameId, $maps); //don't migrate notes for now... (we'll get into if we should later)
         $maps->quests = migration::migrateQuests($v1GameId, $v2GameId, $maps);
         $maps->events = migration::migrateEvents($v1GameId, $v2GameId, $maps);
+        $maps->factories = migration::migrateFactories($v1GameId, $v2GameId, $maps);
 
         $sceneId = migration_dbconnection::queryInsert("INSERT INTO scenes (game_id, name, created) VALUES ('{$v2GameId}', 'Main Scene', CURRENT_TIMESTAMP)","v2");
         $triggerMaps = migration::migrateTriggers($v1GameId, $v2GameId, $sceneId, $maps);
@@ -380,6 +381,26 @@ class migration extends migration_dbconnection
             migration_dbconnection::queryInsert("INSERT INTO events (game_id, event_package_id, event, content_id, qty, created) VALUES ('{$gameId}', '{$event_package_id}', '{$eventsList[$i]->action}','{$maps->items[$eventsList[$i]->action_detail]}','{$eventsList[$i]->action_amount}',CURRENT_TIMESTAMP)","v2");
 
         return $event_package_id;
+    }
+
+    public function migrateFactories($v1GameId, $v2GameId, $maps)
+    {
+        $factoryIdMap = array();
+        $factoryIdMap[0] = 0;
+
+        $factories = migration_dbconnection::queryArray("SELECT * FROM spawnables WHERE game_id = '{$v1GameId}'","v1");
+        for($i = 0; $i < count($factories); $i++)
+        {
+            $factoryIdMap[$factories[$i]->factory_id] = 0; //set it to 0 in case of failure
+            $type = ""; $id = 0;
+            if($factories[$i]->type == "Node")    { $type = "PLAQUE";   $id = $maps->plaques[$factories[$i]->type_id]; }
+            if($factories[$i]->type == "Item")    { $type = "ITEM";     $id = $maps->items[$factories[$i]->type_id]; }
+            if($factories[$i]->type == "Npc")     { $type = "DIALOG";   $id = $maps->dialogs[$factories[$i]->type_id]; }
+            if($factories[$i]->type == "WebPage") { $type = "WEB_PAGE"; $id = $maps->webpages[$factories[$i]->type_id]; }
+            $newfactoryId = migration_dbconnection::queryInsert("INSERT INTO factories (game_id, name, description, object_type, object_id, seconds_per_production, production_probability, max_production, produce_expiration_time, produce_expire_on_view, production_bound_type, location_bound_type, min_production_distance, max_production_distance, trigger_latitude, trigger_longitude, trigger_distance, trigger_on_enter, trigger_hidden, trigger_wiggle, trigger_title, trigger_show_title, created) VALUES ('{$v2GameId}', 'My Factory', '', '{$type}', '{$id}', '{$factories[$i]->spawn_rate}', '{$factories[$i]->spawn_probability}', '{$factories[$i]->amount}', '{$factories[$i]->time_to_live}', '{$factories[$i]->delete_when_viewed}', '{$factories[$i]->amount_restriction}', '{$factories[$i]->location_bound_type}', '{$factories[$i]->min_area}', '{$factories[$i]->max_area}', '{$factories[$i]->latitude}', '{$factories[$i]->longitude}', '{$factories[$i]->error_range}', '{$factories[$i]->force_view}', '{$factories[$i]->hidden}', '{$factories[$i]->wiggle}', '{$factories[$i]->location_name}', '{$factories[$i]->show_title}', CURRENT_TIMESTAMP)", "v2");
+            $factoryIdMap[$factories[$i]->factory_id] = $newfactoryId;
+        }
+        return $factoryIdMap;
     }
 
     public function migrateTriggers($v1GameId, $v2GameId, $sceneId, $maps)
