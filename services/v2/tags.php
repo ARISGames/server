@@ -181,6 +181,28 @@ class tags extends dbconnection
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM tags WHERE tag_id = '{$pack->tag_id}' LIMIT 1");
+        //cleanup
+        $tags = dbconnection::queryArray("SELECT * FROM object_tags WHERE tag_id = '{$pack->tag_id}'");
+        for($i = 0; $i < count($tags); $i++)
+        {
+            $pack->object_tag_id = $tags[$i]->object_tag_id;
+            tags::deleteObjectTagPack($pack);
+        }
+
+        $reqAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement = 'PLAYER_HAS_TAGGED_ITEM' AND content_id = '{$pack->tag_id}'");
+        for($i = 0; $i < count($reqAtoms); $i++)
+        {
+            $pack->requirement_atom_id = $reqAtoms[$i]->requirement_atom_id;
+            requirements::deleteRequirementAtomPack($pack);
+        }
+
+        $reqAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement = 'PLAYER_HAS_NOTE_WITH_TAG' AND content_id = '{$pack->tag_id}'");
+        for($i = 0; $i < count($reqAtoms); $i++)
+        {
+            $pack->requirement_atom_id = $reqAtoms[$i]->requirement_atom_id;
+            requirements::deleteRequirementAtomPack($pack);
+        }
+
         return new return_package(0);
     }
 

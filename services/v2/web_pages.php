@@ -86,11 +86,55 @@ class web_pages extends dbconnection
     public static function deleteWebPage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return web_pages::deleteWebPagePack($glob); }
     public static function deleteWebPagePack($pack)
     {
-        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM web_pages WHERE web_page_id = '{$pack->web_page_id}'")->game_id;
+        $webpage = dbconnection::queryObject("SELECT * FROM web_pages WHERE web_page_id = '{$pack->web_page_id}'");
+        $pack->auth->game_id = $webpage->game_id;
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM web_pages WHERE web_page_id = '{$pack->web_page_id}' LIMIT 1");
+        //cleanup
+        $options = dbconnection::queryArray("SELECT * FROM dialog_options WHERE link_type = 'EXIT_TO_WEB_PAGE' AND link_id = '{$pack->web_page_id}'");
+        for($i = 0; $i < count($options); $i++)
+        {
+            $pack->dialog_option_id = $options[$i]->dialog_option_id;
+            dialogs::deleteDialogOptionPack($pack);
+        }
+    
+        $tabs = dbconnection::queryArray("SELECT * FROM tabs WHERE type = 'WEB_PAGE' AND tab_detail_1 = '{$pack->web_page_id}'");
+        for($i = 0; $i < count($tabs); $i++)
+        {
+            $pack->tab_id = $tabs[$i]->tab_id;
+            tabs::deleteTabPack($pack);
+        }
+
+        $tags = dbconnection::queryArray("SELECT * FROM object_tags WHERE object_type = 'WEB_PAGE' AND object_id = '{$pack->web_page_id}'");
+        for($i = 0; $i < count($tags); $i++)
+        {
+            $pack->object_tag_id = $tags[$i]->object_tag_id;
+            tags::deleteObjectTagPack($pack);
+        }
+
+        $instances = dbconnection::queryArray("SELECT * FROM instances WHERE object_type = 'WEB_PAGE' AND object_id = '{$pack->web_page_id}'");
+        for($i = 0; $i < count($instances); $i++)
+        {
+            $pack->instance_id = $instances[$i]->instance_id;
+            instances::deleteInstancePack($pack);
+        }
+
+        $factories = dbconnection::queryArray("SELECT * FROM factories WHERE object_type = 'WEB_PAGE' AND object_id = '{$pack->web_page_id}'");
+        for($i = 0; $i < count($factories); $i++)
+        {
+            $pack->factory_id = $factories[$i]->factory_id;
+            factories::deleteFactoryPack($pack);
+        }
+
+        $reqAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement = 'PLAYER_VIEWED_WEB_PAGE' AND content_id = '{$pack->web_page_id}'");
+        for($i = 0; $i < count($reqAtoms); $i++)
+        {
+            $pack->requirement_atom_id = $reqAtoms[$i]->requirement_atom_id;
+            requirements::deleteRequirementAtomPack($pack);
+        }
+
         return new return_package(0);
     }
 }

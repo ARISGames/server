@@ -170,11 +170,41 @@ class factories extends dbconnection
     public static function deleteFactory($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return factories::deleteFactoryPack($glob); }
     public static function deleteFactoryPack($pack)
     {
-        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM factories WHERE factory_id = '{$pack->factory_id}'")->game_id;
+        $factory = dbconnection::queryObject("SELECT * FROM factories WHERE factory_id = '{$pack->factory_id}'");
+        $pack->auth->game_id = $factory->game_id;
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM factories WHERE factory_id = '{$pack->factory_id}' LIMIT 1");
+        //cleanup
+        $instances = dbconnection::queryArray("SELECT * FROM instances WHERE factory_id = '{$pack->factory_id}'");
+        for($i = 0; $i < count($instances); $i++)
+        {
+            $pack->instance_id = $instances[$i]->instance_id;
+            instances::deleteInstancePack($pack);
+        }
+
+        $instances = dbconnection::queryArray("SELECT * FROM instances WHERE object_type = 'FACTORY' AND object_id = '{$pack->factory_id}'");
+        for($i = 0; $i < count($instances); $i++)
+        {
+            $pack->instance_id = $instances[$i]->instance_id;
+            instances::deleteInstancePack($pack);
+        }
+
+        $reqPack = dbconnection::queryObject("SELECT * FROM requirement_root_packages WHERE requirement_root_package_id = '{$factory->requirement_root_package_id}'");
+        if($reqPack)
+        {
+            $pack->requirement_root_package_id = $reqPack->requirement_root_package_id;
+            requirements::deleteRequirementPackagePack($pack);
+        }
+
+        $reqPack = dbconnection::queryObject("SELECT * FROM requirement_root_packages WHERE requirement_root_package_id = '{$factory->trigger_requirement_root_package_id}'");
+        if($reqPack)
+        {
+            $pack->requirement_root_package_id = $reqPack->requirement_root_package_id;
+            requirements::deleteRequirementPackagePack($pack);
+        }
+
         return new return_package(0);
     }
 }

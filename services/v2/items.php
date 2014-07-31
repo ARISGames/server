@@ -114,11 +114,74 @@ class items extends dbconnection
     public static function deleteItem($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return items::deleteItemPack($glob); }
     public static function deleteItemPack($pack)
     {
-        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM items WHERE item_id = '{$pack->item_id}'")->game_id;
+        $item = dbconnection::queryObject("SELECT * FROM items WHERE item_id = '{$pack->item_id}'");
+        $pack->auth->game_id = $item->game_id;
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM items WHERE item_id = '{$pack->item_id}' LIMIT 1");
+        //cleanup
+        $options = dbconnection::queryArray("SELECT * FROM dialog_options WHERE link_type = 'EXIT_TO_ITEM' AND link_id = '{$pack->item_id}'");
+        for($i = 0; $i < count($options); $i++)
+        {
+            $pack->dialog_option_id = $options[$i]->dialog_option_id;
+            dialogs::deleteDialogOptionPack($pack);
+        }
+    
+        $tabs = dbconnection::queryArray("SELECT * FROM tabs WHERE type = 'ITEM' AND tab_detail_1 = '{$pack->item_id}'");
+        for($i = 0; $i < count($tabs); $i++)
+        {
+            $pack->tab_id = $tabs[$i]->tab_id;
+            tabs::deleteTabPack($pack);
+        }
+
+        $tags = dbconnection::queryArray("SELECT * FROM object_tags WHERE object_type = 'ITEM' AND object_id = '{$pack->item_id}'");
+        for($i = 0; $i < count($tags); $i++)
+        {
+            $pack->object_tag_id = $tags[$i]->object_tag_id;
+            tags::deleteObjectTagPack($pack);
+        }
+
+        $instances = dbconnection::queryArray("SELECT * FROM instances WHERE object_type = 'ITEM' AND object_id = '{$pack->item_id}'");
+        for($i = 0; $i < count($instances); $i++)
+        {
+            $pack->instance_id = $instances[$i]->instance_id;
+            instances::deleteInstancePack($pack);
+        }
+
+        $factories = dbconnection::queryArray("SELECT * FROM factories WHERE object_type = 'ITEM' AND object_id = '{$pack->item_id}'");
+        for($i = 0; $i < count($factories); $i++)
+        {
+            $pack->factory_id = $factories[$i]->factory_id;
+            factories::deleteFactoryPack($pack);
+        }
+
+        $events = dbconnection::queryArray("SELECT * FROM events WHERE (event = 'GIVE_ITEM' OR event = 'TAKE_ITEM') AND content_id = '{$pack->item_id}'");
+        for($i = 0; $i < count($events); $i++)
+        {
+            $pack->event_id = $events[$i]->event_id;
+            events::deleteEventPack($pack);
+        }
+
+        $reqAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement = 'PLAYER_VIEWED_ITEM' AND content_id = '{$pack->item_id}'");
+        for($i = 0; $i < count($reqAtoms); $i++)
+        {
+            $pack->requirement_atom_id = $reqAtoms[$i]->requirement_atom_id;
+            requirements::deleteRequirementAtomPack($pack);
+        }
+        $reqAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement = 'PLAYER_HAS_ITEM' AND content_id = '{$pack->item_id}'");
+        for($i = 0; $i < count($reqAtoms); $i++)
+        {
+            $pack->requirement_atom_id = $reqAtoms[$i]->requirement_atom_id;
+            requirements::deleteRequirementAtomPack($pack);
+        }
+        $reqAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement = 'PLAYER_HAS_TAGGED_ITEM' AND content_id = '{$pack->item_id}'");
+        for($i = 0; $i < count($reqAtoms); $i++)
+        {
+            $pack->requirement_atom_id = $reqAtoms[$i]->requirement_atom_id;
+            requirements::deleteRequirementAtomPack($pack);
+        }
+
         return new return_package(0);
     }
 }

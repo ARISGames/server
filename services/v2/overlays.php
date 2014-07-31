@@ -114,11 +114,20 @@ class overlays extends dbconnection
     public static function deleteOverlay($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return overlays::deleteOverlayPack($glob); }
     public static function deleteOverlayPack($pack)
     {
-        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM overlays WHERE overlay_id = '{$pack->overlay_id}'")->game_id;
+        $overlay = dbconnection::queryObject("SELECT * FROM overlays WHERE overlay_id = '{$pack->overlay_id}'");
+        $pack->auth->game_id = $overlay->game_id;
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM overlays WHERE overlay_id = '{$pack->overlay_id}' LIMIT 1");
+        //cleanup
+        $reqPack = dbconnection::queryObject("SELECT * FROM requirement_root_packages WHERE requirement_root_package_id = '{$overlay->requirement_root_package_id}'");
+        if($reqPack)
+        {
+            $pack->requirement_root_package_id = $reqPack->requirement_root_package_id;
+            requirements::deleteRequirementRootPackagePack($pack);
+        }
+
         return new return_package(0);
     }
 }

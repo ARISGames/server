@@ -83,6 +83,23 @@ class scenes extends dbconnection
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM scenes WHERE scene_id = '{$pack->scene_id}' LIMIT 1");
+        //cleanup
+        dbconnection::query("UPDATE games SET intro_scene_id = 0 WHERE intro_scene_id = '{$pack->scene_id}'");
+
+        $triggers = dbconnection::queryArray("SELECT * FROM triggers WHERE scene_id  = '{$pack->scene_id}'");
+        for($i = 0; $i < count($triggers); $i++)
+        {
+            $pack->trigger_id = $triggers[$i]->trigger_id;
+            triggers::deleteTriggerPack($pack);
+        }
+
+        $instances = dbconnection::queryArray("SELECT * FROM instances WHERE object_type = 'SCENE' AND object_id = '{$pack->scene_id}'");
+        for($i = 0; $i < count($instances); $i++)
+        {
+            $pack->instance_id = $instances[$i]->instance_id;
+            instances::deleteInstancePack($pack);
+        }
+
         return new return_package(0);
     }
 }

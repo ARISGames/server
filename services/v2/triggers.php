@@ -159,11 +159,27 @@ class triggers extends dbconnection
     public static function deleteTrigger($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return triggers::deleteTriggerPack($glob); }
     public static function deleteTriggerPack($pack)
     {
-        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM triggers WHERE trigger_id = '{$pack->trigger_id}'")->game_id;
+        $trigger = dbconnection::queryObject("SELECT * FROM triggers WHERE trigger_id = '{$pack->trigger_id}'");
+        $pack->auth->game_id = $trigger->game_id;
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM triggers WHERE trigger_id = '{$pack->trigger_id}' LIMIT 1");
+        //cleanup
+        $instances = dbconnection::queryArray("SELECT * FROM instances WHERE instance_id = '{$trigger->instance_id}'");
+        for($i = 0; $i < count($instances); $i++)
+        {
+            $pack->instance_id = $instances[$i]->instance_id;
+            instances::deleteInstancePack($pack);
+        }
+
+        $reqPack = dbconnection::queryObject("SELECT * FROM requirement_root_packages WHERE requirement_root_package_id = '{$trigger->requirement_root_package_id}'");
+        if($reqPack)
+        {
+            $pack->requirement_root_package_id = $reqPack->requirement_root_package_id;
+            requirements::deleteRequirementRootPackagePack($pack);
+        }
+
         return new return_package(0);
     }
 }

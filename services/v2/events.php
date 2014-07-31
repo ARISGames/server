@@ -216,6 +216,30 @@ class events extends dbconnection
         return new return_package(0,$events);
     }
 
+    public static function deleteEventPackage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return events::deleteEventPackagePack($glob); }
+    public static function deleteEventPackagePack($pack)
+    {
+        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM events WHERE event_id = '{$pack->event_id}'")->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        dbconnection::query("DELETE FROM events_packages WHERE event_package_id = '{$pack->event_package_id}' LIMIT 1");
+        //cleanup
+        $events = dbconnection::queryArray("SELECT * FROM events WHERE event_package_id = '{$pack->event_package_id}'");
+        for($i = 0; $i < count($events); $i++)
+        {
+            $pack->event_id = $events[$i]->event_id;
+            events::deleteEventPack($pack);
+        }
+
+        dbconnection::query("UPDATE dialog_scripts SET event_package_id = 0 WHERE event_package_id = '{$pack->event_package_id}'");
+        dbconnection::query("UPDATE plaques SET event_package_id = 0 WHERE event_package_id = '{$pack->event_package_id}'");
+        dbconnection::query("UPDATE quests SET active_event_package_id = 0 WHERE active_event_package_id = '{$pack->event_package_id}'");
+        dbconnection::query("UPDATE quests SET complete_event_package_id = 0 WHERE complete_event_package_id = '{$pack->event_package_id}'");
+
+        return new return_package(0);
+    }
+
     public static function deleteEvent($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return events::deleteEventPack($glob); }
     public static function deleteEventPack($pack)
     {

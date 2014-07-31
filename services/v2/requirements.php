@@ -304,14 +304,14 @@ class requirements extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
          
+        dbconnection::query("DELETE FROM requirement_root_packages WHERE requirement_root_package_id = '{$pack->requirement_root_package_id}'");
+        //cleanup
         $sql_andPacks = dbconnection::queryArray("SELECT * FROM requirement_and_packages WHERE requirement_root_package_id = '{$pack->requirement_root_package_id}'");
         for($i = 0; $i < count($sql_andPacks); $i++)
         {
             $sql_andPacks[$i]->auth = $pack->auth;
             requirements::deleteRequirementAndPackagePack($sql_andPacks[$i]);
         }
-        dbconnection::query("DELETE FROM requirement_root_packages WHERE requirement_root_package_id = '{$pack->requirement_root_package_id}'");
-
         dbconnection::query("UPDATE quests SET complete_requirement_root_package_id = 0 WHERE game_id = '{$gameId}' AND complete_requirement_root_package_id = '{$requirementPackageId}'");
         dbconnection::query("UPDATE quests SET display_requirement_root_package_id = 0 WHERE game_id = '{$gameId}' AND display_requirement_root_package_id = '{$requirementPackageId}'");
         dbconnection::query("UPDATE locations SET requirement_root_package_id = 0 WHERE game_id = '{$gameId}' AND requirement_root_package_id = '{$requirementPackageId}'");
@@ -327,13 +327,14 @@ class requirements extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
+        dbconnection::query("DELETE FROM requirement_and_packages WHERE requirement_and_package_id = '{$pack->requirement_and_package_id}'");
+        //cleanup
         $sql_packAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement_and_package_id = '{$pack->requirement_and_package_id}'");
         for($i = 0; $i < count($sql_packAtoms); $i++)
         {
             $sql_packAtoms[$i]->auth = $pack->auth;
             requirements::deleteRequirementAtomPack($sql_packAtoms[$i]);
         }
-        dbconnection::query("DELETE FROM requirement_and_packages WHERE requirement_and_package_id = '{$pack->requirement_and_package_id}'");
         return new return_package(0);
     }
 

@@ -156,6 +156,27 @@ class media extends dbconnection
             return new return_package(1, "Could not delete file.");
 
         dbconnection::query("DELETE FROM media WHERE media_id = '{$pack->media_id}' LIMIT 1");
+        //cleanup
+        dbconnection::query("UPDATE games SET media_id = 0 WHERE media_id = '{$pack->media_id}'");
+        dbconnection::query("UPDATE games SET icon_media_id = 0 WHERE icon_media_id = '{$pack->media_id}'");
+        dbconnection::query("UPDATE tabs SET icon_media_id = 0 WHERE icon_media_id = '{$pack->media_id}'");
+        dbconnection::query("UPDATE items SET media_id = 0 WHERE media_id = '{$pack->media_id}'");
+        dbconnection::query("UPDATE items SET icon_media_id = 0 WHERE icon_media_id = '{$pack->media_id}'");
+        dbconnection::query("UPDATE dialogs SET icon_media_id = 0 WHERE icon_media_id = '{$pack->media_id}'");
+        dbconnection::query("UPDATE dialog_characters SET media_id = 0 WHERE media_id = '{$pack->media_id}'");
+        dbconnection::query("UPDATE plaques SET media_id = 0 WHERE media_id = '{$pack->media_id}'");
+        dbconnection::query("UPDATE plaques SET icon_media_id = 0 WHERE icon_media_id = '{$pack->media_id}'");
+        dbconnection::query("UPDATE web_pages SET icon_media_id = 0 WHERE icon_media_id = '{$pack->media_id}'");
+        dbconnection::query("UPDATE tags SET media_id = 0 WHERE media_id = '{$pack->media_id}'");
+        dbconnection::query("UPDATE overlays SET media_id = 0 WHERE media_id = '{$pack->media_id}'");
+        dbconnection::query("UPDATE note_media SET media_id = 0 WHERE media_id = '{$pack->media_id}'");
+        dbconnection::query("UPDATE quests SET active_media_id = 0 WHERE active_media_id = '{$pack->media_id}'");
+        dbconnection::query("UPDATE quests SET active_icon_media_id = 0 WHERE active_icon_media_id = '{$pack->media_id}'");
+        dbconnection::query("UPDATE quests SET complete_media_id = 0 WHERE complete_media_id = '{$pack->media_id}'");
+        dbconnection::query("UPDATE quests SET complete_icon_media_id = 0 WHERE complete_icon_media_id = '{$pack->media_id}'");
+        dbconnection::query("UPDATE triggers SET icon_media_id = 0 WHERE icon_media_id = '{$pack->media_id}'");
+        dbconnection::query("UPDATE factories SET trigger_icon_media_id = 0 WHERE trigger_icon_media_id = '{$pack->media_id}'");
+        dbconnection::query("UPDATE users SET media_id = 0 WHERE media_id = '{$pack->media_id}'");
         return new return_package(0);
     }
 }

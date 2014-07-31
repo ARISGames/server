@@ -1,6 +1,9 @@
 <?php
 require_once("dbconnection.php");
 require_once("editors.php");
+require_once("tabs.php");
+require_once("tags.php");
+require_once("instances.php");
 require_once("return_package.php");
 
 class dialogs extends dbconnection
@@ -95,6 +98,62 @@ class dialogs extends dbconnection
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM dialogs WHERE dialog_id = '{$pack->dialog_id}' LIMIT 1");
+        //cleanup
+        $scripts = dbconnection::queryArray("SELECT * FROM dialog_scripts WHERE dialog_id = '{$pack->dialog_id}'");
+        for($i = 0; $i < count($scripts); $i++)
+        {
+            $pack->dialog_script_id = $scripts[$i]->dialog_script_id;
+            dialogs::deleteDialogScriptPack($pack);
+        }
+
+        $options = dbconnection::queryArray("SELECT * FROM dialog_options WHERE dialog_id = '{$pack->dialog_id}'");
+        for($i = 0; $i < count($options); $i++)
+        {
+            $pack->dialog_option_id = $options[$i]->dialog_option_id;
+            dialogs::deleteDialogOptionPack($pack);
+        }
+        $options = dbconnection::queryArray("SELECT * FROM dialog_options WHERE link_type = 'EXIT_TO_DIALOG' AND link_id = '{$pack->dialog_id}'");
+        for($i = 0; $i < count($options); $i++)
+        {
+            $pack->dialog_option_id = $options[$i]->dialog_option_id;
+            dialogs::deleteDialogOptionPack($pack);
+        }
+    
+        $tabs = dbconnection::queryArray("SELECT * FROM tabs WHERE type = 'DIALOG' AND tab_detail_1 = '{$pack->dialog_id}'");
+        for($i = 0; $i < count($tabs); $i++)
+        {
+            $pack->tab_id = $tabs[$i]->tab_id;
+            tabs::deleteTabPack($pack);
+        }
+
+        $tags = dbconnection::queryArray("SELECT * FROM object_tags WHERE object_type = 'DIALOG' AND object_id = '{$pack->dialog_id}'");
+        for($i = 0; $i < count($tags); $i++)
+        {
+            $pack->object_tag_id = $tags[$i]->object_tag_id;
+            tags::deleteObjectTagPack($pack);
+        }
+
+        $instances = dbconnection::queryArray("SELECT * FROM instances WHERE object_type = 'DIALOG' AND object_id = '{$pack->dialog_id}'");
+        for($i = 0; $i < count($instances); $i++)
+        {
+            $pack->instance_id = $instances[$i]->instance_id;
+            instances::deleteInstancePack($pack);
+        }
+
+        $factories = dbconnection::queryArray("SELECT * FROM factories WHERE object_type = 'DIALOG' AND object_id = '{$pack->dialog_id}'");
+        for($i = 0; $i < count($factories); $i++)
+        {
+            $pack->factory_id = $factories[$i]->factory_id;
+            factories::deleteFactoryPack($pack);
+        }
+
+        $reqAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement = 'PLAYER_VIEWED_DIALOG' AND content_id = '{$pack->dialog_id}'");
+        for($i = 0; $i < count($reqAtoms); $i++)
+        {
+            $pack->requirement_atom_id = $reqAtoms[$i]->requirement_atom_id;
+            requirements::deleteRequirementAtomPack($pack);
+        }
+
         return new return_package(0);
     }
 
@@ -184,6 +243,8 @@ class dialogs extends dbconnection
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM dialog_characters WHERE dialog_character_id = '{$pack->dialog_character_id}' LIMIT 1");
+        //cleanup
+        dbconnection::query("UPDATE dialog_scripts SET dialog_character_id = 0 WHERE dialog_character_id = '{$pack->dialog_character_id}'");
         return new return_package(0);
     }
 
@@ -282,11 +343,42 @@ class dialogs extends dbconnection
     public static function deleteDialogScript($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::deleteDialogScriptPack($glob); }
     public static function deleteDialogScriptPack($pack)
     {
-        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM dialog_scripts WHERE dialog_script_id = '{$pack->dialog_script_id}'")->game_id;
+        $script = dbconnection::queryObject("SELECT * FROM dialog_scripts WHERE dialog_script_id = '{$pack->dialog_script_id}'");
+        $pack->auth->game_id = $script->game_id;
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM dialog_scripts WHERE dialog_script_id = '{$pack->dialog_script_id}' LIMIT 1");
+        //cleanup
+        dbconnection::query("UPDATE dialogs SET intro_dialog_script_id = 0 WHERE dialog_id = '{$script->dialog_id}' AND intro_dialog_script_id = '{$script->dialog_script_id}'");
+
+        $eventpack = dbconnection::queryObject("SELECT * FROM event_packages WHERE event_package_id = '{$script->event_package_id}'");
+        if($eventpack)
+        {
+            $pack->event_package_id = $eventpack->event_package_id;
+            events::deleteEventPackagePack($pack);
+        }
+
+        $options = dbconnection::queryArray("SELECT * FROM dialog_options WHERE parent_dialog_script_id = '{$script->dialog_script_id}'");
+        for($i = 0; $i < count($options); $i++)
+        {
+            $pack->dialog_option_id = $options[$i]->dialog_option_id;
+            dialogs::deleteDialogOptionPack($pack);
+        }
+        $options = dbconnection::queryArray("SELECT * FROM dialog_options WHERE link_type = 'DIALOG_SCRIPT' AND link_id = '{$script->dialog_script_id}'");
+        for($i = 0; $i < count($options); $i++)
+        {
+            $pack->dialog_option_id = $options[$i]->dialog_option_id;
+            dialogs::deleteDialogOptionPack($pack);
+        }
+
+        $reqAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement = 'PLAYER_VIEWED_DIALOG_SCRIPT' AND content_id = '{$pack->dialog_script_id}'");
+        for($i = 0; $i < count($reqAtoms); $i++)
+        {
+            $pack->requirement_atom_id = $reqAtoms[$i]->requirement_atom_id;
+            requirements::deleteRequirementAtomPack($pack);
+        }
+
         return new return_package(0);
     }
 
@@ -408,11 +500,20 @@ class dialogs extends dbconnection
     public static function deleteDialogOption($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::deleteDialogOptionPack($glob); }
     public static function deleteDialogOptionPack($pack)
     {
-        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM dialog_options WHERE dialog_option_id = '{$pack->dialog_option_id}'")->game_id;
+        $option = dbconnection::queryObject("SELECT * FROM dialog_options WHERE dialog_option_id = '{$pack->dialog_option_id}'");
+        $pack->auth->game_id = $option->game_id;
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM dialog_options WHERE dialog_option_id = '{$pack->dialog_option_id}' LIMIT 1");
+        //cleanup
+        $reqPack = dbconnection::queryObject("SELECT * FROM requirement_root_packages WHERE requirement_root_package_id = '{$option->requirement_root_package_id}'");
+        if($reqPack)
+        {
+            $pack->requirement_root_package_id = $reqPack->requirement_root_package_id;
+            requirements::deleteRequirementRootPackagePack($pack);
+        }
+
         return new return_package(0);
     }
 

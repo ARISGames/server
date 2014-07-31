@@ -147,11 +147,46 @@ class quests extends dbconnection
     public static function deleteQuest($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return quests::deleteQuestPack($glob); }
     public static function deleteQuestPack($pack)
     {
-        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM quests WHERE quest_id = '{$pack->quest_id}'")->game_id;
+        $quest = dbconnection::queryObject("SELECT * FROM quests WHERE quest_id = '{$pack->quest_id}'");
+        $pack->auth->game_id = $quest->game_id;
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM quests WHERE quest_id = '{$pack->quest_id}' LIMIT 1");
+        //cleanup
+        $reqAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement = 'PLAYER_HAS_COMPLETED_QUEST' AND content_id = '{$pack->quest_id}'");
+        for($i = 0; $i < count($reqAtoms); $i++)
+        {
+            $pack->requirement_atom_id = $reqAtoms[$i]->requirement_atom_id;
+            requirements::deleteRequirementAtomPack($pack);
+        }
+
+        $eventpack = dbconnection::queryObject("SELECT * FROM event_packages WHERE event_package_id = '{$quest->active_event_package_id}'");
+        if($eventpack)
+        {
+            $pack->event_package_id = $eventpack->event_package_id;
+            events::deleteEventPackagePack($pack);
+        }
+        $eventpack = dbconnection::queryObject("SELECT * FROM event_packages WHERE event_package_id = '{$quest->complete_event_package_id}'");
+        if($eventpack)
+        {
+            $pack->event_package_id = $eventpack->event_package_id;
+            events::deleteEventPackagePack($pack);
+        }
+
+        $reqPack = dbconnection::queryObject("SELECT * FROM requirement_root_packages WHERE requirement_root_package_id = '{$quest->active_requirement_root_package_id}'");
+        if($reqPack)
+        {
+            $pack->requirement_root_package_id = $reqPack->requirement_root_package_id;
+            requirements::deleteRequirementRootPackagePack($pack);
+        }
+        $reqPack = dbconnection::queryObject("SELECT * FROM requirement_root_packages WHERE requirement_root_package_id = '{$quest->complete_requirement_root_package_id}'");
+        if($reqPack)
+        {
+            $pack->requirement_root_package_id = $reqPack->requirement_root_package_id;
+            requirements::deleteRequirementRootPackagePack($pack);
+        }
+
         return new return_package(0);
     }
 }

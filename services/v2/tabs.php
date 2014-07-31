@@ -103,11 +103,27 @@ class tabs extends dbconnection
     public static function deleteTab($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return tabs::deleteTabPack($glob); }
     public static function deleteTabPack($pack)
     {
-        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM tabs WHERE tab_id = '{$pack->tab_id}'")->game_id;
+        $tab = dbconnection::queryObject("SELECT * FROM tabs WHERE tab_id = '{$pack->tab_id}'");
+        $pack->auth->game_id = $tab->game_id;
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM tabs WHERE tab_id = '{$pack->tab_id}' LIMIT 1");
+        //cleanup
+        $options = dbconnection::queryArray("SELECT * FROM dialog_options WHERE link_type = 'EXIT_TO_TAB' AND link_id = '{$pack->tab_id}'");
+        for($i = 0; $i < count($options); $i++)
+        {
+            $pack->dialog_option_id = $options[$i]->dialog_option_id;
+            dialogs::deleteDialogOptionPack($pack);
+        }
+
+        $reqPack = dbconnection::queryObject("SELECT * FROM requirement_root_packages WHERE requirement_root_package_id = '{$tab->requirement_root_package_id}'");
+        if($reqPack)
+        {
+            $pack->requirement_root_package_id = $reqPack->requirement_root_package_id;
+            requirements::deleteRequirementPackagePack($pack);
+        }
+        
         return new return_package(0);
     }
 }

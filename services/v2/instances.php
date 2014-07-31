@@ -105,6 +105,14 @@ class instances extends dbconnection
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM instances WHERE instance_id = '{$pack->instance_id}' LIMIT 1");
+        //cleanup
+        $triggers = dbconnection::queryArray("SELECT * FROM triggers WHERE instance_id = '{$pack->instance_id}'");
+        for($i = 0; $i < count($triggers); $i++)
+        {
+            $pack->trigger_id = $triggers[$i]->trigger_id;
+            triggers::deleteTrigger($pack);
+        }
+
         return new return_package(0);
     }
 }
