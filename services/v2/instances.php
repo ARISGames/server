@@ -59,12 +59,14 @@ class instances extends dbconnection
     {
         if(!$sql_instance) return $sql_instance;
         $instance = new stdClass();
-        $instance->instance_id = $sql_instance->instance_id;
-        $instance->game_id     = $sql_instance->game_id;
-        $instance->object_id   = $sql_instance->object_id;
-        $instance->object_type = $sql_instance->object_type;
-        $instance->factory_id  = $sql_instance->factory_id;
-        $instance->owner_id    = $sql_instance->owner_id;
+        $instance->instance_id  = $sql_instance->instance_id;
+        $instance->game_id      = $sql_instance->game_id;
+        $instance->object_type  = $sql_instance->object_type;
+        $instance->object_id    = $sql_instance->object_id;
+        $instance->qty          = $sql_instance->qty;
+        $instance->infinite_qty = $sql_instance->infinite_qty;
+        $instance->factory_id   = $sql_instance->factory_id;
+        $instance->owner_id     = $sql_instance->owner_id;
         return $instance;
     }
 
