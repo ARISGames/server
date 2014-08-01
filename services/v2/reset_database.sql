@@ -4,7 +4,7 @@ CREATE THE DATABASE
 DROP USER 'tmp_user'@'127.0.0.1';
 CREATE USER 'tmp_user'@'127.0.0.1' IDENTIFIED BY 'tmp_pass';
 DROP DATABASE IF EXISTS tmp_db;
-CREATE DATABASE tmp_db;
+CREATE DATABASE tmp_db DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_ci;
 GRANT ALL ON tmp_db.* TO 'tmp_user'@'127.0.0.1';
 USE tmp_db;
 

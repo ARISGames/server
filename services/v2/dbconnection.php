@@ -4,7 +4,7 @@ require_once('util.php');
 Class dbconnection
 {
   private static $con;
-  private static function connect()    { dbconnection::$con = mysqli_connect(Config::v2_host, Config::v2_db_user, Config::v2_db_pass, Config::v2_db); }
+  private static function connect()    { dbconnection::$con = mysqli_connect(Config::v2_host, Config::v2_db_user, Config::v2_db_pass, Config::v2_db); mysqli_set_charset(dbconnection::$con,'utf8'); }
   private static function disconnect() { mysqli_close(dbconnection::$con); }
 
   function __construct()
@@ -14,7 +14,7 @@ Class dbconnection
 
   protected static function query($query, $debug = false)
   {
-    if($debug) util::serverErrorLog($query);
+    if($debug) echo $query;
     if(!(mysqli_query(dbconnection::$con, $query)))
     {
         return false;
