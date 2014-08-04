@@ -5,7 +5,7 @@ abstract class Utils
 {
 	protected function connect()
 	{
-		$this->conn = @mysql_connect(Config::dbHost, Config::dbUser, Config::dbPass);
+		$this->conn = @mysql_connect(Config::v1_host, Config::v1_db_user, Config::v1_db_pass);
 		if (!$this->conn)
 		{
 			Utils::serverErrorLog("Problem Connecting to MySQL: " . mysql_error());
@@ -17,7 +17,7 @@ abstract class Utils
 	protected function query($query)
 	{
 		Utils::serverErrorLog("DCONNETION");
-		mysql_select_db(Config::dbSchema);
+		mysql_select_db(Config::v1_db);
 		if(mysql_error()) 
 		{
 			Utils::serverErrorLog("Error Selecting DB!\nError: ".mysql_error());

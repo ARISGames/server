@@ -22,11 +22,11 @@
         return params;
     }
 
-    function sendRequest(fn, params, method)
+    function sendRequest(serv, fn, params, method)
     {
         var xmlhttp;
         xmlhttp=new XMLHttpRequest();
-        xmlhttp.open(method,"http://dev.arisgames.org/server/json.php/"+fn,false);
+        xmlhttp.open(method,"http://"+serv+"arisgames.org/server/json.php/"+fn,false);
         xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
         xmlhttp.send(params); //Synchronous call
 
@@ -45,19 +45,19 @@
         var newPass    = document.getElementById('new_password').value;
         var newDisplay = document.getElementById('new_display').value;
         var newEmail   = document.getElementById('new_email').value;
-        var response = sendRequest('migration.migration.migrateUser/'+clientName+"/"+clientPass+"/"+editorName+"/"+editorPass+"/"+newName+"/"+newPass+"/"+newDisplay+"/"+newEmail, null, "GET");
+        var response = sendRequest('dev.','migration.migration.migrateUser/'+clientName+"/"+clientPass+"/"+editorName+"/"+editorPass+"/"+newName+"/"+newPass+"/"+newDisplay+"/"+newEmail, null, "GET");
         if(response.data) document.getElementById('body').innerHTML = "Success!";
         else              document.getElementById('body').innerHTML = response.returnCodeDescription;
     }
     function submitAuthOldEditor()
     {
-        var response = sendRequest('v1.editors.getToken/'+document.getElementById('old_editor_user').value+"/"+document.getElementById('old_editor_password').value+"/read_write", null, "GET");
+        var response = sendRequest('','v1.editors.getToken/'+document.getElementById('old_editor_user').value+"/"+document.getElementById('old_editor_password').value+"/read_write", null, "GET");
         oldEditorVerified = response.data != null;
         document.getElementById('auth_old_editor_verify').innerHTML = oldEditorVerified ? "VERIFIED" : "NOT VERIFIED";
     }
     function submitAuthOldClient()
     {
-        var response = sendRequest('v1.players.getLoginPlayerObject/'+document.getElementById('old_client_user').value+"/"+document.getElementById('old_client_password').value, null, "GET");
+        var response = sendRequest('','v1.players.getLoginPlayerObject/'+document.getElementById('old_client_user').value+"/"+document.getElementById('old_client_password').value, null, "GET");
         oldClientVerified = response.data != null;
         document.getElementById('auth_old_client_verify').innerHTML = oldClientVerified ? "VERIFIED" : "NOT VERIFIED";
     }

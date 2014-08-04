@@ -7,8 +7,8 @@ Class migration_dbconnection
   private static $v2_con;
   private static function connect()
   {
-      migration_dbconnection::$mig_con = mysqli_connect(Config::migration_host, Config::migration_db_user, Config::migration_db_pass, Config::migration_db);
-      migration_dbconnection::$v1_con = mysqli_connect(Config::dbHost, Config::dbUser, Config::dbPass, Config::dbSchema);
+      migration_dbconnection::$mig_con = mysqli_connect(Config::mig_host, Config::mig_db_user, Config::mig_db_pass, Config::mig_db);
+      migration_dbconnection::$v1_con = mysqli_connect(Config::v1_host, Config::v1_db_user, Config::v1_db_pass, Config::v1_db);
       migration_dbconnection::$v2_con = mysqli_connect(Config::v2_host, Config::v2_db_user, Config::v2_db_pass, Config::v2_db);
       //this is so dumb...
       mysqli_set_charset(migration_dbconnection::$mig_con,'utf8');
