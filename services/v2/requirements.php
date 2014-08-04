@@ -87,6 +87,7 @@ class requirements extends dbconnection
             (isset($pack->bool_operator) ? "bool_operator," : "").
             (isset($pack->requirement)   ? "requirement,"   : "").
             (isset($pack->content_id)    ? "content_id,"    : "").
+            (isset($pack->distance)      ? "distance,"      : "").
             (isset($pack->qty)           ? "qty,"           : "").
             (isset($pack->latitude)      ? "latitude,"      : "").
             (isset($pack->longitude)     ? "longitude,"     : "").
@@ -97,6 +98,7 @@ class requirements extends dbconnection
             (isset($pack->bool_operator) ? "'".addslashes($pack->bool_operator)."'," : "").
             (isset($pack->requirement)   ? "'".addslashes($pack->requirement  )."'," : "").
             (isset($pack->content_id)    ? "'".addslashes($pack->content_id   )."'," : "").
+            (isset($pack->distance)      ? "'".addslashes($pack->distance     )."'," : "").
             (isset($pack->qty)           ? "'".addslashes($pack->qty          )."'," : "").
             (isset($pack->latitude)      ? "'".addslashes($pack->latitude     )."'," : "").
             (isset($pack->longitude)     ? "'".addslashes($pack->longitude    )."'," : "").
@@ -225,6 +227,7 @@ class requirements extends dbconnection
             (isset($pack->bool_operator) ? ", bool_operator = '".addslashes($pack->bool_operator)."'" : "").
             (isset($pack->requirement)   ? ", requirement   = '".addslashes($pack->requirement  )."'" : "").
             (isset($pack->content_id)    ? ", content_id    = '".addslashes($pack->content_id   )."'" : "").
+            (isset($pack->distance)      ? ", distance      = '".addslashes($pack->distance     )."'" : "").
             (isset($pack->qty)           ? ", qty           = '".addslashes($pack->qty          )."'" : "").
             (isset($pack->latitude)      ? ", latitude      = '".addslashes($pack->latitude     )."'" : "").
             (isset($pack->longitude)     ? ", longitude     = '".addslashes($pack->longitude    )."'" : "").
@@ -289,6 +292,7 @@ class requirements extends dbconnection
         $atom->bool_operator              = $sql_atom->bool_operator;
         $atom->requirement                = $sql_atom->requirement;
         $atom->content_id                 = $sql_atom->content_id;
+        $atom->distance                   = $sql_atom->distance;
         $atom->qty                        = $sql_atom->qty;
         $atom->latitude                   = $sql_atom->latitude;
         $atom->longitude                  = $sql_atom->longitude;

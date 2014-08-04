@@ -136,6 +136,7 @@ var CRUD_DEFAULTS = [
                   "bool_operator":0,\n\
                   "requirement":"PLAYER_HAS_ITEM",\n\
                   "content_id":1,\n\
+                  "distance":4,\n\
                   "qty":4,\n\
                   "latitude":86.75309,\n\
                   "longitude":3.141592\n\
@@ -145,6 +146,7 @@ var CRUD_DEFAULTS = [
                   "bool_operator":1,\n\
                   "requirement":"PLAYER_HAS_ITEM",\n\
                   "content_id":2,\n\
+                  "distance":3,\n\
                   "qty":3,\n\
                   "latitude":86.75309,\n\
                   "longitude":3.141592\n\
@@ -160,6 +162,7 @@ var CRUD_DEFAULTS = [
                   "bool_operator":0,\n\
                   "requirement":"PLAYER_HAS_ITEM",\n\
                   "content_id":1,\n\
+                  "distance":4,\n\
                   "qty":4,\n\
                   "latitude":86.75309,\n\
                   "longitude":3.141592\n\
@@ -169,6 +172,7 @@ var CRUD_DEFAULTS = [
                   "bool_operator":1,\n\
                   "requirement":"PLAYER_HAS_ITEM",\n\
                   "content_id":2,\n\
+                  "distance":3,\n\
                   "qty":3,\n\
                   "latitude":86.75309,\n\
                   "longitude":3.141592\n\
