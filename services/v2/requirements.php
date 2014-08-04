@@ -394,7 +394,7 @@ class requirements extends dbconnection
     {
         $atoms = dbconnection::queryArray("SELECT requirement_atom_id FROM requirement_atoms WHERE requirement_and_package_id= '{$pack->requirement_and_package_id}'");
 
-        if(count($atoms) == 0) return true;
+        if(count($atoms) == 0) return false;
         for($i = 0; $i < count($atoms); $i++)
         {
             $atoms[$i]->user_id = $pack->user_id;

@@ -279,7 +279,7 @@ class migration extends migration_dbconnection
         $newIds->lastScriptId = $parentScriptId;
         
         //The case where no parsing is necessary 
-        if(!preg_match("@<\s*dialog(ue)?\s*(\w*=[\"']\w*[\"']\s*)*>(.*?)<\s*/\s*dialog(ue)?\s*>@is",$text,$matches))
+        if(!preg_match("@<\s*dialog(ue)?\s*(\w*\s*=\s*[\"']\w*[\"']\s*)*>(.*?)<\s*/\s*dialog(ue)?\s*>@is",$text,$matches))
         {
             //phew. Nothing complicated. 
             $tmpScriptId = migration_dbconnection::queryInsert("INSERT INTO dialog_scripts (game_id, dialog_id, dialog_character_id, text, created) VALUES ('{$gameId}','{$dialogId}','{$rootCharacterId}','".addslashes($text)."',CURRENT_TIMESTAMP)", "v2");
