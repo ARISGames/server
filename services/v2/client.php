@@ -429,7 +429,7 @@ class client extends dbconnection
         $dirty = false;
         for($i = 0; $i < count($incompleteQuests); $i++)
         {
-            $reqQueryPack->requirement_root_package_id = $incompleteQuests[$i]->complete_requirement_root_package;
+            $reqQueryPack->requirement_root_package_id = $incompleteQuests[$i]->complete_requirement_root_package_id;
             $questQueryPack->quest_id = $incompleteQuests[$i]->quest_id;
             if(requirements::evaluateRequirementPackagePack($reqQueryPack))
             {

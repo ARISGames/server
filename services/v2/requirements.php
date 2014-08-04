@@ -440,63 +440,51 @@ class requirements extends dbconnection
     private function playerHasItem($pack)
     {
         $item = dbconnection::queryObject("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_id = '{$pack->user_id}' AND object_type = 'ITEM' AND object_id = '{$pack->content_id}' AND qty >= '{$pack->qty}'");
-        return $item ? true : false;
+        return $item ? $pack->bool_operator : !$pack->bool_operator;
     }
     private function playerHasTaggedItem($pack)
     {
         //NOT DONE!!
         $item = dbconnection::queryObject("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_id = '{$pack->user_id}' AND object_type = 'ITEM' AND object_id = '{$pack->content_id}' AND qty >= '{$pack->qty}'");
-        return $item ? true : false;
+        return $item ? $pack->bool_operator : !$pack->bool_operator;
     }
     private function playerViewed($pack,$type)
     {
         $entry = dbconnection::queryObject("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}' AND event_type = 'VIEW_{$type}' AND content_id = '{$pack->content_id}' AND deleted = 0");
-        return $entry ? true : false;
+        return $entry ? $pack->bool_operator : !$pack->bool_operator;
     }
-    private function PLAYER_HAS_UPLOADED_MEDIA_ITEM($pack)
+    private function playerUploaded($pack,$type)
     {
-        return true;
+        return $pack->bool_operator;
     }
-    private function PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE($pack)
-    {
-        return true;
-    }
-    private function PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO($pack)
-    {
-        return true;
-    }
-    private function PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO($pack)
-    {
-        return true;
-    }
-    private function PLAYER_HAS_COMPLETED_QUEST($pack)
+    private function playerCompletedQuest($pack)
     {
         $entry = dbconnection::queryObject("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}' AND event_type = 'COMPLETE_QUEST' AND content_id = '{$pack->content_id}' AND deleted = 0");
-        return $entry ? true : false;
+        return $entry ? $pack->bool_operator : !$pack->bool_operator;
     }
-    private function PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK($pack)
+    private function playerReceivedWebHook($pack)
     {
-        return true;
+        return $pack->bool_operator;
     }
-    private function PLAYER_HAS_NOTE($pack)
+    private function playerHasNote($pack)
     {
-        return true;
+        return $pack->bool_operator;
     }
-    private function PLAYER_HAS_NOTE_WITH_TAG($pack)
+    private function playerHasNoteWithTag($pack)
     {
-        return true;
+        return $pack->bool_operator;
     }
-    private function PLAYER_HAS_NOTE_WITH_LIKES($pack)
+    private function playerHasNoteWithLikes($pack)
     {
-        return true;
+        return $pack->bool_operator;
     }
-    private function PLAYER_HAS_NOTE_WITH_COMMENTS($pack)
+    private function playerHasNoteWithComments($pack)
     {
-        return true;
+        return $pack->bool_operator;
     }
-    private function PLAYER_HAS_GIVEN_NOTE_COMMENTS($pack)
+    private function playerHasGivenNoteComments($pack)
     {
-        return true;
+        return $pack->bool_operator;
     }
 }
 ?>
