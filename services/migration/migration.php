@@ -131,9 +131,21 @@ class migration extends migration_dbconnection
         for($i = 0; $i < count($media); $i++)
         {
             $mediaIdMap[$media[$i]->media_id] = 0; //set it to 0 in case of failure
-            if(!file_exists(Config::gamedataFSPath."/".$media[$i]->file_path)) continue;
+            
             $filename = substr($media[$i]->file_path, strpos($media[$i]->file_path,'/')+1);
+
+            //copy
+            /*
+            if(!file_exists(Config::gamedataFSPath."/".$media[$i]->file_path)) continue;
             copy(Config::gamedataFSPath."/".$media[$i]->file_path,Config::v2_gamedata_folder."/".$v2GameId."/".$filename);
+            */
+
+            //download
+            try{
+            file_put_contents(Config::v2_gamedata_folder."/".$v2GameId."/".$filename,fopen("http://arisgames.org/server/gamedata/".$media[$i]->file_path,'r'));
+            }
+            catch(Exception $e){}
+
             $newMediaId = migration_dbconnection::queryInsert("INSERT INTO media (game_id, file_folder, file_name, name, created) VALUES ('{$v2GameId}','{$v2GameId}','".addslashes($filename)."','".addslashes($media[$i]->name)."',CURRENT_TIMESTAMP)", "v2");
             $mediaIdMap[$media[$i]->media_id] = $newMediaId;
         }
