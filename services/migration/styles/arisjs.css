@@ -1,0 +1,298 @@
+.x-ray-backbone-view {
+  border: 1px solid blue;
+  margin: 2px;
+  overflow: hidden;
+}
+.x-ray-backbone-view .x-ray-view-template-name {
+  color: red;
+}
+/* Cursor for anchors with no hrefs */
+a {
+  cursor: pointer;
+}
+/* Left Organizer */
+.organizer-section-header {
+  color: #777;
+}
+.table-hover td {
+  padding-left: 1em !important;
+}
+.table-hover .active td {
+  background: #d8d8d8 !important;
+}
+.scene-trigger,
+.scene-title,
+.game_objects .edit {
+  cursor: pointer;
+}
+/* Navbar */
+.aris-nav li {
+  text-align: center;
+}
+@media (max-width: 767px) {
+  .aris-nav li {
+    text-align: left !important;
+  }
+}
+@media (min-width: 768px) and (max-width: 880px) {
+  .nav-name {
+    display: none !important;
+  }
+}
+@media (min-width: 881px) and (max-width: 960px) {
+  .nav-name {
+    font-size: 80%;
+    display: block;
+  }
+  body {
+    padding-top: 70px !important;
+  }
+}
+@media (min-width: 961px) and (max-width: 1100px) {
+  .nav-name {
+    display: block;
+  }
+  body {
+    padding-top: 70px !important;
+  }
+}
+/* Active bootstrap list item as a button */
+a.list-group-item.active:hover {
+  background-color: #3276b1;
+  border-color: #285e8e;
+}
+.nowrap {
+  white-space: nowrap;
+}
+.absolute {
+  /* Disabled for demo */
+  /* position: absolute; */
+  margin-top: 0;
+  margin-left: 0;
+  height: 100%;
+  width: 100%;
+}
+.aris-logo img {
+  height: 40px;
+  margin: 5px 10px;
+}
+/* Full height editing */
+html,
+body,
+.full-height {
+  height: 100%;
+  overflow: hidden;
+}
+body {
+  padding-top: 50px;
+  background: #f6f6f6;
+}
+/* Scene editor */
+#main .scenes {
+  /* Disabled for demo */
+  /* position: absolute; */
+  margin-top: 0;
+  margin-left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 2;
+  padding: 2em;
+  background: rgba(175, 175, 175, 0.5);
+  box-shadow: inset 0px 0px 10px rgba(0, 0, 0, 0.2);
+}
+/* Remove bootstraps gutter */
+#info,
+#list {
+  padding-right: 15px;
+  padding-left: 15px;
+  overflow: auto;
+}
+nav,
+.scene-panel {
+  box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+.scene-panel:hover .panel-heading {
+  color: #428bca;
+  background: #f0f0f0;
+}
+.scenes-overlay {
+  /* Disabled for demo */
+  /* position: absolute; */
+  margin-top: 0;
+  margin-left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 20;
+  pointer-events: none;
+}
+.scene-panel {
+  max-width: 475px;
+  float: left;
+}
+.scene-panel .scene-title {
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  font-size: 125%;
+  margin-right: 0.5em;
+}
+.scene-panel .new-trigger {
+  padding-top: 0.25em;
+}
+.scene-triggers {
+  margin-bottom: 0;
+}
+.scene-triggers .item-icon {
+  text-align: center;
+}
+.scene-triggers .item-label {
+  margin: 0;
+}
+.scene-triggers .scene-trigger {
+  position: relative;
+  height: 55px;
+  width: 75px;
+  overflow: hidden;
+  text-align: center;
+  white-space: nowrap;
+}
+.scene-triggers .scene-trigger:hover {
+  color: #428bca;
+}
+.new-scene-button {
+  float: right;
+  z-index: 2;
+}
+/* Side editor */
+/* Hidden ID on editor heading */
+.object-id {
+  visibility: hidden;
+}
+h4:hover .object-id {
+  visibility: visible;
+}
+/* Hide radio inputs */
+.trigger-types input,
+.item-types input,
+.trigger-trigger_on_enter input {
+  display: none;
+}
+/* QR code fit to side editor */
+.qr_image img {
+  padding-top: 1em;
+  width: 100%;
+}
+/* Narrow editor panels */
+.shrink-center {
+  width: 430px;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: 2em;
+}
+/* Media Editor */
+.media-editor {
+  height: 100%;
+  overflow-x: auto;
+}
+.media-editor .thumbnail .caption p,
+.media-editor .thumbnail .caption div,
+.media-editor .thumbnail .caption h4 {
+  overflow: hidden;
+}
+/* TODO temporarily unused, bootstrap used instead */
+.media-editor .aris-media-thumbnail {
+  display: inline-block;
+  position: relative;
+  width: 25%;
+  padding: 1em;
+  padding-bottom: 30%;
+  margin-bottom: 1em;
+  height: 0;
+}
+.media-editor .aris-media-thumbnail .media-thumbnail {
+  display: inline-block;
+  position: relative;
+  width: 100%;
+  height: 0;
+  padding-bottom: 100%;
+}
+.media-editor .aris-media-thumbnail .caption {
+  display: inline-block;
+  position: relative;
+}
+.media-editor .aris-media-thumbnail p {
+  overflow: hidden;
+}
+.media-editor .aris-media-thumbnail div.image {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  background-size: contain !important;
+  background-repeat: no-repeat !important;
+  background-position: center center !important;
+}
+.upload-preview {
+  max-width: 100%;
+  max-height: 45%;
+}
+.media-drop-target.media-hover {
+  background: #999;
+}
+/* Media Selector */
+.media-chooser {
+  max-height: 600px;
+  overflow-x: hidden;
+  overflow-y: scroll;
+}
+.media-chooser .chooser-thumbnail {
+  display: inline-block;
+}
+.media-chooser .choose {
+  border: 2px solid rgba(0, 0, 0, 0);
+  border-radius: 5px;
+  margin: 5px;
+}
+.media-chooser .choose img {
+  border-radius: 5px;
+}
+.media-chooser .choose:hover {
+  border: 2px solid #999;
+}
+.media-chooser .choose:hover img {
+  opacity: 0.5;
+  cursor: pointer;
+}
+.thumbnail img {
+  border-radius: 3px;
+}
+.thumbnail:hover {
+  background: #eee;
+}
+/* Event Editor */
+.events-editor .padded,
+.quest-editor .padded,
+.media-editor .padded,
+.object-editor .padded,
+.events-editor .event-table-header div,
+.quest-editor .event-table-header div,
+.media-editor .event-table-header div,
+.object-editor .event-table-header div,
+.events-editor .event-table-header label,
+.quest-editor .event-table-header label,
+.media-editor .event-table-header label,
+.object-editor .event-table-header label {
+  padding-right: 15px;
+  padding-left: 15px;
+}
+.events-editor .padded-small,
+.quest-editor .padded-small,
+.media-editor .padded-small,
+.object-editor .padded-small {
+  padding-right: 5px;
+  padding-left: 5px;
+}
+/* Requirements Editor */
+.games-list .list-group,
+.and-package-editor .list-group {
+  margin-bottom: 10px;
+}

@@ -52,8 +52,9 @@
         var gameDiv;
         for(var i = 0; i < v1_games.length; i++)
         {
-            gameDiv = document.createElement('div');
-            gameDiv.innerHTML = "<button onclick='migrateGame("+i+")'>MIGRATE</button>"+v1_games[i].name;
+            gameDiv = document.createElement('li');
+			gameDiv.className = "list-group-item clearfix";
+            gameDiv.innerHTML = v1_games[i].name+" <button class='btn btn-info btn-sm pull-right' onclick='migrateGame("+i+")'>Migrate</button>";
             gamesDiv.appendChild(gameDiv);
         }
     }
@@ -68,9 +69,47 @@
     }
 
 </script>
+
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>ARIS Game Migration</title>
+		<link rel="stylesheet" href="styles/bootstrap.css">
+		<link rel="stylesheet" href="styles/arisjs.css">
 </head>
 <body id="body">
 
+	<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+		<div class="navbar-header">
+			<a class="aris-logo" href="#">
+				<img src="images/Aris-Horizontal251.png">
+			</a>
+		</div>
+	</nav>
+
+	<div class="container-fluid full-height">
+		<div class="row full-height">
+
+			<div class="well well-lg shrink-center">
+				<h4>Login using V1 Editor Account</h4>
+
+				<div class="form-group">
+					<input id="editor_name" type="text" placeholder="Username" class="form-control"></input>
+				</div>
+				<div class="form-group">
+					<input id="editor_pass" type="password" placeholder="Password" class="form-control"></input>
+				</div>
+				<button type="button" onclick='submitAuth()' class="btn btn-block btn-primary">Login</button>
+			</div>
+
+			<div class="games-list shrink-center well well-lg">
+				<h4>Your Games</h4>
+
+				<ul id="games" class="list-group games">
+				</ul>
+			</div>
+		</div>
+	</div>
+
+	<!--
 <div id="login">
     <table id="user_inputs">
     <tr> <td> Sign In v1 Editor:</td><td><button onclick='submitAuth()'>Authenticate</button></td> </tr>
@@ -78,10 +117,7 @@
     <tr> <td style='text-align:right;'>Password:</td> <td><input id='editor_pass' type='password'></input></td> </tr>
     <tr> <td>  </td> </tr>
     </table>
-</div>
-
-<div id="games">
-</div>
+</div> -->
 
 </body>
 </html>
