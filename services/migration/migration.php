@@ -104,6 +104,8 @@ class migration extends migration_dbconnection
         $maps->scripts = $characterMaps->scriptsMap;
         $maps->options = $characterMaps->optionsMap;
         //$maps->notes = migration::migrateNotes($v1GameId, $v2GameId, $maps); //don't migrate notes for now... (we'll get into if we should later)
+        $maps->tags = migration::migrateTags($v1GameId, $v2GameId, $maps);
+        $maps->webhooks = migration::migrateWebhooks($v1GameId, $v2GameId, $maps);
         $maps->quests = migration::migrateQuests($v1GameId, $v2GameId, $maps);
         $maps->events = migration::migrateEvents($v1GameId, $v2GameId, $maps);
         $maps->factories = migration::migrateFactories($v1GameId, $v2GameId, $maps);
@@ -341,6 +343,36 @@ class migration extends migration_dbconnection
         return $newIds;
     }
 
+    public function migrateTags($v1GameId, $v2GameId, $maps)
+    {
+        $tagIdMap = array();
+        $tagIdMap[0] = 0;
+
+        $tags = migration_dbconnection::queryArray("SELECT * FROM game_tags WHERE game_id = '{$v1GameId}'","v1");
+        for($i = 0; $i < count($tags); $i++)
+        {
+            $tagIdMap[$tags[$i]->tag_id] = 0; //set it to 0 in case of failure
+            $newtagId = migration_dbconnection::queryInsert("INSERT INTO tags (game_id, tag, media_id, player_created, visible, sort_index, created) VALUES ('{$v2GameId}','{$tags[$i]->tag}','{$maps->media[$tags[$i]->media_id]}','{$tags[$i]->player_created}','1','0',CURRENT_TIMESTAMP)", "v2");
+            $tagIdMap[$tags[$i]->tag_id] = $newtagId;
+        }
+        return $tagIdMap;
+    }
+
+    public function migrateWebhooks($v1GameId, $v2GameId, $maps)
+    {
+        $webhookIdMap = array();
+        $webhookIdMap[0] = 0;
+
+        $webhooks = migration_dbconnection::queryArray("SELECT * FROM web_hooks WHERE game_id = '{$v1GameId}'","v1");
+        for($i = 0; $i < count($webhooks); $i++)
+        {
+            $webhookIdMap[$webhooks[$i]->web_hook_id] = 0; //set it to 0 in case of failure
+            $newWebhookId = migration_dbconnection::queryInsert("INSERT INTO web_hooks (game_id, name, url, incoming, created) VALUES ('{$v2GameId}','{$webhooks[$i]->name}','{$webhooks[$i]->url}','{$webhooks[$i]->incoming}',CURRENT_TIMESTAMP)", "v2");
+            $webhookIdMap[$webhooks[$i]->web_hook_id] = $newWebhookId;
+        }
+        return $webhookIdMap;
+    }
+
     public function migrateQuests($v1GameId, $v2GameId, $maps)
     {
         $questIdMap = array();
@@ -544,18 +576,22 @@ class migration extends migration_dbconnection
         $rGroupings->questCompletes = array();
         $rGroupings->questDisplays = array();
         $rGroupings->triggers = array();
+        $rGroupings->webhooks = array();
+        $rGroupings->factories = array();
         $rGroupings->overlays = array();
         $rGroupings->tabs = array();
         $requirements = migration_dbconnection::queryArray("SELECT * FROM requirements WHERE game_id = '{$v1GameId}'","v1");
         $q = 0;
         for($i = 0; $i < count($requirements); $i++)
         {
-            if($requirements[$i]->content_type == "Node")          $typeGroup = &$rGroupings->dialogOptions;
-            if($requirements[$i]->content_type == "QuestDisplay")  $typeGroup = &$rGroupings->questDisplays;
-            if($requirements[$i]->content_type == "QuestComplete") $typeGroup = &$rGroupings->questCompletes;
-            if($requirements[$i]->content_type == "Location")      $typeGroup = &$rGroupings->triggers;
-            if($requirements[$i]->content_type == "CustomMap")     $typeGroup = &$rGroupings->overlays;
-            if($requirements[$i]->content_type == "Tab")           $typeGroup = &$rGroupings->tabs;
+            if($requirements[$i]->content_type == "Node")            $typeGroup = &$rGroupings->dialogOptions;
+            if($requirements[$i]->content_type == "QuestDisplay")    $typeGroup = &$rGroupings->questDisplays;
+            if($requirements[$i]->content_type == "QuestComplete")   $typeGroup = &$rGroupings->questCompletes;
+            if($requirements[$i]->content_type == "Location")        $typeGroup = &$rGroupings->triggers;
+            if($requirements[$i]->content_type == "OutgoingWebHook") $typeGroup = &$rGroupings->webhooks;
+            if($requirements[$i]->content_type == "Spawnable")       $typeGroup = &$rGroupings->factories;
+            if($requirements[$i]->content_type == "CustomMap")       $typeGroup = &$rGroupings->overlays;
+            if($requirements[$i]->content_type == "Tab")             $typeGroup = &$rGroupings->tabs;
 
             if(!$typeGroup[$requirements[$i]->content_id]) $typeGroup[$requirements[$i]->content_id] = array();
             $typeGroup[$requirements[$i]->content_id][] = $requirements[$i];
@@ -584,6 +620,16 @@ class migration extends migration_dbconnection
             //and once for the v2 qr trigger that was generated for the v1 location
             $req_package_id = migration::migrateRequirementListIntoPackage($v2GameId, $requirementsList, $maps);
             migration_dbconnection::query("UPDATE triggers SET requirement_root_package_id = '{$req_package_id}' WHERE trigger_id = '{$maps->qrTriggers[$locationId]}'","v2");
+        }
+        foreach($rGroupings->webhooks as $webhookId => $requirementsList)
+        {
+            $req_package_id = migration::migrateRequirementListIntoPackage($v2GameId, $requirementsList, $maps);
+            migration_dbconnection::query("UPDATE web_hooks SET requirement_root_package_id = '{$req_package_id}' WHERE overlay_id = '{$maps->webhooks[$webhookId]}'","v2");
+        }
+        foreach($rGroupings->factories as $factoryId => $requirementsList)
+        {
+            $req_package_id = migration::migrateRequirementListIntoPackage($v2GameId, $requirementsList, $maps);
+            migration_dbconnection::query("UPDATE factories SET requirement_root_package_id = '{$req_package_id}' WHERE overlay_id = '{$maps->factories[$factoryId]}'","v2");
         }
         foreach($rGroupings->overlays as $overlayId => $requirementsList)
         {
