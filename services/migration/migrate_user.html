@@ -46,53 +46,138 @@
         var newDisplay = document.getElementById('new_display').value;
         var newEmail   = document.getElementById('new_email').value;
         var response = sendRequest('dev.','migration.migration.migrateUser/'+clientName+"/"+clientPass+"/"+editorName+"/"+editorPass+"/"+newName+"/"+newPass+"/"+newDisplay+"/"+newEmail, null, "GET");
-        if(response.data) document.getElementById('body').innerHTML = "Success!";
-        else              document.getElementById('body').innerHTML = response.returnCodeDescription;
+		if(response.data) {
+			document.getElementById('success_box').innerHTML = "<span class='glyphicon glyphicon-ok'></span> Successfully Migrated";
+			document.getElementById('success_box').className = "alert alert-success";
+		}
+		else {
+			document.getElementById('success_box').innerHTML = "<span class='glyphicon glyphicon-remove'></span> "+response.returnCodeDescription;
+			document.getElementById('success_box').className = "alert alert-danger";
+		}
     }
+
+	var verified_message = "<span class='glyphicon glyphicon-ok'></span> Verified";
+	var verified_class = "alert alert-success";
+
+	var invalid_message = "<span class='glyphicon glyphicon-remove'></span> Invalid User/Password";
+	var invalid_class = "alert alert-danger";
+
     function submitAuthOldEditor()
     {
         var response = sendRequest('','v1.editors.getToken/'+document.getElementById('old_editor_user').value+"/"+document.getElementById('old_editor_password').value+"/read_write", null, "GET");
         oldEditorVerified = response.data != null;
-        document.getElementById('auth_old_editor_verify').innerHTML = oldEditorVerified ? "VERIFIED" : "NOT VERIFIED";
+		document.getElementById('auth_old_editor_verify').innerHTML = oldEditorVerified ? verified_message : invalid_message;
+        document.getElementById('auth_old_editor_verify').className = oldEditorVerified ? verified_class   : invalid_class;
     }
     function submitAuthOldClient()
     {
         var response = sendRequest('','v1.players.getLoginPlayerObject/'+document.getElementById('old_client_user').value+"/"+document.getElementById('old_client_password').value, null, "GET");
         oldClientVerified = response.data != null;
-        document.getElementById('auth_old_client_verify').innerHTML = oldClientVerified ? "VERIFIED" : "NOT VERIFIED";
+        document.getElementById('auth_old_client_verify').innerHTML = oldClientVerified ? verified_message : invalid_message;
+        document.getElementById('auth_old_client_verify').className = oldClientVerified ? verified_class   : invalid_class;
     }
 
     function load()
     {
+		var not_verified_message = "<span class='glyphicon glyphicon-question-sign'></span> Not Verified";
+		var not_verified_class = "alert alert-warning";
+
         //set up dom listeners
-        document.getElementById('old_editor_user').onkeydown     = function() { oldEditorVerified = false; document.getElementById('auth_old_editor_verify').innerHTML = "NOT VERIFIED"; };
-        document.getElementById('old_editor_password').onkeydown = function() { oldEditorVerified = false; document.getElementById('auth_old_editor_verify').innerHTML = "NOT VERIFIED"; };
-        document.getElementById('old_client_user').onkeydown     = function() { oldClientVerified = false; document.getElementById('auth_old_client_verify').innerHTML = "NOT VERIFIED"; };
-        document.getElementById('old_client_password').onkeydown = function() { oldClientVerified = false; document.getElementById('auth_old_client_verify').innerHTML = "NOT VERIFIED"; };
+		document.getElementById('old_editor_user').onkeydown     = function() {
+			oldEditorVerified = false;
+			document.getElementById('auth_old_editor_verify').innerHTML = not_verified_message;
+			document.getElementById('auth_old_editor_verify').className = not_verified_class;
+		};
+		document.getElementById('old_editor_password').onkeydown = function() {
+			oldEditorVerified = false;
+			document.getElementById('auth_old_editor_verify').innerHTML = not_verified_message;
+			document.getElementById('auth_old_editor_verify').className = not_verified_class;
+		};
+		document.getElementById('old_client_user').onkeydown     = function() {
+			oldClientVerified = false;
+			document.getElementById('auth_old_client_verify').innerHTML = not_verified_message;
+			document.getElementById('auth_old_client_verify').className = not_verified_class;
+		};
+		document.getElementById('old_client_password').onkeydown = function() {
+			oldClientVerified = false;
+			document.getElementById('auth_old_client_verify').innerHTML = not_verified_message;
+			document.getElementById('auth_old_client_verify').className = not_verified_class;
+		};
     }
 
 </script>
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+		<title>ARIS Game Migration</title>
+		<link rel="stylesheet" href="styles/bootstrap.css">
+		<link rel="stylesheet" href="styles/arisjs.css">
 </head>
 <body onload="load()" id="body">
+	<nav class="navbar navbar-default navbar-fixed-top" role="navigation">
+		<div class="navbar-header">
+			<a class="aris-logo" href="#">
+				<img src="images/Aris-Horizontal251.png">
+			</a>
+		</div>
+	</nav>
+	<div class="container-fluid">
+		<div class="row">
 
-<table id="old_user_inputs">
-<tr> <td> Old Editor Credentials:</td><td><button id='auth_old_editor_request_submit' onclick='submitAuthOldEditor()'>verify</button><span id='auth_old_editor_verify'>NOT VERIFIED </span></td> </tr>
-<tr> <td style='text-align:right;'>Username:</td> <td><input id='old_editor_user'     type='text'>    </input></td> </tr>
-<tr> <td style='text-align:right;'>Password:</td> <td><input id='old_editor_password' type='password'></input></td> </tr>
-<tr> <td>-</td> </tr>
-<tr> <td> Old Client Credentials:</td><td><button id='auth_old_client_request_submit' onclick='submitAuthOldClient()'>verify</button><span id='auth_old_client_verify'>NOT VERIFIED </span></td> </tr>
-<tr> <td style='text-align:right;'>Username:</td> <td><input id='old_client_user'     type='text'>    </input></td> </tr>
-<tr> <td style='text-align:right;'>Password:</td> <td><input id='old_client_password' type='password'></input></td> </tr>
-<tr> <td>-</td> </tr>
-<tr> <td> New Credentials: </td><td><button id='migrate_user_request_submit' onclick='submitMigration()'>migrate</button></td> </tr>
-<tr> <td style='text-align:right;'>Username:    </td> <td><input id='new_user'     type='text'>    </input></td> </tr>
-<tr> <td style='text-align:right;'>Password:    </td> <td><input id='new_password' type='password'></input></td> </tr>
-<tr> <td style='text-align:right;'>Display Name:</td> <td><input id='new_display'  type='text'>    </input></td> </tr>
-<tr> <td style='text-align:right;'>Email:       </td> <td><input id='new_email'    type='text'>    </input></td> </tr>
-<tr> </tr>
-<tr> <td>  </td> </tr>
-</table>
+			<!-- Old Editor -->
+			<div class="well well-lg shrink-center">
+				<h4>V1 Editor Account</h4>
 
+				<div id="auth_old_editor_verify" class="alert alert-warning " role="alert"><span class='glyphicon glyphicon-question-sign'></span> Not Verified</div>
+
+				<div class="form-group">
+					<input id="old_editor_user" type="text" placeholder="Username" class="form-control"></input>
+				</div>
+				<div class="form-group">
+					<input id="old_editor_password" type="password" placeholder="Password" class="form-control"></input>
+				</div>
+				<button type="button" onclick='submitAuthOldEditor()' class="btn btn-block btn-primary">Verify</button>
+			</div>
+
+			<!-- Old Client -->
+			<div class="well well-lg shrink-center">
+				<h4>V1 Client Account</h4>
+
+				<div id="auth_old_client_verify" class="alert alert-warning" role="alert"><span class='glyphicon glyphicon-question-sign'></span> Not Verified</div>
+
+				<div class="form-group">
+					<input id="old_client_user" type="text" placeholder="Username" class="form-control"></input>
+				</div>
+				<div class="form-group">
+					<input id="old_client_password" type="password" placeholder="Password" class="form-control"></input>
+				</div>
+				<button type="button" onclick='submitAuthOldClient()' class="btn btn-block btn-primary">Verify</button>
+			</div>
+
+
+			<!-- New Editor -->
+			<div class="well well-lg shrink-center">
+				<h4>New or Existing V2 Account</h4>
+
+				<div id="success_box"></div>
+
+				<div class="form-group">
+					<input id="new_user" type="text" placeholder="Username" class="form-control"></input>
+				</div>
+				<div class="form-group">
+					<input id="new_password" type="password" placeholder="Password" class="form-control"></input>
+				</div>
+				<div class="form-group">
+					<input id="new_display" type="text" placeholder="Display Name" class="form-control"></input>
+				</div>
+				<div class="form-group">
+					<input id="new_email" type="email" placeholder="Email" class="form-control"></input>
+				</div>
+
+				<button type="button" onclick='submitMigration()' class="btn btn-block btn-primary">Migrate</button>
+			</div>
+
+
+		</div>
+	</div>
 </body>
 </html>
 
