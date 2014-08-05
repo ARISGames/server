@@ -215,6 +215,19 @@ last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 CREATE INDEX object_tag_object ON object_tags(game_id, object_type, object_id);
 CREATE INDEX object_tag_tag ON object_tags(game_id, tag_id);
 
+DROP TABLE IF EXISTS web_hooks;
+CREATE TABLE web_hooks (
+web_hook_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+game_id INT(32) UNSIGNED NOT NULL,
+name VARCHAR(255) NOT NULL DEFAULT "",
+url TINYTEXT NOT NULL,
+incoming TINYINT(1) NOT NULL DEFAULT '0',
+requirement_root_package_id INT(32) UNSIGNED NOT NULL DEFAULT 0,
+created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
+last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE INDEX web_hook_game_id ON web_hooks(game_id);
+
 DROP TABLE IF EXISTS overlays;
 CREATE TABLE overlays (
 overlay_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
@@ -517,19 +530,5 @@ CREATE TABLE `game_comments` (
   KEY `player_id` (`player_id`),
   KEY `time_stamp` (`time_stamp`)
 ) ENGINE=InnoDB AUTO_INCREMENT=276 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
-DROP TABLE IF EXISTS `web_hooks`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `web_hooks` (
-  `web_hook_id` INT(32) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `game_id` INT(32) UNSIGNED NOT NULL,
-  `name` varchar(30) COLLATE utf8_unicode_ci NOT NULL,
-  `url` tinytext COLLATE utf8_unicode_ci NOT NULL,
-  `incoming` tinyint(1) unsigned NOT NULL,
-  `requirement_package_id` int(32) unsigned NOT NULL DEFAULT '0',
-  PRIMARY KEY (`web_hook_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=296 DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
