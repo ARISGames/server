@@ -1,6 +1,7 @@
 <?php
 require_once("dbconnection.php");
 require_once("editors.php");
+require_once("instances.php");
 require_once("return_package.php");
 
 class triggers extends dbconnection
