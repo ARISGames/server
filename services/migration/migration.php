@@ -245,7 +245,7 @@ class migration extends migration_dbconnection
             {
                 $newIds = migration::textToScript(false, 0, $dialogs[$i]->text, $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], 0, $maps);
                 $parentScriptId = $newIds->lastScriptId;
-                migration_dbconnection::query("UPDATE dialogs SET intro_dialog_script_id = '{$parentScriptId}' WHERE dialog_id = '{$newCharacterId}'","v2");
+                migration_dbconnection::query("UPDATE dialogs SET intro_dialog_script_id = '{$newIds->firstScriptId}' WHERE dialog_id = '{$newDialogId}'","v2");
             }
             //add exit option from greeting
             migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, link_type, prompt, sort_index, created) VALUES ('{$v2GameId}','{$newDialogId}','{$parentScriptId}','EXIT','Exit','999',CURRENT_TIMESTAMP)", "v2");
@@ -271,8 +271,8 @@ class migration extends migration_dbconnection
     }
 
     //helper for migrateDialogs
-    //returns package w/id of the first and last of the newly created chain of scripts. 
-    //(aka the script that inherits the node's requirements and the to-be-parent of any more scripts)
+    //returns package w/id of the first option, and first and last of the newly created chain of scripts. 
+    //(aka the option that inherits the node's requirements, the script to start it off, and the to-be-parent of any more scripts)
     //disclaimer: you should probably read up on regular expressions before messing around with this...
     public function textToScript($option, $optionIndex, $text, $gameId, $dialogId, $rootCharacterId, $rootCharacterTitle, $rootCharacterMediaId, $parentScriptId, $maps)
     {
@@ -282,6 +282,7 @@ class migration extends migration_dbconnection
 
         $newIds = new stdClass;
         $newIds->firstOptionId = 0;
+        $newIds->firstScriptId = 0;
         $newIds->lastScriptId = $parentScriptId;
         
         //The case where no parsing is necessary 
@@ -290,6 +291,7 @@ class migration extends migration_dbconnection
             //phew. Nothing complicated. 
             $tmpScriptId = migration_dbconnection::queryInsert("INSERT INTO dialog_scripts (game_id, dialog_id, dialog_character_id, text, created) VALUES ('{$gameId}','{$dialogId}','{$rootCharacterId}','".addslashes($text)."',CURRENT_TIMESTAMP)", "v2");
             if($option) $newIds->firstOptionId = migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, link_id, prompt, sort_index, created) VALUES ('{$gameId}','{$dialogId}','{$newIds->lastScriptId}','{$tmpScriptId}','".addslashes($option)."','{$optionIndex}',CURRENT_TIMESTAMP)", "v2");
+            if(!$newIds->firstScriptId) $newIds->firstScriptId = $tmpScriptId;
             $newIds->lastScriptId = $tmpScriptId;
             return $newIds;
         }
@@ -339,6 +341,7 @@ class migration extends migration_dbconnection
             $tmpScriptId = migration_dbconnection::queryInsert("INSERT INTO dialog_scripts (game_id, dialog_id,  dialog_character_id, text, created) VALUES ('{$gameId}','{$dialogId}','{$characterId}','".addslashes($tag_contents)."',CURRENT_TIMESTAMP)", "v2");
             if($option) $newestOptionId = migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, link_id, prompt, sort_index, created) VALUES ('{$gameId}','{$dialogId}','{$newIds->lastScriptId}','{$tmpScriptId}','".addslashes($option)."','{$optionIndex}',CURRENT_TIMESTAMP)", "v2");
 
+            if(!$newIds->firstScriptId) $newIds->firstScriptId = $tmpScriptId;
             if(!$newIds->firstOptionId) $newIds->firstOptionId = $newestOptionId;
             $newIds->lastScriptId = $tmpScriptId;
             $option = "Continue"; //set option for all but first script to 'continue'
