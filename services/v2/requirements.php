@@ -193,7 +193,7 @@ class requirements extends dbconnection
             }
             if($matchingAtom)
             {
-                $matchingAtom->requirement_atom_id = $pack->atoms[$j]->requirement_atom_id;
+                $matchingAtom->requirement_and_package_id = $pack->requirement_and_package_id;
                 $matchingAtom->game_id             = $pack->game_id;
                 $matchingAtom->auth                = $pack->auth;
                 requirements::updateRequirementAtomPack($matchingAtom);
@@ -206,9 +206,9 @@ class requirements extends dbconnection
         }
         for($i = 0; $pack->atoms && $i < count($pack->atoms); $i++)
         {
-            $pack->atoms[$i]->requirement_atom_id = $pack->atoms[$j]->requirement_atom_id;
-            $pack->atoms[$i]->game_id             = $pack->game_id;
-            $pack->atoms[$i]->auth                = $pack->auth;
+            $pack->atoms[$i]->requirement_and_package_id = $pack->requirement_and_package_id;
+            $pack->atoms[$i]->game_id                    = $pack->game_id;
+            $pack->atoms[$i]->auth                       = $pack->auth;
             requirements::createRequirementAtomPack($pack->atoms[$i]);
         }
     }
@@ -216,9 +216,10 @@ class requirements extends dbconnection
     public function updateRequirementAtom($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return requirements::updateRequirementAtomPack($glob); }
     public function updateRequirementAtomPack($pack)
     {
-        $gameId = dbconnection::queryObject("SELECT * FROM requirement_atoms WHERE requirement_atom_id = '{$pack->requirement_atom_id}'")->game_id;
-        if(!editors::authenticateGameEditor($gameId, $pack->auth->user_id, $pack->auth->key, "read_write"))
-            return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM requirement_atoms WHERE requirement_atom_id = '{$pack->requirement_atom_id}'")->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
         if(!$pack->requirement_atom_id) return new return_package(1,NULL,"Insufficient data");
 
         dbconnection::query(
@@ -349,7 +350,7 @@ class requirements extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        dbconnection::query("DELETE FROM requirement_atoms WHERE requirement_atom_id = '{$requirementAtomId}'");
+        dbconnection::query("DELETE FROM requirement_atoms WHERE requirement_atom_id = '{$pack->requirement_atom_id}'");
         return new return_package(0);
     }
 
