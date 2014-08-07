@@ -117,6 +117,7 @@ class migration extends migration_dbconnection
         $maps->qrTriggers = $triggerMaps->qrTriggerMap;
 
         $maps->tabs = migration::migrateTabs($v1GameId, $v2GameId, $maps);
+        migration::updateDialogOptionLinks($v1GameId, $v2GameId, $maps); //now that tabs/objects (link targets) are updated with ids, we can make sense of them
 
         //no maps generated from migrateRequirements
         migration::migrateRequirements($v1GameId, $v2GameId, $maps);
@@ -250,7 +251,10 @@ class migration extends migration_dbconnection
                 migration_dbconnection::query("UPDATE dialogs SET intro_dialog_script_id = '{$newIds->firstScriptId}' WHERE dialog_id = '{$newDialogId}'","v2");
             }
             //add exit option from greeting
-            migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, link_type, prompt, sort_index, created) VALUES ('{$v2GameId}','{$newDialogId}','{$parentScriptId}','EXIT','Exit','999',CURRENT_TIMESTAMP)", "v2");
+            if($newIds->exitToType) //copy exitToId directly, once everything is migrated we'll go back and update ids (need to wait for not-yet-migrated stuff)
+                migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, link_type, link_info, prompt, sort_index, created) VALUES ('{$v2GameId}','{$newDialogId}','{$parentScriptId}','{$newIds->exitToType}','{$newIds->exitToId}','Exit','999',CURRENT_TIMESTAMP)", "v2");
+            else
+                migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, link_type, prompt, sort_index, created) VALUES ('{$v2GameId}','{$newDialogId}','{$parentScriptId}','EXIT','Exit','999',CURRENT_TIMESTAMP)", "v2");
 
             $options = migration_dbconnection::queryArray("SELECT * FROM npc_conversations WHERE game_id = '{$v1GameId}' AND npc_id = '{$dialogs[$i]->npc_id}'","v1");
             for($j = 0; $j < count($options); $j++)
@@ -259,7 +263,10 @@ class migration extends migration_dbconnection
                 $newIds = migration::textToScript($options[$j]->text, $options[$j]->sort_index, $node->text, $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], $parentScriptId, $maps);
                 $optionMap[$options[$j]->node_id] = $newIds->firstOptionId;
                 $scriptMap[$options[$j]->node_id] = $newIds->lastScriptId;
-                $newestOptionId = migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, link_id, prompt, sort_index, created) VALUES ('{$v2GameId}','{$newDialogId}','{$newIds->lastScriptId}','{$parentScriptId}','Continue','998',CURRENT_TIMESTAMP)", "v2");
+                if($newIds->exitToType) //copy exitToId directly, once everything is migrated we'll go back and update ids (need to wait for not-yet-migrated stuff)
+                    migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, link_type, link_info, prompt, sort_index, created) VALUES ('{$v2GameId}','{$newDialogId}','{$newIds->lastScriptId}','{$newIds->exitToType}','{$newIds->exitToId}','Exit','999',CURRENT_TIMESTAMP)", "v2");
+                else
+                    migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, link_id, prompt, sort_index, created) VALUES ('{$v2GameId}','{$newDialogId}','{$newIds->lastScriptId}','{$parentScriptId}','Continue','998',CURRENT_TIMESTAMP)", "v2");
             }
 
             $dialogMap[$dialogs[$i]->npc_id] = $newDialogId;
@@ -313,12 +320,12 @@ class migration extends migration_dbconnection
             $attrib_value = $matches[2]; //123
             $attribs = $matches[3]; //name="billy"
 
-            if(preg_match("@exitToTab@i",$attrib_name))               $newIds->exitToType = "TAB";      $newIds->exitToId = $attrib_value;
-            if(preg_match("@exitToScannerWithPrompt@i",$attrib_name)) $newIds->exitToType = "TAB";      $newIds->exitToId = $attrib_value;
-            if(preg_match("@exitToPlaque@i",$attrib_name))            $newIds->exitToType = "PLAQUE";   $newIds->exitToId = $attrib_value;
-            if(preg_match("@exitToWebPage@i",$attrib_name))           $newIds->exitToType = "WEB_PAGE"; $newIds->exitToId = $attrib_value;
-            if(preg_match("@exitToCharacter@i",$attrib_name))         $newIds->exitToType = "DIALOG";   $newIds->exitToId = $attrib_value;
-            if(preg_match("@exitToItem@i",$attrib_name))              $newIds->exitToType = "ITEM";     $newIds->exitToId = $attrib_value;
+            if(preg_match("@exitToTab@i",$attrib_name))               $newIds->exitToType = "EXIT_TO_TAB";      $newIds->exitToId = $attrib_value;
+            if(preg_match("@exitToScannerWithPrompt@i",$attrib_name)) $newIds->exitToType = "EXIT_TO_TAB";      $newIds->exitToId = $attrib_value;
+            if(preg_match("@exitToPlaque@i",$attrib_name))            $newIds->exitToType = "EXIT_TO_PLAQUE";   $newIds->exitToId = $attrib_value;
+            if(preg_match("@exitToWebPage@i",$attrib_name))           $newIds->exitToType = "EXIT_TO_WEB_PAGE"; $newIds->exitToId = $attrib_value;
+            if(preg_match("@exitToCharacter@i",$attrib_name))         $newIds->exitToType = "EXIT_TO_DIALOG";   $newIds->exitToId = $attrib_value;
+            if(preg_match("@exitToItem@i",$attrib_name))              $newIds->exitToType = "EXIT_TO_ITEM";     $newIds->exitToId = $attrib_value;
         }
 
         //parse contents of dialog tag
@@ -394,6 +401,37 @@ class migration extends migration_dbconnection
             $optionIndex = 0; //set option index 0 for all but first script
         }
         return $newIds;
+    }
+
+    public function updateDialogOptionLinks($v1GameId, $v2GameId, $maps)
+    {
+        $options = migration_dbconnection::queryArray("SELECT * FROM dialog_options WHERE game_id = '{$v2GameId}'","v2");
+        $tabs = migration_dbconnection::queryArray("SELECT * FROM tabs WHERE game_id = '{$v2GameId}'","v2");
+        $scannertab = null;
+        for($j = 0; $j < count($tabs); $j++)
+        {
+            if(preg_match("@{$tabs[$j]->type}@i","scanner"))
+                $scannertab = $tabs[$j];
+        }
+        $tab = null;
+        for($i = 0; $i < count($options); $i++)
+        {
+            if($options[$i]->link_type == 'EXIT_TO_PLAQUE')   migration_dbconnection::query("UPDATE dialog_options SET link_id = '{$maps->plaques[ intval($options[$i]->link_info)]}'","v2");
+            if($options[$i]->link_type == 'EXIT_TO_ITEM')     migration_dbconnection::query("UPDATE dialog_options SET link_id = '{$maps->items[   intval($options[$i]->link_info)]}'","v2");
+            if($options[$i]->link_type == 'EXIT_TO_DIALOG')   migration_dbconnection::query("UPDATE dialog_options SET link_id = '{$maps->dialogs[ intval($options[$i]->link_info)]}'","v2");
+            if($options[$i]->link_type == 'EXIT_TO_WEB_PAGE') migration_dbconnection::query("UPDATE dialog_options SET link_id = '{$maps->webpages[intval($options[$i]->link_info)]}'","v2");
+            if($options[$i]->link_type == 'EXIT_TO_TAB')
+            {
+                for($j = 0; $j < count($tabs); $j++)
+                {
+                    if(preg_match("@{$tabs[$j]->type}@i",options[$i]->link_info))
+                        $tab = $tabs[$j];
+                }
+                if($tab) migration_dbconnection::query("UPDATE dialog_options SET link_id = '{$tab->tab_id}'","v2");
+                else if($scannertab) migration_dbconnection::query("UPDATE dialog_options SET link_id = '{$scannertab->tab_id}'","v2");
+                $tab = null;
+            }
+        }
     }
 
     public function migrateTags($v1GameId, $v2GameId, $maps)
