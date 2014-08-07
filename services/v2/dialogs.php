@@ -119,7 +119,7 @@ class dialogs extends dbconnection
             dialogs::deleteDialogOptionPack($pack);
         }
     
-        $tabs = dbconnection::queryArray("SELECT * FROM tabs WHERE type = 'DIALOG' AND tab_detail_1 = '{$pack->dialog_id}'");
+        $tabs = dbconnection::queryArray("SELECT * FROM tabs WHERE type = 'DIALOG' AND content_id = '{$pack->dialog_id}'");
         for($i = 0; $i < count($tabs); $i++)
         {
             $pack->tab_id = $tabs[$i]->tab_id;
@@ -398,6 +398,7 @@ class dialogs extends dbconnection
             (isset($pack->prompt)                      ? "prompt,"                      : "").
             (isset($pack->link_type)                   ? "link_type,"                   : "").
             (isset($pack->link_id)                     ? "link_id,"                     : "").
+            (isset($pack->link_info)                   ? "link_info,"                   : "").
             (isset($pack->requirement_root_package_id) ? "requirement_root_package_id," : "").
             (isset($pack->sort_index)                  ? "sort_index,"                  : "").
             "created".
@@ -408,6 +409,7 @@ class dialogs extends dbconnection
             (isset($pack->prompt)                      ? "'".addslashes($pack->prompt)."',"                      : "").
             (isset($pack->link_type)                   ? "'".addslashes($pack->link_type)."',"                   : "").
             (isset($pack->link_id)                     ? "'".addslashes($pack->link_id)."',"                     : "").
+            (isset($pack->link_info)                   ? "'".addslashes($pack->link_info)."',"                   : "").
             (isset($pack->requirement_root_package_id) ? "'".addslashes($pack->requirement_root_package_id)."'," : "").
             (isset($pack->sort_index)                  ? "'".addslashes($pack->sort_index)."',"                  : "").
             "CURRENT_TIMESTAMP".
@@ -431,6 +433,7 @@ class dialogs extends dbconnection
             (isset($pack->prompt)                      ? "prompt                      = '".addslashes($pack->prompt)."', "                      : "").
             (isset($pack->link_type)                   ? "link_type                   = '".addslashes($pack->link_type)."', "                   : "").
             (isset($pack->link_id)                     ? "link_id                     = '".addslashes($pack->link_id)."', "                     : "").
+            (isset($pack->link_info)                   ? "link_info                   = '".addslashes($pack->link_info)."', "                   : "").
             (isset($pack->requirement_root_package_id) ? "requirement_root_package_id = '".addslashes($pack->requirement_root_package_id)."', " : "").
             (isset($pack->sort_index)                  ? "sort_index                  = '".addslashes($pack->sort_index)."', "                  : "").
             "last_active = CURRENT_TIMESTAMP ".
@@ -451,6 +454,7 @@ class dialogs extends dbconnection
         $dialogOption->prompt                      = $sql_dialogOption->prompt;
         $dialogOption->link_type                   = $sql_dialogOption->link_type;
         $dialogOption->link_id                     = $sql_dialogOption->link_id;
+        $dialogOption->link_info                   = $sql_dialogOption->link_info;
         $dialogOption->requirement_root_package_id = $sql_dialogOption->requirement_root_package_id;
         $dialogOption->sort_index                  = $sql_dialogOption->sort_index;
 

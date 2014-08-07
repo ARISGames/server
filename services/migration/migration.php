@@ -138,6 +138,8 @@ class migration extends migration_dbconnection
             $filenametitle = substr($filename,0,strrpos($filename,'.'));
             $filenameext   = substr($filename,strrpos($filename,'.'));
 
+            if(!$filename || !$filenametitle || !$filenameext || $filename == "error moving file" || $filenameext == "(null)") continue;
+
             //copy
             /*
             if(!file_exists(Config::gamedataFSPath."/".$media[$i]->file_path)) continue;
@@ -284,6 +286,8 @@ class migration extends migration_dbconnection
         $newIds->firstOptionId = 0;
         $newIds->firstScriptId = 0;
         $newIds->lastScriptId = $parentScriptId;
+        $newIds->exitToType = 0;
+        $newIds->exitToId = 0;
         
         //The case where no parsing is necessary 
         if(!preg_match("@<\s*dialog(ue)?\s*(\w*\s*=\s*[\"']\w*[\"']\s*)*>(.*?)<\s*/\s*dialog(ue)?\s*>@is",$text,$matches))
@@ -291,14 +295,34 @@ class migration extends migration_dbconnection
             //phew. Nothing complicated. 
             $tmpScriptId = migration_dbconnection::queryInsert("INSERT INTO dialog_scripts (game_id, dialog_id, dialog_character_id, text, created) VALUES ('{$gameId}','{$dialogId}','{$rootCharacterId}','".addslashes($text)."',CURRENT_TIMESTAMP)", "v2");
             if($option) $newIds->firstOptionId = migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, link_id, prompt, sort_index, created) VALUES ('{$gameId}','{$dialogId}','{$newIds->lastScriptId}','{$tmpScriptId}','".addslashes($option)."','{$optionIndex}',CURRENT_TIMESTAMP)", "v2");
-            if(!$newIds->firstScriptId) $newIds->firstScriptId = $tmpScriptId;
+            $newIds->firstScriptId = $tmpScriptId;
             $newIds->lastScriptId = $tmpScriptId;
             return $newIds;
         }
 
-        //buckle up...
-        $dialogContents = $matches[3]; //$dialogContents will be the string between the dialog tags
-        while(!preg_match("@^\s*$@s",$dialogContents))
+        //if it gets here, we actually need to parse stuff..
+        $dialogContents = $matches[3]; //$dialogContents will be the string between the dialog tags; save this before parsing dialog attribs
+
+        //parse dialog tag
+        preg_match("@<\s*([^\s>]*)([^>]*)@is",$text,$matches);
+        $attribs = $matches[2]; //$attribs will be the string of attributes on tag (example: "mediaId='123' title='billy'")
+        while(preg_match("@^\s*([^\s=]*)\s*=\s*[\"']([^\"']*)[\"']\s*(.*)@is",$attribs,$matches))
+        {
+            //In the example:  mediaId="123" name="billy"
+            $attrib_name = $matches[1]; //mediaId
+            $attrib_value = $matches[2]; //123
+            $attribs = $matches[3]; //name="billy"
+
+            if(preg_match("@exitToTab@i",$attrib_name))               $newIds->exitToType = "TAB";      $newIds->exitToId = $attrib_value;
+            if(preg_match("@exitToScannerWithPrompt@i",$attrib_name)) $newIds->exitToType = "TAB";      $newIds->exitToId = $attrib_value;
+            if(preg_match("@exitToPlaque@i",$attrib_name))            $newIds->exitToType = "PLAQUE";   $newIds->exitToId = $attrib_value;
+            if(preg_match("@exitToWebPage@i",$attrib_name))           $newIds->exitToType = "WEB_PAGE"; $newIds->exitToId = $attrib_value;
+            if(preg_match("@exitToCharacter@i",$attrib_name))         $newIds->exitToType = "DIALOG";   $newIds->exitToId = $attrib_value;
+            if(preg_match("@exitToItem@i",$attrib_name))              $newIds->exitToType = "ITEM";     $newIds->exitToId = $attrib_value;
+        }
+
+        //parse contents of dialog tag
+        while(!preg_match("@^\s*$@s",$dialogContents))//while dialogContents not empty
         {
             preg_match("@<\s*([^\s>]*)([^>]*)@is",$dialogContents,$matches);
             $tag = $matches[1]; //$tag will be the tag type (example: "npc")
@@ -333,16 +357,38 @@ class migration extends migration_dbconnection
                     $characterId = migration_dbconnection::queryInsert("INSERT INTO dialog_characters (game_id, name, title, media_id, created) VALUES ('{$gameId}','".addslashes($title)."','".addslashes($title)."','{$rootCharacterMediaId}',CURRENT_TIMESTAMP)", "v2");
                 }
             }
-            else
+            else if(preg_match("@pc@i",$tag))
             {
+                $characterId = 0; //assume clean pc tag, use player character.
+
+                $title = "";
+                $mediaId = 0;
+                while(preg_match("@^\s*([^\s=]*)\s*=\s*[\"']([^\"']*)[\"']\s*(.*)@is",$attribs,$matches))
+                {
+                    //In the example:  mediaId="123" name="billy"
+                    $attrib_name = $matches[1]; //mediaId
+                    $attrib_value = $matches[2]; //123
+                    $attribs = $matches[3]; //name="billy"
+
+                    if(preg_match("@title@i",$attrib_name)) $title = $attrib_value;
+                    if(preg_match("@mediaId@i",$attrib_name)) $mediaId = $attrib_value;
+                    //etc... (check for other attribs here)
+                }
+
+                if($title != "" || $mediaId != 0)
+                {
+                    if($title == "") $title = $rootCharacterTitle;
+                    if($mediaId == 0) $title = $rootCharacterMediaId;
+                    $characterId = migration_dbconnection::queryInsert("INSERT INTO dialog_characters (game_id, name, title, media_id, created) VALUES ('{$gameId}','".addslashes($title)."','".addslashes($title)."','{$rootCharacterMediaId}',CURRENT_TIMESTAMP)", "v2");
+                }
                 //handle non-npc tag attributes
             }
 
             $tmpScriptId = migration_dbconnection::queryInsert("INSERT INTO dialog_scripts (game_id, dialog_id,  dialog_character_id, text, created) VALUES ('{$gameId}','{$dialogId}','{$characterId}','".addslashes($tag_contents)."',CURRENT_TIMESTAMP)", "v2");
             if($option) $newestOptionId = migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, link_id, prompt, sort_index, created) VALUES ('{$gameId}','{$dialogId}','{$newIds->lastScriptId}','{$tmpScriptId}','".addslashes($option)."','{$optionIndex}',CURRENT_TIMESTAMP)", "v2");
 
-            if(!$newIds->firstScriptId) $newIds->firstScriptId = $tmpScriptId;
             if(!$newIds->firstOptionId) $newIds->firstOptionId = $newestOptionId;
+            if(!$newIds->firstScriptId) $newIds->firstScriptId = $tmpScriptId;
             $newIds->lastScriptId = $tmpScriptId;
             $option = "Continue"; //set option for all but first script to 'continue'
             $optionIndex = 0; //set option index 0 for all but first script

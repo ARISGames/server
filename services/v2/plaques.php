@@ -115,7 +115,7 @@ class plaques extends dbconnection
             dialogs::deleteDialogOptionPack($pack);
         }
     
-        $tabs = dbconnection::queryArray("SELECT * FROM tabs WHERE type = 'PLAQUE' AND tab_detail_1 = '{$pack->plaque_id}'");
+        $tabs = dbconnection::queryArray("SELECT * FROM tabs WHERE type = 'PLAQUE' AND content_id = '{$pack->plaque_id}'");
         for($i = 0; $i < count($tabs); $i++)
         {
             $pack->tab_id = $tabs[$i]->tab_id;

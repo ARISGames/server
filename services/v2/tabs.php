@@ -20,7 +20,8 @@ class tabs extends dbconnection
             (isset($pack->type)                        ? "type,"                        : "").
             (isset($pack->name)                        ? "name,"                        : "").
             (isset($pack->icon_media_id)               ? "icon_media_id,"               : "").
-            (isset($pack->tab_detail_1)                ? "tab_detail_1,"                : "").
+            (isset($pack->content_id)                  ? "content_id,"                  : "").
+            (isset($pack->info)                        ? "info,"                        : "").
             (isset($pack->requirement_root_package_id) ? "requirement_root_package_id," : "").
             (isset($pack->sort_index)                  ? "sort_index,"                  : "").
             "created".
@@ -29,7 +30,8 @@ class tabs extends dbconnection
             (isset($pack->type)                        ? "'".addslashes($pack->type)."',"                        : "").
             (isset($pack->name)                        ? "'".addslashes($pack->name)."',"                        : "").
             (isset($pack->icon_media_id)               ? "'".addslashes($pack->icon_media_id)."',"               : "").
-            (isset($pack->tab_detail_1)                ? "'".addslashes($pack->tab_detail_1)."',"                : "").
+            (isset($pack->content_id)                  ? "'".addslashes($pack->content_id)."',"                  : "").
+            (isset($pack->info)                        ? "'".addslashes($pack->info)."',"                        : "").
             (isset($pack->requirement_root_package_id) ? "'".addslashes($pack->requirement_root_package_id)."'," : "").
             (isset($pack->sort_index)                  ? "'".addslashes($pack->sort_index)."',"                  : "").
             "CURRENT_TIMESTAMP".
@@ -51,7 +53,8 @@ class tabs extends dbconnection
             (isset($pack->type)                        ? "type                        = '".addslashes($pack->type)."', "                        : "").
             (isset($pack->name)                        ? "name                        = '".addslashes($pack->name)."', "                        : "").
             (isset($pack->icon_media_id)               ? "icon_media_id               = '".addslashes($pack->icon_media_id)."', "               : "").
-            (isset($pack->tab_detail_1)                ? "tab_detail_1                = '".addslashes($pack->tab_detail_1)."', "                : "").
+            (isset($pack->content_id)                  ? "content_id                  = '".addslashes($pack->content_id)."', "                  : "").
+            (isset($pack->info)                        ? "info                        = '".addslashes($pack->info)."', "                        : "").
             (isset($pack->requirement_root_package_id) ? "requirement_root_package_id = '".addslashes($pack->requirement_root_package_id)."', " : "").
             (isset($pack->sort_index)                  ? "sort_index                  = '".addslashes($pack->sort_index)."', "                  : "").
             "last_active = CURRENT_TIMESTAMP ".
@@ -70,7 +73,8 @@ class tabs extends dbconnection
         $tab->type                        = $sql_tab->type;
         $tab->name                        = $sql_tab->name;
         $tab->icon_media_id               = $sql_tab->icon_media_id;
-        $tab->tab_detail_1                = $sql_tab->tab_detail_1;
+        $tab->content_id                  = $sql_tab->content_id;
+        $tab->info                        = $sql_tab->info;
         $tab->requirement_root_package_id = $sql_tab->requirement_root_package_id;
         $tab->sort_index                  = $sql_tab->sort_index;
 

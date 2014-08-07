@@ -128,7 +128,7 @@ class items extends dbconnection
             dialogs::deleteDialogOptionPack($pack);
         }
     
-        $tabs = dbconnection::queryArray("SELECT * FROM tabs WHERE type = 'ITEM' AND tab_detail_1 = '{$pack->item_id}'");
+        $tabs = dbconnection::queryArray("SELECT * FROM tabs WHERE type = 'ITEM' AND content_id = '{$pack->item_id}'");
         for($i = 0; $i < count($tabs); $i++)
         {
             $pack->tab_id = $tabs[$i]->tab_id;

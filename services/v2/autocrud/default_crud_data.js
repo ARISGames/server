@@ -617,6 +617,7 @@ var CRUD_DEFAULTS = [
           "prompt":"dialogOptionPrompt",\n\
           "link_type":"DIALOG_SCRIPT",\n\
           "link_id":123,\n\
+          "link_info":"",\n\
           "requirement_root_package_id":123,\n\
           "sort_index":0\n\
         }\n\
@@ -635,6 +636,7 @@ var CRUD_DEFAULTS = [
           "prompt":"dialogOptionPrompt",\n\
           "link_type":"DIALOG_SCRIPT",\n\
           "link_id":123,\n\
+          "link_info":"",\n\
           "requirement_root_package_id":123,\n\
           "sort_index":0\n\
         }\n\
@@ -794,7 +796,8 @@ var CRUD_DEFAULTS = [
           "type":"MAP",\n\
           "name":"Map",\n\
           "icon_media_id":123,\n\
-          "tab_detail_1":0,\n\
+          "content_id":0,\n\
+          "info":"",\n\
           "requirement_root_package_id":0,\n\
           "sort_index":0\n\
         }\n\
@@ -812,7 +815,8 @@ var CRUD_DEFAULTS = [
           "type":"MAP",\n\
           "name":"Map",\n\
           "icon_media_id":123,\n\
-          "tab_detail_1":0,\n\
+          "content_id":0,\n\
+          "info":"",\n\
           "requirement_root_package_id":0,\n\
           "sort_index":0\n\
         }\n\

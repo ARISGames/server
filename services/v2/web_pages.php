@@ -100,7 +100,7 @@ class web_pages extends dbconnection
             dialogs::deleteDialogOptionPack($pack);
         }
     
-        $tabs = dbconnection::queryArray("SELECT * FROM tabs WHERE type = 'WEB_PAGE' AND tab_detail_1 = '{$pack->web_page_id}'");
+        $tabs = dbconnection::queryArray("SELECT * FROM tabs WHERE type = 'WEB_PAGE' AND content_id = '{$pack->web_page_id}'");
         for($i = 0; $i < count($tabs); $i++)
         {
             $pack->tab_id = $tabs[$i]->tab_id;
