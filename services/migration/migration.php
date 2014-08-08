@@ -416,10 +416,10 @@ class migration extends migration_dbconnection
         $tab = null;
         for($i = 0; $i < count($options); $i++)
         {
-            if($options[$i]->link_type == 'EXIT_TO_PLAQUE')   migration_dbconnection::query("UPDATE dialog_options SET link_id = '{$maps->plaques[ intval($options[$i]->link_info)]}'","v2");
-            if($options[$i]->link_type == 'EXIT_TO_ITEM')     migration_dbconnection::query("UPDATE dialog_options SET link_id = '{$maps->items[   intval($options[$i]->link_info)]}'","v2");
-            if($options[$i]->link_type == 'EXIT_TO_DIALOG')   migration_dbconnection::query("UPDATE dialog_options SET link_id = '{$maps->dialogs[ intval($options[$i]->link_info)]}'","v2");
-            if($options[$i]->link_type == 'EXIT_TO_WEB_PAGE') migration_dbconnection::query("UPDATE dialog_options SET link_id = '{$maps->webpages[intval($options[$i]->link_info)]}'","v2");
+            if($options[$i]->link_type == 'EXIT_TO_PLAQUE')   migration_dbconnection::query("UPDATE dialog_options SET link_id = '{$maps->plaques[ intval($options[$i]->link_info)]}' WHERE dialog_option_id = '{$options[$i]->dialog_option_id}'","v2");
+            if($options[$i]->link_type == 'EXIT_TO_ITEM')     migration_dbconnection::query("UPDATE dialog_options SET link_id = '{$maps->items[   intval($options[$i]->link_info)]}' WHERE dialog_option_id = '{$options[$i]->dialog_option_id}'","v2");
+            if($options[$i]->link_type == 'EXIT_TO_DIALOG')   migration_dbconnection::query("UPDATE dialog_options SET link_id = '{$maps->dialogs[ intval($options[$i]->link_info)]}' WHERE dialog_option_id = '{$options[$i]->dialog_option_id}'","v2");
+            if($options[$i]->link_type == 'EXIT_TO_WEB_PAGE') migration_dbconnection::query("UPDATE dialog_options SET link_id = '{$maps->webpages[intval($options[$i]->link_info)]}' WHERE dialog_option_id = '{$options[$i]->dialog_option_id}'","v2");
             if($options[$i]->link_type == 'EXIT_TO_TAB')
             {
                 for($j = 0; $j < count($tabs); $j++)
@@ -427,8 +427,8 @@ class migration extends migration_dbconnection
                     if(preg_match("@{$tabs[$j]->type}@i",$options[$i]->link_info))
                         $tab = $tabs[$j];
                 }
-                if($tab) migration_dbconnection::query("UPDATE dialog_options SET link_id = '{$tab->tab_id}'","v2");
-                else if($scannertab) migration_dbconnection::query("UPDATE dialog_options SET link_id = '{$scannertab->tab_id}'","v2");
+                if($tab) migration_dbconnection::query("UPDATE dialog_options SET link_id = '{$tab->tab_id}' WHERE dialog_option_id = '{$options[$i]->dialog_option_id}'","v2");
+                else if($scannertab) migration_dbconnection::query("UPDATE dialog_options SET link_id = '{$scannertab->tab_id}' WHERE dialog_option_id = '{$options[$i]->dialog_option_id}'","v2");
                 $tab = null;
             }
         }
