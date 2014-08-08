@@ -424,7 +424,7 @@ class migration extends migration_dbconnection
             {
                 for($j = 0; $j < count($tabs); $j++)
                 {
-                    if(preg_match("@{$tabs[$j]->type}@i",options[$i]->link_info))
+                    if(preg_match("@{$tabs[$j]->type}@i",$options[$i]->link_info))
                         $tab = $tabs[$j];
                 }
                 if($tab) migration_dbconnection::query("UPDATE dialog_options SET link_id = '{$tab->tab_id}'","v2");
@@ -572,8 +572,7 @@ class migration extends migration_dbconnection
             if(!$objectId) continue; //either we've encountered something invalid in the DB, or we no longer support something
 
             $newInstanceId = migration_dbconnection::queryInsert("INSERT INTO instances (game_id,object_id,object_type,qty,infinite_qty,created) VALUES ('{$v2GameId}','{$objectId}','{$newType}','{$locations[$i]->item_qty}','".(intval($locations[$i]->item_qty) < 0 ? 1 : 0)."',CURRENT_TIMESTAMP)","v2");
-            //PHIL REMEMBER TO REMOVE THE error*10 THING! THATS JUST FOR DEBUGGING MIGRATION BY MAKING ALL LOCATIONS MORE EASILY ACCESSIBLE
-            $newTriggerId = migration_dbconnection::queryInsert("INSERT INTO triggers (game_id,instance_id,scene_id,type,name,title,latitude,longitude,distance,wiggle,show_title,hidden,trigger_on_enter,created) VALUES ('{$v2GameId}','{$newInstanceId}','{$sceneId}','LOCATION','".addslashes($locations[$i]->name)."','".addslashes($locations[$i]->name)."','{$locations[$i]->latitude}','{$locations[$i]->longitude}','".($locations[$i]->error*20)."','{$locations[$i]->wiggle}','{$locations[$i]->show_title}','{$locations[$i]->hidden}','{$locations[$i]->force_view}',CURRENT_TIMESTAMP)", "v2");
+            $newTriggerId = migration_dbconnection::queryInsert("INSERT INTO triggers (game_id,instance_id,scene_id,type,name,title,latitude,longitude,distance,wiggle,show_title,hidden,trigger_on_enter,created) VALUES ('{$v2GameId}','{$newInstanceId}','{$sceneId}','LOCATION','".addslashes($locations[$i]->name)."','".addslashes($locations[$i]->name)."','{$locations[$i]->latitude}','{$locations[$i]->longitude}','".($locations[$i]->error)."','{$locations[$i]->wiggle}','{$locations[$i]->show_title}','{$locations[$i]->hidden}','{$locations[$i]->force_view}',CURRENT_TIMESTAMP)", "v2");
             $locTriggerMap[$locations[$i]->location_id] = $newTriggerId;
 
             //Note that this DUPLICATES INSTANCES!!! (1 location/qr combo from v1 creates 2 instances, a location trigger, and a qr trigger)
@@ -638,18 +637,18 @@ class migration extends migration_dbconnection
             if($tabs[$i]->tab == "ITEM")      { $newType = "ITEM";      $newDetail = $maps->items[$tabs[$i]->tab_detail_1]; }
             if($tabs[$i]->tab == "NODE")      { $newType = "PLAQUE";    $newDetail = $maps->plaques[$tabs[$i]->tab_detail_1]; }
             if($tabs[$i]->tab == "WEBPAGE")   { $newType = "WEB_PAGE";  $newDetail = $maps->webpages[$tabs[$i]->tab_detail_1]; }
-            if($tabs[$i]->tab == "QR") $newType = ($tab[$i]->tab_detail_1 == 0 || $tab[$i]->tab_detail_1 == 2) ? "SCANNER" : "DECODER";
+            if($tabs[$i]->tab == "QR") $newType = ($tabs[$i]->tab_detail_1 == 0 || $tabs[$i]->tab_detail_1 == 2) ? "SCANNER" : "DECODER";
 
-            $newTabId = migration_dbconnection::queryInsert("INSERT INTO tabs (game_id, type, sort_index, tab_detail_1, created) VALUES 
+            $newTabId = migration_dbconnection::queryInsert("INSERT INTO tabs (game_id, type, sort_index, content_id, created) VALUES 
             ('{$v2GameId}','{$newType}','{$tabs[$i]->tab_index}','{$newDetail}',CURRENT_TIMESTAMP)", "v2");
             $tabIdMap[$tabs[$i]->tab] = $newTabId;
 
             //if tab is QR in mode BOTH, we need to create two tabs in v2. above should have created SCANNER, so this will create QR
             //(literally copied/pasted above 3 lines. so if they change, this must as well)
-            if($tabs[$i]->tab == "QR" && $tab[$i]->tab_detail_1 == 0)
+            if($tabs[$i]->tab == "QR" && $tabs[$i]->tab_detail_1 == 0)
             { 
                 $newType = "DECODER";
-                $newTabId = migration_dbconnection::queryInsert("INSERT INTO tabs (game_id, type, sort_index, tab_detail_1, created) VALUES 
+                $newTabId = migration_dbconnection::queryInsert("INSERT INTO tabs (game_id, type, sort_index, content_id, created) VALUES 
                 ('{$v2GameId}','{$newType}','{$tabs[$i]->tab_index}','{$newDetail}',CURRENT_TIMESTAMP)", "v2");
                 $tabIdMap[$tabs[$i]->tab] = $newTabId;
             }
