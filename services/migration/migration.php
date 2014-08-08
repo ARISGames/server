@@ -13,6 +13,9 @@ require_once("games.php");
 require_once("migration_dbconnection.php");
 require_once("migration_return_package.php");
 
+//for in-place image resizing
+require_once("../../libraries/wideimage/WideImage.php");
+
 class migration extends migration_dbconnection
 {	
     //Would be better if it used tokens rather than name/pass combos, but v1 player has no token
@@ -145,15 +148,24 @@ class migration extends migration_dbconnection
             /*
             if(!file_exists(Config::gamedataFSPath."/".$media[$i]->file_path)) continue;
             copy(Config::gamedataFSPath."/".$media[$i]->file_path,Config::v2_gamedata_folder."/".$v2GameId."/".$filename);
-            copy(Config::gamedataFSPath."/".$v1GameId."/".$filenametitle."_128".$filenameext,Config::v2_gamedata_folder."/".$v2GameId."/".$filenametitle."_128".$filenameext);
             */
 
             //download
             try{
-            file_put_contents(Config::v2_gamedata_folder."/".$v2GameId."/".$filename,fopen("http://arisgames.org/server/gamedata/".$media[$i]->file_path,'r'));
-            file_put_contents(Config::v2_gamedata_folder."/".$v2GameId."/".$filenametitle."_128".$filenameext,fopen("http://arisgames.org/server/gamedata/".$v1GameId."/".$filenametitle."_128".$filenameext,'r'));
+                file_put_contents(Config::v2_gamedata_folder."/".$v2GameId."/".$filename,fopen("http://arisgames.org/server/gamedata/".$media[$i]->file_path,'r'));
             }
             catch(Exception $e){}
+            
+            if( //if valid extension (image) and _128 doesn't exist, but non-_128 does, do thumbnailify here
+                ($filenameext == ".jpg" || $filenameext == ".png" || $filenameext == ".gif") &&
+                file_exists(Config::v2_gamedata_folder."/".$v2GameId."/".$filename)
+                ) 
+            {
+                $thumb = WideImage::load(Config::v2_gamedata_folder."/".$v2GameId."/".$filename);
+                $thumb = $thumb->resize(128, 128, 'outside');
+                $thumb = $thumb->crop('center','center',128,128);
+                $thumb->saveToFile(Config::v2_gamedata_folder."/".$v2GameId."/".$filenametitle."_128".$filenameext);
+            }
 
             $newMediaId = migration_dbconnection::queryInsert("INSERT INTO media (game_id, file_folder, file_name, name, created) VALUES ('{$v2GameId}','{$v2GameId}','".addslashes($filename)."','".addslashes($media[$i]->name)."',CURRENT_TIMESTAMP)", "v2");
             $mediaIdMap[$media[$i]->media_id] = $newMediaId;
