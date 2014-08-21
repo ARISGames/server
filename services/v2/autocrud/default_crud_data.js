@@ -23,11 +23,19 @@ var CRUD_DEFAULTS = [
           "description":"gameDescription",\n\
           "icon_media_id":1,\n\
           "media_id":2,\n\
-          "map_type":"huh",\n\
-          "latitude":1.234,\n\
-          "longitude":2.468,\n\
-          "zoom_level":2,\n\
-          "show_player_location":true\n\
+          "ready_for_public":0,\n\
+          "intro_scene_id":0,\n\
+          "map_type":"STREET",\n\
+          "map_latitude":1.234,\n\
+          "map_longitude":2.468,\n\
+          "map_zoom_level":2,\n\
+          "map_show_player":1,\n\
+          "map_show_players":1,\n\
+          "map_offsite_mode":0,\n\
+          "notebook_allow_comments":1,\n\
+          "notebook_allow_likes":1,\n\
+          "notebook_allow_player_tags":1,\n\
+          "inventory_weight_cap":0\n\
         }\n\
         ',
     "getData":
@@ -44,11 +52,19 @@ var CRUD_DEFAULTS = [
           "description":"gameDescription",\n\
           "icon_media_id":1,\n\
           "media_id":2,\n\
-          "map_type":"huh",\n\
-          "latitude":1.234,\n\
-          "longitude":2.468,\n\
-          "zoom_level":2,\n\
-          "show_player_location":true\n\
+          "ready_for_public":0,\n\
+          "intro_scene_id":0,\n\
+          "map_type":"STREET",\n\
+          "map_latitude":1.234,\n\
+          "map_longitude":2.468,\n\
+          "map_zoom_level":2,\n\
+          "map_show_player":1,\n\
+          "map_show_players":1,\n\
+          "map_offsite_mode":0,\n\
+          "notebook_allow_comments":1,\n\
+          "notebook_allow_likes":1,\n\
+          "notebook_allow_player_tags":1,\n\
+          "inventory_weight_cap":0\n\
         }\n\
         ',
     "deleteData":

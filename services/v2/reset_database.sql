@@ -33,15 +33,16 @@ intro_scene_id INT(32) UNSIGNED NOT NULL DEFAULT 0,
 /* tab data */
     /* map */
 map_type enum('STREET','SATELLITE','HYBRID') NOT NULL DEFAULT 'STREET',
-latitude DOUBLE NOT NULL DEFAULT 0.0,
-longitude DOUBLE NOT NULL DEFAULT 0.0,
-zoom_level DOUBLE NOT NULL DEFAULT 0.0,
-show_player_location TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
-full_quick_travel TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+map_latitude DOUBLE NOT NULL DEFAULT 0.0,
+map_longitude DOUBLE NOT NULL DEFAULT 0.0,
+map_zoom_level DOUBLE NOT NULL DEFAULT 0.0,
+map_show_player TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
+map_show_players TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
+map_offsite_mode TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
     /* notes */
-allow_note_comments TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
-allow_note_player_tags TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
-allow_note_likes TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
+notebook_allow_comments TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
+notebook_allow_likes TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
+notebook_allow_player_tags TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
     /* inventory */
 inventory_weight_cap INT(32) NOT NULL DEFAULT -1,
 
