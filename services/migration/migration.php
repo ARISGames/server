@@ -35,7 +35,7 @@ class migration extends migration_dbconnection
         $userpack = new stdClass();
         $userpack->user_name = $newName;
         $userpack->password = $newPass;
-        $userpack->display_name = $newDisplay;
+        $userpack->display_name = $newDisplay ? $newDisplay : $newName;
         $userpack->email = $newEmail;
         $userpack->permission = "read_write";
         $v2User = $users->logInPack($userpack)->data;
@@ -87,7 +87,7 @@ class migration extends migration_dbconnection
         
         $oldGame = $Games->getGame($v1GameId)->data;
         //conform old terminology to new
-        $oldGame->allow_note_player_tags = $oldGame->allow_player_tags;
+        $oldGame->notebook_allow_player_tags = $oldGame->allow_player_tags;
         $oldGame->auth = $v2Auth;
         $v2GameId = $migGames->createGame($oldGame);
 
@@ -262,6 +262,15 @@ class migration extends migration_dbconnection
                 $parentScriptId = $newIds->lastScriptId;
                 migration_dbconnection::query("UPDATE dialogs SET intro_dialog_script_id = '{$newIds->firstScriptId}' WHERE dialog_id = '{$newDialogId}'","v2");
             }
+            else
+            {
+                //create empty intro script
+                $newIds = migration::textToScript(false, 0, "<dialog><pc></pc></dialog>", $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], 0, $maps);
+                $parentScriptId = $newIds->lastScriptId;
+                migration_dbconnection::query("UPDATE dialogs SET intro_dialog_script_id = '{$newIds->firstScriptId}' WHERE dialog_id = '{$newDialogId}'","v2");
+            }
+
+
             //add exit option from greeting
             if($newIds->exitToType) //copy exitToId directly, once everything is migrated we'll go back and update ids (need to wait for not-yet-migrated stuff)
                 migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, link_type, link_info, prompt, sort_index, created) VALUES ('{$v2GameId}','{$newDialogId}','{$parentScriptId}','{$newIds->exitToType}','{$newIds->exitToId}','Exit','999',CURRENT_TIMESTAMP)", "v2");
