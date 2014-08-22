@@ -87,7 +87,12 @@ class migration extends migration_dbconnection
         
         $oldGame = $Games->getGame($v1GameId)->data;
         //conform old terminology to new
+        $oldGame->published = $oldGame->ready_for_public;
+        $oldGame->notebook_allow_comments = $oldGame->allow_note_comments;
+        $oldGame->notebook_allow_likes = $oldGame->allow_note_likes;
         $oldGame->notebook_allow_player_tags = $oldGame->allow_player_tags;
+        $oldGame->map_show_player = $oldGame->show_player_location;
+        $oldGame->map_offsite_mode = $oldGame->full_quick_travel;
         $oldGame->auth = $v2Auth;
         $v2GameId = $migGames->createGame($oldGame);
 
