@@ -32,6 +32,7 @@ class games extends dbconnection
             (isset($pack->notebook_allow_likes)       ? "notebook_allow_likes,"       : "").
             (isset($pack->inventory_weight_cap)       ? "inventory_weight_cap,"       : "").
             (isset($pack->published)                  ? "published,"                  : "").
+            (isset($pack->type)                       ? "type,"                       : "").
             (isset($pack->intro_scene_id)             ? "intro_scene_id,"             : "").
             "created".
             ") VALUES (".
@@ -51,6 +52,7 @@ class games extends dbconnection
             (isset($pack->notebook_allow_likes)       ? "'".addslashes($pack->notebook_allow_likes)."',"       : "").
             (isset($pack->inventory_weight_cap)       ? "'".addslashes($pack->inventory_weight_cap)."',"       : "").
             (isset($pack->published)                  ? "'".addslashes($pack->published)."',"                  : "").
+            (isset($pack->type)                       ? "'".addslashes($pack->type)."',"                       : "").
             (isset($pack->intro_scene_id)             ? "'".addslashes($pack->intro_scene_id)."',"             : "").
             "CURRENT_TIMESTAMP".
             ")"
@@ -97,6 +99,7 @@ class games extends dbconnection
             (isset($pack->notebook_allow_likes)       ? "notebook_allow_likes       = '".addslashes($pack->notebook_allow_likes)."', "       : "").
             (isset($pack->inventory_weight_cap)       ? "inventory_weight_cap       = '".addslashes($pack->inventory_weight_cap)."', "       : "").
             (isset($pack->published)                  ? "published                  = '".addslashes($pack->published)."', "                  : "").
+            (isset($pack->type)                       ? "type                       = '".addslashes($pack->type)."', "                       : "").
             (isset($pack->intro_scene_id)             ? "intro_scene_id             = '".addslashes($pack->intro_scene_id)."', "             : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE game_id = '{$pack->game_id}'"
@@ -126,6 +129,7 @@ class games extends dbconnection
         $game->notebook_allow_likes       = $sql_game->notebook_allow_likes;
         $game->inventory_weight_cap       = $sql_game->inventory_weight_cap;
         $game->published                  = $sql_game->published;
+        $game->type                       = $sql_game->type;
         $game->intro_scene_id             = $sql_game->intro_scene_id;
 
         return $game;

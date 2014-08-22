@@ -24,6 +24,7 @@ var CRUD_DEFAULTS = [
           "icon_media_id":1,\n\
           "media_id":2,\n\
           "published":0,\n\
+          "type":"LOCATION",\n\
           "intro_scene_id":0,\n\
           "map_type":"STREET",\n\
           "map_latitude":1.234,\n\
@@ -53,6 +54,7 @@ var CRUD_DEFAULTS = [
           "icon_media_id":1,\n\
           "media_id":2,\n\
           "published":0,\n\
+          "type":"LOCATION",\n\
           "intro_scene_id":0,\n\
           "map_type":"STREET",\n\
           "map_latitude":1.234,\n\

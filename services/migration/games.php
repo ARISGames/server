@@ -28,6 +28,7 @@ class mig_games extends migration_dbconnection
             (isset($pack->notebook_allow_likes)       ? "notebook_allow_likes,"       : "").
             (isset($pack->inventory_weight_cap)       ? "inventory_weight_cap,"       : "").
             (isset($pack->published)                  ? "published,"                  : "").
+            (isset($pack->type)                       ? "type,"                       : "").
             "created".
             ") VALUES (".
             (isset($pack->name)                       ? "'".addslashes($pack->name)."',"                       : "").
@@ -46,6 +47,7 @@ class mig_games extends migration_dbconnection
             (isset($pack->notebook_allow_likes)       ? "'".addslashes($pack->notebook_allow_likes)."',"       : "").
             (isset($pack->inventory_weight_cap)       ? "'".addslashes($pack->inventory_weight_cap)."',"       : "").
             (isset($pack->published)                  ? "'".addslashes($pack->published)."',"                  : "").
+            (isset($pack->type)                       ? "'".addslashes($pack->type)."',"                       : "").
             "CURRENT_TIMESTAMP".
             ")",
         "v2");
