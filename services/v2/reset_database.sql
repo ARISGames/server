@@ -28,7 +28,7 @@ description TEXT NOT NULL,
 icon_media_id INT(32) UNSIGNED NOT NULL DEFAULT 0,
 media_id INT(32) UNSIGNED NOT NULL DEFAULT 0,
 rating INT(32) UNSIGNED NOT NULL DEFAULT 0,
-ready_for_public TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+published TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
 intro_scene_id INT(32) UNSIGNED NOT NULL DEFAULT 0,
 /* tab data */
     /* map */

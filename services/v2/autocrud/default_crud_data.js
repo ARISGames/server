@@ -23,7 +23,7 @@ var CRUD_DEFAULTS = [
           "description":"gameDescription",\n\
           "icon_media_id":1,\n\
           "media_id":2,\n\
-          "ready_for_public":0,\n\
+          "published":0,\n\
           "intro_scene_id":0,\n\
           "map_type":"STREET",\n\
           "map_latitude":1.234,\n\
@@ -52,7 +52,7 @@ var CRUD_DEFAULTS = [
           "description":"gameDescription",\n\
           "icon_media_id":1,\n\
           "media_id":2,\n\
-          "ready_for_public":0,\n\
+          "published":0,\n\
           "intro_scene_id":0,\n\
           "map_type":"STREET",\n\
           "map_latitude":1.234,\n\

@@ -31,7 +31,7 @@ class games extends dbconnection
             (isset($pack->notebook_allow_player_tags) ? "notebook_allow_player_tags," : "").
             (isset($pack->notebook_allow_likes)       ? "notebook_allow_likes,"       : "").
             (isset($pack->inventory_weight_cap)       ? "inventory_weight_cap,"       : "").
-            (isset($pack->ready_for_public)           ? "ready_for_public,"           : "").
+            (isset($pack->published)                  ? "published,"                  : "").
             (isset($pack->intro_scene_id)             ? "intro_scene_id,"             : "").
             "created".
             ") VALUES (".
@@ -50,7 +50,7 @@ class games extends dbconnection
             (isset($pack->notebook_allow_player_tags) ? "'".addslashes($pack->notebook_allow_player_tags)."'," : "").
             (isset($pack->notebook_allow_likes)       ? "'".addslashes($pack->notebook_allow_likes)."',"       : "").
             (isset($pack->inventory_weight_cap)       ? "'".addslashes($pack->inventory_weight_cap)."',"       : "").
-            (isset($pack->ready_for_public)           ? "'".addslashes($pack->ready_for_public)."',"           : "").
+            (isset($pack->published)                  ? "'".addslashes($pack->published)."',"                  : "").
             (isset($pack->intro_scene_id)             ? "'".addslashes($pack->intro_scene_id)."',"             : "").
             "CURRENT_TIMESTAMP".
             ")"
@@ -96,8 +96,8 @@ class games extends dbconnection
             (isset($pack->notebook_allow_player_tags) ? "notebook_allow_player_tags = '".addslashes($pack->notebook_allow_player_tags)."', " : "").
             (isset($pack->notebook_allow_likes)       ? "notebook_allow_likes       = '".addslashes($pack->notebook_allow_likes)."', "       : "").
             (isset($pack->inventory_weight_cap)       ? "inventory_weight_cap       = '".addslashes($pack->inventory_weight_cap)."', "       : "").
-            (isset($pack->ready_for_public)           ? "ready_for_public           = '".addslashes($pack->ready_for_public)."', "           : "").
-            (isset($pack->intro_scene_id)             ? "intro_scene_id           = '".addslashes($pack->ready_for_public)."', "             : "").
+            (isset($pack->published)                  ? "published                  = '".addslashes($pack->published)."', "                  : "").
+            (isset($pack->intro_scene_id)             ? "intro_scene_id             = '".addslashes($pack->intro_scene_id)."', "             : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE game_id = '{$pack->game_id}'"
         );
@@ -125,7 +125,7 @@ class games extends dbconnection
         $game->notebook_allow_player_tags = $sql_game->notebook_allow_player_tags;
         $game->notebook_allow_likes       = $sql_game->notebook_allow_likes;
         $game->inventory_weight_cap       = $sql_game->inventory_weight_cap;
-        $game->ready_for_public           = $sql_game->ready_for_public;
+        $game->published                  = $sql_game->published;
         $game->intro_scene_id             = $sql_game->intro_scene_id;
 
         return $game;
