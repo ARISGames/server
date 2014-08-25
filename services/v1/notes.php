@@ -220,12 +220,15 @@ class Notes extends Module
 		{
 			$searchTermsJoin = " INNER JOIN (SELECT * FROM note_content WHERE type = 'TEXT') AS textWithTerms ON {$notesName}.note_id = textWithTerms.note_id";
 			$searchTermsJoin .= " INNER JOIN (SELECT * FROM players) AS noteOwners ON {$notesName}.owner_id = noteOwners.player_id";
+			$searchTermsJoin .= " INNER JOIN (SELECT * FROM notes) AS comments ON {$notesName}.note_id = comments.parent_note_id";
+			$searchTermsJoin .= " INNER JOIN (SELECT * FROM note_content WHERE type = 'TEXT') AS commentsContent ON comments.note_id = commentsContent.note_id";
 			$searchAnds = array();
 			for($i = 0; $i < count($searchTerms); ++$i)
 			{
 				$searchOrs = array(
 					"(textWithTerms.text LIKE '%{$searchTerms[$i]}%')",
 					"(noteOwners.user_name LIKE '%{$searchTerms[$i]}%')",
+					"(commentsContent.text LIKE '%{$searchTerms[$i]}%')",
 				);
 				$searchAnds[] = "(" . implode(" OR ", $searchOrs) . ")";
 			}
