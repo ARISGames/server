@@ -218,12 +218,18 @@ class Notes extends Module
 
 		if(count($searchTerms) > 0)
 		{
-			$searchTermsJoin = " INNER JOIN (SELECT * FROM note_content WHERE type = 'TEXT'";
+			$searchTermsJoin = " INNER JOIN (SELECT * FROM note_content WHERE type = 'TEXT') AS textWithTerms ON {$notesName}.note_id = textWithTerms.note_id";
+			$searchTermsJoin .= " INNER JOIN (SELECT * FROM players) AS noteOwners ON {$notesName}.owner_id = noteOwners.player_id";
+			$searchAnds = array();
 			for($i = 0; $i < count($searchTerms); ++$i)
 			{
-				$searchTermsJoin .= " AND text LIKE '%{$searchTerms[$i]}%'";
-			} 	
-			$searchTermsJoin .= ") AS textWithTerms ON {$notesName}.note_id = textWithTerms.note_id";
+				$searchOrs = array(
+					"(textWithTerms.text LIKE '%{$searchTerms[$i]}%')",
+					"(noteOwners.user_name LIKE '%{$searchTerms[$i]}%')",
+				);
+				$searchAnds[] = "(" . implode(" OR ", $searchOrs) . ")";
+			}
+			$searchTermsWhere = " WHERE " . implode(" AND ", $searchAnds);
 		}
 
 		switch($searchType)
@@ -261,7 +267,7 @@ class Notes extends Module
 				$limitString = " LIMIT {$noteCount}";
 		}
 
-		$query = "SELECT {$notesName}.note_id FROM (SELECT note_id, created FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = '0' AND (public_to_notebook = '1' OR public_to_map = '1'){$notesSelect}) AS {$notesName}{$tagsJoin}{$searchTermsJoin}{$searchSort}{$limitString}"; 
+		$query = "SELECT {$notesName}.note_id FROM (SELECT note_id, created FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = '0' AND (public_to_notebook = '1' OR public_to_map = '1'){$notesSelect}) AS {$notesName}{$tagsJoin}{$searchTermsJoin}{$searchTermsWhere}{$searchSort}{$limitString}"; 
 		$result = Module::query($query);
 		if (mysql_error()) return new returnData(1, NULL, mysql_error());
 
