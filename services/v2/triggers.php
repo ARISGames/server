@@ -179,7 +179,7 @@ class triggers extends dbconnection
         if($reqPack)
         {
             $pack->requirement_root_package_id = $reqPack->requirement_root_package_id;
-            requirements::deleteRequirementRootPackagePack($pack);
+            requirements::deleteRequirementPackagePack($pack);
         }
 
         return new return_package(0);
