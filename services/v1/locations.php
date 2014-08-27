@@ -423,6 +423,12 @@ class Locations extends Module
 
     }
 
+    public function updateLocationLatLon($locId, $lat, $lon)
+    {
+        Module::query("UPDATE locations SET latitude = '{$lat}', longitude = '{$lon}' WHERE location_id = '{$locId}'");
+        return new returnData(0);
+    }
+
     public function updateLocation($gameId, $intLocationId, $strLocationName, $intIconMediaId, 
             $dblLatitude, $dblLongitude, $dblError,
             $strObjectType, $intObjectId,
