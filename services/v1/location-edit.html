@@ -56,6 +56,9 @@
         params = parseURLParams(document.URL);
         loc = sendRequest('locations.getLocationById/'+params.locationId,null,'GET').data;
 
+        document.getElementById("location_name_1").innerHTML = loc.name;
+        document.getElementById("location_name_2").innerHTML = loc.name;
+
         map = new google.maps.Map(document.getElementById("map_canvas"), 
           {
           center: new google.maps.LatLng(loc.latitude, loc.longitude),
@@ -79,7 +82,8 @@
 
 </script>
 </head>
-<body onload="initialize();">
+<body onload="initialize();" style="width:100%; height:100%; overflow:hidden;">
+  <div id="top_bar" style="width:100%; padding:10px; background-color:#F9F4E9; border:2px solid #E4DFD3;">Setting Location for "<span id="location_name_1">location</span>". Place the pin where you would like the "<span id="location_name_2">location</span>" to be positioned. Close this tab when done. (Location auto-saves)</div>
   <div id="map_canvas" style="width:100%; height:100%"></div>
 </body>
 </html>
