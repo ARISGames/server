@@ -721,6 +721,7 @@ class Games extends Module
         $query = "SELECT * FROM folder_contents WHERE game_id = {$gameId}";
         $result = Module::query($query);
         while($result && $row = mysql_fetch_object($result)){
+            if($row->content_type == 'PlayerNote') continue;
             $query = "INSERT INTO folder_contents (game_id, folder_id, content_type, content_id, previous_id) VALUES ('{$newGameId}', '{$newFolderIds[($row->folder_id)]}', '{$row->content_type}', '{$row->content_id}', '{$row->previous_id}')";
             Module::query($query);
 
