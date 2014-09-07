@@ -289,7 +289,7 @@ class Overlays extends Module
         return $fullOldDirAndFileName . "->" . $fullNewDirAndFileName;
     }	
 
-    //to test: http://dev.arisgames.org/server/json.php/v1.overlays.writeOverlayToDatabase/3289/1/aris218f403f29adc83670ba6ccc2833b996 
+    //to test: http://arisgames.org/server/json.php/v1.overlays.writeOverlayToDatabase/3289/1/aris218f403f29adc83670ba6ccc2833b996 
     //^ THIS EXAMPLE URL IS NOW INVALID- NEED EDITOR ID AND AUTH TOKEN
     public function writeOverlayToDatabase($gameId, $overlayId, $folderName, $editorId, $editorToken)
     {
@@ -384,7 +384,7 @@ class Overlays extends Module
 
     public function unzipOverlay($gameId, $origFile)
     { 
-        // to test: http://dev.arisgames.org/server/json.php/v1.overlays.unzipOverlay/3279/arisd1a796a25517386d80a8da5a91a05a61.zip
+        // to test: http://arisgames.org/server/json.php/v1.overlays.unzipOverlay/3279/arisd1a796a25517386d80a8da5a91a05a61.zip
         $sOverlayDir = Config::gamedataFSPath."/{$gameId}/";
         $fullFile = $sOverlayDir.$origFile;
         $zip = zip_open($fullFile); 
@@ -438,7 +438,7 @@ class Overlays extends Module
         return new returnData(0, $file);
     }
 
-    //to test: http://dev.arisgames.org/server/json.php/v1.overlays.createTiles/3069/0/MapOutline.png/43.0401/43.0445/-89.2458/-89.2333
+    //to test: http://arisgames.org/server/json.php/v1.overlays.createTiles/3069/0/MapOutline.png/43.0401/43.0445/-89.2458/-89.2333
     public function createTiles($gameId, $overlayId, $imageFileName, $minLat, $maxLat, $minLon, $maxLon)
     {
         // see https://developers.google.com/kml/articles/raster for details on gdal commands
