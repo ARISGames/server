@@ -396,7 +396,6 @@ location_bound_type ENUM('PLAYER','LOCATION'),
 min_production_distance INT(32) NOT NULL DEFAULT 0,
 max_production_distance INT(32) NOT NULL DEFAULT 0,
 production_timestamp TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
-requirement_root_package_id INT(32) UNSIGNED NOT NULL, /*requirement to spawn*/
 trigger_latitude DOUBLE NOT NULL DEFAULT 0.0,
 trigger_longitude DOUBLE NOT NULL DEFAULT 0.0,
 trigger_distance INT(32) NOT NULL DEFAULT 0,
