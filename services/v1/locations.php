@@ -450,8 +450,6 @@ class Locations extends Module
             SET 
             name = '{$strLocationName}',
                  icon_media_id = '{$intIconMediaId}', 
-                 latitude = '{$dblLatitude}', 
-                 longitude = '{$dblLongitude}', 
                  error = '{$dblError}',
                  type = '{$strObjectType}',
                  type_id = '{$intObjectId}',
@@ -491,8 +489,6 @@ class Locations extends Module
         $query = "UPDATE locations SET 
             name = '{$strLocationName}',
                  icon_media_id = '{$intIconMediaId}', 
-                 latitude = '{$dblLatitude}', 
-                 longitude = '{$dblLongitude}', 
                  error = '{$dblError}',
                  type = '{$strObjectType}',
                  type_id = '{$intObjectId}',
