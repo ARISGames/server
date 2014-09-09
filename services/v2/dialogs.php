@@ -4,6 +4,8 @@ require_once("editors.php");
 require_once("tabs.php");
 require_once("tags.php");
 require_once("instances.php");
+require_once("events.php");
+require_once("requirements.php");
 require_once("return_package.php");
 
 class dialogs extends dbconnection
@@ -515,7 +517,7 @@ class dialogs extends dbconnection
         if($reqPack)
         {
             $pack->requirement_root_package_id = $reqPack->requirement_root_package_id;
-            requirements::deleteRequirementRootPackagePack($pack);
+            requirements::deleteRequirementPackagePack($pack);
         }
 
         return new return_package(0);
