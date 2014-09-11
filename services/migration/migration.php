@@ -651,23 +651,24 @@ class migration extends migration_dbconnection
             //old: 'GPS','NEARBY','QUESTS','INVENTORY','PLAYER','QR','NOTE','STARTOVER','PICKGAME','NPC','ITEM','NODE','WEBPAGE'
             //new: 'MAP','DECODER','SCANNER','QUESTS','INVENTORY','PLAYER','NOTE','DIALOG','ITEM','PLAQUE','WEBPAGE'
             $newType = $tabs[$i]->tab;
+            $newName = "";
             $newDetail = 0;
             if($tabs[$i]->tab == "NEARBY") continue;
             if($tabs[$i]->tab == "STARTOVER") continue;
             if($tabs[$i]->tab == "PICKGAME") continue;
-            if($tabs[$i]->tab == "GPS")       { $newType = "MAP";       $newDetail = $tabs[$i]->tab_detail_1; }
-            if($tabs[$i]->tab == "QUESTS")    { $newType = "QUESTS";    $newDetail = $tabs[$i]->tab_detail_1; }
-            if($tabs[$i]->tab == "INVENTORY") { $newType = "INVENTORY"; $newDetail = $tabs[$i]->tab_detail_1; }
-            if($tabs[$i]->tab == "PLAYER")    { $newType = "PLAYER";    $newDetail = $tabs[$i]->tab_detail_1; }
-            if($tabs[$i]->tab == "NOTE")      { $newType = "NOTEBOOK";  $newDetail = $tabs[$i]->tab_detail_1; } //technically, there is a NOTE option separate from NOTEBOOK now, but was impossible in v1. so odd mapping.
-            if($tabs[$i]->tab == "NPC")       { $newType = "DIALOG";    $newDetail = $maps->dialogs[$tabs[$i]->tab_detail_1]; }
-            if($tabs[$i]->tab == "ITEM")      { $newType = "ITEM";      $newDetail = $maps->items[$tabs[$i]->tab_detail_1]; }
-            if($tabs[$i]->tab == "NODE")      { $newType = "PLAQUE";    $newDetail = $maps->plaques[$tabs[$i]->tab_detail_1]; }
-            if($tabs[$i]->tab == "WEBPAGE")   { $newType = "WEB_PAGE";  $newDetail = $maps->webpages[$tabs[$i]->tab_detail_1]; }
+            if($tabs[$i]->tab == "GPS")       { $newType = "MAP";       $newName = "Map";       $newDetail = $tabs[$i]->tab_detail_1; }
+            if($tabs[$i]->tab == "QUESTS")    { $newType = "QUESTS";    $newName = "Quests";    $newDetail = $tabs[$i]->tab_detail_1; }
+            if($tabs[$i]->tab == "INVENTORY") { $newType = "INVENTORY"; $newName = "Inventory"; $newDetail = $tabs[$i]->tab_detail_1; }
+            if($tabs[$i]->tab == "PLAYER")    { $newType = "PLAYER";    $newName = "Player";    $newDetail = $tabs[$i]->tab_detail_1; }
+            if($tabs[$i]->tab == "NOTE")      { $newType = "NOTEBOOK";  $newName = "Notebook";  $newDetail = $tabs[$i]->tab_detail_1; } //technically, there is a NOTE option separate from NOTEBOOK now, but was impossible in v1. so odd mapping.
+            if($tabs[$i]->tab == "NPC")       { $newType = "DIALOG";    $newName = "Dialog";    $newDetail = $maps->dialogs[$tabs[$i]->tab_detail_1]; }
+            if($tabs[$i]->tab == "ITEM")      { $newType = "ITEM";      $newName = "Item";      $newDetail = $maps->items[$tabs[$i]->tab_detail_1]; }
+            if($tabs[$i]->tab == "NODE")      { $newType = "PLAQUE";    $newName = "Plaque";    $newDetail = $maps->plaques[$tabs[$i]->tab_detail_1]; }
+            if($tabs[$i]->tab == "WEBPAGE")   { $newType = "WEB_PAGE";  $newName = "WebPage";   $newDetail = $maps->webpages[$tabs[$i]->tab_detail_1]; }
             if($tabs[$i]->tab == "QR") $newType = ($tabs[$i]->tab_detail_1 == 0 || $tabs[$i]->tab_detail_1 == 2) ? "SCANNER" : "DECODER";
 
-            $newTabId = migration_dbconnection::queryInsert("INSERT INTO tabs (game_id, type, sort_index, content_id, created) VALUES 
-            ('{$v2GameId}','{$newType}','{$tabs[$i]->tab_index}','{$newDetail}',CURRENT_TIMESTAMP)", "v2");
+            $newTabId = migration_dbconnection::queryInsert("INSERT INTO tabs (game_id, type, name, sort_index, content_id, created) VALUES 
+            ('{$v2GameId}','{$newType}','{$newName}','{$tabs[$i]->tab_index}','{$newDetail}',CURRENT_TIMESTAMP)", "v2");
             $tabIdMap[$tabs[$i]->tab] = $newTabId;
 
             //if tab is QR in mode BOTH, we need to create two tabs in v2. above should have created SCANNER, so this will create QR
