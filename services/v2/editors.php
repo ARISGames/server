@@ -23,7 +23,7 @@ class editors extends dbconnection
         $name = dbconnection::queryObject("SELECT name FROM games WHERE game_id = $gameId")->name;
 
         $body = "An owner of ARIS Game \"".$name."\" has promoted you to editor. Go to ".Config::WWWPath."/editor and log in to begin collaborating!";
-        Module::sendEmail($email, "You are now an editor of ARIS Game \"$name\"", $body);
+        util::sendEmail($email, "You are now an editor of ARIS Game \"$name\"", $body);
 
         return new return_package(0);	
     }	
