@@ -169,10 +169,11 @@ class users extends dbconnection
     public static function requestForgotPasswordEmail($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::requestForgotPasswordEmailPack($glob); }
     public static function requestForgotPasswordEmailPack($pack)
     {
-        if(strrpos($string, "@") === false) $user = dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$string}' LIMIT 1");
-        else                                $user = dbconnection::queryObject("SELECT * FROM users WHERE email = '{$string}' LIMIT 1");
+        if($pack->user_name && strrpos($pack->user_name, "@") === false)
+            $user = dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}' LIMIT 1");
+        else $user = dbconnection::queryObject("SELECT * FROM users WHERE email = '{$pack->email}' LIMIT 1");
 
-        if(!$user) return new return_package(4, NULL, "Not a user");
+        if(!$user) return new return_package(0);
 
         $userId = $user->user_id;
         $username = $user->user_name;
@@ -190,8 +191,8 @@ class users extends dbconnection
         <a href='".Config::serverWWWPath."/services/v2/resetpassword.html?i=$userId&j=$junk'>".Config::serverWWWPath."/services/v2/resetpassword.html?i=$userId&j=$junk</a>
         <br><br> Regards, <br>ARIS";
 
-        if(util::sendEmail($email, $subject, $body)) return new return_package(0, NULL);
-        else return new return_package(5, NULL, "Mail could not be sent");
+        util::sendEmail($email, $subject, $body);
+        return new return_package(0, NULL);
     }
 
     public static function emailUserName($strEmail)
