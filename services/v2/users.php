@@ -169,9 +169,8 @@ class users extends dbconnection
     public static function requestForgotPasswordEmail($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::requestForgotPasswordEmailPack($glob); }
     public static function requestForgotPasswordEmailPack($pack)
     {
-        if($pack->user_name && strrpos($pack->user_name, "@") === false)
-            $user = dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}' LIMIT 1");
-        else $user = dbconnection::queryObject("SELECT * FROM users WHERE email = '{$pack->email}' LIMIT 1");
+        if($pack->user_name)  $user = dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}' LIMIT 1");
+        else if($pack->email) $user = dbconnection::queryObject("SELECT * FROM users WHERE email = '{$pack->email}' LIMIT 1");
 
         if(!$user) return new return_package(0);
 
