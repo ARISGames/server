@@ -291,7 +291,7 @@ var CRUD_DEFAULTS = [
           "show_title":1,\n\
           "hidden":0,\n\
           "trigger_on_enter":0,\n\
-          "code":"abc123"\n\
+          "qr_code":"abc123"\n\
         }\n\
         ',
     "deleteData":
