@@ -421,7 +421,7 @@ class client extends dbconnection
 
         $reqQueryPack = new stdClass();
         $reqQueryPack->game_id = $pack->game_id;
-        $reqQueryPack->auth = $pack->auth;
+        $reqQueryPack->user_id = $pack->auth->user_id;
         $questQueryPack = new stdClass();
         $questQueryPack->game_id = $pack->game_id;
         $questQueryPack->auth = $pack->auth;
