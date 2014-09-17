@@ -157,6 +157,20 @@ class client extends dbconnection
     }
 
     //an odd request...
+    //Creates player scene if it doesn't already exist
+    public static function touchSceneForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::touchSceneForPlayerPack($glob); }
+    public static function touchSceneForPlayerPack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        $scene = dbconnection::queryObject("SELECT * FROM user_game_scenes WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->auth->user_id}'");
+
+        if(!$scene) dbconnection::queryInsert("INSERT INTO user_game_scenes (user_id, game_id, scene_id, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 0, CURRENT_TIMESTAMP)");
+
+        return new return_package(0);
+    }
+
+    //an odd request...
     //Creates player-owned instances for every item not already player-instantiated, with qty = 0. Makes qty transactions a million times easier.
     public static function touchItemsForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::touchItemsForPlayerPack($glob); }
     public static function touchItemsForPlayerPack($pack)
@@ -181,6 +195,15 @@ class client extends dbconnection
         return new return_package(0);
     }
 
+    public static function getSceneForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getSceneForPlayerPack($glob); }
+    public static function getSceneForPlayerPack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        $scene = dbconnection::queryObject("SELECT * FROM user_game_scenes WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->auth->user_id}'");
+        $sceneId = $scene ? $scene->scene_id : 0;
+        return new return_package(0, dbconnection::queryObject("SELECT * FROM scenes WHERE scene_id = '{$sceneId}'"));
+    }
 
     public static function getLogsForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getLogsForPlayerPack($glob); }
     public static function getLogsForPlayerPack($pack)
