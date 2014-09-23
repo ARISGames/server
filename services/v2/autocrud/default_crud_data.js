@@ -922,5 +922,34 @@ var CRUD_DEFAULTS = [
           "factory_id":123\n\
         }\n\
         '
+},
+{
+    "service":"editors",
+    "create":"editors.addEditorToGame",
+    "get":"editors.getEditorsForGame",
+    "update":"",
+    "delete":"editors.removeEditorFromGame",
+    "createData":
+        '\
+        {\n\
+          "game_id":123,\n\
+          "user_id":123\n\
+        }\n\
+        ',
+    "getData":
+        '\
+        {\n\
+          "game_id":123\n\
+        }\n\
+        ',
+    "updateData":
+        '',
+    "deleteData":
+        '\
+        {\n\
+          "game_id":123,\n\
+          "user_id":123\n\
+        }\n\
+        '
 }
 ];

@@ -13,28 +13,35 @@ class editors extends dbconnection
         util::serverErrorLog("Failed Game Editor Authentication!"); return false;
     }
 
-    public function addEditorToGame($newEditorId, $gameId, $userId, $key)
+    public static function addEditorToGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return games::addEditorToGamePack($glob); }
+    public static function addEditorToGamePack($pack)
     {
-        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write"))
-            return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = $pack->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        dbconnection::query("INSERT INTO game_editors (editor_id, game_id) VALUES ('{$newEditorId}','{$gameId}')");
-        $email = dbconnection::queryObject("SELECT email FROM editors WHERE editor_id = '{$newEditorId}'")->email;
-        $name = dbconnection::queryObject("SELECT name FROM games WHERE game_id = $gameId")->name;
-
-        $body = "An owner of ARIS Game \"".$name."\" has promoted you to editor. Go to ".Config::WWWPath."/editor and log in to begin collaborating!";
-        util::sendEmail($email, "You are now an editor of ARIS Game \"$name\"", $body);
-
+        //note $pack->user_id is DIFFERENT than $pack->auth->user_id
+        dbconnection::queryInsert("INSERT INTO user_games (game_id, user_id, created) VALUES ('{$pack->game_id}','{$pack->user_id}',CURRENT_TIMESTAMP)");
         return new return_package(0);	
-    }	
+    }
 
-    public function removeEditorFromGame($newEditorId, $gameId, $userId, $key)
+    public static function removeEditorFromGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return games::removeEditorFromGamePack($glob); }
+    public static function removeEditorFromGamePack($pack)
     {
-        if(!editors::authenticateGameEditor($gameId, $userId, $key, "read_write"))
-            return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = $pack->game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        dbconnection::query("DELETE FROM game_editors WHERE editor_id = '{$newEditorId}' AND game_id = '{$gameId}'");
-        return new return_package(0, TRUE);
+        //note $pack->user_id is DIFFERENT than $pack->auth->user_id
+        dbconnection::query("DELETE FROM user_games WHERE user_id = '{$pack->user_id}' AND game_id = '{$pack->game_id}'");
+        return new return_package(0);
+    }
+
+    public static function getEditorsForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return games::getEditorsForGamePack($glob); }
+    public static function getEditorsForGamePack($pack)
+    {
+        $editors = dbconnection::queryArray("SELECT user_id FROM user_games WHERE game_id = '{$pack->game_id}'");
+        return new return_package(0,$editors);
     }
 }
 ?>
