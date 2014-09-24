@@ -163,9 +163,10 @@ class client extends dbconnection
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
-        $scene = dbconnection::queryObject("SELECT * FROM user_game_scenes WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->auth->user_id}'");
 
-        if(!$scene) dbconnection::queryInsert("INSERT INTO user_game_scenes (user_id, game_id, scene_id, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 0, CURRENT_TIMESTAMP)");
+        $game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$pack->game_id}'");
+        $scene = dbconnection::queryObject("SELECT * FROM user_game_scenes WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->auth->user_id}'");
+        if(!$scene) dbconnection::queryInsert("INSERT INTO user_game_scenes (user_id, game_id, scene_id, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', '{$game->intro_scene_id}', CURRENT_TIMESTAMP)");
 
         return new return_package(0);
     }
@@ -225,12 +226,13 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
+        $scene = client::getSceneForPlayerPack($pack)->data;
         $gameTriggers = triggers::getTriggersForGamePack($pack)->data;
         $playerTriggers = array();
         for($i = 0; $i < count($gameTriggers); $i++)
         {
             $gameTriggers[$i]->user_id = $pack->auth->user_id;
-            if(requirements::evaluateRequirementPackagePack($gameTriggers[$i]))
+            if($gameTriggers[$i]->scene_id == $scene->scene_id && requirements::evaluateRequirementPackagePack($gameTriggers[$i]))
                 $playerTriggers[] = $gameTriggers[$i];
         }
         return new return_package(0, $playerTriggers);
@@ -321,6 +323,16 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
         dbconnection::query("UPDATE instances SET qty = '{$pack->qty}' WHERE instance_id = '{$pack->instance_id}'");
+        return new return_package(0);
+    }
+
+    public static function setPlayerScene($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::setPlayerScenePack($glob); }
+    public static function setPlayerScenePack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        dbconnection::query("UPDATE user_game_scenes SET scene_id = '{$pack->scene_id}' WHERE user_id = '{$pack->auth->user_id}' AND game_id = '{$pack->game_id}'");
         return new return_package(0);
     }
 
@@ -424,6 +436,16 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
         dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, qty, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'LOSE_ITEM', '{$pack->item_id}', '{$pack->qty}', CURRENT_TIMESTAMP);");
+        return new return_package(0);
+    }
+
+    public static function logPlayerSetScene($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::logPlayerSetScenePack($glob); }
+    public static function logPlayerSetScenePack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'CHANGE_SCENE', '{$pack->scene_id}', CURRENT_TIMESTAMP);");
         return new return_package(0);
     }
 

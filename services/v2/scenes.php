@@ -27,6 +27,11 @@ class scenes extends dbconnection
             ")"
         );
 
+        //Update game's intro scene if it doesn't yet exist
+        $game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$pack->game_id}'");
+        if(!dbconnection::queryObject("SELECT * FROM scenes WHERE scene_id = '{$game->intro_scene_id}' AND game_id = '{$game->game_id}'"))
+            dbconnection::queryUpdate("UPDATE games SET intro_scene_id = '{$pack->scene_id}' WHERE game_id = '{$pack->game_id}'");
+
         return scenes::getScenePack($pack);
     }
 
