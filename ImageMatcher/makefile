@@ -1,2 +1,0 @@
-ImageMatcher : GenerateDescriptors.cpp MatchParam.h
-	g++ -o ImageMatcher ShapeMatcher.cpp -fno-stack-protector -mmacosx-version-min=10.4 -no_compact_linkedit -L/usr/local/share/opencv/3rdparty/lib/ -arch i686 -m32 -lz -llibjasper -llibpng -llibjpeg -lopencv_core -lopencv_imgproc -lopencv_highgui -lopencv_ml -lopencv_video -lopencv_features2d -lopencv_calib3d -lopencv_objdetect -lopencv_contrib -lopencv_legacy -lopencv_flann
