@@ -166,6 +166,31 @@ class users extends dbconnection
         return new return_package(0, $users);
     }
 
+    public static function getUsersForFuzzySearch($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::getUsersForFuzzySearchPack($glob); }
+    public static function getUsersForFuzzySearchPack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $sql_users = dbconnection::queryArray("SELECT * FROM users WHERE user_name LIKE '%{$pack->search}%' OR display_name LIKE '%{$pack->search}%' OR email LIKE '%{$pack->search}%'");
+        $users = array();
+        for($i = 0; $i < count($sql_users); $i++)
+            if($ob = users::userObjectFromSQL($sql_users[$i])) $users[] = $ob;
+
+        return new return_package(0, $users);
+    }
+
+    public static function getUserForSearch($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::getUserForSearchPack($glob); }
+    public static function getUserForSearchPack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $sql_user = dbconnection::queryObject("SELECT * FROM users WHERE user_name LIKE '{$pack->search}' OR email LIKE '{$pack->search}'");
+        if($sql_user) return new return_package(0, users::userObjectFromSQL($sql_user));
+        else          return new return_package(1, NULL, "User not found");
+    }
+
     public static function requestForgotPasswordEmail($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::requestForgotPasswordEmailPack($glob); }
     public static function requestForgotPasswordEmailPack($pack)
     {
@@ -191,19 +216,7 @@ class users extends dbconnection
         <br><br> Regards, <br>ARIS";
 
         util::sendEmail($email, $subject, $body);
-        return new return_package(0, NULL);
-    }
-
-    public static function emailUserName($strEmail)
-    {
-        if(!$user = dbconnection::queryObject("SELECT * FROM users WHERE email = '{$strEmail}' LIMIT 1"))
-            return new return_package(4, NULL, "Email is not a user");
-
-        $subject = "Recover ARIS Login Information";
-        $body = "Your ARIS username is: {$user->user_name}";
-
-        if(util::sendEmail($strEmail, $subject, $body)) return new return_package(0, NULL);
-        else return new return_package(5, NULL, "Mail could not be sent");
+        return new return_package(0);
     }
 }
 ?>

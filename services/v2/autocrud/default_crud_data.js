@@ -924,6 +924,32 @@ var CRUD_DEFAULTS = [
         '
 },
 {
+    "service":"users",
+    "create":"users.createUser",
+    "get":"users.getUser",
+    "update":"",
+    "delete":"",
+    "createData":
+        '\
+        {\n\
+          "password":"abc123",\n\
+          "user_name":"test",\n\
+          "display_name":"test"\n\
+          "email":"test@test.test"\n\
+        }\n\
+        ',
+    "getData":
+        '\
+        {\n\
+          "user_id":123\n\
+        }\n\
+        ',
+    "updateData":
+        '',
+    "deleteData":
+        ''
+},
+{
     "service":"editors",
     "create":"editors.addEditorToGame",
     "get":"editors.getEditorsForGame",
