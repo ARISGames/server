@@ -13,7 +13,7 @@ class editors extends dbconnection
         util::serverErrorLog("Failed Game Editor Authentication!"); return false;
     }
 
-    public static function addEditorToGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return games::addEditorToGamePack($glob); }
+    public static function addEditorToGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return editors::addEditorToGamePack($glob); }
     public static function addEditorToGamePack($pack)
     {
         $pack->auth->game_id = $pack->game_id;
@@ -25,7 +25,7 @@ class editors extends dbconnection
         return new return_package(0);	
     }
 
-    public static function removeEditorFromGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return games::removeEditorFromGamePack($glob); }
+    public static function removeEditorFromGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return editors::removeEditorFromGamePack($glob); }
     public static function removeEditorFromGamePack($pack)
     {
         $pack->auth->game_id = $pack->game_id;
@@ -37,7 +37,7 @@ class editors extends dbconnection
         return new return_package(0);
     }
 
-    public static function getEditorsForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return games::getEditorsForGamePack($glob); }
+    public static function getEditorsForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return editors::getEditorsForGamePack($glob); }
     public static function getEditorsForGamePack($pack)
     {
         $editors = dbconnection::queryArray("SELECT user_id FROM user_games WHERE game_id = '{$pack->game_id}'");
