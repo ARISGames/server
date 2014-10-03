@@ -40,8 +40,7 @@ class editors extends dbconnection
     public static function getEditorsForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return editors::getEditorsForGamePack($glob); }
     public static function getEditorsForGamePack($pack)
     {
-        $editors = dbconnection::queryArray("SELECT user_id FROM user_games WHERE game_id = '{$pack->game_id}'");
-        return new return_package(0,$editors);
+        return users::getUsersForGamePack($pack);
     }
 }
 ?>
