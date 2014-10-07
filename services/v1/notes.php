@@ -221,14 +221,13 @@ class Notes extends Module
 			$searchTermsJoin = " LEFT JOIN note_content AS textWithTerms ON {$notesName}.note_id = textWithTerms.note_id";
 			$searchTermsJoin .= " LEFT JOIN players AS noteOwners ON {$notesName}.owner_id = noteOwners.player_id";
 			$searchTermsJoin .= " LEFT JOIN notes AS comments ON {$notesName}.note_id = comments.parent_note_id";
-			$searchTermsJoin .= " LEFT JOIN note_content AS commentsContent ON comments.note_id = commentsContent.note_id";
 			$searchAnds = array();
 			for($i = 0; $i < count($searchTerms); ++$i)
 			{
 				$searchOrs = array(
 					"(textWithTerms.text LIKE '%{$searchTerms[$i]}%')",
 					"(noteOwners.user_name LIKE '%{$searchTerms[$i]}%')",
-					"(commentsContent.text LIKE '%{$searchTerms[$i]}%')",
+					"(comments.title LIKE '%{$searchTerms[$i]}%')",
 				);
 				$searchAnds[] = "(" . implode(" OR ", $searchOrs) . ")";
 			}
