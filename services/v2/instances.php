@@ -113,7 +113,7 @@ class instances extends dbconnection
         for($i = 0; $i < count($triggers); $i++)
         {
             $pack->trigger_id = $triggers[$i]->trigger_id;
-            triggers::deleteTrigger($pack);
+            triggers::deleteTriggerPack($pack);
         }
 
         return new return_package(0);
