@@ -3,6 +3,8 @@ require_once("dbconnection.php");
 require_once("editors.php");
 require_once("return_package.php");
 
+require_once("requirements.php");
+
 class overlays extends dbconnection
 { 
     //Takes in overlay JSON, all fields optional except game_id + user_id + key

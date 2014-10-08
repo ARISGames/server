@@ -4,6 +4,9 @@ require_once("users.php");
 require_once("editors.php");
 require_once("return_package.php");
 
+require_once("tags.php");
+require_once("requirements.php");
+
 class tags extends dbconnection
 {	
     //Takes in tag JSON, all fields optional except user_id + key

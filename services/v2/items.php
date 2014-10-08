@@ -3,6 +3,14 @@ require_once("dbconnection.php");
 require_once("editors.php");
 require_once("return_package.php");
 
+require_once("dialogs.php");
+require_once("tabs.php");
+require_once("tags.php");
+require_once("instances.php");
+require_once("factories.php");
+require_once("events.php");
+require_once("requirements.php");
+
 class items extends dbconnection
 {
     //Takes in item JSON, all fields optional except game_id + user_id + key
