@@ -157,6 +157,21 @@ class client extends dbconnection
     }
 
     //an odd request...
+    //Creates player scene if it doesn't already exist
+    public static function touchSceneForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::touchSceneForPlayerPack($glob); }
+    public static function touchSceneForPlayerPack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$pack->game_id}'");
+        $scene = dbconnection::queryObject("SELECT * FROM user_game_scenes WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->auth->user_id}'");
+        if(!$scene) dbconnection::queryInsert("INSERT INTO user_game_scenes (user_id, game_id, scene_id, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', '{$game->intro_scene_id}', CURRENT_TIMESTAMP)");
+
+        return new return_package(0);
+    }
+
+    //an odd request...
     //Creates player-owned instances for every item not already player-instantiated, with qty = 0. Makes qty transactions a million times easier.
     public static function touchItemsForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::touchItemsForPlayerPack($glob); }
     public static function touchItemsForPlayerPack($pack)
@@ -181,6 +196,15 @@ class client extends dbconnection
         return new return_package(0);
     }
 
+    public static function getSceneForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getSceneForPlayerPack($glob); }
+    public static function getSceneForPlayerPack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        $scene = dbconnection::queryObject("SELECT * FROM user_game_scenes WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->auth->user_id}'");
+        $sceneId = $scene ? $scene->scene_id : 0;
+        return new return_package(0, dbconnection::queryObject("SELECT * FROM scenes WHERE scene_id = '{$sceneId}'"));
+    }
 
     public static function getLogsForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getLogsForPlayerPack($glob); }
     public static function getLogsForPlayerPack($pack)
@@ -202,12 +226,13 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
+        $scene = client::getSceneForPlayerPack($pack)->data;
         $gameTriggers = triggers::getTriggersForGamePack($pack)->data;
         $playerTriggers = array();
         for($i = 0; $i < count($gameTriggers); $i++)
         {
             $gameTriggers[$i]->user_id = $pack->auth->user_id;
-            if(requirements::evaluateRequirementPackagePack($gameTriggers[$i]))
+            if($gameTriggers[$i]->scene_id == $scene->scene_id && requirements::evaluateRequirementPackagePack($gameTriggers[$i]))
                 $playerTriggers[] = $gameTriggers[$i];
         }
         return new return_package(0, $playerTriggers);
@@ -301,6 +326,16 @@ class client extends dbconnection
         return new return_package(0);
     }
 
+    public static function setPlayerScene($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::setPlayerScenePack($glob); }
+    public static function setPlayerScenePack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        dbconnection::query("UPDATE user_game_scenes SET scene_id = '{$pack->scene_id}' WHERE user_id = '{$pack->auth->user_id}' AND game_id = '{$pack->game_id}'");
+        return new return_package(0);
+    }
+
     public static function logPlayerResetGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::logPlayerResetGamePack($glob); }
     public static function logPlayerResetGamePack($pack)
     {
@@ -309,8 +344,9 @@ class client extends dbconnection
 
         dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'RESET_GAME', CURRENT_TIMESTAMP);");
         dbconnection::query("UPDATE user_log SET deleted = 1 WHERE user_id = '{$pack->auth->user_id}' AND game_id = '{$pack->game_id}'");
-        //ok technically does more than just 'logs'
+        //ok technically does more than just 'logs' //so should be separated into own func
         dbconnection::query("DELETE FROM instances WHERE game_id = '{$pack->game_id}' AND owner_id = '{$pack->auth->user_id}' AND owner_id != 0"); //extra '!= 0' to prevent accidentally deleting all non player instances
+        dbconnection::query("DELETE FROM user_game_scenes WHERE user_id = '{$pack->auth->user_id}' AND game_id = '{$pack->game_id}'");
         return new return_package(0);
     }
 
@@ -404,6 +440,16 @@ class client extends dbconnection
         return new return_package(0);
     }
 
+    public static function logPlayerSetScene($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::logPlayerSetScenePack($glob); }
+    public static function logPlayerSetScenePack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'CHANGE_SCENE', '{$pack->scene_id}', CURRENT_TIMESTAMP);");
+        return new return_package(0);
+    }
+
     //analyzes the player log to see if any other logs should exist (QUEST_COMPLETE for example is deterministic on the existence of other logs)
     public static function checkForCascadingLogs($pack)
     {
@@ -421,7 +467,7 @@ class client extends dbconnection
 
         $reqQueryPack = new stdClass();
         $reqQueryPack->game_id = $pack->game_id;
-        $reqQueryPack->auth = $pack->auth;
+        $reqQueryPack->user_id = $pack->auth->user_id;
         $questQueryPack = new stdClass();
         $questQueryPack->game_id = $pack->game_id;
         $questQueryPack->auth = $pack->auth;

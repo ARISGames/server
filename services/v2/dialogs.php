@@ -1,12 +1,13 @@
 <?php
 require_once("dbconnection.php");
 require_once("editors.php");
+require_once("return_package.php");
+
 require_once("tabs.php");
 require_once("tags.php");
 require_once("instances.php");
 require_once("events.php");
 require_once("requirements.php");
-require_once("return_package.php");
 
 class dialogs extends dbconnection
 {

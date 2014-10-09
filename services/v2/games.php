@@ -81,6 +81,15 @@ class games extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
+        //ensure requested scene_id exists, otherwise pick one from list of existing scenes
+        //this is a hack, in case you were wondering...
+        if(!dbconnection::queryObject("SELECT * FROM scenes WHERE scene_id = '{$pack->intro_scene_id}' AND game_id = '{$pack->game_id}'"))
+        {
+            $pack->intro_scene_id = 0; //fallback if we can't find a good one
+            $scenes = dbconnection::queryArray("SELECT * FROM scenes WHERE game_id = '{$pack->game_id}'");
+            if(count($scenes) > 0) $pack->intro_scene_id = $scenes[0]->scene_id;
+        }
+
         dbconnection::query(
             "UPDATE games SET ".
             (isset($pack->name)                       ? "name                       = '".addslashes($pack->name)."', "                       : "").

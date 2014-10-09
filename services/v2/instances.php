@@ -3,6 +3,8 @@ require_once("dbconnection.php");
 require_once("editors.php");
 require_once("return_package.php");
 
+require_once("triggers.php");
+
 class instances extends dbconnection
 {	
     //Takes in instance JSON, all fields optional except user_id + key
@@ -112,7 +114,7 @@ class instances extends dbconnection
         for($i = 0; $i < count($triggers); $i++)
         {
             $pack->trigger_id = $triggers[$i]->trigger_id;
-            triggers::deleteTrigger($pack);
+            triggers::deleteTriggerPack($pack);
         }
 
         return new return_package(0);

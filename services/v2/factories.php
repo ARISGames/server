@@ -3,6 +3,9 @@ require_once("dbconnection.php");
 require_once("editors.php");
 require_once("return_package.php");
 
+require_once("instances.php");
+require_once("requirements.php");
+
 class factories extends dbconnection
 {	
     //Takes in factory JSON, all fields optional except game_id + user_id + key

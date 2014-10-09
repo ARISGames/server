@@ -244,6 +244,7 @@ class migration extends migration_dbconnection
         $scriptMap[0] = 0;
         $optionMap = array();
         $optionMap[0] = 0;
+        $characters = array(); //not quite a map- actually a list of character objects
 
         $dialogs = migration_dbconnection::queryArray("SELECT * FROM npcs WHERE game_id = '{$v1GameId}'","v1");
 
@@ -258,20 +259,20 @@ class migration extends migration_dbconnection
             $dialogMap[$dialogs[$i]->npc_id] = 0; //set it to 0 in case of failure
 
             $newDialogId = migration_dbconnection::queryInsert("INSERT INTO dialogs (game_id, name, description, icon_media_id, created) VALUES ('{$v2GameId}','".addslashes($dialogs[$i]->name)."','".addslashes($dialogs[$i]->description)."','{$maps->media[$dialogs[$i]->icon_media_id]}',CURRENT_TIMESTAMP)", "v2");
-            $newCharacterId = migration_dbconnection::queryInsert("INSERT INTO dialog_characters (game_id, name, title, media_id, created) VALUES ('{$v2GameId}','".addslashes($dialogs[$i]->name)."','".addslashes($dialogs[$i]->name)."','{$maps->media[$dialogs[$i]->media_id]}',CURRENT_TIMESTAMP)", "v2");
+            $newCharacterId = migration::characterIdForGameNameMedia($v2GameId,$dialogs[$i]->name,$maps->media[$dialogs[$i]->media_id],&$characters);
 
             $parentScriptId = 0;
             //create intro script if exists, and treat it as the root script for all others
             if($dialogs[$i]->text && $dialogs[$i]->text != "")
             {
-                $newIds = migration::textToScript(false, 0, $dialogs[$i]->text, $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], 0, $maps);
+                $newIds = migration::textToScript(false, 0, $dialogs[$i]->text, $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], 0, &$characters, $maps);
                 $parentScriptId = $newIds->lastScriptId;
                 migration_dbconnection::query("UPDATE dialogs SET intro_dialog_script_id = '{$newIds->firstScriptId}' WHERE dialog_id = '{$newDialogId}'","v2");
             }
             else
             {
                 //create empty intro script
-                $newIds = migration::textToScript(false, 0, "<dialog><pc></pc></dialog>", $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], 0, $maps);
+                $newIds = migration::textToScript(false, 0, "<dialog><pc></pc></dialog>", $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], 0, &$characters, $maps);
                 $parentScriptId = $newIds->lastScriptId;
                 migration_dbconnection::query("UPDATE dialogs SET intro_dialog_script_id = '{$newIds->firstScriptId}' WHERE dialog_id = '{$newDialogId}'","v2");
             }
@@ -287,7 +288,7 @@ class migration extends migration_dbconnection
             for($j = 0; $j < count($options); $j++)
             {
                 $node = migration_dbconnection::queryObject("SELECT * FROM nodes WHERE node_id = '{$options[$j]->node_id}'","v1");
-                $newIds = migration::textToScript($options[$j]->text, $options[$j]->sort_index, $node->text, $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], $parentScriptId, $maps);
+                $newIds = migration::textToScript($options[$j]->text, $options[$j]->sort_index, $node->text, $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], $parentScriptId, &$characters, $maps);
                 $optionMap[$options[$j]->node_id] = $newIds->firstOptionId;
                 $scriptMap[$options[$j]->node_id] = $newIds->lastScriptId;
                 if($newIds->exitToType) //copy exitToId directly, once everything is migrated we'll go back and update ids (need to wait for not-yet-migrated stuff)
@@ -307,10 +308,28 @@ class migration extends migration_dbconnection
     }
 
     //helper for migrateDialogs
+    //returns id of existing character with same name/image, or creates new one
+    public function characterIdForGameNameMedia($gameId, $name, $mediaId, $characters)
+    {
+        for($i = 0; $i < count($characters); $i++)
+        {
+            if($characters[$i]->name == $name && $characters[$i]->media_id == $mediaId)
+                return $characters[$i]->dialog_character_id;
+        }
+
+        $c = new stdClass;
+        $c->name = $name;
+        $c->media_id = $mediaId;
+        $c->dialog_character_id = migration_dbconnection::queryInsert("INSERT INTO dialog_characters (game_id, name, title, media_id, created) VALUES ('{$gameId}','".addslashes($name)."','".addslashes($name)."','{$mediaId}',CURRENT_TIMESTAMP)", "v2");
+        $characters[] = $c;
+        return $c->dialog_character_id;
+    }
+
+    //helper for migrateDialogs
     //returns package w/id of the first option, and first and last of the newly created chain of scripts. 
     //(aka the option that inherits the node's requirements, the script to start it off, and the to-be-parent of any more scripts)
     //disclaimer: you should probably read up on regular expressions before messing around with this...
-    public function textToScript($option, $optionIndex, $text, $gameId, $dialogId, $rootCharacterId, $rootCharacterTitle, $rootCharacterMediaId, $parentScriptId, $maps)
+    public function textToScript($option, $optionIndex, $text, $gameId, $dialogId, $rootCharacterId, $rootCharacterTitle, $rootCharacterMediaId, $parentScriptId, $characters, $maps)
     {
         //testing scripts
         //$text = "<dialog banana=\"testing\" butNot=\"12\" America='555'><npc mediaId = \"59\">\nHere is the first thing I will say</npc><npc mediaId = \"60\">Second Thing!!!</npc></dialog>";
@@ -324,7 +343,7 @@ class migration extends migration_dbconnection
         $newIds->exitToId = 0;
         
         //The case where no parsing is necessary 
-        if(!preg_match("@<\s*dialog(ue)?\s*(\w*\s*=\s*[\"']\w*[\"']\s*)*>(.*?)<\s*/\s*dialog(ue)?\s*>@is",$text,$matches))
+        if(!preg_match("@<\s*dialog(ue)?\s*(\w*\s*=\s*[\"'][^\"']*[\"']\s*)*>(.*?)<\s*/\s*dialog(ue)?\s*>@is",$text,$matches))
         {
             //phew. Nothing complicated. 
             $tmpScriptId = migration_dbconnection::queryInsert("INSERT INTO dialog_scripts (game_id, dialog_id, dialog_character_id, text, created) VALUES ('{$gameId}','{$dialogId}','{$rootCharacterId}','".addslashes($text)."',CURRENT_TIMESTAMP)", "v2");
@@ -387,8 +406,9 @@ class migration extends migration_dbconnection
                 if($title != "" || $mediaId != 0)
                 {
                     if($title == "") $title = $rootCharacterTitle;
-                    if($mediaId == 0) $title = $rootCharacterMediaId;
-                    $characterId = migration_dbconnection::queryInsert("INSERT INTO dialog_characters (game_id, name, title, media_id, created) VALUES ('{$gameId}','".addslashes($title)."','".addslashes($title)."','{$rootCharacterMediaId}',CURRENT_TIMESTAMP)", "v2");
+                    if($mediaId == 0) $mediaId = $rootCharacterMediaId;
+                    else $mediaId = $maps->media[$mediaId];
+                    $characterId = migration::characterIdForGameNameMedia($gameId, $title, $mediaId, &$characters);
                 }
             }
             else if(preg_match("@pc@i",$tag))
@@ -412,8 +432,9 @@ class migration extends migration_dbconnection
                 if($title != "" || $mediaId != 0)
                 {
                     if($title == "") $title = $rootCharacterTitle;
-                    if($mediaId == 0) $title = $rootCharacterMediaId;
-                    $characterId = migration_dbconnection::queryInsert("INSERT INTO dialog_characters (game_id, name, title, media_id, created) VALUES ('{$gameId}','".addslashes($title)."','".addslashes($title)."','{$rootCharacterMediaId}',CURRENT_TIMESTAMP)", "v2");
+                    if($mediaId == 0) $mediaId = $rootCharacterMediaId;
+                    else $mediaId = $maps->media[$mediaId];
+                    $characterId = migration::characterIdForGameNameMedia($gameId, $title, $mediaId, &$characters);
                 }
                 //handle non-npc tag attributes
             }
@@ -651,23 +672,24 @@ class migration extends migration_dbconnection
             //old: 'GPS','NEARBY','QUESTS','INVENTORY','PLAYER','QR','NOTE','STARTOVER','PICKGAME','NPC','ITEM','NODE','WEBPAGE'
             //new: 'MAP','DECODER','SCANNER','QUESTS','INVENTORY','PLAYER','NOTE','DIALOG','ITEM','PLAQUE','WEBPAGE'
             $newType = $tabs[$i]->tab;
+            $newName = "";
             $newDetail = 0;
             if($tabs[$i]->tab == "NEARBY") continue;
             if($tabs[$i]->tab == "STARTOVER") continue;
             if($tabs[$i]->tab == "PICKGAME") continue;
-            if($tabs[$i]->tab == "GPS")       { $newType = "MAP";       $newDetail = $tabs[$i]->tab_detail_1; }
-            if($tabs[$i]->tab == "QUESTS")    { $newType = "QUESTS";    $newDetail = $tabs[$i]->tab_detail_1; }
-            if($tabs[$i]->tab == "INVENTORY") { $newType = "INVENTORY"; $newDetail = $tabs[$i]->tab_detail_1; }
-            if($tabs[$i]->tab == "PLAYER")    { $newType = "PLAYER";    $newDetail = $tabs[$i]->tab_detail_1; }
-            if($tabs[$i]->tab == "NOTE")      { $newType = "NOTEBOOK";  $newDetail = $tabs[$i]->tab_detail_1; } //technically, there is a NOTE option separate from NOTEBOOK now, but was impossible in v1. so odd mapping.
-            if($tabs[$i]->tab == "NPC")       { $newType = "DIALOG";    $newDetail = $maps->dialogs[$tabs[$i]->tab_detail_1]; }
-            if($tabs[$i]->tab == "ITEM")      { $newType = "ITEM";      $newDetail = $maps->items[$tabs[$i]->tab_detail_1]; }
-            if($tabs[$i]->tab == "NODE")      { $newType = "PLAQUE";    $newDetail = $maps->plaques[$tabs[$i]->tab_detail_1]; }
-            if($tabs[$i]->tab == "WEBPAGE")   { $newType = "WEB_PAGE";  $newDetail = $maps->webpages[$tabs[$i]->tab_detail_1]; }
+            if($tabs[$i]->tab == "GPS")       { $newType = "MAP";       $newName = "Map";       $newDetail = $tabs[$i]->tab_detail_1; }
+            if($tabs[$i]->tab == "QUESTS")    { $newType = "QUESTS";    $newName = "Quests";    $newDetail = $tabs[$i]->tab_detail_1; }
+            if($tabs[$i]->tab == "INVENTORY") { $newType = "INVENTORY"; $newName = "Inventory"; $newDetail = $tabs[$i]->tab_detail_1; }
+            if($tabs[$i]->tab == "PLAYER")    { $newType = "PLAYER";    $newName = "Player";    $newDetail = $tabs[$i]->tab_detail_1; }
+            if($tabs[$i]->tab == "NOTE")      { $newType = "NOTEBOOK";  $newName = "Notebook";  $newDetail = $tabs[$i]->tab_detail_1; } //technically, there is a NOTE option separate from NOTEBOOK now, but was impossible in v1. so odd mapping.
+            if($tabs[$i]->tab == "NPC")       { $newType = "DIALOG";    $newName = "Dialog";    $newDetail = $maps->dialogs[$tabs[$i]->tab_detail_1]; }
+            if($tabs[$i]->tab == "ITEM")      { $newType = "ITEM";      $newName = "Item";      $newDetail = $maps->items[$tabs[$i]->tab_detail_1]; }
+            if($tabs[$i]->tab == "NODE")      { $newType = "PLAQUE";    $newName = "Plaque";    $newDetail = $maps->plaques[$tabs[$i]->tab_detail_1]; }
+            if($tabs[$i]->tab == "WEBPAGE")   { $newType = "WEB_PAGE";  $newName = "WebPage";   $newDetail = $maps->webpages[$tabs[$i]->tab_detail_1]; }
             if($tabs[$i]->tab == "QR") $newType = ($tabs[$i]->tab_detail_1 == 0 || $tabs[$i]->tab_detail_1 == 2) ? "SCANNER" : "DECODER";
 
-            $newTabId = migration_dbconnection::queryInsert("INSERT INTO tabs (game_id, type, sort_index, content_id, created) VALUES 
-            ('{$v2GameId}','{$newType}','{$tabs[$i]->tab_index}','{$newDetail}',CURRENT_TIMESTAMP)", "v2");
+            $newTabId = migration_dbconnection::queryInsert("INSERT INTO tabs (game_id, type, name, sort_index, content_id, created) VALUES 
+            ('{$v2GameId}','{$newType}','{$newName}','{$tabs[$i]->tab_index}','{$newDetail}',CURRENT_TIMESTAMP)", "v2");
             $tabIdMap[$tabs[$i]->tab] = $newTabId;
 
             //if tab is QR in mode BOTH, we need to create two tabs in v2. above should have created SCANNER, so this will create QR

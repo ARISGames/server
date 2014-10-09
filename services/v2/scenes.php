@@ -1,9 +1,10 @@
 <?php
 require_once("dbconnection.php");
 require_once("editors.php");
+require_once("return_package.php");
+
 require_once("instances.php");
 require_once("triggers.php");
-require_once("return_package.php");
 
 class scenes extends dbconnection
 {	
@@ -26,6 +27,11 @@ class scenes extends dbconnection
             "CURRENT_TIMESTAMP".
             ")"
         );
+
+        //Update game's intro scene if it doesn't yet exist
+        $game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$pack->game_id}'");
+        if(!dbconnection::queryObject("SELECT * FROM scenes WHERE scene_id = '{$game->intro_scene_id}' AND game_id = '{$game->game_id}'"))
+            dbconnection::query("UPDATE games SET intro_scene_id = '{$pack->scene_id}' WHERE game_id = '{$pack->game_id}'");
 
         return scenes::getScenePack($pack);
     }

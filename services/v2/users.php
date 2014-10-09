@@ -101,6 +101,33 @@ class users extends dbconnection
         return new return_package(0, NULL);
     }	
 
+    private static function breakPassword($userId)
+    {
+        $u = dbconnection::queryObject("SELECT hash FROM users WHERE user_id = '{$user_id}'");
+        if($u) return MD5($u->hash);
+        return MD5($userId."plzstophackingkthxbi");
+    }
+
+    public static function fixPassword($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::fixPasswordPack($glob); }
+    public static function fixPasswordPack($pack)
+    {	
+        $user_id = addslashes($pack->user_id);
+        $junk = addslashes($pack->junk);
+        $newPass  = addslashes($pack->new_password);
+
+        if($junk != users::breakPassword($user_id)) return new returnData(0); //fail, but don't make it obvious
+
+        //if changing password, invalidate all keys
+        $salt       = util::rand_string(64);
+        $hash       = hash("sha256",$salt.$newPass);
+        $read       = util::rand_string(64);
+        $write      = util::rand_string(64);
+        $read_write = util::rand_string(64);
+        dbconnection::query("UPDATE users SET salt = '{$salt}', hash = '{$hash}', read_key = '{$read_ley}', write_key = '{$write_key}', read_write_key = '{$read_write_key}' WHERE user_id = '{$user_id}'");
+
+        return new return_package(0, NULL);
+    }	
+
     public static function userObjectFromSQL($sql_user)
     {
         //parses only public data into object
@@ -139,38 +166,57 @@ class users extends dbconnection
         return new return_package(0, $users);
     }
 
-    public static function resetAndEmailNewPassword($strEmail)
+    public static function getUsersForFuzzySearch($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::getUsersForFuzzySearchPack($glob); }
+    public static function getUsersForFuzzySearchPack($pack)
     {
-        //oh god terrible email validation
-        $user = null;
-        if(strrpos($strEmail, "@") === false) $user = dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$strEmail}' LIMIT 1");
-        else                                  $user = dbconnection::queryObject("SELECT * FROM users WHERE email = '{$strEmail}' LIMIT 1");
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        if(!$user) return new return_package(4, NULL, "Not a user");
+        $sql_users = dbconnection::queryArray("SELECT * FROM users WHERE user_name LIKE '%{$pack->search}%' OR display_name LIKE '%{$pack->search}%' OR email LIKE '%{$pack->search}%'");
+        $users = array();
+        for($i = 0; $i < count($sql_users); $i++)
+            if($ob = users::userObjectFromSQL($sql_users[$i])) $users[] = $ob;
+
+        return new return_package(0, $users);
+    }
+
+    public static function getUserForSearch($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::getUserForSearchPack($glob); }
+    public static function getUserForSearchPack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $sql_user = dbconnection::queryObject("SELECT * FROM users WHERE user_name LIKE '{$pack->search}' OR email LIKE '{$pack->search}'");
+        if($sql_user) return new return_package(0, users::userObjectFromSQL($sql_user));
+        else          return new return_package(1, NULL, "User not found");
+    }
+
+    public static function requestForgotPasswordEmail($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::requestForgotPasswordEmailPack($glob); }
+    public static function requestForgotPasswordEmailPack($pack)
+    {
+        if($pack->user_name)  $user = dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}' LIMIT 1");
+        else if($pack->email) $user = dbconnection::queryObject("SELECT * FROM users WHERE email = '{$pack->email}' LIMIT 1");
+
+        if(!$user) return new return_package(0);
 
         $userId = $user->user_id;
         $username = $user->user_name;
         $email = $user->email;
-        $scrambledpassword = MD5($user->password);
+        $junk = users::breakPassword($userId);
 
         //email it to them
         $subject = "ARIS Password Request";
-        $body = "We received a forgotten password request for your ARIS account. If you did not make this request, do nothing and your account info will not change. <br><br>To reset your password, simply click the link below. Please remember that passwords are case sensitive. If you are not able to click on the link, please copy and paste it into your web browser.<br><br> <a href='".Config::serverWWWPath."/resetpassword.php?t=p&i=$userId&p=$scrambledpassword'>".Config::serverWWWPath."/resetpassword.php?t=p&i=$userId&p=$scrambledpassword</a> <br><br> Regards, <br>ARIS";
+        $body = "We received a forgotten password request for your ARIS account.
+        If you did not make this request, do nothing and your account info will not change.
+        <br><br>To reset your password, simply click the link below.
+        Please remember that passwords are case sensitive.
+        If you are not able to click on the link, please copy and paste it into your web browser.
+        <br><br>
+        <a href='".Config::serverWWWPath."/services/v2/resetpassword.html?i=$userId&j=$junk'>".Config::serverWWWPath."/services/v2/resetpassword.html?i=$userId&j=$junk</a>
+        <br><br> Regards, <br>ARIS";
 
-        if(util::sendEmail($email, $subject, $body)) return new return_package(0, NULL);
-        else return new return_package(5, NULL, "Mail could not be sent");
-    }
-
-    public static function emailUserName($strEmail)
-    {
-        if(!$user = dbconnection::queryObject("SELECT * FROM users WHERE email = '{$strEmail}' LIMIT 1"))
-            return new return_package(4, NULL, "Email is not a user");
-
-        $subject = "Recover ARIS Login Information";
-        $body = "Your ARIS username is: {$user->user_name}";
-
-        if(util::sendEmail($strEmail, $subject, $body)) return new return_package(0, NULL);
-        else return new return_package(5, NULL, "Mail could not be sent");
+        util::sendEmail($email, $subject, $body);
+        return new return_package(0);
     }
 }
 ?>

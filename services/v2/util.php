@@ -60,12 +60,11 @@ class util
         fclose($errorLogFile);
     }
 
-/*
     public static function sendEmail($to, $subject, $body)
     {
         include_once('../../libraries/phpmailer/class.phpmailer.php');
 
-        if (empty($to)) return false;
+        if(empty($to)) return false;
 
         $mail = new phpmailer;
         $mail->PluginDir = '../../libraries/phpmailer';
@@ -80,10 +79,9 @@ class util
 
         $mail->WordWrap = 79;
 
-        if ($mail->Send()) return true;
+        if($mail->Send()) return true;
         else return false;
     }
-*/
 
     public static function mToDeg($meters) // lat/lon ^ -> meters
     {

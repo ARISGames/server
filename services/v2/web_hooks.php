@@ -3,6 +3,8 @@ require_once("dbconnection.php");
 require_once("editors.php");
 require_once("return_package.php");
 
+require_once("requirements.php");
+
 class web_hooks extends dbconnection
 {	
     //Takes in web_hook JSON, all fields optional except game_id + user_id + key

@@ -221,14 +221,13 @@ class Notes extends Module
 			$searchTermsJoin = " LEFT JOIN note_content AS textWithTerms ON {$notesName}.note_id = textWithTerms.note_id";
 			$searchTermsJoin .= " LEFT JOIN players AS noteOwners ON {$notesName}.owner_id = noteOwners.player_id";
 			$searchTermsJoin .= " LEFT JOIN notes AS comments ON {$notesName}.note_id = comments.parent_note_id";
-			$searchTermsJoin .= " LEFT JOIN note_content AS commentsContent ON comments.note_id = commentsContent.note_id";
 			$searchAnds = array();
 			for($i = 0; $i < count($searchTerms); ++$i)
 			{
 				$searchOrs = array(
 					"(textWithTerms.text LIKE '%{$searchTerms[$i]}%')",
 					"(noteOwners.user_name LIKE '%{$searchTerms[$i]}%')",
-					"(commentsContent.text LIKE '%{$searchTerms[$i]}%')",
+					"(comments.title LIKE '%{$searchTerms[$i]}%')",
 				);
 				$searchAnds[] = "(" . implode(" OR ", $searchOrs) . ")";
 			}
@@ -238,15 +237,19 @@ class Notes extends Module
 		switch($searchType)
 		{	
 			case Module::kTopSearch:
-				$searchSort  = " LEFT JOIN note_likes ON {$notesName}.note_id = note_likes.note_id LEFT JOIN (SELECT player_id FROM players WHERE curator = '1') AS curators ON note_likes.player_id = curators.player_id GROUP BY {$notesName}.note_id ORDER BY COUNT(curators.player_id) DESC, {$notesName}.created DESC";
+				$searchJoin = " LEFT JOIN note_likes ON {$notesName}.note_id = note_likes.note_id LEFT JOIN (SELECT player_id FROM players WHERE curator = '1') AS curators ON note_likes.player_id = curators.player_id";
+				$searchSort  = " GROUP BY {$notesName}.note_id ORDER BY COUNT(curators.player_id) DESC, {$notesName}.created DESC";
 				break;
 			case Module::kPopularSearch:
-				$searchSort  = " LEFT JOIN note_likes ON {$notesName}.note_id = note_likes.note_id LEFT JOIN note_shares ON {$notesName}.note_id = note_shares.note_id LEFT JOIN notes AS note_comments ON {$notesName}.note_id = note_comments.owner_id GROUP BY {$notesName}.note_id ORDER BY (COUNT(note_likes.note_id) + COUNT(note_shares.note_id) + COUNT(note_comments.note_id)) DESC, {$notesName}.created DESC";
+				$searchJoin = " LEFT JOIN note_likes ON {$notesName}.note_id = note_likes.note_id LEFT JOIN note_shares ON {$notesName}.note_id = note_shares.note_id LEFT JOIN notes AS note_comments ON {$notesName}.note_id = note_comments.owner_id";
+				$searchSort  = " GROUP BY {$notesName}.note_id ORDER BY (COUNT(note_likes.note_id) + COUNT(note_shares.note_id) + COUNT(note_comments.note_id)) DESC, {$notesName}.created DESC";
 				break;
 			case Module::kRecentSearch:
+				$searchJoin = "";
 				$searchSort  = " ORDER BY {$notesName}.created DESC";
 				break;
 			case Module::kMineSearch:
+				$searchJoin = "";
 				$notesSelect .= " AND owner_id = {$playerId}";
 				$searchSort  = " ORDER BY {$notesName}.created DESC";
 				break;
@@ -270,7 +273,7 @@ class Notes extends Module
 				$limitString = " LIMIT {$noteCount}";
 		}
 
-		$query = "SELECT DISTINCT {$notesName}.note_id FROM (SELECT note_id, owner_id, created FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = '0' AND (public_to_notebook = '1' OR public_to_map = '1'){$notesSelect}) AS {$notesName}{$tagsJoin}{$searchTermsJoin}{$searchTermsWhere}{$searchSort}{$limitString}"; 
+		$query = "SELECT DISTINCT {$notesName}.note_id FROM (SELECT note_id, owner_id, created FROM notes WHERE game_id = '{$gameId}' AND parent_note_id = '0' AND (public_to_notebook = '1' OR public_to_map = '1'){$notesSelect}) AS {$notesName}{$tagsJoin}{$searchTermsJoin}{$searchJoin}{$searchTermsWhere}{$searchSort}{$limitString}";
 		$result = Module::query($query);
 		if (mysql_error()) return new returnData(1, NULL, mysql_error());
 

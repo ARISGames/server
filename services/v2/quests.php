@@ -4,6 +4,10 @@ require_once("users.php");
 require_once("editors.php");
 require_once("return_package.php");
 
+require_once("events.php");
+require_once("events.php");
+require_once("requirements.php");
+
 class quests extends dbconnection
 {	
     //Takes in quest JSON, all fields optional except user_id + key
