@@ -25,7 +25,6 @@ class notes extends dbconnection
             "user_id,".
             (isset($pack->name)        ? "name,"        : "").
             (isset($pack->description) ? "description," : "").
-            (isset($pack->label_id)    ? "label_id,"    : "").
             (isset($pack->media_id)    ? "media_id,"    : "").
             "created".
             ") VALUES (".
@@ -33,11 +32,13 @@ class notes extends dbconnection
             "'".$pack->auth->user_id."',".
             (isset($pack->name)        ? "'".addslashes($pack->name)."',"        : "").
             (isset($pack->description) ? "'".addslashes($pack->description)."'," : "").
-            (isset($pack->label_id)    ? "'".addslashes($pack->label_id)."',"    : "").
             (isset($pack->media_id)    ? "'".addslashes($pack->media_id)."',"    : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
+
+        //allow for 'label_id' in API, but really just use object_tags
+        if($pack->label_id) dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$pack->game_id}', 'NOTE', '{$pack->note_id}', '{$pack->label_id}', CURRENT_TIMESTAMP)");
 
         return notes::getNotePack($noteId);
     }
@@ -45,21 +46,28 @@ class notes extends dbconnection
     public static function updateNote($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::updateNotePack($glob); }
     public static function updateNotePack($pack)
     {
-        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM notes WHERE note_id = '{$pack->note_id}'")->game_id;
         $pack->auth->permission = "read_write";
-        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        if(
+          $pack->auth->user_id != dbconnection::queryObject("SELECT * FROM notes WHERE note_id = '{$pack->note_id}'")->user_id || 
+          !users::authenticateUser($pack->auth)
+        ) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query(
             "UPDATE notes SET ".
-            (isset($pack->name)             ? "name             = '".addslashes($pack->name)."', "             : "").
-            (isset($pack->description)      ? "description      = '".addslashes($pack->description)."', "      : "").
-            (isset($pack->icon_media_id)    ? "icon_media_id    = '".addslashes($pack->icon_media_id)."', "    : "").
-            (isset($pack->media_id)         ? "media_id         = '".addslashes($pack->media_id)."', "         : "").
-            (isset($pack->event_package_id) ? "event_package_id = '".addslashes($pack->event_package_id)."', " : "").
+            (isset($pack->name)        ? "name        = '".addslashes($pack->name)."', "        : "").
+            (isset($pack->description) ? "description = '".addslashes($pack->description)."', " : "").
+            (isset($pack->media_id)    ? "media_id    = '".addslashes($pack->media_id)."', "    : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE note_id = '{$pack->note_id}'"
         );
 
+        //allow for 'label_id' in API, but really just use object_tags
+        if($pack->label_id)
+        {
+            dbconnection::query("DELETE FROM object_tags WHERE game_id = '{$pack->game_id}' AND object_type = 'NOTE' AND object_id = '{$pack->note_id}'");
+            dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$pack->game_id}', 'NOTE', '{$pack->note_id}', '{$pack->label_id}', CURRENT_TIMESTAMP)");
+        }
+        
         return notes::getNotePack($pack);
     }
 
@@ -67,13 +75,11 @@ class notes extends dbconnection
     {
         if(!$sql_note) return $sql_note;
         $note = new stdClass();
-        $note->note_id        = $sql_note->note_id;
-        $note->game_id          = $sql_note->game_id;
-        $note->name             = $sql_note->name;
-        $note->description      = $sql_note->description;
-        $note->icon_media_id    = $sql_note->icon_media_id;
-        $note->media_id         = $sql_note->media_id;
-        $note->event_package_id = $sql_note->event_package_id;
+        $note->note_id     = $sql_note->note_id;
+        $note->game_id     = $sql_note->game_id;
+        $note->name        = $sql_note->name;
+        $note->description = $sql_note->description;
+        $note->media_id    = $sql_note->media_id;
 
         return $note;
     }
@@ -82,7 +88,13 @@ class notes extends dbconnection
     public static function getNotePack($pack)
     {
         $sql_note = dbconnection::queryObject("SELECT * FROM notes WHERE note_id = '{$pack->note_id}' LIMIT 1");
-        return new return_package(0,notes::noteObjectFromSQL($sql_note));
+        $note = notes::noteObjectFromSQL($sql_note);
+
+        //allow for 'label_id' in API, but really just use object_tags
+        if($label_id = dbconnection::queryObject("SELECT * FROM object_tags WHERE game_id = '{$note->game_id}' AND object_type = 'NOTE' AND object_id = '{$note->note_id}'")->tag_id)
+            $note->label_id = $label_id;
+
+        return new return_package(0,$label_id);
     }
 
     public static function getNotesForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::getNotesForGamePack($glob); }
@@ -91,7 +103,15 @@ class notes extends dbconnection
         $sql_notes = dbconnection::queryArray("SELECT * FROM notes WHERE game_id = '{$pack->game_id}'");
         $notes = array();
         for($i = 0; $i < count($sql_notes); $i++)
-            if($ob = notes::noteObjectFromSQL($sql_notes[$i])) $notes[] = $ob;
+        {
+            if(!($ob = notes::noteObjectFromSQL($sql_notes[$i]))) continue;
+
+            //allow for 'label_id' in API, but really just use object_tags
+            if($label_id = dbconnection::queryObject("SELECT * FROM object_tags WHERE game_id = '{$ob->game_id}' AND object_type = 'NOTE' AND object_id = '{$ob->note_id}'")->tag_id)
+            $ob->label_id = $label_id;
+
+            $notes[] = $ob;
+        }
         
         return new return_package(0,$notes);
     }
@@ -102,9 +122,21 @@ class notes extends dbconnection
         $note = dbconnection::queryObject("SELECT * FROM notes WHERE note_id = '{$pack->note_id}'");
         $pack->auth->game_id = $note->game_id;
         $pack->auth->permission = "read_write";
-        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        if(
+          ($pack->auth->user_id != $note->user_id || !users::authenticateUser($pack->auth)) &&
+          !editors::authenticateGameEditor($pack->auth)
+        ) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM notes WHERE note_id = '{$pack->note_id}' LIMIT 1");
+
+        //cleanup
+        $tags = dbconnection::queryArray("SELECT * FROM object_tags WHERE object_type = 'NOTE' AND object_id = '{$pack->note_id}'");
+        for($i = 0; $i < count($tags); $i++)
+        {
+            $pack->object_tag_id = $tags[$i]->object_tag_id;
+            tags::deleteObjectTagPack($pack);
+        }
+
         return new return_package(0);
     }
 }
