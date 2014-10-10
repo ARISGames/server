@@ -28,7 +28,6 @@ class games extends dbconnection
             (isset($pack->map_show_players)           ? "map_show_players,"           : "").
             (isset($pack->map_offsite_mode)           ? "map_offsite_mode,"           : "").
             (isset($pack->notebook_allow_comments)    ? "notebook_allow_comments,"    : "").
-            (isset($pack->notebook_allow_player_tags) ? "notebook_allow_player_tags," : "").
             (isset($pack->notebook_allow_likes)       ? "notebook_allow_likes,"       : "").
             (isset($pack->inventory_weight_cap)       ? "inventory_weight_cap,"       : "").
             (isset($pack->published)                  ? "published,"                  : "").
@@ -48,7 +47,6 @@ class games extends dbconnection
             (isset($pack->map_show_players)           ? "'".addslashes($pack->map_show_players)."',"           : "").
             (isset($pack->map_offsite_mode)           ? "'".addslashes($pack->map_offsite_mode)."',"           : "").
             (isset($pack->notebook_allow_comments)    ? "'".addslashes($pack->notebook_allow_comments)."',"    : "").
-            (isset($pack->notebook_allow_player_tags) ? "'".addslashes($pack->notebook_allow_player_tags)."'," : "").
             (isset($pack->notebook_allow_likes)       ? "'".addslashes($pack->notebook_allow_likes)."',"       : "").
             (isset($pack->inventory_weight_cap)       ? "'".addslashes($pack->inventory_weight_cap)."',"       : "").
             (isset($pack->published)                  ? "'".addslashes($pack->published)."',"                  : "").
@@ -104,7 +102,6 @@ class games extends dbconnection
             (isset($pack->map_show_players)           ? "map_show_players           = '".addslashes($pack->map_show_players)."', "           : "").
             (isset($pack->map_offsite_mode)           ? "map_offsite_mode           = '".addslashes($pack->map_offsite_mode)."', "           : "").
             (isset($pack->notebook_allow_comments)    ? "notebook_allow_comments    = '".addslashes($pack->notebook_allow_comments)."', "    : "").
-            (isset($pack->notebook_allow_player_tags) ? "notebook_allow_player_tags = '".addslashes($pack->notebook_allow_player_tags)."', " : "").
             (isset($pack->notebook_allow_likes)       ? "notebook_allow_likes       = '".addslashes($pack->notebook_allow_likes)."', "       : "").
             (isset($pack->inventory_weight_cap)       ? "inventory_weight_cap       = '".addslashes($pack->inventory_weight_cap)."', "       : "").
             (isset($pack->published)                  ? "published                  = '".addslashes($pack->published)."', "                  : "").
@@ -134,7 +131,6 @@ class games extends dbconnection
         $game->map_show_players           = $sql_game->map_show_players;
         $game->map_offsite_mode           = $sql_game->map_offsite_mode;
         $game->notebook_allow_comments    = $sql_game->notebook_allow_comments;
-        $game->notebook_allow_player_tags = $sql_game->notebook_allow_player_tags;
         $game->notebook_allow_likes       = $sql_game->notebook_allow_likes;
         $game->inventory_weight_cap       = $sql_game->inventory_weight_cap;
         $game->published                  = $sql_game->published;

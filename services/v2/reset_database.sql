@@ -45,7 +45,6 @@ map_offsite_mode TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
     /* notes */
 notebook_allow_comments TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
 notebook_allow_likes TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
-notebook_allow_player_tags TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
     /* inventory */
 inventory_weight_cap INT(32) NOT NULL DEFAULT -1,
 

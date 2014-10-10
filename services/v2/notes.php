@@ -56,7 +56,6 @@ class notes extends dbconnection
             "UPDATE notes SET ".
             (isset($pack->name)        ? "name        = '".addslashes($pack->name)."', "        : "").
             (isset($pack->description) ? "description = '".addslashes($pack->description)."', " : "").
-            (isset($pack->media_id)    ? "media_id    = '".addslashes($pack->media_id)."', "    : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE note_id = '{$pack->note_id}'"
         );
