@@ -186,6 +186,7 @@ class Media extends Module
         $path     = $glob->path;
         $filename = $glob->filename;
         $data     = $glob->data;
+        $resizeTo = isset($glob->resizeTo) ? $glob->resizeTo : null;
         
         $gameMediaDirectory = Media::getMediaDirectory($path)->data;
 
@@ -216,14 +217,29 @@ class Media extends Module
 
         $fullFilePath = $gameMediaDirectory."/".$newMediaFileName;
 
-        $fp = fopen($fullFilePath, 'w');
-        if(!$fp) return new returnData(1,NULL,"Couldn't open file:$fullFilePath");
-        fwrite($fp,base64_decode($data));
-        fclose($fp);
+        if (isset($resizeTo) && ($ext == "jpg" || $ext == "png" || $ext == "gif"))
+        {
+            $bigFilePath = $gameMediaDirectory."/big_".$newMediaFileName;
+            $fp = fopen($bigFilePath, 'w');
+            if(!$fp) return new returnData(1,NULL,"Couldn't open file:$bigFilePath");
+            fwrite($fp,base64_decode($data));
+            fclose($fp);
+            $img = WideImage::load($bigFilePath);
+            $img = $img->resize($resizeTo, $resizeTo, 'inside');
+            $img->saveToFile($fullFilePath);
+            unlink($bigFilePath);
+        }
+        else
+        {
+            $fp = fopen($fullFilePath, 'w');
+            if(!$fp) return new returnData(1,NULL,"Couldn't open file:$fullFilePath");
+            fwrite($fp,base64_decode($data));
+            fclose($fp);
+        }
 
         if($ext == "jpg" || $ext == "png" || $ext == "gif")
         {
-            $img = WideImage::load($gameMediaDirectory."/".$newMediaFileName);
+            $img = WideImage::load($fullFilePath);
             $img = $img->resize(128, 128, 'outside');
             $img = $img->crop('center','center',128,128);
             $img->saveToFile($gameMediaDirectory."/".$resizedMediaFileName);
