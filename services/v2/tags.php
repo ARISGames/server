@@ -23,6 +23,7 @@ class tags extends dbconnection
             (isset($pack->tag)            ? "tag,"            : "").
             (isset($pack->media_id)       ? "media_id,"       : "").
             (isset($pack->visible)        ? "visible,"        : "").
+            (isset($pack->curated)        ? "curated,"        : "").
             (isset($pack->sort_index)     ? "sort_index,"     : "").
             "created".
             ") VALUES (".
@@ -30,6 +31,7 @@ class tags extends dbconnection
             (isset($pack->tag)            ? "'".addslashes($pack->tag)."',"            : "").
             (isset($pack->media_id)       ? "'".addslashes($pack->media_id)."',"       : "").
             (isset($pack->visible)        ? "'".addslashes($pack->visible)."',"        : "").
+            (isset($pack->curated)        ? "'".addslashes($pack->curated)."',"        : "").
             (isset($pack->sort_index)     ? "'".addslashes($pack->sort_index)."',"     : "").
             "CURRENT_TIMESTAMP".
             ")"
@@ -77,6 +79,7 @@ class tags extends dbconnection
             (isset($pack->tag)            ? "tag            = '".addslashes($pack->tag)."', "            : "").
             (isset($pack->media_id)       ? "media_id       = '".addslashes($pack->media_id)."', "       : "").
             (isset($pack->visible)        ? "visible        = '".addslashes($pack->visible)."', "        : "").
+            (isset($pack->curated)        ? "curated        = '".addslashes($pack->curated)."', "        : "").
             (isset($pack->sort_index)     ? "sort_index     = '".addslashes($pack->sort_index)."', "     : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE tag_id = '{$pack->tag_id}'"
@@ -94,6 +97,7 @@ class tags extends dbconnection
         $tag->tag            = $sql_tag->tag;
         $tag->media_id       = $sql_tag->media_id;
         $tag->visible        = $sql_tag->visible;
+        $tag->curated        = $sql_tag->curated;
         $tag->sort_index     = $sql_tag->sort_index;
 
         return $tag;
