@@ -474,7 +474,6 @@ var CRUD_DEFAULTS = [
         '\
         {\n\
           "game_id":123,\n\
-          "user_id":123,\n\
           "name":"MyNote",\n\
           "description":"MyDescription",\n\
           "media_id":123,\n\

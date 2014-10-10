@@ -4,9 +4,11 @@ require_once("users.php");
 require_once("editors.php");
 require_once("return_package.php");
 
+require_once("media.php");
+
 class notes extends dbconnection
 {
-    public static function createNote($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return note::createNotePack($glob); }
+    public static function createNote($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::createNotePack($glob); }
     public static function createNotePack($pack)
     {
         $pack->auth->permission = "read_write";
