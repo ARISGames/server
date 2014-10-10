@@ -477,7 +477,6 @@ var CRUD_DEFAULTS = [
           "game_id":123,\n\
           "tag":"myTag",\n\
           "media_id":123,\n\
-          "player_created":0,\n\
           "visible":1,\n\
           "sort_index":0\n\
         }\n\
@@ -494,7 +493,6 @@ var CRUD_DEFAULTS = [
           "tag_id":123,\n\
           "tag":"myTag",\n\
           "media_id":123,\n\
-          "player_created":0\n\
           "visible":1\n\
           "sort_index":0\n\
         }\n\

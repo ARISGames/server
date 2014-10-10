@@ -22,7 +22,6 @@ class tags extends dbconnection
             "game_id,".
             (isset($pack->tag)            ? "tag,"            : "").
             (isset($pack->media_id)       ? "media_id,"       : "").
-            (isset($pack->player_created) ? "player_created," : "").
             (isset($pack->visible)        ? "visible,"        : "").
             (isset($pack->sort_index)     ? "sort_index,"     : "").
             "created".
@@ -30,7 +29,6 @@ class tags extends dbconnection
             "'".addslashes($pack->game_id)."',".
             (isset($pack->tag)            ? "'".addslashes($pack->tag)."',"            : "").
             (isset($pack->media_id)       ? "'".addslashes($pack->media_id)."',"       : "").
-            (isset($pack->player_created) ? "'".addslashes($pack->player_created)."'," : "").
             (isset($pack->visible)        ? "'".addslashes($pack->visible)."',"        : "").
             (isset($pack->sort_index)     ? "'".addslashes($pack->sort_index)."',"     : "").
             "CURRENT_TIMESTAMP".
@@ -78,7 +76,6 @@ class tags extends dbconnection
             "UPDATE tags SET ".
             (isset($pack->tag)            ? "tag            = '".addslashes($pack->tag)."', "            : "").
             (isset($pack->media_id)       ? "media_id       = '".addslashes($pack->media_id)."', "       : "").
-            (isset($pack->player_created) ? "player_created = '".addslashes($pack->player_created)."', " : "").
             (isset($pack->visible)        ? "visible        = '".addslashes($pack->visible)."', "        : "").
             (isset($pack->sort_index)     ? "sort_index     = '".addslashes($pack->sort_index)."', "     : "").
             "last_active = CURRENT_TIMESTAMP ".
@@ -96,7 +93,6 @@ class tags extends dbconnection
         $tag->game_id        = $sql_tag->game_id;
         $tag->tag            = $sql_tag->tag;
         $tag->media_id       = $sql_tag->media_id;
-        $tag->player_created = $sql_tag->player_created;
         $tag->visible        = $sql_tag->visible;
         $tag->sort_index     = $sql_tag->sort_index;
 
