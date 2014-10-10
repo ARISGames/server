@@ -265,6 +265,30 @@ last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 CREATE INDEX note_game_id ON notes(game_id);
 CREATE INDEX note_user_id ON notes(user_id);
 
+DROP TABLE IF EXISTS note_comments;
+CREATE TABLE note_comments (
+note_comment_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+game_id INT(32) UNSIGNED NOT NULL,
+note_id INT(32) UNSIGNED NOT NULL,
+user_id INT(32) UNSIGNED NOT NULL,
+name VARCHAR(255) NOT NULL DEFAULT "",
+description TEXT NOT NULL,
+created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
+last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE INDEX note_comment_note_id ON notes(game_id, note_id);
+
+DROP TABLE IF EXISTS note_likes;
+CREATE TABLE note_likes (
+note_like_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+game_id INT(32) UNSIGNED NOT NULL,
+note_id INT(32) UNSIGNED NOT NULL,
+user_id INT(32) UNSIGNED NOT NULL,
+created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
+last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+CREATE INDEX note_like_note_id ON notes(game_id, note_id);
+
 CREATE TABLE quests (
 quest_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 game_id INT(32) UNSIGNED NOT NULL,
@@ -496,23 +520,4 @@ created TIMESTAMP DEFAULT CURRENT_TIMESTAMP /* no 'last active', as rows are imm
 CREATE INDEX user_log_check ON user_log(user_id, game_id, event_type, deleted);
 CREATE INDEX user_log_user_id ON user_log(user_id, created);
 CREATE INDEX user_log_game_id ON user_log(game_id, created);
-
-
-DROP TABLE IF EXISTS `game_comments`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `game_comments` (
-  `id` INT(32) UNSIGNED NOT NULL AUTO_INCREMENT,
-  `game_id` INT(32) UNSIGNED NOT NULL,
-  `player_id` INT(32) UNSIGNED NOT NULL,
-  `time_stamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `rating` int(11) NOT NULL,
-  `comment` tinytext CHARACTER SET utf8 COLLATE utf8_unicode_ci NOT NULL,
-  `title` tinytext NOT NULL,
-  PRIMARY KEY (`id`),
-  KEY `game_id` (`game_id`),
-  KEY `player_id` (`player_id`),
-  KEY `time_stamp` (`time_stamp`)
-) ENGINE=InnoDB AUTO_INCREMENT=276 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
 
