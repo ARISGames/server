@@ -478,6 +478,7 @@ var CRUD_DEFAULTS = [
           "tag":"myTag",\n\
           "media_id":123,\n\
           "visible":1,\n\
+          "curated":1,\n\
           "sort_index":0\n\
         }\n\
         ',
@@ -494,6 +495,7 @@ var CRUD_DEFAULTS = [
           "tag":"myTag",\n\
           "media_id":123,\n\
           "visible":1\n\
+          "curated":1\n\
           "sort_index":0\n\
         }\n\
         ',
