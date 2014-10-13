@@ -367,7 +367,7 @@ class Notebook extends Module
                     "path":1234,              //<- Often gameId. the folder within gamedata that you want the image saved
                     "filename":"banana.jpg",  //<- Unimportant (will get changed), but MUST have correct extension (ie '.jpg')
                     "data":"as262dsf6a...",   //<- base64 encoded media data
-                    "resizeTo":640            //<- Optional: resize image so max(height, width) == this number
+                    "resizeTo":640            //<- Optional: resize image so min(height, width) == this number
                 },
                 ...
             ],

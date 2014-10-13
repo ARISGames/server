@@ -225,7 +225,15 @@ class Media extends Module
             fwrite($fp,base64_decode($data));
             fclose($fp);
             $img = WideImage::load($bigFilePath);
-            $img = $img->resize($resizeTo, $resizeTo, 'inside');
+            // Resize so min(width, height) == $resizeTo
+            if ($img->getWidth() < $img->getHeight())
+            {
+                $img = $img->resize($resizeTo, null);
+            }
+            else
+            {
+                $img = $img->resize(null, $resizeTo);
+            }
             $img->saveToFile($fullFilePath);
             unlink($bigFilePath);
         }
