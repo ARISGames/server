@@ -23,7 +23,7 @@ class client extends dbconnection
 
         //method 1 (JOIN)
         $sTime = microtime(true);
-        $sql_games = dbconnection::queryArray("SELECT * FROM (SELECT game_id, MAX(created) as ts FROM user_log WHERE user_id = '{$pack->auth->user_id}' AND game_id != 0 GROUP BY game_id ORDER BY ts DESC LIMIT 20) as u_log LEFT JOIN games ON u_log.game_id = games.game_id ".($pack->includeDev ? "" : "WHERE games.published = TRUE"));
+        $sql_games = dbconnection::queryArray("SELECT * FROM (SELECT game_id, MAX(created) as ts FROM user_log WHERE user_id = '{$pack->auth->user_id}' AND game_id != 0 GROUP BY game_id ORDER BY ts DESC LIMIT 20) as u_log LEFT JOIN games ON u_log.game_id = games.game_id WHERE games.published = TRUE"));
         $games = array();
         for($i = 0; $i < count($sql_games); $i++)
             $games[] = games::gameObjectFromSQL($sql_games[$i]);
@@ -37,7 +37,7 @@ class client extends dbconnection
         for($i = 0; $i < count($sql_logs); $i++)
         {
             $game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$sql_logs[$i]->game_id}'");
-            if($game && ($game->published || $pack->includeDev))
+            if($game && $game->published)
                 $games[] = games::gameObjectFromSQL($game);
         }
         $debugString .= "SELECT: ".(microtime(true)-$sTime)."\n";
@@ -55,7 +55,7 @@ class client extends dbconnection
         $text = urldecode(addSlashes($pack->text));
         if($text == "") return new return_package(0, array()); //technically, returns ALL games. but that's ridiculous, so return none.
 
-        $sql_games = dbconnection::queryArray("SELECT * FROM games WHERE (name LIKE '%{$text}%' OR description LIKE '%{$text}%') ".($pack->includeDev ? "" : "AND published = TRUE")." ORDER BY name ASC LIMIT ".($pack->page*25).",25");
+        $sql_games = dbconnection::queryArray("SELECT * FROM games WHERE (name LIKE '%{$text}%' OR description LIKE '%{$text}%') AND published = TRUE")." ORDER BY name ASC LIMIT ".($pack->page*25).",25");
         $games = array();
         for($i = 0; $i < count($sql_games); $i++)
             $games[] = games::gameObjectFromSQL($sql_games[$i]);
@@ -77,7 +77,7 @@ class client extends dbconnection
         /*
         //method 1 (JOIN)
         $sTime = microtime(true);
-        $sql_games = dbconnection::queryArray("SELECT *, COUNT(DISTINCT user_id) as count FROM games INNER JOIN user_log ON games.game_id = user_log.game_id WHERE user_log.created BETWEEN DATE_SUB(NOW(), INTERVAL {$interval}) AND NOW() ".($pack->includeDev ? "" : "AND games.published = TRUE")." GROUP BY games.game_id HAVING count > 1 ORDER BY count DESC LIMIT 20");
+        $sql_games = dbconnection::queryArray("SELECT *, COUNT(DISTINCT user_id) as count FROM games INNER JOIN user_log ON games.game_id = user_log.game_id WHERE user_log.created BETWEEN DATE_SUB(NOW(), INTERVAL {$interval}) AND NOW() AND games.published = TRUE")." GROUP BY games.game_id HAVING count > 1 ORDER BY count DESC LIMIT 20");
         $games = array();
         for($i = 0; $i < count($sql_games); $i++)
             $game[] = games::gameObjectFromSQL($sql_games[$i]);
@@ -91,7 +91,7 @@ class client extends dbconnection
         for($i = 0; $i < count($sql_logs); $i++)
         {
             $game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$sql_logs[$i]->game_id}'");
-            if($game && ($game->published || $pack->includeDev))
+            if($game && $game->published)
                 $games[] = games::gameObjectFromSQL($game);
         }
         $debugString .= "SELECT: ".(microtime(true)-$sTime)."\n";
@@ -105,7 +105,7 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        $sql_games = dbconnection::queryArray("SELECT * FROM games WHERE latitude BETWEEN {$pack->latitude}-.5 AND {$pack->latitude}+.5 AND longitude BETWEEN {$pack->longitude}-.5 AND {$pack->longitude}+.5 ".($pack->includeDev ? "" : "AND published = TRUE")." GROUP BY game_id LIMIT 50");
+        $sql_games = dbconnection::queryArray("SELECT * FROM games WHERE latitude BETWEEN {$pack->latitude}-.5 AND {$pack->latitude}+.5 AND longitude BETWEEN {$pack->longitude}-.5 AND {$pack->longitude}+.5 AND published = TRUE")." GROUP BY game_id LIMIT 50");
         $games = array();
         for($i = 0; $i < count($sql_games); $i++)
             $games[] = games::gameObjectFromSQL($sql_games[$i]);
@@ -119,7 +119,7 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        $sql_games = dbconnection::queryArray("SELECT * FROM games WHERE full_quick_travel = 1 ".($pack->includeDev ? "" : "AND published = TRUE"));
+        $sql_games = dbconnection::queryArray("SELECT * FROM games WHERE full_quick_travel = 1 AND published = TRUE"));
         $games = array();
         for($i = 0; $i < count($sql_games); $i++)
             $game[] = games::gameObjectFromSQL($sql_games[$i]);
