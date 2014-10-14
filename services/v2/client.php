@@ -119,7 +119,7 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        $sql_games = dbconnection::queryArray("SELECT * FROM games WHERE full_quick_travel = 1 AND published = TRUE"));
+        $sql_games = dbconnection::queryArray("SELECT * FROM games WHERE full_quick_travel = 1 AND published = TRUE");
         $games = array();
         for($i = 0; $i < count($sql_games); $i++)
             $game[] = games::gameObjectFromSQL($sql_games[$i]);
