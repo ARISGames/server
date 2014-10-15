@@ -39,8 +39,8 @@ class notes extends dbconnection
             ")"
         );
 
-        //allow for 'label_id' in API, but really just use object_tags
-        if($pack->label_id) dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$pack->game_id}', 'NOTE', '{$pack->note_id}', '{$pack->label_id}', CURRENT_TIMESTAMP)");
+        //allow for 'tag_id' in API, but really just use object_tags
+        if($pack->tag_id) dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$pack->game_id}', 'NOTE', '{$pack->note_id}', '{$pack->tag_id}', CURRENT_TIMESTAMP)");
 
         return notes::getNotePack($noteId);
     }
@@ -62,11 +62,11 @@ class notes extends dbconnection
             "WHERE note_id = '{$pack->note_id}'"
         );
 
-        //allow for 'label_id' in API, but really just use object_tags
-        if($pack->label_id)
+        //allow for 'tag_id' in API, but really just use object_tags
+        if($pack->tag_id)
         {
             dbconnection::query("DELETE FROM object_tags WHERE game_id = '{$pack->game_id}' AND object_type = 'NOTE' AND object_id = '{$pack->note_id}'");
-            dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$pack->game_id}', 'NOTE', '{$pack->note_id}', '{$pack->label_id}', CURRENT_TIMESTAMP)");
+            dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$pack->game_id}', 'NOTE', '{$pack->note_id}', '{$pack->tag_id}', CURRENT_TIMESTAMP)");
         }
         
         return notes::getNotePack($pack);
@@ -91,11 +91,11 @@ class notes extends dbconnection
         $sql_note = dbconnection::queryObject("SELECT * FROM notes WHERE note_id = '{$pack->note_id}' LIMIT 1");
         $note = notes::noteObjectFromSQL($sql_note);
 
-        //allow for 'label_id' in API, but really just use object_tags
-        if($label_id = dbconnection::queryObject("SELECT * FROM object_tags WHERE game_id = '{$note->game_id}' AND object_type = 'NOTE' AND object_id = '{$note->note_id}'")->tag_id)
-            $note->label_id = $label_id;
+        //allow for 'tag_id' in API, but really just use object_tags
+        if($tag_id = dbconnection::queryObject("SELECT * FROM object_tags WHERE game_id = '{$note->game_id}' AND object_type = 'NOTE' AND object_id = '{$note->note_id}'")->tag_id)
+            $note->tag_id = $tag_id;
 
-        return new return_package(0,$label_id);
+        return new return_package(0,$tag_id);
     }
 
     public static function getNotesForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::getNotesForGamePack($glob); }
@@ -107,9 +107,9 @@ class notes extends dbconnection
         {
             if(!($ob = notes::noteObjectFromSQL($sql_notes[$i]))) continue;
 
-            //allow for 'label_id' in API, but really just use object_tags
-            if($label_id = dbconnection::queryObject("SELECT * FROM object_tags WHERE game_id = '{$ob->game_id}' AND object_type = 'NOTE' AND object_id = '{$ob->note_id}'")->tag_id)
-            $ob->label_id = $label_id;
+            //allow for 'tag_id' in API, but really just use object_tags
+            if($tag_id = dbconnection::queryObject("SELECT * FROM object_tags WHERE game_id = '{$ob->game_id}' AND object_type = 'NOTE' AND object_id = '{$ob->note_id}'")->tag_id)
+            $ob->tag_id = $tag_id;
 
             $notes[] = $ob;
         }
