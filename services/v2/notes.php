@@ -78,6 +78,7 @@ class notes extends dbconnection
         $note = new stdClass();
         $note->note_id     = $sql_note->note_id;
         $note->game_id     = $sql_note->game_id;
+        $note->user_id     = $sql_note->user_id;
         $note->name        = $sql_note->name;
         $note->description = $sql_note->description;
         $note->media_id    = $sql_note->media_id;
