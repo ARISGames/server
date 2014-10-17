@@ -60,7 +60,11 @@ class db extends dbconnection
 
         $upgrade = fopen($file, "r");
         while(!feof($upgrade))
-            dbconnection::query(fgets($upgrade));
+        {
+            $query = fgets($upgrade);
+            if(preg_match("@^\s*$@is",$query)) continue; //ignore whitespace
+            dbconnection::query($query);
+        }
         fclose($upgrade);
 
         dbconnection::queryInsert("INSERT INTO db_migrations (user_id, version_major, version_minor, timestamp) VALUES ('{$user_id}', '{$maj}', '{$min}', CURRENT_TIMESTAMP)");
