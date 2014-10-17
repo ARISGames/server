@@ -8,12 +8,13 @@ CREATE DATABASE tmp_db DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_c
 GRANT ALL ON tmp_db.* TO 'tmp_user'@'127.0.0.1';
 USE tmp_db;
 
-DROP TABLE IF EXISTS aris_migrations;
-CREATE TABLE aris_migrations (
+DROP TABLE IF EXISTS db_migrations;
+CREATE TABLE db_migrations (
+migration_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+user_id INT(32) UNSIGNED NOT NULL,
 version_major INT(32) UNSIGNED NOT NULL,
 version_minor INT(32) UNSIGNED NOT NULL,
-timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-PRIMARY KEY (version_major, version_minor)
+timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 /*
