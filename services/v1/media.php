@@ -224,17 +224,52 @@ class Media extends Module
             if(!$fp) return new returnData(1,NULL,"Couldn't open file:$bigFilePath");
             fwrite($fp,base64_decode($data));
             fclose($fp);
-            $img = WideImage::load($bigFilePath);
-            // Resize so min(width, height) == $resizeTo
-            if ($img->getWidth() < $img->getHeight())
-            {
-                $img = $img->resize($resizeTo, null);
+            $image = new Imagick($bigFilePath);
+
+            // Reorient based on EXIF tag
+            switch ($image->getImageOrientation()) {
+                case Imagick::ORIENTATION_UNDEFINED:
+                    // We assume normal orientation
+                    break;
+                case Imagick::ORIENTATION_TOPLEFT:
+                    // All good
+                    break;
+                case Imagick::ORIENTATION_TOPRIGHT:
+                    $image->flopImage();
+                    break;
+                case Imagick::ORIENTATION_BOTTOMRIGHT:
+                    $image->rotateImage('#000', 180);
+                    break;
+                case Imagick::ORIENTATION_BOTTOMLEFT:
+                    $image->rotateImage('#000', 180);
+                    $image->flopImage();
+                    break;
+                case Imagick::ORIENTATION_LEFTTOP:
+                    $image->rotateImage('#000', 90);
+                    $image->flopImage();
+                    break;
+                case Imagick::ORIENTATION_RIGHTTOP:
+                    $image->rotateImage('#000', 90);
+                    break;
+                case Imagick::ORIENTATION_RIGHTBOTTOM:
+                    $image->rotateImage('#000', -90);
+                    $image->flopImage();
+                    break;
+                case Imagick::ORIENTATION_LEFTBOTTOM:
+                    $image->rotateImage('#000', -90);
+                    break;
             }
-            else
-            {
-                $img = $img->resize(null, $resizeTo);
+            $image->setImageOrientation(Imagick::ORIENTATION_TOPLEFT);
+
+            // Resize image proportionally so min(width, height) == $resizeTo
+            if ($image->getImageWidth() < $image->getImageHeight()) {
+              $image->resizeImage($resizeTo, 0, Imagick::FILTER_LANCZOS, 1);
             }
-            $img->saveToFile($fullFilePath);
+            else {
+              $image->resizeImage(0, $resizeTo, Imagick::FILTER_LANCZOS, 1);
+            }
+
+            $image->writeImage($fullFilePath);
             unlink($bigFilePath);
         }
         else
