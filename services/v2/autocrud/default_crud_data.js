@@ -912,6 +912,7 @@ var CRUD_DEFAULTS = [
           "location_bound_type":"PLAYER",\n\
           "min_production_distance":5,\n\
           "max_production_distance":10,\n\
+          "requirement_root_package_id":123\n\
           "trigger_latitude":0.0,\n\
           "trigger_longitude":0.0,\n\
           "trigger_distance":3,\n\
@@ -947,6 +948,7 @@ var CRUD_DEFAULTS = [
           "location_bound_type":"PLAYER",\n\
           "min_production_distance":5,\n\
           "max_production_distance":10,\n\
+          "requirement_root_package_id":123\n\
           "trigger_latitude":0.0,\n\
           "trigger_longitude":0.0,\n\
           "trigger_distance":3,\n\

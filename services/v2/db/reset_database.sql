@@ -398,6 +398,7 @@ production_bound_type ENUM('PER_PLAYER','TOTAL'),
 location_bound_type ENUM('PLAYER','LOCATION'),
 min_production_distance INT(32) NOT NULL DEFAULT 0,
 max_production_distance INT(32) NOT NULL DEFAULT 0,
+requirement_root_package_id INT(32) UNSIGNED NOT NULL, /*requirement to produce trigger*/
 production_timestamp TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
 trigger_latitude DOUBLE NOT NULL DEFAULT 0.0,
 trigger_longitude DOUBLE NOT NULL DEFAULT 0.0,
