@@ -27,7 +27,7 @@ class db extends dbconnection
         }
 
         //find completed upgrades
-        $upgrade_records = dbconnection::queryArray("SELECT * FROM db_migrations ORDER BY version_major ASC, version_minor ASC");
+        $upgrade_records = dbconnection::queryArray("SELECT * FROM db_upgrades ORDER BY version_major ASC, version_minor ASC");
         $completed_upgrades = array();
         for($i = 0; $i < count($upgrade_records); $i++)
         {
@@ -67,7 +67,7 @@ class db extends dbconnection
         }
         fclose($upgrade);
 
-        dbconnection::queryInsert("INSERT INTO db_migrations (user_id, version_major, version_minor, timestamp) VALUES ('{$user_id}', '{$maj}', '{$min}', CURRENT_TIMESTAMP)");
+        dbconnection::queryInsert("INSERT INTO db_upgrades (user_id, version_major, version_minor, timestamp) VALUES ('{$user_id}', '{$maj}', '{$min}', CURRENT_TIMESTAMP)");
     }
 }
 ?>
