@@ -42,7 +42,7 @@ class notes extends dbconnection
         //allow for 'tag_id' in API, but really just use object_tags
         if($pack->tag_id) dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$pack->game_id}', 'NOTE', '{$pack->note_id}', '{$pack->tag_id}', CURRENT_TIMESTAMP)");
 
-        return notes::getNotePack($noteId);
+        return notes::getNotePack($pack);
     }
 
     public static function updateNote($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::updateNotePack($glob); }
@@ -96,7 +96,7 @@ class notes extends dbconnection
         if($tag_id = dbconnection::queryObject("SELECT * FROM object_tags WHERE game_id = '{$note->game_id}' AND object_type = 'NOTE' AND object_id = '{$note->note_id}'")->tag_id)
             $note->tag_id = $tag_id;
 
-        return new return_package(0,$tag_id);
+        return new return_package(0,$note);
     }
 
     public static function getNotesForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::getNotesForGamePack($glob); }
