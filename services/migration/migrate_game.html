@@ -23,11 +23,11 @@
         return params;
     }
 
-    function sendRequest(serv, fn, params, method)
+    function sendRequest(params, method)
     {
         var xmlhttp;
         xmlhttp=new XMLHttpRequest();
-        xmlhttp.open(method,"http://"+serv+"arisgames.org/server/json.php/"+fn,false);
+        xmlhttp.open(method,"../../json.php/"+fn,false);
         xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
         xmlhttp.send(params); //Synchronous call
 
@@ -40,11 +40,11 @@
     var v1_games = [];
     function submitAuth()
     {
-        var response = sendRequest('','v1.editors.getToken/'+document.getElementById('editor_name').value+"/"+document.getElementById('editor_pass').value+"/read_write", null, "GET");
+        var response = sendRequest('v1.editors.getToken/'+document.getElementById('editor_name').value+"/"+document.getElementById('editor_pass').value+"/read_write", null, "GET");
         if(!response.data) return "NO";
         editor_id = response.data.editor_id;
         rw_token = response.data.read_write_token;
-        var response = sendRequest('','v1.games.getGamesForEditor/'+editor_id+"/"+rw_token, null, "GET");
+        var response = sendRequest('v1.games.getGamesForEditor/'+editor_id+"/"+rw_token, null, "GET");
         if(!response.data) return "NO";
         v1_games = response.data;
 
@@ -64,7 +64,7 @@
         if(!v1_games[i]) return;
         var game = v1_games[i];
 
-        var response = sendRequest('dev.','migration.migration.migrateGame/'+game.game_id+"/"+editor_id+"/"+rw_token, null, "GET");
+        var response = sendRequest('migration.migration.migrateGame/'+game.game_id+"/"+editor_id+"/"+rw_token, null, "GET");
         if(!response.data) return "NO";
     }
 
