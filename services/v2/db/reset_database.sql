@@ -46,6 +46,16 @@ map_offsite_mode TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
     /* notes */
 notebook_allow_comments TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
 notebook_allow_likes TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
+notebook_trigger_scene_id INT(32) UNSIGNED NOT NULL, /*scene note trigger will be injected into*/
+notebook_trigger_requirement_root_package_id INT(32) UNSIGNED NOT NULL, /*requirement to view note trigger*/
+notebook_trigger_title VARCHAR(255) NOT NULL DEFAULT "",
+notebook_trigger_icon_media_id INT(32) NOT NULL DEFAULT 0,
+notebook_trigger_distance INT(32) NOT NULL DEFAULT 0,
+notebook_trigger_infinite_distance TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+notebook_trigger_wiggle TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+notebook_trigger_show_title TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
+notebook_trigger_hidden TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+notebook_trigger_on_enter TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
     /* inventory */
 inventory_weight_cap INT(32) NOT NULL DEFAULT -1,
 
@@ -400,17 +410,18 @@ min_production_distance INT(32) NOT NULL DEFAULT 0,
 max_production_distance INT(32) NOT NULL DEFAULT 0,
 requirement_root_package_id INT(32) UNSIGNED NOT NULL, /*requirement to produce trigger*/
 production_timestamp TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
+trigger_scene_id INT(32) UNSIGNED NOT NULL, /*scene trigger will be injected into*/
+trigger_requirement_root_package_id INT(32) UNSIGNED NOT NULL, /*requirement to view spawned trigger*/
+trigger_title VARCHAR(255) NOT NULL DEFAULT "",
+trigger_icon_media_id INT(32) NOT NULL DEFAULT 0,
 trigger_latitude DOUBLE NOT NULL DEFAULT 0.0,
 trigger_longitude DOUBLE NOT NULL DEFAULT 0.0,
 trigger_distance INT(32) NOT NULL DEFAULT 0,
 trigger_infinite_distance TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
-trigger_on_enter TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
-trigger_hidden TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
 trigger_wiggle TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
-trigger_title VARCHAR(255) NOT NULL DEFAULT "",
-trigger_icon_media_id INT(32) NOT NULL DEFAULT 0,
 trigger_show_title TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
-trigger_requirement_root_package_id INT(32) UNSIGNED NOT NULL, /*requirement to view spawned trigger*/
+trigger_hidden TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+trigger_on_enter TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
 created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
 last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );

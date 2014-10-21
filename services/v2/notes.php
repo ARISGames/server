@@ -93,8 +93,10 @@ class notes extends dbconnection
         $note = notes::noteObjectFromSQL($sql_note);
 
         //allow for 'tag_id' in API, but really just use object_tags
-        if($tag_id = dbconnection::queryObject("SELECT * FROM object_tags WHERE game_id = '{$note->game_id}' AND object_type = 'NOTE' AND object_id = '{$note->note_id}'")->tag_id)
-            $note->tag_id = $tag_id;
+        if($tag = dbconnection::queryObject("SELECT * FROM object_tags WHERE game_id = '{$note->game_id}' AND object_type = 'NOTE' AND object_id = '{$note->note_id}'"))
+            $note->tag_id = $tag->tag_id;
+        else
+            $note->tag_id = 0;
 
         return new return_package(0,$note);
     }
@@ -109,8 +111,10 @@ class notes extends dbconnection
             if(!($ob = notes::noteObjectFromSQL($sql_notes[$i]))) continue;
 
             //allow for 'tag_id' in API, but really just use object_tags
-            if($tag_id = dbconnection::queryObject("SELECT * FROM object_tags WHERE game_id = '{$ob->game_id}' AND object_type = 'NOTE' AND object_id = '{$ob->note_id}'")->tag_id)
-            $ob->tag_id = $tag_id;
+            if($tag = dbconnection::queryObject("SELECT * FROM object_tags WHERE game_id = '{$ob->game_id}' AND object_type = 'NOTE' AND object_id = '{$ob->note_id}'"))
+                $ob->tag_id = $tag->tag_id;
+            else 
+                $ob->tag_id = 0;
 
             $notes[] = $ob;
         }
