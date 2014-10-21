@@ -14,5 +14,5 @@ CREATE INDEX note_like_note_id ON notes(game_id, note_id);
 ALTER TABLE triggers ADD infinite_distance TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER distance;
 ALTER TABLE factories ADD trigger_infinite_distance TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER trigger_distance;
 
-DROP TABLE note_labels;
-DROP TABLE note_media;
+DROP TABLE IF EXISTS note_labels;
+DROP TABLE IF EXISTS note_media;
