@@ -96,7 +96,7 @@ class notes extends dbconnection
         if($tag = dbconnection::queryObject("SELECT * FROM object_tags WHERE game_id = '{$note->game_id}' AND object_type = 'NOTE' AND object_id = '{$note->note_id}'"))
             $note->tag_id = $tag->tag_id;
         else
-            $note->tag_id = 0;
+            $note->tag_id = "0";
 
         return new return_package(0,$note);
     }
@@ -114,7 +114,7 @@ class notes extends dbconnection
             if($tag = dbconnection::queryObject("SELECT * FROM object_tags WHERE game_id = '{$ob->game_id}' AND object_type = 'NOTE' AND object_id = '{$ob->note_id}'"))
                 $ob->tag_id = $tag->tag_id;
             else 
-                $ob->tag_id = 0;
+                $ob->tag_id = "0";
 
             $notes[] = $ob;
         }
