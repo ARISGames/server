@@ -10,3 +10,5 @@ ALTER TABLE games ADD notebook_trigger_wiggle TINYINT(1) UNSIGNED NOT NULL DEFAU
 ALTER TABLE games ADD notebook_trigger_show_title TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER notebook_trigger_wiggle;
 ALTER TABLE games ADD notebook_trigger_hidden TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER notebook_trigger_show_title;
 ALTER TABLE games ADD notebook_trigger_on_enter TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER notebook_trigger_hidden;
+
+ALTER TABLE tabs ADD description TEXT NOT NULL AFTER name;
