@@ -19,11 +19,17 @@ class scenes extends dbconnection
         $pack->scene_id = dbconnection::queryInsert(
             "INSERT INTO scenes (".
             "game_id,".
-            (isset($pack->name) ? "name," : "").
+            (isset($pack->name)        ? "name,"        : "").
+            (isset($pack->description) ? "description," : "").
+            (isset($pack->editor_x)    ? "editor_x,"    : "").
+            (isset($pack->editor_y)    ? "editor_y,"    : "").
             "created".
             ") VALUES (".
             "'".$pack->game_id."',".
-            (isset($pack->name) ? "'".addslashes($pack->name)."'," : "").
+            (isset($pack->name)        ? "'".addslashes($pack->name)."',"        : "").
+            (isset($pack->description) ? "'".addslashes($pack->description)."'," : "").
+            (isset($pack->eitor_x)     ? "'".addslashes($pack->eitor_x)."',"     : "").
+            (isset($pack->eitor_y)     ? "'".addslashes($pack->eitor_y)."',"     : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -46,7 +52,10 @@ class scenes extends dbconnection
 
         dbconnection::query(
             "UPDATE scenes SET ".
-            (isset($pack->name) ? "name = '".addslashes($pack->name)."', " : "").
+            (isset($pack->name)        ? "name        = '".addslashes($pack->name)."', "        : "").
+            (isset($pack->description) ? "description = '".addslashes($pack->description)."', " : "").
+            (isset($pack->editor_x)    ? "editor_x    = '".addslashes($pack->editor_x)."', "    : "").
+            (isset($pack->editor_y)    ? "editor_y    = '".addslashes($pack->editor_y)."', "    : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE scene_id = '{$pack->scene_id}'"
         );
@@ -58,9 +67,12 @@ class scenes extends dbconnection
     {
         if(!$sql_scene) return $sql_scene;
         $scene = new stdClass();
-        $scene->scene_id = $sql_scene->scene_id;
-        $scene->game_id = $sql_scene->game_id;
-        $scene->name = $sql_scene->name;
+        $scene->scene_id    = $sql_scene->scene_id;
+        $scene->game_id     = $sql_scene->game_id;
+        $scene->name        = $sql_scene->name;
+        $scene->description = $sql_scene->description;
+        $scene->editor_x    = $sql_scene->editor_x;
+        $scene->editor_y    = $sql_scene->editor_y;
 
         return $scene;
     }
