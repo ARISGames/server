@@ -93,15 +93,16 @@ class notes extends dbconnection
     public static function getNote($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::getNotePack($glob); }
     public static function getNotePack($pack)
     {
-        $sql_note = dbconnection::queryObject("SELECT * FROM notes LEFT JOIN users ON notes.user_id = users.user_id WHERE note_id = '{$pack->note_id}' LIMIT 1");
+        $sql_note = dbconnection::queryObject("SELECT notes.*, users.user_name, users.display_name FROM notes LEFT JOIN users ON notes.user_id = users.user_id WHERE note_id = '{$pack->note_id}' LIMIT 1");
         $note = notes::noteObjectFromSQL($sql_note);
-
-        //allow for 'tag_id' in API, but really just use object_tags
-        if($tag = dbconnection::queryObject("SELECT * FROM object_tags WHERE game_id = '{$note->game_id}' AND object_type = 'NOTE' AND object_id = '{$note->note_id}'"))
-            $note->tag_id = $tag->tag_id;
-        else
-            $note->tag_id = "0";
-
+        if($note)
+        {
+            //allow for 'tag_id' in API, but really just use object_tags
+            if($tag = dbconnection::queryObject("SELECT * FROM object_tags WHERE game_id = '{$note->game_id}' AND object_type = 'NOTE' AND object_id = '{$note->note_id}'"))
+                $note->tag_id = $tag->tag_id;
+            else
+                $note->tag_id = "0";
+        }
         return new return_package(0,$note);
     }
 
@@ -112,7 +113,7 @@ class notes extends dbconnection
         //two separate impls depending on presense of search. search makes query MUCH slower.
         if(isset($pack->search))
         {
-            $sql_notes = dbconnection::queryArray("SELECT * FROM notes LEFT JOIN users ON notes.user_id = users.user_id WHERE game_id = '{$pack->game_id}' AND (name LIKE '%{$pack->search}%' OR description LIKE '%{$pack->search}%' OR user_name LIKE '%{$pack->search}%' OR display_name LIKE '%{$pack->search}%')");
+            $sql_notes = dbconnection::queryArray("SELECT notes.*, users.user_name, users.display_name FROM notes LEFT JOIN users ON notes.user_id = users.user_id WHERE game_id = '{$pack->game_id}' AND (name LIKE '%{$pack->search}%' OR description LIKE '%{$pack->search}%' OR user_name LIKE '%{$pack->search}%' OR display_name LIKE '%{$pack->search}%')");
             for($i = 0; $i < count($sql_notes); $i++)
             {
                 if(!($ob = notes::noteObjectFromSQL($sql_notes[$i]))) continue;
@@ -144,7 +145,7 @@ class notes extends dbconnection
         }
         else
         {
-            $sql_notes = dbconnection::queryArray("SELECT * FROM notes LEFT JOIN users ON notes.user_id = users.user_id WHERE game_id = '{$pack->game_id}'");
+            $sql_notes = dbconnection::queryArray("SELECT notes.*, users.user_name, users.display_name FROM notes LEFT JOIN users ON notes.user_id = users.user_id WHERE game_id = '{$pack->game_id}'");
             for($i = 0; $i < count($sql_notes); $i++)
             {
                 if(!($ob = notes::noteObjectFromSQL($sql_notes[$i]))) continue;
