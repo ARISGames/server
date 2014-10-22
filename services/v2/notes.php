@@ -82,6 +82,10 @@ class notes extends dbconnection
         $note->name        = $sql_note->name;
         $note->description = $sql_note->description;
         $note->media_id    = $sql_note->media_id;
+        $note->user               = new stdClass();
+        $note->user->user_id      = $note->user_id;
+        $note->user->user_name    = $sql_note->user_name;
+        $note->user->display_name = $sql_note->display_name;
 
         return $note;
     }
@@ -89,7 +93,7 @@ class notes extends dbconnection
     public static function getNote($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::getNotePack($glob); }
     public static function getNotePack($pack)
     {
-        $sql_note = dbconnection::queryObject("SELECT * FROM notes WHERE note_id = '{$pack->note_id}' LIMIT 1");
+        $sql_note = dbconnection::queryObject("SELECT * FROM notes LEFT JOIN users ON notes.user_id = users.user_id WHERE note_id = '{$pack->note_id}' LIMIT 1");
         $note = notes::noteObjectFromSQL($sql_note);
 
         //allow for 'tag_id' in API, but really just use object_tags
@@ -104,19 +108,55 @@ class notes extends dbconnection
     public static function getNotesForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::getNotesForGamePack($glob); }
     public static function getNotesForGamePack($pack)
     {
-        $sql_notes = dbconnection::queryArray("SELECT * FROM notes WHERE game_id = '{$pack->game_id}'");
         $notes = array();
-        for($i = 0; $i < count($sql_notes); $i++)
+        //two separate impls depending on presense of search. search makes query MUCH slower.
+        if(isset($pack->search))
         {
-            if(!($ob = notes::noteObjectFromSQL($sql_notes[$i]))) continue;
+            $sql_notes = dbconnection::queryArray("SELECT * FROM notes LEFT JOIN users ON notes.user_id = users.user_id WHERE game_id = '{$pack->game_id}' AND (name LIKE '%{$pack->search}%' OR description LIKE '%{$pack->search}%' OR user_name LIKE '%{$pack->search}%' OR display_name LIKE '%{$pack->search}%')");
+            for($i = 0; $i < count($sql_notes); $i++)
+            {
+                if(!($ob = notes::noteObjectFromSQL($sql_notes[$i]))) continue;
 
-            //allow for 'tag_id' in API, but really just use object_tags
-            if($tag = dbconnection::queryObject("SELECT * FROM object_tags WHERE game_id = '{$ob->game_id}' AND object_type = 'NOTE' AND object_id = '{$ob->note_id}'"))
-                $ob->tag_id = $tag->tag_id;
-            else 
-                $ob->tag_id = "0";
+                //allow for 'tag_id' in API, but really just use object_tags
+                if($tag = dbconnection::queryObject("SELECT * FROM object_tags WHERE game_id = '{$ob->game_id}' AND object_type = 'NOTE' AND object_id = '{$ob->note_id}'"))
+                    $ob->tag_id = $tag->tag_id;
+                else 
+                    $ob->tag_id = "0";
 
-            $notes[] = $ob;
+                $notes[] = $ob;
+            }
+
+            //search comments to find matching comments, then RETURN PARENT NOTE- NOT THE COMMENTS THEMSELVES
+            $sql_note_comments = dbconnection::queryArray("SELECT * FROM note_comments LEFT JOIN users ON note_comments.user_id = users.user_id WHERE game_id = '{$pack->game_id}' AND (name LIKE '%{$pack->search}%' OR description LIKE '%{$pack->search}%' OR user_name LIKE '%{$pack->search}%' OR display_name LIKE '%{$pack->search}%')");
+            for($i = 0; $i < count($sql_note_comments); $i++)
+            {
+                $sql_note = dbconnection::queryObject("SELECT * FROM notes LEFT JOIN users ON notes.user_id = users.user_id WHERE note_id = '{$sql_note_comments[$i]->note_id}'");
+                if(!($ob = notes::noteObjectFromSQL($sql_note))) continue;
+
+                //allow for 'tag_id' in API, but really just use object_tags
+                if($tag = dbconnection::queryObject("SELECT * FROM object_tags WHERE game_id = '{$ob->game_id}' AND object_type = 'NOTE' AND object_id = '{$ob->note_id}'"))
+                    $ob->tag_id = $tag->tag_id;
+                else 
+                    $ob->tag_id = "0";
+
+                $notes[] = $ob;
+            }
+        }
+        else
+        {
+            $sql_notes = dbconnection::queryArray("SELECT * FROM notes LEFT JOIN users ON notes.user_id = users.user_id WHERE game_id = '{$pack->game_id}'");
+            for($i = 0; $i < count($sql_notes); $i++)
+            {
+                if(!($ob = notes::noteObjectFromSQL($sql_notes[$i]))) continue;
+
+                //allow for 'tag_id' in API, but really just use object_tags
+                if($tag = dbconnection::queryObject("SELECT * FROM object_tags WHERE game_id = '{$ob->game_id}' AND object_type = 'NOTE' AND object_id = '{$ob->note_id}'"))
+                    $ob->tag_id = $tag->tag_id;
+                else 
+                    $ob->tag_id = "0";
+
+                $notes[] = $ob;
+            }
         }
         
         return new return_package(0,$notes);
