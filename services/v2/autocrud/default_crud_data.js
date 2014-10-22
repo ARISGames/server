@@ -235,7 +235,10 @@ var CRUD_DEFAULTS = [
         '\
         {\n\
           "game_id":123,\n\
-          "name":"sceneName"\n\
+          "name":"sceneName",\n\
+          "description":"sceneDesc",\n\
+          "editor_x":123,\n\
+          "editor_y":-12\n\
         }\n\
         ',
     "getData":
@@ -249,6 +252,9 @@ var CRUD_DEFAULTS = [
         {\n\
           "scene_id":234,\n\
           "name":"sceneName"\n\
+          "description":"sceneDesc",\n\
+          "editor_x":123,\n\
+          "editor_y":-12\n\
         }\n\
         ',
     "deleteData":
