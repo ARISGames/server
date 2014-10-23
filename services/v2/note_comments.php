@@ -62,6 +62,10 @@ class note_comments extends dbconnection
         $note_comment->user_id         = $sql_note_comment->user_id;
         $note_comment->name            = $sql_note_comment->name;
         $note_comment->description     = $sql_note_comment->description;
+        $note_comment->user               = new stdClass();
+        $note_comment->user->user_id      = $note_comment->user_id;
+        $note_comment->user->user_name    = $sql_note_comment->user_name;
+        $note_comment->user->display_name = $sql_note_comment->display_name;
 
         return $note_comment;
     }
@@ -69,7 +73,7 @@ class note_comments extends dbconnection
     public static function getNoteComment($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return note_comments::getNoteCommentPack($glob); }
     public static function getNoteCommentPack($pack)
     {
-        $sql_note_comment = dbconnection::queryObject("SELECT * FROM note_comments WHERE note_comment_id = '{$pack->note_comment_id}' LIMIT 1");
+        $sql_note_comment = dbconnection::queryObject("SELECT note_comments.*, users.user_name, users.display_name FROM note_comments LEFT JOIN users ON note_comments.user_id = users.user_id WHERE note_comment_id = '{$pack->note_comment_id}' LIMIT 1");
         $note_comment = note_comments::noteCommentObjectFromSQL($sql_note_comment);
 
         return new return_package(0,$note_comment);
@@ -78,7 +82,7 @@ class note_comments extends dbconnection
     public static function getNoteCommentsForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return note_comments::getNoteCommentsForGamePack($glob); }
     public static function getNoteCommentsForGamePack($pack)
     {
-        $sql_note_comments = dbconnection::queryArray("SELECT * FROM note_comments WHERE game_id = '{$pack->game_id}'");
+        $sql_note_comments = dbconnection::queryArray("SELECT note_comments.*, users.user_name, users.display_name FROM note_comments LEFT JOIN users ON note_comments.user_id = users.user_id WHERE game_id = '{$pack->game_id}'");
         $note_comments = array();
         for($i = 0; $i < count($sql_note_comments); $i++)
         {
@@ -92,7 +96,7 @@ class note_comments extends dbconnection
     public static function getNoteCommentsForNote($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return note_comments::getNoteCommentsForNotePack($glob); }
     public static function getNoteCommentsForNotePack($pack)
     {
-        $sql_note_comments = dbconnection::queryArray("SELECT * FROM note_comments WHERE game_id = '{$pack->game_id}' AND note_id = '{$pack->note_id}'");
+        $sql_note_comments = dbconnection::queryArray("SELECT note_comments.*, users.user_name, users.display_name FROM note_comments LEFT JOIN users ON note_comments.user_id = users.user_id WHERE game_id = '{$pack->game_id}' AND note_id = '{$pack->note_id}'");
         $note_comments = array();
         for($i = 0; $i < count($sql_note_comments); $i++)
         {
