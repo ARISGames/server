@@ -30,6 +30,7 @@ class triggers extends dbconnection
             (isset($pack->latitude)                    ? "latitude,"                    : "").
             (isset($pack->longitude)                   ? "longitude,"                   : "").
             (isset($pack->distance)                    ? "distance,"                    : "").
+            (isset($pack->infinite_distance)           ? "infinite_distance,"           : "").
             (isset($pack->wiggle)                      ? "wiggle,"                      : "").
             (isset($pack->show_title)                  ? "show_title,"                  : "").
             (isset($pack->hidden)                      ? "hidden,"                      : "").
@@ -48,6 +49,7 @@ class triggers extends dbconnection
             (isset($pack->latitude)                    ? "'".addslashes($pack->latitude)."',"                    : "").
             (isset($pack->longitude)                   ? "'".addslashes($pack->longitude)."',"                   : "").
             (isset($pack->distance)                    ? "'".addslashes($pack->distance)."',"                    : "").
+            (isset($pack->infinite_distance)           ? "'".addslashes($pack->infinite_distance)."',"           : "").
             (isset($pack->wiggle)                      ? "'".addslashes($pack->wiggle)."',"                      : "").
             (isset($pack->show_title)                  ? "'".addslashes($pack->show_title)."',"                  : "").
             (isset($pack->hidden)                      ? "'".addslashes($pack->hidden)."',"                      : "").
@@ -80,6 +82,7 @@ class triggers extends dbconnection
             (isset($pack->latitude)                    ? "latitude                    = '".addslashes($pack->latitude)."', "                    : "").
             (isset($pack->longitude)                   ? "longitude                   = '".addslashes($pack->longitude)."', "                   : "").
             (isset($pack->distance)                    ? "distance                    = '".addslashes($pack->distance)."', "                    : "").
+            (isset($pack->infinite_distance)           ? "infinite_distance           = '".addslashes($pack->infinite_distance)."', "           : "").
             (isset($pack->wiggle)                      ? "wiggle                      = '".addslashes($pack->wiggle)."', "                      : "").
             (isset($pack->show_title)                  ? "show_title                  = '".addslashes($pack->show_title)."', "                  : "").
             (isset($pack->hidden)                      ? "hidden                      = '".addslashes($pack->hidden)."', "                      : "").
@@ -108,6 +111,7 @@ class triggers extends dbconnection
         $trigger->latitude                    = $sql_trigger->latitude;
         $trigger->longitude                   = $sql_trigger->longitude;
         $trigger->distance                    = $sql_trigger->distance;
+        $trigger->infinite_distance           = $sql_trigger->infinite_distance;
         $trigger->wiggle                      = $sql_trigger->wiggle;
         $trigger->show_title                  = $sql_trigger->show_title;
         $trigger->hidden                      = $sql_trigger->hidden;
