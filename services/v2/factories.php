@@ -36,6 +36,7 @@ class factories extends dbconnection
             (isset($pack->trigger_latitude)                    ? "trigger_latitude,"                    : "").
             (isset($pack->trigger_longitude)                   ? "trigger_longitude,"                   : "").
             (isset($pack->trigger_distance)                    ? "trigger_distance,"                    : "").
+            (isset($pack->trigger_infinite_distance)           ? "trigger_infinite_distance,"           : "").
             (isset($pack->trigger_on_enter)                    ? "trigger_on_enter,"                    : "").
             (isset($pack->trigger_hidden)                      ? "trigger_hidden,"                      : "").
             (isset($pack->trigger_wiggle)                      ? "trigger_wiggle,"                      : "").
@@ -63,6 +64,7 @@ class factories extends dbconnection
             (isset($pack->trigger_latitude)                    ? "'".addslashes($pack->trigger_latitude)."',"                    : "").
             (isset($pack->trigger_longitude)                   ? "'".addslashes($pack->trigger_longitude)."',"                   : "").
             (isset($pack->trigger_distance)                    ? "'".addslashes($pack->trigger_distance)."',"                    : "").
+            (isset($pack->trigger_infinite_distance)           ? "'".addslashes($pack->trigger_infinite_distance)."',"           : "").
             (isset($pack->trigger_on_enter)                    ? "'".addslashes($pack->trigger_on_enter)."',"                    : "").
             (isset($pack->trigger_hidden)                      ? "'".addslashes($pack->trigger_hidden)."',"                      : "").
             (isset($pack->trigger_wiggle)                      ? "'".addslashes($pack->trigger_wiggle)."',"                      : "").
@@ -104,6 +106,7 @@ class factories extends dbconnection
             (isset($pack->trigger_latitude)                    ? "trigger_latitude                    = '".addslashes($pack->trigger_latitude)."',"                    : "").
             (isset($pack->trigger_longitude)                   ? "trigger_longitude                   = '".addslashes($pack->trigger_longitude)."',"                   : "").
             (isset($pack->trigger_distance)                    ? "trigger_distance                    = '".addslashes($pack->trigger_distance)."',"                    : "").
+            (isset($pack->trigger_infinite_distance)           ? "trigger_infinite_distance           = '".addslashes($pack->trigger_infinite_distance)."',"           : "").
             (isset($pack->trigger_on_enter)                    ? "trigger_on_enter                    = '".addslashes($pack->trigger_on_enter)."',"                    : "").
             (isset($pack->trigger_hidden)                      ? "trigger_hidden                      = '".addslashes($pack->trigger_hidden)."',"                      : "").
             (isset($pack->trigger_wiggle)                      ? "trigger_wiggle                      = '".addslashes($pack->trigger_wiggle)."',"                      : "").
@@ -141,6 +144,7 @@ class factories extends dbconnection
         $factory->trigger_latitude                    = $sql_factory->trigger_latitude;
         $factory->trigger_longitude                   = $sql_factory->trigger_longitude;
         $factory->trigger_distance                    = $sql_factory->trigger_distance;
+        $factory->trigger_infinite_distance           = $sql_factory->trigger_infinite_distance;
         $factory->trigger_on_enter                    = $sql_factory->trigger_on_enter;
         $factory->trigger_hidden                      = $sql_factory->trigger_hidden;
         $factory->trigger_wiggle                      = $sql_factory->trigger_wiggle;

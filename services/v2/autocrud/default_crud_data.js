@@ -941,6 +941,7 @@ var CRUD_DEFAULTS = [
           "trigger_latitude":0.0,\n\
           "trigger_longitude":0.0,\n\
           "trigger_distance":3,\n\
+          "trigger_infinite_distance":0,\n\
           "trigger_on_enter":0,\n\
           "trigger_hidden":0,\n\
           "trigger_wiggle":1,\n\
@@ -978,6 +979,7 @@ var CRUD_DEFAULTS = [
           "trigger_latitude":0.0,\n\
           "trigger_longitude":0.0,\n\
           "trigger_distance":3,\n\
+          "trigger_infinite_distance":0,\n\
           "trigger_on_enter":0,\n\
           "trigger_hidden":0,\n\
           "trigger_wiggle":1,\n\
