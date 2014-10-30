@@ -5,6 +5,8 @@ require_once("editors.php");
 require_once("return_package.php");
 
 require_once("media.php");
+require_once("instances.php");
+require_once("triggers.php");
 
 class notes extends dbconnection
 {
@@ -39,6 +41,12 @@ class notes extends dbconnection
             ")"
         );
 
+        if($pack->trigger)
+        {
+            $instance_id = dbconnection::queryInsert("INSERT INTO instances (game_id, object_id, object_type, created) VALUES ('{$pack->game_id}', '{$pack->note_id}', 'NOTE', CURRENT_TIMESTAMP)");
+            $trigger_id = dbconnection::queryInsert("INSERT INTO triggers (game_id, instance_id, type, name, title, latitude, longitude, distance, created) VALUES ( '{$pack->game_id}', '{$instance->instance_id}', 'LOCATION', '{$pack->name}', '{$pack->name}', '{$pack->trigger->latitude}', '{$pack->trigger->longitude}', '25', CURRENT_TIMESTAMP);");
+        }
+
         //allow for 'tag_id' in API, but really just use object_tags
         if($pack->tag_id) dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$pack->game_id}', 'NOTE', '{$pack->note_id}', '{$pack->tag_id}', CURRENT_TIMESTAMP)");
 
@@ -53,6 +61,19 @@ class notes extends dbconnection
           $pack->auth->user_id != dbconnection::queryObject("SELECT * FROM notes WHERE note_id = '{$pack->note_id}'")->user_id || 
           !users::authenticateUser($pack->auth)
         ) return new return_package(6, NULL, "Failed Authentication");
+
+        if($pack->trigger)
+        {
+            $instance = dbconnection::queryObject("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND object_type = 'NOTE' AND object_id = '{$pack->note_id}'");
+            if(!$instance)
+            {
+                dbconnection::queryInsert("INSERT INTO instances (game_id, object_id, object_type, created) VALUES ('{$pack->game_id}', '{$pack->note_id}', 'NOTE', CURRENT_TIMESTAMP)");
+                $instance = dbconnection::queryObject("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND object_type = 'NOTE' AND object_id = '{$pack->note_id}'");
+            }
+
+            dbconnection::query("DELETE FROM triggers WHERE game_id = '{$pack->game_id}' AND instance_id = '{$instance->instance_id}'");
+            dbconnection::queryInsert("INSERT INTO triggers (game_id, instance_id, type, name, title, latitude, longitude, distance, created) VALUES ( '{$pack->game_id}', '{$instance->instance_id}', 'LOCATION', '{$pack->name}', '{$pack->name}', '{$pack->trigger->latitude}', '{$pack->trigger->longitude}', '25', CURRENT_TIMESTAMP);");
+        }
 
         dbconnection::query(
             "UPDATE notes SET ".
@@ -113,6 +134,42 @@ class notes extends dbconnection
         //two separate impls depending on presense of search. search makes query MUCH slower.
         if(isset($pack->search))
         {
+            /*
+            //Search in PHP
+            $notes_arr       = dbconnection::queryArray("SELECT * FROM notes       WHERE game_id = '{$pack->game_id}'");
+            $tags_arr        = dbconnection::queryArray("SELECT * FROM tags        WHERE game_id = '{$pack->game_id}' AND object_type = 'NOTE'");
+            $object_tags_arr = dbconnection::queryArray("SELECT * FROM object_tags WHERE game_id = '{$pack->game_id}'");
+
+            $tags        = array(); for($i = 0; $i < count($tags_arr);        $i++)        $tags[       $tags_arr[$i]->tag_id] =        $tags_arr[$i];
+            $object_tags = array(); for($i = 0; $i < count($object_tags_arr); $i++) $object_tags[$object_tags_arr[$i]->tag_id] = $object_tags_arr[$i];
+            $users       = array(); //will be derived on the spot
+
+            $returned
+            for($i = 0; $i < count($notes_arr); $i++)
+            {
+                $note = $notes_arr[$i];
+                if(!$users[$note->user_id]) $users[$note->user_id] = dbconnection::queryObject("SELECT * FROM users WHERE user_id = '{$note->user_id}'");
+                $user = $users[$note->user_id];
+                $tag = $tags[$object_tags_arr[$note->note_id]->tag_id]
+
+                if(
+                    preg_match("@".$pack->search."@is",$note->name) ||
+                    preg_match("@".$pack->search."@is",$note->description) ||
+                    preg_match("@".$pack->search."@is",$user->user_name) ||
+                    preg_match("@".$pack->search."@is",$user->display_name) ||
+                    preg_match("@".$pack->search."@is",$tag->tag)
+                )
+                {
+                    $note->user_name    = $users->user_name;
+                    $note->display_name = $users->display_name;
+                    $n = notes::noteObjectFromSQL($note);
+                    $n-tag_id = $tag->tag_id;
+                    $notes[] = $n;
+                }
+            }
+            */
+
+            //Search w/ SQL
             $sql_notes = dbconnection::queryArray("SELECT notes.*, users.user_name, users.display_name FROM notes LEFT JOIN users ON notes.user_id = users.user_id WHERE game_id = '{$pack->game_id}' AND (name LIKE '%{$pack->search}%' OR description LIKE '%{$pack->search}%' OR user_name LIKE '%{$pack->search}%' OR display_name LIKE '%{$pack->search}%')");
             for($i = 0; $i < count($sql_notes); $i++)
             {
