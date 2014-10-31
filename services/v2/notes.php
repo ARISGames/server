@@ -103,6 +103,7 @@ class notes extends dbconnection
         $note->name        = $sql_note->name;
         $note->description = $sql_note->description;
         $note->media_id    = $sql_note->media_id;
+        $note->created     = $sql_note->created;
         $note->user               = new stdClass();
         $note->user->user_id      = $note->user_id;
         $note->user->user_name    = $sql_note->user_name;
