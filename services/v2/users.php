@@ -17,7 +17,6 @@ class users extends dbconnection
         util::serverErrorLog("Failed Editor Authentication!"); return false;
     }
 
-    //Takes in user JSON, all fields optional except user_id + key
     public static function createUser($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::createUserPack($glob); }
     public static function createUserPack($pack)
     {
@@ -60,11 +59,41 @@ class users extends dbconnection
         return users::logInPack($pack);
     }
 
-    //Takes in user JSON, requires user_name and password
+    public static function updateUser($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::updateUserPack($glob); }
+    public static function updateUserPack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        if($pack->media)
+        {
+            $pack->media->auth = $pack->auth;
+            $pack->media->user_id = $pack->user_id;
+            $pack->media_id = media::createMediaPack($pack->media)->data->media_id;
+        }
+
+        dbconnection::query(
+            "UPDATE users SET ".
+            (isset($pack->display_name) ? "display_name = '".addslashes($pack->display_name)."'," : "").
+            (isset($pack->email)        ? "email        = '".addslashes($pack->email)."',"        : "").
+            (isset($pack->media_id)     ? "media_id     = '".addslashes($pack->media_id)."',"     : "").
+            "last_active = CURRENT_TIMESTAMP ".
+            "WHERE game_id = '{$pack->game_id}'"
+        );
+
+        return users::logInPack($pack);
+    }
+
+    //Takes in user JSON, requires either (user_name and password) or (auth pack)
     public static function logIn($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::logInPack($glob); }
     public static function logInPack($pack)
     {
-        if(!($user = dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}'")) || hash("sha256",$user->salt.$pack->password) != $user->hash)
+        if($pack->auth && $pack->auth->user_id)
+        {
+            $pack->auth->permission = "read_write";
+            if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        }
+        else if(!($user = dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}'")) || hash("sha256",$user->salt.$pack->password) != $user->hash)
             return new return_package(1, NULL, "Incorrect username/password");
 
         $ret = new stdClass();
