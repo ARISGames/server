@@ -3,6 +3,8 @@ require_once("dbconnection.php");
 require_once("util.php");
 require_once("return_package.php");
 
+require_once("media.php");
+
 class users extends dbconnection
 {    
     //Used by other services
@@ -78,7 +80,7 @@ class users extends dbconnection
             (isset($pack->email)        ? "email        = '".addslashes($pack->email)."',"        : "").
             (isset($pack->media_id)     ? "media_id     = '".addslashes($pack->media_id)."',"     : "").
             "last_active = CURRENT_TIMESTAMP ".
-            "WHERE game_id = '{$pack->game_id}'"
+            "WHERE user_id = '{$pack->user_id}'"
         );
 
         return users::logInPack($pack);
@@ -92,6 +94,7 @@ class users extends dbconnection
         {
             $pack->auth->permission = "read_write";
             if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+            $user = dbconnection::queryObject("SELECT * FROM users WHERE user_id = '{$pack->user_id}'");
         }
         else if(!($user = dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}'")) || hash("sha256",$user->salt.$pack->password) != $user->hash)
             return new return_package(1, NULL, "Incorrect username/password");
