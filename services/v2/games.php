@@ -16,55 +16,75 @@ class games extends dbconnection
 
         $pack->game_id = dbconnection::queryInsert(
             "INSERT INTO games (".
-            (isset($pack->name)                       ? "name,"                       : "").
-            (isset($pack->description)                ? "description,"                : "").
-            (isset($pack->icon_media_id)              ? "icon_media_id,"              : "").
-            (isset($pack->media_id)                   ? "media_id,"                   : "").
-            (isset($pack->map_type)                   ? "map_type,"                   : "").
-            (isset($pack->map_latitude)               ? "map_latitude,"               : "").
-            (isset($pack->map_longitude)              ? "map_longitude,"              : "").
-            (isset($pack->map_zoom_level)             ? "map_zoom_level,"             : "").
-            (isset($pack->map_show_player)            ? "map_show_player,"            : "").
-            (isset($pack->map_show_players)           ? "map_show_players,"           : "").
-            (isset($pack->map_offsite_mode)           ? "map_offsite_mode,"           : "").
-            (isset($pack->notebook_allow_comments)    ? "notebook_allow_comments,"    : "").
-            (isset($pack->notebook_allow_likes)       ? "notebook_allow_likes,"       : "").
-            (isset($pack->inventory_weight_cap)       ? "inventory_weight_cap,"       : "").
-            (isset($pack->published)                  ? "published,"                  : "").
-            (isset($pack->type)                       ? "type,"                       : "").
-            (isset($pack->intro_scene_id)             ? "intro_scene_id,"             : "").
+            (isset($pack->name)                                         ? "name,"                                         : "").
+            (isset($pack->description)                                  ? "description,"                                  : "").
+            (isset($pack->icon_media_id)                                ? "icon_media_id,"                                : "").
+            (isset($pack->media_id)                                     ? "media_id,"                                     : "").
+            (isset($pack->map_type)                                     ? "map_type,"                                     : "").
+            (isset($pack->map_latitude)                                 ? "map_latitude,"                                 : "").
+            (isset($pack->map_longitude)                                ? "map_longitude,"                                : "").
+            (isset($pack->map_zoom_level)                               ? "map_zoom_level,"                               : "").
+            (isset($pack->map_show_player)                              ? "map_show_player,"                              : "").
+            (isset($pack->map_show_players)                             ? "map_show_players,"                             : "").
+            (isset($pack->map_offsite_mode)                             ? "map_offsite_mode,"                             : "").
+            (isset($pack->notebook_allow_comments)                      ? "notebook_allow_comments,"                      : "").
+            (isset($pack->notebook_allow_likes)                         ? "notebook_allow_likes,"                         : "").
+            (isset($pack->notebook_trigger_scene_id)                    ? "notebook_trigger_scene_id,"                    : "").
+            (isset($pack->notebook_trigger_requirement_root_package_id) ? "notebook_trigger_requirement_root_package_id," : "").
+            (isset($pack->notebook_trigger_title)                       ? "notebook_trigger_title,"                       : "").
+            (isset($pack->notebook_trigger_icon_media_id)               ? "notebook_trigger_icon_media_id,"               : "").
+            (isset($pack->notebook_trigger_distance)                    ? "notebook_trigger_distance,"                    : "").
+            (isset($pack->notebook_trigger_infinite_distance)           ? "notebook_trigger_infinite_distance,"           : "").
+            (isset($pack->notebook_trigger_wiggle)                      ? "notebook_trigger_wiggle,"                      : "").
+            (isset($pack->notebook_trigger_show_title)                  ? "notebook_trigger_show_title,"                  : "").
+            (isset($pack->notebook_trigger_hidden)                      ? "notebook_trigger_hidden,"                      : "").
+            (isset($pack->notebook_trigger_on_enter)                    ? "notebook_trigger_on_enter,"                    : "").
+            (isset($pack->inventory_weight_cap)                         ? "inventory_weight_cap,"                         : "").
+            (isset($pack->published)                                    ? "published,"                                    : "").
+            (isset($pack->type)                                         ? "type,"                                         : "").
+            (isset($pack->intro_scene_id)                               ? "intro_scene_id,"                               : "").
             "created".
             ") VALUES (".
-            (isset($pack->name)                       ? "'".addslashes($pack->name)."',"                       : "").
-            (isset($pack->description)                ? "'".addslashes($pack->description)."',"                : "").
-            (isset($pack->icon_media_id)              ? "'".addslashes($pack->icon_media_id)."',"              : "").
-            (isset($pack->media_id)                   ? "'".addslashes($pack->media_id)."',"                   : "").
-            (isset($pack->map_type)                   ? "'".addslashes($pack->map_type)."',"                   : "").
-            (isset($pack->map_latitude)               ? "'".addslashes($pack->map_latitude)."',"               : "").
-            (isset($pack->map_longitude)              ? "'".addslashes($pack->map_longitude)."',"              : "").
-            (isset($pack->map_zoom_level)             ? "'".addslashes($pack->map_zoom_level)."',"             : "").
-            (isset($pack->map_show_player)            ? "'".addslashes($pack->map_show_player)."',"            : "").
-            (isset($pack->map_show_players)           ? "'".addslashes($pack->map_show_players)."',"           : "").
-            (isset($pack->map_offsite_mode)           ? "'".addslashes($pack->map_offsite_mode)."',"           : "").
-            (isset($pack->notebook_allow_comments)    ? "'".addslashes($pack->notebook_allow_comments)."',"    : "").
-            (isset($pack->notebook_allow_likes)       ? "'".addslashes($pack->notebook_allow_likes)."',"       : "").
-            (isset($pack->inventory_weight_cap)       ? "'".addslashes($pack->inventory_weight_cap)."',"       : "").
-            (isset($pack->published)                  ? "'".addslashes($pack->published)."',"                  : "").
-            (isset($pack->type)                       ? "'".addslashes($pack->type)."',"                       : "").
-            (isset($pack->intro_scene_id)             ? "'".addslashes($pack->intro_scene_id)."',"             : "").
+            (isset($pack->name)                                         ? "'".addslashes($pack->name)."',"                                         : "").
+            (isset($pack->description)                                  ? "'".addslashes($pack->description)."',"                                  : "").
+            (isset($pack->icon_media_id)                                ? "'".addslashes($pack->icon_media_id)."',"                                : "").
+            (isset($pack->media_id)                                     ? "'".addslashes($pack->media_id)."',"                                     : "").
+            (isset($pack->map_type)                                     ? "'".addslashes($pack->map_type)."',"                                     : "").
+            (isset($pack->map_latitude)                                 ? "'".addslashes($pack->map_latitude)."',"                                 : "").
+            (isset($pack->map_longitude)                                ? "'".addslashes($pack->map_longitude)."',"                                : "").
+            (isset($pack->map_zoom_level)                               ? "'".addslashes($pack->map_zoom_level)."',"                               : "").
+            (isset($pack->map_show_player)                              ? "'".addslashes($pack->map_show_player)."',"                              : "").
+            (isset($pack->map_show_players)                             ? "'".addslashes($pack->map_show_players)."',"                             : "").
+            (isset($pack->map_offsite_mode)                             ? "'".addslashes($pack->map_offsite_mode)."',"                             : "").
+            (isset($pack->notebook_allow_comments)                      ? "'".addslashes($pack->notebook_allow_comments)."',"                      : "").
+            (isset($pack->notebook_allow_likes)                         ? "'".addslashes($pack->notebook_allow_likes)."',"                         : "").
+            (isset($pack->notebook_trigger_scene_id)                    ? "'".addslashes($pack->notebook_trigger_scene_id)."',"                    : "").
+            (isset($pack->notebook_trigger_requirement_root_package_id) ? "'".addslashes($pack->notebook_trigger_requirement_root_package_id)."'," : "").
+            (isset($pack->notebook_trigger_title)                       ? "'".addslashes($pack->notebook_trigger_title)."',"                       : "").
+            (isset($pack->notebook_trigger_icon_media_id)               ? "'".addslashes($pack->notebook_trigger_icon_media_id)."',"               : "").
+            (isset($pack->notebook_trigger_distance)                    ? "'".addslashes($pack->notebook_trigger_distance)."',"                    : "").
+            (isset($pack->notebook_trigger_infinite_distance)           ? "'".addslashes($pack->notebook_trigger_infinite_distance)."',"           : "").
+            (isset($pack->notebook_trigger_wiggle)                      ? "'".addslashes($pack->notebook_trigger_wiggle)."',"                      : "").
+            (isset($pack->notebook_trigger_show_title)                  ? "'".addslashes($pack->notebook_trigger_show_title)."',"                  : "").
+            (isset($pack->notebook_trigger_hidden)                      ? "'".addslashes($pack->notebook_trigger_hidden)."',"                      : "").
+            (isset($pack->notebook_trigger_on_enter)                    ? "'".addslashes($pack->notebook_trigger_on_enter)."',"                    : "").
+            (isset($pack->inventory_weight_cap)                         ? "'".addslashes($pack->inventory_weight_cap)."',"                         : "").
+            (isset($pack->published)                                    ? "'".addslashes($pack->published)."',"                                    : "").
+            (isset($pack->type)                                         ? "'".addslashes($pack->type)."',"                                         : "").
+            (isset($pack->intro_scene_id)                               ? "'".addslashes($pack->intro_scene_id)."',"                               : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
 
         dbconnection::queryInsert("INSERT INTO user_games (game_id, user_id, created) VALUES ('{$pack->game_id}','{$pack->auth->user_id}',CURRENT_TIMESTAMP)");
 
-        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', 'QUESTS',    'Quests',    '0', '1', CURRENT_TIMESTAMP)");
-        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', 'MAP',       'Map',       '0', '2', CURRENT_TIMESTAMP)");
-        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', 'INVENTORY', 'Inventory', '0', '3', CURRENT_TIMESTAMP)");
-        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', 'SCANNER',   'Scanner',   '0', '4', CURRENT_TIMESTAMP)");
-        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', 'DECODER',   'Decoder',   '0', '5', CURRENT_TIMESTAMP)");
-        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', 'PLAYER',    'Player',    '0', '6', CURRENT_TIMESTAMP)");
-        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', 'NOTEBOOK',  'Notebook',  '0', '7', CURRENT_TIMESTAMP)");
+        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', '',    'Quests', '0', '1', CURRENT_TIMESTAMP)");
+        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', '',       'Map', '0', '2', CURRENT_TIMESTAMP)");
+        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', '', 'Inventory', '0', '3', CURRENT_TIMESTAMP)");
+        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', '',   'Scanner', '0', '4', CURRENT_TIMESTAMP)");
+        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', '',   'Decoder', '0', '5', CURRENT_TIMESTAMP)");
+        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', '',    'Player', '0', '6', CURRENT_TIMESTAMP)");
+        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', '',  'Notebook', '0', '7', CURRENT_TIMESTAMP)");
 
         mkdir(Config::v2_gamedata_folder."/{$pack->game_id}",0777);
 
@@ -90,23 +110,33 @@ class games extends dbconnection
 
         dbconnection::query(
             "UPDATE games SET ".
-            (isset($pack->name)                       ? "name                       = '".addslashes($pack->name)."', "                       : "").
-            (isset($pack->description)                ? "description                = '".addslashes($pack->description)."', "                : "").
-            (isset($pack->icon_media_id)              ? "icon_media_id              = '".addslashes($pack->icon_media_id)."', "              : "").
-            (isset($pack->media_id)                   ? "media_id                   = '".addslashes($pack->media_id)."', "                   : "").
-            (isset($pack->map_type)                   ? "map_type                   = '".addslashes($pack->map_type)."', "                   : "").
-            (isset($pack->map_latitude)               ? "map_latitude               = '".addslashes($pack->map_latitude)."', "               : "").
-            (isset($pack->map_longitude)              ? "map_longitude              = '".addslashes($pack->map_longitude)."', "              : "").
-            (isset($pack->map_zoom_level)             ? "map_zoom_level             = '".addslashes($pack->map_zoom_level)."', "             : "").
-            (isset($pack->map_show_player)            ? "map_show_player            = '".addslashes($pack->map_show_player)."', "            : "").
-            (isset($pack->map_show_players)           ? "map_show_players           = '".addslashes($pack->map_show_players)."', "           : "").
-            (isset($pack->map_offsite_mode)           ? "map_offsite_mode           = '".addslashes($pack->map_offsite_mode)."', "           : "").
-            (isset($pack->notebook_allow_comments)    ? "notebook_allow_comments    = '".addslashes($pack->notebook_allow_comments)."', "    : "").
-            (isset($pack->notebook_allow_likes)       ? "notebook_allow_likes       = '".addslashes($pack->notebook_allow_likes)."', "       : "").
-            (isset($pack->inventory_weight_cap)       ? "inventory_weight_cap       = '".addslashes($pack->inventory_weight_cap)."', "       : "").
-            (isset($pack->published)                  ? "published                  = '".addslashes($pack->published)."', "                  : "").
-            (isset($pack->type)                       ? "type                       = '".addslashes($pack->type)."', "                       : "").
-            (isset($pack->intro_scene_id)             ? "intro_scene_id             = '".addslashes($pack->intro_scene_id)."', "             : "").
+            (isset($pack->name)                                         ? "name                                         = '".addslashes($pack->name)."', "                                         : "").
+            (isset($pack->description)                                  ? "description                                  = '".addslashes($pack->description)."', "                                  : "").
+            (isset($pack->icon_media_id)                                ? "icon_media_id                                = '".addslashes($pack->icon_media_id)."', "                                : "").
+            (isset($pack->media_id)                                     ? "media_id                                     = '".addslashes($pack->media_id)."', "                                     : "").
+            (isset($pack->map_type)                                     ? "map_type                                     = '".addslashes($pack->map_type)."', "                                     : "").
+            (isset($pack->map_latitude)                                 ? "map_latitude                                 = '".addslashes($pack->map_latitude)."', "                                 : "").
+            (isset($pack->map_longitude)                                ? "map_longitude                                = '".addslashes($pack->map_longitude)."', "                                : "").
+            (isset($pack->map_zoom_level)                               ? "map_zoom_level                               = '".addslashes($pack->map_zoom_level)."', "                               : "").
+            (isset($pack->map_show_player)                              ? "map_show_player                              = '".addslashes($pack->map_show_player)."', "                              : "").
+            (isset($pack->map_show_players)                             ? "map_show_players                             = '".addslashes($pack->map_show_players)."', "                             : "").
+            (isset($pack->map_offsite_mode)                             ? "map_offsite_mode                             = '".addslashes($pack->map_offsite_mode)."', "                             : "").
+            (isset($pack->notebook_allow_comments)                      ? "notebook_allow_comments                      = '".addslashes($pack->notebook_allow_comments)."', "                      : "").
+            (isset($pack->notebook_allow_likes)                         ? "notebook_allow_likes                         = '".addslashes($pack->notebook_allow_likes)."', "                         : "").
+            (isset($pack->notebook_trigger_scene_id)                    ? "notebook_trigger_scene_id                    = '".addslashes($pack->notebook_trigger_scene_id)."', "                    : "").
+            (isset($pack->notebook_trigger_requirement_root_package_id) ? "notebook_trigger_requirement_root_package_id = '".addslashes($pack->notebook_trigger_requirement_root_package_id)."', " : "").
+            (isset($pack->notebook_trigger_title)                       ? "notebook_trigger_title                       = '".addslashes($pack->notebook_trigger_title)."', "                       : "").
+            (isset($pack->notebook_trigger_icon_media_id)               ? "notebook_trigger_icon_media_id               = '".addslashes($pack->notebook_trigger_icon_media_id)."', "               : "").
+            (isset($pack->notebook_trigger_distance)                    ? "notebook_trigger_distance                    = '".addslashes($pack->notebook_trigger_distance)."', "                    : "").
+            (isset($pack->notebook_trigger_infinite_distance)           ? "notebook_trigger_infinite_distance           = '".addslashes($pack->notebook_trigger_infinite_distance)."', "           : "").
+            (isset($pack->notebook_trigger_wiggle)                      ? "notebook_trigger_wiggle                      = '".addslashes($pack->notebook_trigger_wiggle)."', "                      : "").
+            (isset($pack->notebook_trigger_show_title)                  ? "notebook_trigger_show_title                  = '".addslashes($pack->notebook_trigger_show_title)."', "                  : "").
+            (isset($pack->notebook_trigger_hidden)                      ? "notebook_trigger_hidden                      = '".addslashes($pack->notebook_trigger_hidden)."', "                      : "").
+            (isset($pack->notebook_trigger_on_enter)                    ? "notebook_trigger_on_enter                    = '".addslashes($pack->notebook_trigger_on_enter)."', "                    : "").
+            (isset($pack->inventory_weight_cap)                         ? "inventory_weight_cap                         = '".addslashes($pack->inventory_weight_cap)."', "                         : "").
+            (isset($pack->published)                                    ? "published                                    = '".addslashes($pack->published)."', "                                    : "").
+            (isset($pack->type)                                         ? "type                                         = '".addslashes($pack->type)."', "                                         : "").
+            (isset($pack->intro_scene_id)                               ? "intro_scene_id                               = '".addslashes($pack->intro_scene_id)."', "                               : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE game_id = '{$pack->game_id}'"
         );
@@ -118,24 +148,34 @@ class games extends dbconnection
     {
         if(!$sql_game) return $sql_game;
         $game = new stdClass();
-        $game->game_id                    = $sql_game->game_id;
-        $game->name                       = $sql_game->name;
-        $game->description                = $sql_game->description;
-        $game->icon_media_id              = $sql_game->icon_media_id;
-        $game->media_id                   = $sql_game->media_id;
-        $game->map_type                   = $sql_game->map_type;
-        $game->map_latitude               = $sql_game->map_latitude;
-        $game->map_longitude              = $sql_game->map_longitude;
-        $game->map_zoom_level             = $sql_game->map_zoom_level;
-        $game->map_show_player            = $sql_game->map_show_player;
-        $game->map_show_players           = $sql_game->map_show_players;
-        $game->map_offsite_mode           = $sql_game->map_offsite_mode;
-        $game->notebook_allow_comments    = $sql_game->notebook_allow_comments;
-        $game->notebook_allow_likes       = $sql_game->notebook_allow_likes;
-        $game->inventory_weight_cap       = $sql_game->inventory_weight_cap;
-        $game->published                  = $sql_game->published;
-        $game->type                       = $sql_game->type;
-        $game->intro_scene_id             = $sql_game->intro_scene_id;
+        $game->game_id                                      = $sql_game->game_id;
+        $game->name                                         = $sql_game->name;
+        $game->description                                  = $sql_game->description;
+        $game->icon_media_id                                = $sql_game->icon_media_id;
+        $game->media_id                                     = $sql_game->media_id;
+        $game->map_type                                     = $sql_game->map_type;
+        $game->map_latitude                                 = $sql_game->map_latitude;
+        $game->map_longitude                                = $sql_game->map_longitude;
+        $game->map_zoom_level                               = $sql_game->map_zoom_level;
+        $game->map_show_player                              = $sql_game->map_show_player;
+        $game->map_show_players                             = $sql_game->map_show_players;
+        $game->map_offsite_mode                             = $sql_game->map_offsite_mode;
+        $game->notebook_allow_comments                      = $sql_game->notebook_allow_comments;
+        $game->notebook_allow_likes                         = $sql_game->notebook_allow_likes;
+        $game->notebook_trigger_scene_id                    = $sql_game->notebook_trigger_scene_id;
+        $game->notebook_trigger_requirement_root_package_id = $sql_game->notebook_trigger_requirement_root_package_id;
+        $game->notebook_trigger_title                       = $sql_game->notebook_trigger_title;
+        $game->notebook_trigger_icon_media_id               = $sql_game->notebook_trigger_icon_media_id;
+        $game->notebook_trigger_distance                    = $sql_game->notebook_trigger_distance;
+        $game->notebook_trigger_infinite_distance           = $sql_game->notebook_trigger_infinite_distance;
+        $game->notebook_trigger_wiggle                      = $sql_game->notebook_trigger_wiggle;
+        $game->notebook_trigger_show_title                  = $sql_game->notebook_trigger_show_title;
+        $game->notebook_trigger_hidden                      = $sql_game->notebook_trigger_hidden;
+        $game->notebook_trigger_on_enter                    = $sql_game->notebook_trigger_on_enter;
+        $game->inventory_weight_cap                         = $sql_game->inventory_weight_cap;
+        $game->published                                    = $sql_game->published;
+        $game->type                                         = $sql_game->type;
+        $game->intro_scene_id                               = $sql_game->intro_scene_id;
 
         return $game;
     }

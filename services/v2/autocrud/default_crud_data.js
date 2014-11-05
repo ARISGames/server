@@ -35,6 +35,16 @@ var CRUD_DEFAULTS = [
           "map_offsite_mode":0,\n\
           "notebook_allow_comments":1,\n\
           "notebook_allow_likes":1,\n\
+          "notebook_trigger_scene_id":123,\n\
+          "notebook_trigger_requirement_root_package_id":123,\n\
+          "notebook_trigger_title":"notelocationtitle",\n\
+          "notebook_trigger_icon_media_id":123,\n\
+          "notebook_trigger_distance":10,\n\
+          "notebook_trigger_infinite_distance":0,\n\
+          "notebook_trigger_wiggle":0,\n\
+          "notebook_trigger_show_title":0,\n\
+          "notebook_trigger_hidden":0,\n\
+          "notebook_trigger_on_enter":0,\n\
           "inventory_weight_cap":0\n\
         }\n\
         ',
@@ -64,7 +74,16 @@ var CRUD_DEFAULTS = [
           "map_offsite_mode":0,\n\
           "notebook_allow_comments":1,\n\
           "notebook_allow_likes":1,\n\
-          "notebook_allow_player_tags":1,\n\
+          "notebook_trigger_scene_id":123,\n\
+          "notebook_trigger_requirement_root_package_id":123,\n\
+          "notebook_trigger_title":"notelocationtitle",\n\
+          "notebook_trigger_icon_media_id":123,\n\
+          "notebook_trigger_distance":10,\n\
+          "notebook_trigger_infinite_distance":0,\n\
+          "notebook_trigger_wiggle":0,\n\
+          "notebook_trigger_show_title":0,\n\
+          "notebook_trigger_hidden":0,\n\
+          "notebook_trigger_on_enter":0,\n\
           "inventory_weight_cap":0\n\
         }\n\
         ',
@@ -216,7 +235,10 @@ var CRUD_DEFAULTS = [
         '\
         {\n\
           "game_id":123,\n\
-          "name":"sceneName"\n\
+          "name":"sceneName",\n\
+          "description":"sceneDesc",\n\
+          "editor_x":123,\n\
+          "editor_y":-12\n\
         }\n\
         ',
     "getData":
@@ -230,6 +252,9 @@ var CRUD_DEFAULTS = [
         {\n\
           "scene_id":234,\n\
           "name":"sceneName"\n\
+          "description":"sceneDesc",\n\
+          "editor_x":123,\n\
+          "editor_y":-12\n\
         }\n\
         ',
     "deleteData":
@@ -912,16 +937,19 @@ var CRUD_DEFAULTS = [
           "location_bound_type":"PLAYER",\n\
           "min_production_distance":5,\n\
           "max_production_distance":10,\n\
+          "requirement_root_package_id":123,\n\
           "trigger_latitude":0.0,\n\
           "trigger_longitude":0.0,\n\
           "trigger_distance":3,\n\
+          "trigger_infinite_distance":0,\n\
           "trigger_on_enter":0,\n\
           "trigger_hidden":0,\n\
           "trigger_wiggle":1,\n\
           "trigger_title":"My Produced Trigger",\n\
           "trigger_icon_media_id":123,\n\
           "trigger_show_title":1,\n\
-          "trigger_requirement_root_package_id":123\n\
+          "trigger_requirement_root_package_id":123,\n\
+          "trigger_scene_id":123\n\
         }\n\
         ',
     "getData":
@@ -947,16 +975,19 @@ var CRUD_DEFAULTS = [
           "location_bound_type":"PLAYER",\n\
           "min_production_distance":5,\n\
           "max_production_distance":10,\n\
+          "requirement_root_package_id":123,\n\
           "trigger_latitude":0.0,\n\
           "trigger_longitude":0.0,\n\
           "trigger_distance":3,\n\
+          "trigger_infinite_distance":0,\n\
           "trigger_on_enter":0,\n\
           "trigger_hidden":0,\n\
           "trigger_wiggle":1,\n\
           "trigger_title":"My Produced Trigger",\n\
           "trigger_icon_media_id":123,\n\
           "trigger_show_title":1,\n\
-          "trigger_requirement_root_package_id":123\n\
+          "trigger_requirement_root_package_id":123,\n\
+          "trigger_scene_id":123\n\
         }\n\
         ',
     "deleteData":

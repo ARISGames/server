@@ -8,9 +8,9 @@ CREATE DATABASE tmp_db DEFAULT CHARACTER SET utf8 DEFAULT COLLATE utf8_general_c
 GRANT ALL ON tmp_db.* TO 'tmp_user'@'127.0.0.1';
 USE tmp_db;
 
-DROP TABLE IF EXISTS db_migrations;
-CREATE TABLE db_migrations (
-migration_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
+DROP TABLE IF EXISTS db_upgrades;
+CREATE TABLE db_upgrades (
+upgrade_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 user_id INT(32) UNSIGNED NOT NULL,
 version_major INT(32) UNSIGNED NOT NULL,
 version_minor INT(32) UNSIGNED NOT NULL,
@@ -46,6 +46,16 @@ map_offsite_mode TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
     /* notes */
 notebook_allow_comments TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
 notebook_allow_likes TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
+notebook_trigger_scene_id INT(32) UNSIGNED NOT NULL, /*scene note trigger will be injected into*/
+notebook_trigger_requirement_root_package_id INT(32) UNSIGNED NOT NULL, /*requirement to view note trigger*/
+notebook_trigger_title VARCHAR(255) NOT NULL DEFAULT "",
+notebook_trigger_icon_media_id INT(32) NOT NULL DEFAULT 0,
+notebook_trigger_distance INT(32) NOT NULL DEFAULT 0,
+notebook_trigger_infinite_distance TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+notebook_trigger_wiggle TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+notebook_trigger_show_title TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
+notebook_trigger_hidden TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+notebook_trigger_on_enter TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
     /* inventory */
 inventory_weight_cap INT(32) NOT NULL DEFAULT -1,
 
@@ -59,6 +69,7 @@ tab_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 game_id INT(32) UNSIGNED NOT NULL,
 type ENUM('MAP','DECODER','SCANNER','QUESTS','INVENTORY','PLAYER','NOTEBOOK','NOTE','DIALOG','ITEM','PLAQUE','WEB_PAGE') NOT NULL,
 name VARCHAR(255) NOT NULL DEFAULT "",
+description TEXT NOT NULL,
 icon_media_id INT(32) UNSIGNED NOT NULL DEFAULT 0,
 content_id INT(32) UNSIGNED NOT NULL,
 info VARCHAR(255) NOT NULL DEFAULT "",
@@ -333,6 +344,9 @@ CREATE TABLE scenes (
 scene_id INT(32) UNSIGNED NOT NULL AUTO_INCREMENT PRIMARY KEY,
 game_id INT(32) UNSIGNED NOT NULL,
 name VARCHAR(255) NOT NULL DEFAULT "",
+description TEXT NOT NULL,
+editor_x INT(32) NOT NULL,
+editor_y INT(32) NOT NULL,
 created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
 last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -398,18 +412,20 @@ production_bound_type ENUM('PER_PLAYER','TOTAL'),
 location_bound_type ENUM('PLAYER','LOCATION'),
 min_production_distance INT(32) NOT NULL DEFAULT 0,
 max_production_distance INT(32) NOT NULL DEFAULT 0,
+requirement_root_package_id INT(32) UNSIGNED NOT NULL, /*requirement to produce trigger*/
 production_timestamp TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
+trigger_scene_id INT(32) UNSIGNED NOT NULL, /*scene trigger will be injected into*/
+trigger_requirement_root_package_id INT(32) UNSIGNED NOT NULL, /*requirement to view spawned trigger*/
+trigger_title VARCHAR(255) NOT NULL DEFAULT "",
+trigger_icon_media_id INT(32) NOT NULL DEFAULT 0,
 trigger_latitude DOUBLE NOT NULL DEFAULT 0.0,
 trigger_longitude DOUBLE NOT NULL DEFAULT 0.0,
 trigger_distance INT(32) NOT NULL DEFAULT 0,
 trigger_infinite_distance TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
-trigger_on_enter TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
-trigger_hidden TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
 trigger_wiggle TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
-trigger_title VARCHAR(255) NOT NULL DEFAULT "",
-trigger_icon_media_id INT(32) NOT NULL DEFAULT 0,
 trigger_show_title TINYINT(1) UNSIGNED NOT NULL DEFAULT 1,
-trigger_requirement_root_package_id INT(32) UNSIGNED NOT NULL, /*requirement to view spawned trigger*/
+trigger_hidden TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
+trigger_on_enter TINYINT(1) UNSIGNED NOT NULL DEFAULT 0,
 created TIMESTAMP DEFAULT '0000-00-00 00:00:00',
 last_active TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
