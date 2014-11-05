@@ -78,13 +78,14 @@ class games extends dbconnection
 
         dbconnection::queryInsert("INSERT INTO user_games (game_id, user_id, created) VALUES ('{$pack->game_id}','{$pack->auth->user_id}',CURRENT_TIMESTAMP)");
 
-        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', '',    'Quests', '0', '1', CURRENT_TIMESTAMP)");
-        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', '',       'Map', '0', '2', CURRENT_TIMESTAMP)");
-        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', '', 'Inventory', '0', '3', CURRENT_TIMESTAMP)");
-        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', '',   'Scanner', '0', '4', CURRENT_TIMESTAMP)");
-        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', '',   'Decoder', '0', '5', CURRENT_TIMESTAMP)");
-        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', '',    'Player', '0', '6', CURRENT_TIMESTAMP)");
-        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', '',  'Notebook', '0', '7', CURRENT_TIMESTAMP)");
+        //                                                                                                          game_id,         type,    name, icon, sort, created
+        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', 'QUESTS',    '', '0', '1', CURRENT_TIMESTAMP)");
+        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', 'MAP',       '', '0', '2', CURRENT_TIMESTAMP)");
+        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', 'INVENTORY', '', '0', '3', CURRENT_TIMESTAMP)");
+        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', 'SCANNER',   '', '0', '4', CURRENT_TIMESTAMP)");
+        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', 'DECODER',   '', '0', '5', CURRENT_TIMESTAMP)");
+        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', 'PLAYER',    '', '0', '6', CURRENT_TIMESTAMP)");
+        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', 'NOTEBOOK',  '', '0', '7', CURRENT_TIMESTAMP)");
 
         mkdir(Config::v2_gamedata_folder."/{$pack->game_id}",0777);
 
