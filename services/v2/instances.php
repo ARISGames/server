@@ -18,17 +18,21 @@ class instances extends dbconnection
         $pack->instance_id = dbconnection::queryInsert(
             "INSERT INTO instances (".
             "game_id,".
-            (isset($pack->object_id)   ? "object_id,"    : "").
-            (isset($pack->object_type) ? "object_type,"  : "").
-            (isset($pack->factory_id)  ? "factory_id,"   : "").
-            (isset($pack->owner_id)    ? "owner_id,"     : "").
+            (isset($pack->object_type)  ? "object_type,"  : "").
+            (isset($pack->object_id)    ? "object_id,"    : "").
+            (isset($pack->qty)          ? "qty,"          : "").
+            (isset($pack->infinite_qty) ? "infinite_qty," : "").
+            (isset($pack->factory_id)   ? "factory_id,"   : "").
+            (isset($pack->owner_id)     ? "owner_id,"     : "").
             "created".
             ") VALUES (".
             "'".$pack->game_id."',".
-            (isset($pack->object_id)   ? "'".addslashes($pack->object_id)."',"   : "").
-            (isset($pack->object_type) ? "'".addslashes($pack->object_type)."'," : "").
-            (isset($pack->factory_id)  ? "'".addslashes($pack->factory_id)."',"  : "").
-            (isset($pack->owner_id)    ? "'".addslashes($pack->owner_id)."',"    : "").
+            (isset($pack->object_type)  ? "'".addslashes($pack->object_type)."',"  : "").
+            (isset($pack->object_id)    ? "'".addslashes($pack->object_id)."',"    : "").
+            (isset($pack->qty)          ? "'".addslashes($pack->qty)."',"          : "").
+            (isset($pack->infinite_qty) ? "'".addslashes($pack->infinite_qty)."'," : "").
+            (isset($pack->factory_id)   ? "'".addslashes($pack->factory_id)."',"   : "").
+            (isset($pack->owner_id)     ? "'".addslashes($pack->owner_id)."',"     : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -46,10 +50,12 @@ class instances extends dbconnection
 
         dbconnection::query(
             "UPDATE instances SET ".
-            (isset($pack->object_id)   ? "object_id   = '".addslashes($pack->object_id)."', "   : "").
-            (isset($pack->object_type) ? "object_type = '".addslashes($pack->object_type)."', " : "").
-            (isset($pack->factory_id)  ? "factory_id  = '".addslashes($pack->factory_id)."', "  : "").
-            (isset($pack->owner_id)    ? "owner_id    = '".addslashes($pack->owner_id)."', "    : "").
+            (isset($pack->object_type)  ? "object_type  = '".addslashes($pack->object_type)."', "  : "").
+            (isset($pack->object_id)    ? "object_id    = '".addslashes($pack->object_id)."', "    : "").
+            (isset($pack->qty)          ? "qty          = '".addslashes($pack->qty)."', "          : "").
+            (isset($pack->infinite_qty) ? "infinite_qty = '".addslashes($pack->infinite_qty)."', " : "").
+            (isset($pack->factory_id)   ? "factory_id   = '".addslashes($pack->factory_id)."', "   : "").
+            (isset($pack->owner_id)     ? "owner_id     = '".addslashes($pack->owner_id)."', "     : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE instance_id = '{$pack->instance_id}'"
         );
