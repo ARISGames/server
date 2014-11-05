@@ -104,7 +104,7 @@ class scenes extends dbconnection
 
         dbconnection::query("DELETE FROM scenes WHERE scene_id = '{$pack->scene_id}' LIMIT 1");
         //cleanup
-        $s = dbconnection::queryObject("SELECT * FROM scenes WHERE game_id = '{$pack->game_id}' LIMIT 1"); $s_id = ($scene ? $scene->scene_id : 0);
+        $s = dbconnection::queryObject("SELECT * FROM scenes WHERE game_id = '{$pack->game_id}' LIMIT 1"); $s_id = ($s ? $s->scene_id : 0);
         dbconnection::query("UPDATE games SET intro_scene_id = '{$s_id}' WHERE intro_scene_id = '{$pack->scene_id}'");
 
         $triggers = dbconnection::queryArray("SELECT * FROM triggers WHERE scene_id  = '{$pack->scene_id}'");
