@@ -25,7 +25,8 @@ class media extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        $filenameext = substr($pack->file_name,strrpos($pack->file_name,'.')+1);
+        $filenameext = strtolower(substr($pack->file_name,strrpos($pack->file_name,'.')+1));
+        if($filenameext == "jpeg") $filenameext = "jpg"; //sanity
         $filename = md5((string)microtime().$pack->file_name);
         $newfilename = 'aris'.$filename.'.'.$filenameext;
         $newthumbfilename = 'aris'.$filename.'_128.'.$filenameext;
