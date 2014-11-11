@@ -226,6 +226,8 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
+        if($pack->tick_factories) Client::tickFactoriesForGamePack($pack);
+
         $scene = client::getSceneForPlayerPack($pack)->data;
         $gameTriggers = triggers::getTriggersForGamePack($pack)->data;
         $playerTriggers = array();
@@ -315,6 +317,50 @@ class client extends dbconnection
                 $playerOptions[] = $scriptOptions[$i];
         }
         return new return_package(0, $playerOptions);
+    }
+
+    public static function tickFactories($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::tickFactoriesPack($glob); }
+    public static function tickFactoriesPack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $factories = dbconnection::queryArray("SELECT * FROM factories WHERE game_id = '{$pack->game_id}'");
+
+        for($i = 0; $i < count($factories); $i++)
+        {
+            $fac = $factories[$i];
+            $insts = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND factory_id = '{$fac->factory_id}'");
+            $now = strtotime(date());
+
+            //delete any expired
+            for($j = 0; $j < count($insts); $j++)
+            {
+                $inst = $insts[$j];
+                $created = strtotime($inst->created);
+                if($now-$created > $fac->produce_expiration_time)
+                {
+                    $trigger = dbconnection::queryObject("SELECT * FROM triggers WHERE game_id = '{$pack->game_id}' AND instance_id = '{$inst->instance_id}'");
+                    dbconnection::query("DELETE FROM triggers WHERE trigger_id = '{$trig->trigger_id}'");
+                    dbconnection::query("DELETE FROM instances WHERE instance_id = '{$inst->instance_id}'");
+                }
+            }
+
+            //create any new
+            $updated = strtotime($fac->production_timestamp);
+            if($now-$updated >= seconds_per_production &&
+                count($insts) < $fac->max_production)
+            {
+                if(rand(0,99) < ($fac->production_probability*100))
+                {
+                    $instance_id = dbconnection::queryInsert("INSERT INTO instances (game_id, object_id, object_type, qty, infinite_qty, factory_id, created) VALUES ('{$pack->game_id}', '{$fac->object_id}', '{$fac->object_type}', '0', '0', '{$fac->factory_id}', CURRENT_TIMESTAMP)");
+                    $trigger_id = dbconnection::queryInsert("INSERT INTO triggers (game_id, instance_id, scene_id, requirement_root_package_id, type, name, title, latitude, longitude, distance, infinite_distance, wiggle, show_title, hidden, trigger_on_enter, created) VALUES ('{$pack->game_id}', '{$instance_id}', '{$fac->trigger_scene_id}', '{$fac->trigger_requirement_root_package_id}', 'LOCATION', '{$fac->trigger_title}', '{$fac->trigger_title}', '{$fac->trigger_latitude}', '{$fac->trigger_longitude}', '{$fac->distance}', '{$fac->infinite_distance}', '{$fac->trigger_wiggle}', '{$fac->trigger_show_title}', '{$fac->trigger_hidden}', '{$fac->trigger_on_enter}', CURRENT_TIMESTAMP);");
+                }
+                dbconnection::query("UPDATE factories SET production_timestamp = CURRENT_TIMESTAMP WHERE factory_id = '{$fac->factory_id}'");
+            }
+        }
+
+        return new return_package(0);
     }
 
     public static function setQtyForInstance($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::setQtyForInstancePack($glob); }
