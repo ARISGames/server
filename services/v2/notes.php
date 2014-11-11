@@ -44,7 +44,7 @@ class notes extends dbconnection
         if($pack->trigger)
         {
             $instance_id = dbconnection::queryInsert("INSERT INTO instances (game_id, object_id, object_type, created) VALUES ('{$pack->game_id}', '{$pack->note_id}', 'NOTE', CURRENT_TIMESTAMP)");
-            $trigger_id = dbconnection::queryInsert("INSERT INTO triggers (game_id, instance_id, type, name, title, latitude, longitude, distance, created) VALUES ( '{$pack->game_id}', '{$instance->instance_id}', 'LOCATION', '{$pack->name}', '{$pack->name}', '{$pack->trigger->latitude}', '{$pack->trigger->longitude}', '25', CURRENT_TIMESTAMP);");
+            $trigger_id = dbconnection::queryInsert("INSERT INTO triggers (game_id, instance_id, type, name, title, latitude, longitude, distance, created) VALUES ( '{$pack->game_id}', '{$instance_id}', 'LOCATION', '{$pack->name}', '{$pack->name}', '{$pack->trigger->latitude}', '{$pack->trigger->longitude}', '25', CURRENT_TIMESTAMP);");
         }
 
         //allow for 'tag_id' in API, but really just use object_tags
