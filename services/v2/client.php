@@ -339,9 +339,9 @@ class client extends dbconnection
             {
                 $inst = $insts[$j];
                 $created = strtotime($inst->created);
-                if($now-$created > $fac->produce_expiration_time)
+                if(($now-$created)/1000 > $fac->produce_expiration_time)
                 {
-                    $trigger = dbconnection::queryObject("SELECT * FROM triggers WHERE game_id = '{$pack->game_id}' AND instance_id = '{$inst->instance_id}'");
+                    $trig = dbconnection::queryObject("SELECT * FROM triggers WHERE game_id = '{$pack->game_id}' AND instance_id = '{$inst->instance_id}'");
                     dbconnection::query("DELETE FROM triggers WHERE trigger_id = '{$trig->trigger_id}'");
                     dbconnection::query("DELETE FROM instances WHERE instance_id = '{$inst->instance_id}'");
                 }
@@ -349,8 +349,24 @@ class client extends dbconnection
 
             //create any new
             $updated = strtotime($fac->production_timestamp);
-            if(requirements::evaluateRequirementPackagePack($reqQueryPack) && //meets requirements to start generating
-               $now-$updated >= seconds_per_production &&                     //hasn't generated recently
+
+            //this part is reeeaallly ugly
+            $in_valid_scene = false;
+            $user_scene_id = dbconnection::queryObject("SELECT * FROM user_game_scenes WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->auth->user_id}' LIMIT 1")->scene_id;
+            $facinsts = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND object_type = 'FACTORY' AND object_id = '{$fac->factory_id}'");
+            for($i = 0; $i < count($facinsts) && !$in_valid_scene; $i++)
+            {
+                $facinsttrigs = dbconnection::queryArray("SELECT * FROM triggers WHERE game_id = '{$pack->game_id}' AND instance_id = '{$facinsts[$i]->instance_id}'");
+                for($j = 0; $j < count($facinsttrigs); $j++)
+                {
+                    if($facinsttrigs[$j]->scene_id == $user_scene_id) $in_valid_scene = true;
+                }
+            }
+
+            if(
+               $in_valid_scene &&                                             //in valid scene
+               requirements::evaluateRequirementPackagePack($reqQueryPack) && //meets requirements to start generating
+               ($now-$updated)/1000 >= seconds_per_production &&              //hasn't generated recently
                count($insts) < $fac->max_production)                          //hasn't reached max production
             {
                 if(rand(0,99) < ($fac->production_probability*100))           //roll the dice
