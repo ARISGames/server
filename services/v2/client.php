@@ -10,6 +10,7 @@ require_once("overlays.php");
 require_once("tabs.php");
 require_once("dialogs.php");
 require_once("requirements.php");
+require_once("util.php");
 require_once("return_package.php");
 
 class client extends dbconnection
@@ -319,8 +320,8 @@ class client extends dbconnection
         return new return_package(0, $playerOptions);
     }
 
-    public static function tickFactories($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::tickFactoriesPack($glob); }
-    public static function tickFactoriesPack($pack)
+    public static function tickFactoriesForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::tickFactoriesForGamePack($glob); }
+    public static function tickFactoriesForGamePack($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -331,7 +332,7 @@ class client extends dbconnection
         {
             $fac = $factories[$i];
             $insts = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND factory_id = '{$fac->factory_id}'");
-            $now = strtotime(date());
+            $now = strtotime(date("Y-m-d H:i:s"));
 
             //delete any expired
             for($j = 0; $j < count($insts); $j++)
@@ -348,7 +349,6 @@ class client extends dbconnection
 
             //create any new
             $updated = strtotime($fac->production_timestamp);
-            
             if(requirements::evaluateRequirementPackagePack($reqQueryPack) && //meets requirements to start generating
                $now-$updated >= seconds_per_production &&                     //hasn't generated recently
                count($insts) < $fac->max_production)                          //hasn't reached max production
@@ -360,8 +360,16 @@ class client extends dbconnection
                     if($fac->location_bound_type == 'PLAYER')
                     {
                         $move = dbconnection::queryObject("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->auth->user_id}' AND event_type = 'MOVE' ORDER BY created ASC LIMIT 1");
-                        $lat = $move->latitude;
-                        $lon = $move->longitude;
+                        if(!$move)
+                        {
+                            $lat = 0;
+                            $lon = 0;
+                        }
+                        else
+                        {
+                            $lat = $move->latitude;
+                            $lon = $move->longitude;
+                        }
                     }
                     else if($fac->location_bound_type == 'LOCATION')
                     {
