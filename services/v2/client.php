@@ -348,13 +348,45 @@ class client extends dbconnection
 
             //create any new
             $updated = strtotime($fac->production_timestamp);
-            if($now-$updated >= seconds_per_production &&
-                count($insts) < $fac->max_production)
+            
+            if(requirements::evaluateRequirementPackagePack($reqQueryPack) && //meets requirements to start generating
+               $now-$updated >= seconds_per_production &&                     //hasn't generated recently
+               count($insts) < $fac->max_production)                          //hasn't reached max production
             {
-                if(rand(0,99) < ($fac->production_probability*100))
+                if(rand(0,99) < ($fac->production_probability*100))           //roll the dice
                 {
+                    $lat = 0;
+                    $lon = 0;
+                    if($fac->location_bound_type == 'PLAYER')
+                    {
+                        $move = dbconnection::queryObject("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->auth->user_id}' AND event_type = 'MOVE' ORDER BY created ASC LIMIT 1");
+                        $lat = $move->latitude;
+                        $lon = $move->longitude;
+                    }
+                    else if($fac->location_bound_type == 'LOCATION')
+                    {
+                        $lat = $fac->trigger_latitude;
+                        $lon = $fac->trigger_longitude;
+                    }
+
+                    //need to calculate via trig to get donut of valid area, rather than circle/square
+                    $dist = ((rand(0,99)/100)*($fac->max_production_distance-$fac->min_production_distance))+$fac->min_production_distance;
+                    $theta = rand(0,359)/(2*pi());
+                    $latdelta = $dist*sin($theta);
+                    $londelta = $dist*cos($theta);
+
+                    //quick and dirty estimate (supposedly actually pretty good if "less than a few KM and not right near the poles")
+                    //111,111 meters = 1* latitude
+                    //111,111 * cos(latitude) = 1* longitude
+
+                    $latdelta/=111111;
+                    $londelta/=(111111*cos($lat+$latdelta));
+
+                    $lat += $latdelta;
+                    $lon += $londelta;
+
                     $instance_id = dbconnection::queryInsert("INSERT INTO instances (game_id, object_id, object_type, qty, infinite_qty, factory_id, created) VALUES ('{$pack->game_id}', '{$fac->object_id}', '{$fac->object_type}', '0', '0', '{$fac->factory_id}', CURRENT_TIMESTAMP)");
-                    $trigger_id = dbconnection::queryInsert("INSERT INTO triggers (game_id, instance_id, scene_id, requirement_root_package_id, type, name, title, latitude, longitude, distance, infinite_distance, wiggle, show_title, hidden, trigger_on_enter, created) VALUES ('{$pack->game_id}', '{$instance_id}', '{$fac->trigger_scene_id}', '{$fac->trigger_requirement_root_package_id}', 'LOCATION', '{$fac->trigger_title}', '{$fac->trigger_title}', '{$fac->trigger_latitude}', '{$fac->trigger_longitude}', '{$fac->distance}', '{$fac->infinite_distance}', '{$fac->trigger_wiggle}', '{$fac->trigger_show_title}', '{$fac->trigger_hidden}', '{$fac->trigger_on_enter}', CURRENT_TIMESTAMP);");
+                    $trigger_id = dbconnection::queryInsert("INSERT INTO triggers (game_id, instance_id, scene_id, requirement_root_package_id, type, name, title, latitude, longitude, distance, infinite_distance, wiggle, show_title, hidden, trigger_on_enter, created) VALUES ('{$pack->game_id}', '{$instance_id}', '{$fac->trigger_scene_id}', '{$fac->trigger_requirement_root_package_id}', 'LOCATION', '{$fac->trigger_title}', '{$fac->trigger_title}', '{$lat}', '{$lon}', '{$fac->distance}', '{$fac->infinite_distance}', '{$fac->trigger_wiggle}', '{$fac->trigger_show_title}', '{$fac->trigger_hidden}', '{$fac->trigger_on_enter}', CURRENT_TIMESTAMP);");
                 }
                 dbconnection::query("UPDATE factories SET production_timestamp = CURRENT_TIMESTAMP WHERE factory_id = '{$fac->factory_id}'");
             }
