@@ -354,18 +354,24 @@ class client extends dbconnection
             $in_valid_scene = false;
             $user_scene_id = dbconnection::queryObject("SELECT * FROM user_game_scenes WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->auth->user_id}' LIMIT 1")->scene_id;
             $facinsts = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND object_type = 'FACTORY' AND object_id = '{$fac->factory_id}'");
+            $reqQueryPack = new stdClass();
+            $reqQueryPack->game_id = $pack->game_id;
+            $reqQueryPack->user_id = $pack->auth->user_id;
             for($i = 0; $i < count($facinsts) && !$in_valid_scene; $i++)
             {
                 $facinsttrigs = dbconnection::queryArray("SELECT * FROM triggers WHERE game_id = '{$pack->game_id}' AND instance_id = '{$facinsts[$i]->instance_id}'");
                 for($j = 0; $j < count($facinsttrigs); $j++)
                 {
-                    if($facinsttrigs[$j]->scene_id == $user_scene_id) $in_valid_scene = true;
+                    if($facinsttrigs[$j]->scene_id == $user_scene_id)
+                    {
+                        $reqQueryPack->requirement_root_package_id = $facinsttrigs[$j]->requirement_root_package_id;
+                        if(requirements::evaluateRequirementPackagePack($reqQueryPack)) $in_valid_scene = true;
+                    }
                 }
             }
 
             if(
                $in_valid_scene &&                                             //in valid scene
-               requirements::evaluateRequirementPackagePack($reqQueryPack) && //meets requirements to start generating
                ($now-$updated)/1000 >= seconds_per_production &&              //hasn't generated recently
                count($insts) < $fac->max_production)                          //hasn't reached max production
             {
@@ -410,7 +416,7 @@ class client extends dbconnection
                     $lon += $londelta;
 
                     $instance_id = dbconnection::queryInsert("INSERT INTO instances (game_id, object_id, object_type, qty, infinite_qty, factory_id, created) VALUES ('{$pack->game_id}', '{$fac->object_id}', '{$fac->object_type}', '0', '0', '{$fac->factory_id}', CURRENT_TIMESTAMP)");
-                    $trigger_id = dbconnection::queryInsert("INSERT INTO triggers (game_id, instance_id, scene_id, requirement_root_package_id, type, name, title, latitude, longitude, distance, infinite_distance, wiggle, show_title, hidden, trigger_on_enter, created) VALUES ('{$pack->game_id}', '{$instance_id}', '{$fac->trigger_scene_id}', '{$fac->trigger_requirement_root_package_id}', 'LOCATION', '{$fac->trigger_title}', '{$fac->trigger_title}', '{$lat}', '{$lon}', '{$fac->distance}', '{$fac->infinite_distance}', '{$fac->trigger_wiggle}', '{$fac->trigger_show_title}', '{$fac->trigger_hidden}', '{$fac->trigger_on_enter}', CURRENT_TIMESTAMP);");
+                    $trigger_id = dbconnection::queryInsert("INSERT INTO triggers (game_id, instance_id, scene_id, requirement_root_package_id, type, name, title, latitude, longitude, distance, infinite_distance, wiggle, show_title, hidden, trigger_on_enter, created) VALUES ('{$pack->game_id}', '{$instance_id}', '{$user_scene_id}', '{$fac->trigger_requirement_root_package_id}', 'LOCATION', '{$fac->trigger_title}', '{$fac->trigger_title}', '{$lat}', '{$lon}', '{$fac->distance}', '{$fac->infinite_distance}', '{$fac->trigger_wiggle}', '{$fac->trigger_show_title}', '{$fac->trigger_hidden}', '{$fac->trigger_on_enter}', CURRENT_TIMESTAMP);");
                 }
                 dbconnection::query("UPDATE factories SET production_timestamp = CURRENT_TIMESTAMP WHERE factory_id = '{$fac->factory_id}'");
             }
