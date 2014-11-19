@@ -10,6 +10,13 @@ class util
         fwrite($errorLogFile, $errorData);
         fclose($errorLogFile);
     }
+    public static function serverErrorJot($message) //only log message, no metadata
+    {
+        $errorLogFile = fopen(Config::serverErrorLog, "a");
+        fwrite($errorLogFile, $message."\n");
+        fclose($errorLogFile);
+    }
+
 
     public static function sendEmail($to, $subject, $body)
     {

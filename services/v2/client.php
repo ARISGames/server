@@ -352,14 +352,16 @@ class client extends dbconnection
 
             //this part is reeeaallly ugly
             $in_valid_scene = false;
-            $user_scene_id = dbconnection::queryObject("SELECT * FROM user_game_scenes WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->auth->user_id}' LIMIT 1")->scene_id;
+            $user_scene_id = 0;
+            $user_scene = dbconnection::queryObject("SELECT * FROM user_game_scenes WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->auth->user_id}' LIMIT 1");
+            if($user_scene) $user_scene_id = $user_scene->scene_id;
             $facinsts = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND object_type = 'FACTORY' AND object_id = '{$fac->factory_id}'");
             $reqQueryPack = new stdClass();
             $reqQueryPack->game_id = $pack->game_id;
             $reqQueryPack->user_id = $pack->auth->user_id;
-            for($i = 0; $i < count($facinsts) && !$in_valid_scene; $i++)
+            for($j = 0; $j < count($facinsts) && !$in_valid_scene; $j++)
             {
-                $facinsttrigs = dbconnection::queryArray("SELECT * FROM triggers WHERE game_id = '{$pack->game_id}' AND instance_id = '{$facinsts[$i]->instance_id}'");
+                $facinsttrigs = dbconnection::queryArray("SELECT * FROM triggers WHERE game_id = '{$pack->game_id}' AND instance_id = '{$facinsts[$j]->instance_id}'");
                 for($j = 0; $j < count($facinsttrigs); $j++)
                 {
                     if($facinsttrigs[$j]->scene_id == $user_scene_id)
