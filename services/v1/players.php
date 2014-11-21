@@ -221,8 +221,6 @@ class Players extends Module
 		Module::query("UPDATE player_log SET deleted = 1 WHERE player_id = '{$playerId}' AND game_id = '{$gameId}'");
                 $debugString .=(microtime(true)-$sTime)."\n";
 
-                Module::serverErrorLog($debugString);
-
 		return new returnData(0, TRUE);
 	}	
 
@@ -447,7 +445,6 @@ class Players extends Module
          **/
         public static function getPlayerBackpacksFromArray($bpReqObj)
         {
-            //Module::serverErrorLog('Get Backpacks From Arrays Called: '.date_format(date_create(), 'H:i:s:u')."\n".$bpReqObj);
             $gameId        = $bpReqObj['gameId'];
             $playerArray   = $bpReqObj['playerArray'];
             $getItems      = (isset($bpReqObj['items'])      ? $bpReqObj['items']      : true); //Default true
@@ -489,8 +486,6 @@ class Players extends Module
 
         private static function getPlayerArrayDataBP($gameId, $playerArray, $getItems = true, $getAttributes = true, $getNotes = true)
         {
-            Module::serverErrorLog('Get Player Array Data Called: '.date_format(date_create(), 'H:i:s:u')."\n".json_encode($playerArray));
-
             //preload data into memory for quick re-use
             $mediaA = Media::getMedia($gameId)->data;
             $mediaMap = array();
@@ -637,7 +632,6 @@ class Players extends Module
 	 */
 	private static function getSinglePlayerDataBP($gameId, $playerId, $individual=false, $getItems = true, $getAttributes = true, $getNotes = true)
 	{
-		//Module::serverErrorLog('Single Player Start: '.date_format(date_create(), 'H:i:s:u'));
 		$backpack = new stdClass();
 
 		//Get owner information
@@ -663,15 +657,12 @@ class Players extends Module
                 }
 
 		/* ATTRIBUTES */
-		//Module::serverErrorLog('Attributes    Start: '.date_format(date_create(), 'H:i:s:u'));
 		if($getAttributes) $backpack->attributes = Items::getDetailedPlayerAttributes($playerId, $gameId);
 
 		/* OTHER ITEMS */
-		//Module::serverErrorLog('Items         Start: '.date_format(date_create(), 'H:i:s:u'));
 		if($getItems) $backpack->items = Items::getDetailedPlayerItems($playerId, $gameId);
 
 		/* NOTES */
-		//Module::serverErrorLog('Notes         Start: '.date_format(date_create(), 'H:i:s:u'));
 		if($getNotes) $backpack->notes = Notes::getDetailedPlayerNotes($playerId, $gameId, $individual);
 
 		return $backpack;

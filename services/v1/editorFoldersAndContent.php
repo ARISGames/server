@@ -150,7 +150,6 @@ class EditorFoldersAndContent extends Module
 
         $foldersAndContents = (object) array('folders' => $folders, 'contents' => $arrayCollectionContents);
 
-        //Module::serverErrorLog($foldersAndContents);
         return new returnData(0, $foldersAndContents);
     }
 
