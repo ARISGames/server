@@ -222,7 +222,6 @@ class Games extends Module
         $gameObj->calculatedScore = ($gameObj->rating - 3) * $x;
         $gameObj->numComments = $x;
 
-        Module::serverErrorLog($debugString);
         return $gameObj;
     }
 
@@ -282,7 +281,6 @@ class Games extends Module
                     NOW())";
 
         Module::query($query);
-        Module::serverErrorLog("Debugging Duplicate Game: $query");
 
         if (mysql_error())  return new returnData(6, NULL, "cannot create game record using SQL: $query");
         $newGameId = mysql_insert_id();
@@ -599,7 +597,6 @@ class Games extends Module
             if($gameObj != NULL && ($gameObj->ready_for_public || $includeDev)) $games[] = $gameObj;
             $debugString .= $logs[$i]->game_id.": ".(microtime(true)-$sTime)."\n";
         }
-        Module::serverErrorLog($debugString);
 
         return new returnData(0, $games);
     }

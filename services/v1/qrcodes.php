@@ -111,7 +111,6 @@ class QRCodes extends Module
         $execCommand = '../../ImageMatcher/ImageMatcher match ' . $gameMediaAndDescriptorsPath . $strFileName . ' ' . $gameMediaAndDescriptorsPath;
 
         $console = exec($execCommand); //Run it
-        Module::serverErrorLog('getBestImageMatchNearbyObjectForPlayer Console:' . $console);
 
         $consoleJSON = json_decode($console,true);
         $fileName = $consoleJSON['filename'];        
