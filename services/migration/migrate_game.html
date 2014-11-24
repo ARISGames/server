@@ -53,8 +53,10 @@
 	/* Authentication */
     var editor_id = 0;
     var rw_token = "";
-    function submitAuth()
+    function submitAuth(event)
     {
+		event.preventDefault();
+
 		/* Get token */
         var response = sendRequest('v1.editors.getToken/'+document.getElementById('editor_name').value+"/"+document.getElementById('editor_pass').value+"/read_write", null, "GET");
 		if(response && !response.data)
@@ -212,47 +214,6 @@
 		<link rel="stylesheet" href="styles/arisjs.css">
 
 		<style>
-			body {
-				-moz-user-select: none;
-				-webkit-user-select: none;
-				-ms-user-select: none;
-			}
-
-			.well h4 {
-				margin-top: 0;
-				text-align: center;
-				color: #555;
-			}
-
-			.well form {
-				margin: 0;
-			}
-
-			/* Line rendering */
-			.well h4 {
-				position: relative;
-				z-index: 1;
-				overflow: hidden;
-				line-height: 1.2;
-			}
-			.well h4:before, .well h4:after {
-				position: absolute;
-				top: 51%;
-				overflow: hidden;
-				width: 50%;
-				height: 1px;
-				content: '\a0';
-				border-top: 2px solid #ddd;
-			}
-			.well h4:before {
-				margin-left: -50%;
-				text-align: right;
-			}
-			.well h4 span {
-				padding-left: 0.5em;
-				padding-right: 0.5em;
-			}
-
 			.spinning {
 				-webkit-animation: spin 1.5s linear infinite;
 				animation: spin 1.5s linear infinite;
@@ -298,34 +259,38 @@
 	<div class="container-fluid">
 		<div class="row">
 
-			<div id="login-container" class="well well-lg shrink-center">
+			<div id="login-container">
 				<form id="login-form">
-					<h4><span>Login to old editor account</span></h4>
+					<div class="well well-lg shrink-center">
+						<h4><span>Login to old editor account</span></h4>
 
-					<div id="login_messages"></div>
+						<div id="login_messages"></div>
 
-					<div class="form-group">
-						<input id="editor_name" type="text" placeholder="Username" class="form-control"></input>
+						<div class="form-group">
+							<input id="editor_name" type="text" placeholder="Username" class="form-control">
+						</div>
+						<div class="form-group">
+							<input id="editor_pass" type="password" placeholder="Password" class="form-control">
+						</div>
+						<button type="submit" class="btn btn-block btn-primary">Login</button>
 					</div>
-					<div class="form-group">
-						<input id="editor_pass" type="password" placeholder="Password" class="form-control"></input>
-					</div>
-					<button type="submit" class="btn btn-block btn-primary">Login</button>
 				</form>
 			</div>
 
-			<div id="games-container" class="hidden games-list shrink-center well well-lg">
-				<h4><span>Select games to migrate</span></h4>
+			<div id="games-container">
+				<div class="hidden games-list shrink-center well well-lg">
+					<h4><span>Select games to migrate</span></h4>
 
-				<div id="games_messages"></div>
+					<div id="games_messages"></div>
 
-				<ul id="games" class="list-group games">
-				</ul>
+					<ul id="games" class="list-group games">
+					</ul>
 
-				<button type="button" id="logout-button" class="btn btn-default btn-block">
-					<span class="glyphicon glyphicon-log-out"></span>
-					Logout
-				</button>
+					<button type="button" id="logout-button" class="btn btn-default btn-block">
+						<span class="glyphicon glyphicon-log-out"></span>
+						Logout
+					</button>
+				</div>
 			</div>
 		</div>
 	</div>

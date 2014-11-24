@@ -36,8 +36,10 @@
 
     var oldEditorVerified = false;
     var oldClientVerified = false;
-    function submitMigration()
+    function submitMigration(event)
     {
+		event.preventDefault();
+
         var clientName = document.getElementById('old_client_user').value;
         var clientPass = document.getElementById('old_client_password').value;
         var editorName = document.getElementById('old_editor_user').value;
@@ -63,15 +65,19 @@
 	var invalid_message = "<span class='glyphicon glyphicon-remove'></span> Invalid User/Password";
 	var invalid_class = "alert alert-danger";
 
-    function submitAuthOldEditor()
+    function submitAuthOldEditor(event)
     {
+		event.preventDefault();
+
         var response = sendRequest('v1.editors.getToken/'+document.getElementById('old_editor_user').value+"/"+document.getElementById('old_editor_password').value+"/read_write", null, "GET");
         oldEditorVerified = response.data != null;
 		document.getElementById('auth_old_editor_verify').innerHTML = oldEditorVerified ? verified_message : invalid_message;
         document.getElementById('auth_old_editor_verify').className = oldEditorVerified ? verified_class   : invalid_class;
     }
-    function submitAuthOldClient()
+    function submitAuthOldClient(event)
     {
+		event.preventDefault();
+
         var response = sendRequest('v1.players.getLoginPlayerObject/'+document.getElementById('old_client_user').value+"/"+document.getElementById('old_client_password').value, null, "GET");
         oldClientVerified = response.data != null;
         document.getElementById('auth_old_client_verify').innerHTML = oldClientVerified ? verified_message : invalid_message;
@@ -80,26 +86,30 @@
 
     function load()
     {
+		document.getElementById('v1-editor-form' ).onsubmit = submitAuthOldEditor;
+		document.getElementById('v1-client-form' ).onsubmit = submitAuthOldClient;
+		document.getElementById('v2-account-form').onsubmit = submitMigration;
+
 		var not_verified_message = "<span class='glyphicon glyphicon-question-sign'></span> Not Verified";
 		var not_verified_class = "alert alert-warning";
 
         //set up dom listeners
-		document.getElementById('old_editor_user').onkeydown     = function() {
+		document.getElementById('old_editor_user').onchange = function() {
 			oldEditorVerified = false;
 			document.getElementById('auth_old_editor_verify').innerHTML = not_verified_message;
 			document.getElementById('auth_old_editor_verify').className = not_verified_class;
 		};
-		document.getElementById('old_editor_password').onkeydown = function() {
+		document.getElementById('old_editor_password').onchange = function(event) {
 			oldEditorVerified = false;
 			document.getElementById('auth_old_editor_verify').innerHTML = not_verified_message;
 			document.getElementById('auth_old_editor_verify').className = not_verified_class;
 		};
-		document.getElementById('old_client_user').onkeydown     = function() {
+		document.getElementById('old_client_user').onchange = function() {
 			oldClientVerified = false;
 			document.getElementById('auth_old_client_verify').innerHTML = not_verified_message;
 			document.getElementById('auth_old_client_verify').className = not_verified_class;
 		};
-		document.getElementById('old_client_password').onkeydown = function() {
+		document.getElementById('old_client_password').onchange = function() {
 			oldClientVerified = false;
 			document.getElementById('auth_old_client_verify').innerHTML = not_verified_message;
 			document.getElementById('auth_old_client_verify').className = not_verified_class;
@@ -109,7 +119,7 @@
 </script>
 		<meta name="viewport" content="width=device-width, initial-scale=1.0">
 		<meta charset="UTF-8">
-		<title>ARIS Game Migration</title>
+		<title>ARIS User Migration</title>
 		<link rel="stylesheet" href="styles/bootstrap.css">
 		<link rel="stylesheet" href="styles/arisjs.css">
 </head>
@@ -121,62 +131,70 @@
 			</a>
 		</div>
 	</nav>
-	<div class="container-fluid">
-		<div class="row">
+	<div class="container-fluid full-height">
+		<div class="row full-height">
+			<div class="scroll-area">
 
 			<!-- Old Editor -->
-			<div class="well well-lg shrink-center">
-				<h4>V1 Editor Account</h4>
+			<form id="v1-editor-form">
+				<div class="well well-lg shrink-center">
+					<h4><span>Old Editor Account</span></h4>
 
-				<div id="auth_old_editor_verify" class="alert alert-warning " role="alert"><span class='glyphicon glyphicon-question-sign'></span> Not Verified</div>
+					<div id="auth_old_editor_verify" class="alert alert-warning " role="alert"><span class='glyphicon glyphicon-question-sign'></span> Not Verified</div>
 
-				<div class="form-group">
-					<input id="old_editor_user" type="text" placeholder="Username" class="form-control"></input>
+					<div class="form-group">
+						<input id="old_editor_user" type="text" placeholder="Username" class="form-control">
+					</div>
+					<div class="form-group">
+						<input id="old_editor_password" type="password" placeholder="Password" class="form-control">
+					</div>
+					<button type="submit" class="btn btn-block btn-primary">Verify</button>
 				</div>
-				<div class="form-group">
-					<input id="old_editor_password" type="password" placeholder="Password" class="form-control"></input>
-				</div>
-				<button type="button" onclick='submitAuthOldEditor()' class="btn btn-block btn-primary">Verify</button>
-			</div>
+			</form>
 
 			<!-- Old Client -->
-			<div class="well well-lg shrink-center">
-				<h4>V1 Client Account</h4>
+			<form id="v1-client-form">
+				<div class="well well-lg shrink-center">
+					<h4><span>Old Client Account</span></h4>
 
-				<div id="auth_old_client_verify" class="alert alert-warning" role="alert"><span class='glyphicon glyphicon-question-sign'></span> Not Verified</div>
+					<div id="auth_old_client_verify" class="alert alert-warning" role="alert"><span class='glyphicon glyphicon-question-sign'></span> Not Verified</div>
 
-				<div class="form-group">
-					<input id="old_client_user" type="text" placeholder="Username" class="form-control"></input>
+					<div class="form-group">
+						<input id="old_client_user" type="text" placeholder="Username" class="form-control">
+					</div>
+					<div class="form-group">
+						<input id="old_client_password" type="password" placeholder="Password" class="form-control">
+					</div>
+					<button type="submit" class="btn btn-block btn-primary">Verify</button>
 				</div>
-				<div class="form-group">
-					<input id="old_client_password" type="password" placeholder="Password" class="form-control"></input>
-				</div>
-				<button type="button" onclick='submitAuthOldClient()' class="btn btn-block btn-primary">Verify</button>
-			</div>
+			</form>
 
 
 			<!-- New Editor -->
-			<div class="well well-lg shrink-center">
-				<h4>New or Existing V2 Account</h4>
+			<form id="v2-account-form">
+				<div class="well well-lg shrink-center">
+					<h4><span>Link to New or Existing Account</span></h4>
 
-				<div id="success_box"></div>
+					<div id="success_box"></div>
 
-				<div class="form-group">
-					<input id="new_user" type="text" placeholder="Username" class="form-control"></input>
-				</div>
-				<div class="form-group">
-					<input id="new_password" type="password" placeholder="Password" class="form-control"></input>
-				</div>
-				<div class="form-group">
-					<input id="new_display" type="text" placeholder="Display Name" class="form-control"></input>
-				</div>
-				<div class="form-group">
-					<input id="new_email" type="email" placeholder="Email" class="form-control"></input>
-				</div>
+					<div class="form-group">
+						<input id="new_user" type="text" placeholder="Username" class="form-control">
+					</div>
+					<div class="form-group">
+						<input id="new_password" type="password" placeholder="Password" class="form-control">
+					</div>
+					<div class="form-group">
+						<input id="new_display" type="text" placeholder="Display Name" class="form-control">
+					</div>
+					<div class="form-group">
+						<input id="new_email" type="email" placeholder="Email" class="form-control">
+					</div>
 
-				<button type="button" onclick='submitMigration()' class="btn btn-block btn-primary">Migrate</button>
-			</div>
+					<button type="submit" class="btn btn-block btn-primary">Migrate</button>
+				</div>
+			</form>
 
+		</div> <!-- /scroll area -->
 
 		</div>
 	</div>
