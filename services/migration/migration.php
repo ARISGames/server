@@ -1,13 +1,14 @@
 <?php
+
 //NOTE- Cannot require conflicting class names (case insensitive)!
 //query the db raw for any problematic classnames
 require_once("../v1/players.php");
 require_once("../v1/editors.php");
 require_once("../v1/games.php");
-require_once("../v2/users.php");
 
 //require gross copypastad stubs to account for above problem
 require_once("games.php");
+require_once("users.php");
 
 //actually meaningful migration includes
 require_once("migration_dbconnection.php");
@@ -23,7 +24,7 @@ class migration extends migration_dbconnection
     {
         $Players = new Players;
         $Editors = new Editors;
-        $users = new users;
+        $users = new mig_users;
 
         $v1Player = $Players->getLoginPlayerObject($playerName, $playerPass)->data;
         $v1Editor = $Editors->getToken($editorName, $editorPass, "read_write")->data;
@@ -151,10 +152,8 @@ class migration extends migration_dbconnection
             if(!$filename || !$filenametitle || !$filenameext || $filename == "error moving file" || $filenameext == "(null)") continue;
 
             //copy
-            /*
-            if(!file_exists(Config::gamedataFSPath."/".$media[$i]->file_path)) continue;
-            copy(Config::gamedataFSPath."/".$media[$i]->file_path,Config::v2_gamedata_folder."/".$v2GameId."/".$filename);
-            */
+            //if(!file_exists(Config::gamedataFSPath."/".$media[$i]->file_path)) continue;
+            //copy(Config::gamedataFSPath."/".$media[$i]->file_path,Config::v2_gamedata_folder."/".$v2GameId."/".$filename);
 
             //download
             try{
@@ -259,24 +258,23 @@ class migration extends migration_dbconnection
             $dialogMap[$dialogs[$i]->npc_id] = 0; //set it to 0 in case of failure
 
             $newDialogId = migration_dbconnection::queryInsert("INSERT INTO dialogs (game_id, name, description, icon_media_id, created) VALUES ('{$v2GameId}','".addslashes($dialogs[$i]->name)."','".addslashes($dialogs[$i]->description)."','{$maps->media[$dialogs[$i]->icon_media_id]}',CURRENT_TIMESTAMP)", "v2");
-            $newCharacterId = migration::characterIdForGameNameMedia($v2GameId,$dialogs[$i]->name,$maps->media[$dialogs[$i]->media_id],&$characters);
+            $newCharacterId = migration::characterIdForGameNameMedia($v2GameId,$dialogs[$i]->name,$maps->media[$dialogs[$i]->media_id],$characters);
 
             $parentScriptId = 0;
             //create intro script if exists, and treat it as the root script for all others
             if($dialogs[$i]->text && $dialogs[$i]->text != "")
             {
-                $newIds = migration::textToScript(false, 0, $dialogs[$i]->text, $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], 0, &$characters, $maps);
+                $newIds = migration::textToScript(false, 0, $dialogs[$i]->text, $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], 0, $characters, $maps);
                 $parentScriptId = $newIds->lastScriptId;
                 migration_dbconnection::query("UPDATE dialogs SET intro_dialog_script_id = '{$newIds->firstScriptId}' WHERE dialog_id = '{$newDialogId}'","v2");
             }
             else
             {
                 //create empty intro script
-                $newIds = migration::textToScript(false, 0, "<dialog><pc></pc></dialog>", $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], 0, &$characters, $maps);
+                $newIds = migration::textToScript(false, 0, "<dialog><pc></pc></dialog>", $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], 0, $characters, $maps);
                 $parentScriptId = $newIds->lastScriptId;
                 migration_dbconnection::query("UPDATE dialogs SET intro_dialog_script_id = '{$newIds->firstScriptId}' WHERE dialog_id = '{$newDialogId}'","v2");
             }
-
 
             //add exit option from greeting
             if($newIds->exitToType) //copy exitToId directly, once everything is migrated we'll go back and update ids (need to wait for not-yet-migrated stuff)
@@ -288,7 +286,7 @@ class migration extends migration_dbconnection
             for($j = 0; $j < count($options); $j++)
             {
                 $node = migration_dbconnection::queryObject("SELECT * FROM nodes WHERE node_id = '{$options[$j]->node_id}'","v1");
-                $newIds = migration::textToScript($options[$j]->text, $options[$j]->sort_index, $node->text, $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], $parentScriptId, &$characters, $maps);
+                $newIds = migration::textToScript($options[$j]->text, $options[$j]->sort_index, $node->text, $v2GameId, $newDialogId, $newCharacterId, $dialogs[$i]->name, $maps->media[$dialogs[$i]->media_id], $parentScriptId, $characters, $maps);
                 $optionMap[$options[$j]->node_id] = $newIds->firstOptionId;
                 $scriptMap[$options[$j]->node_id] = $newIds->lastScriptId;
                 if($newIds->exitToType) //copy exitToId directly, once everything is migrated we'll go back and update ids (need to wait for not-yet-migrated stuff)
@@ -309,7 +307,7 @@ class migration extends migration_dbconnection
 
     //helper for migrateDialogs
     //returns id of existing character with same name/image, or creates new one
-    public function characterIdForGameNameMedia($gameId, $name, $mediaId, $characters)
+    public function characterIdForGameNameMedia($gameId, $name, $mediaId, &$characters)
     {
         for($i = 0; $i < count($characters); $i++)
         {
@@ -329,7 +327,7 @@ class migration extends migration_dbconnection
     //returns package w/id of the first option, and first and last of the newly created chain of scripts. 
     //(aka the option that inherits the node's requirements, the script to start it off, and the to-be-parent of any more scripts)
     //disclaimer: you should probably read up on regular expressions before messing around with this...
-    public function textToScript($option, $optionIndex, $text, $gameId, $dialogId, $rootCharacterId, $rootCharacterTitle, $rootCharacterMediaId, $parentScriptId, $characters, $maps)
+    public function textToScript($option, $optionIndex, $text, $gameId, $dialogId, $rootCharacterId, $rootCharacterTitle, $rootCharacterMediaId, $parentScriptId, &$characters, $maps)
     {
         //testing scripts
         //$text = "<dialog banana=\"testing\" butNot=\"12\" America='555'><npc mediaId = \"59\">\nHere is the first thing I will say</npc><npc mediaId = \"60\">Second Thing!!!</npc></dialog>";
@@ -408,7 +406,7 @@ class migration extends migration_dbconnection
                     if($title == "") $title = $rootCharacterTitle;
                     if($mediaId == 0) $mediaId = $rootCharacterMediaId;
                     else $mediaId = $maps->media[$mediaId];
-                    $characterId = migration::characterIdForGameNameMedia($gameId, $title, $mediaId, &$characters);
+                    $characterId = migration::characterIdForGameNameMedia($gameId, $title, $mediaId, $characters);
                 }
             }
             else if(preg_match("@pc@i",$tag))
@@ -434,7 +432,7 @@ class migration extends migration_dbconnection
                     if($title == "") $title = $rootCharacterTitle;
                     if($mediaId == 0) $mediaId = $rootCharacterMediaId;
                     else $mediaId = $maps->media[$mediaId];
-                    $characterId = migration::characterIdForGameNameMedia($gameId, $title, $mediaId, &$characters);
+                    $characterId = migration::characterIdForGameNameMedia($gameId, $title, $mediaId, $characters);
                 }
                 //handle non-npc tag attributes
             }
