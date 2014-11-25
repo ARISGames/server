@@ -21,7 +21,7 @@ class mig_users extends migration_dbconnection
     public static function createUserPack($pack)
     {
         if(migration_dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}'"))
-            return new return_package(1, NULL, "User already exists");
+            return new migration_return_package(1, NULL, "User already exists");
 
         $salt       = util::rand_string(64);
         $hash       = hash("sha256",$salt.$pack->password);
@@ -66,11 +66,11 @@ class mig_users extends migration_dbconnection
         if($pack->auth && $pack->auth->user_id)
         {
             $pack->auth->permission = "read_write";
-            if(!mig_users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+            if(!mig_users::authenticateUser($pack->auth)) return new migration_return_package(6, NULL, "Failed Authentication");
             $user = migration_dbconnection::queryObject("SELECT * FROM users WHERE user_id = '{$pack->user_id}'");
         }
         else if(!($user = migration_dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}'")) || hash("sha256",$user->salt.$pack->password) != $user->hash)
-            return new return_package(1, NULL, "Incorrect username/password");
+            return new migration_return_package(1, NULL, "Incorrect username/password");
 
         $ret = new stdClass();
         $ret->user_id      = $user->user_id;
@@ -82,7 +82,7 @@ class mig_users extends migration_dbconnection
         if($pack->permission == "read_write") $ret->read_write_key = $user->read_write_key;
 
         migration_dbconnection::queryInsert("INSERT INTO user_log (user_id, event_type, created) VALUES ('{$ret->user_id}', 'LOG_IN', CURRENT_TIMESTAMP);");
-        return new return_package(0, $ret);
+        return new migration_return_package(0, $ret);
     }
 }
 ?>

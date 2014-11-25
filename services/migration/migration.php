@@ -166,10 +166,13 @@ class migration extends migration_dbconnection
                 file_exists(Config::v2_gamedata_folder."/".$v2GameId."/".$filename)
                 ) 
             {
-                $thumb = WideImage::load(Config::v2_gamedata_folder."/".$v2GameId."/".$filename);
-                $thumb = $thumb->resize(128, 128, 'outside');
-                $thumb = $thumb->crop('center','center',128,128);
-                $thumb->saveToFile(Config::v2_gamedata_folder."/".$v2GameId."/".$filenametitle."_128".$filenameext);
+                $thumb = @WideImage::load(Config::v2_gamedata_folder."/".$v2GameId."/".$filename);
+                if($thumb)
+                {
+                    $thumb = $thumb->resize(128, 128, 'outside');
+                    $thumb = $thumb->crop('center','center',128,128);
+                    $thumb->saveToFile(Config::v2_gamedata_folder."/".$v2GameId."/".$filenametitle."_128".$filenameext);
+                }
             }
 
             $newMediaId = migration_dbconnection::queryInsert("INSERT INTO media (game_id, file_folder, file_name, name, created) VALUES ('{$v2GameId}','{$v2GameId}','".addslashes($filename)."','".addslashes($media[$i]->name)."',CURRENT_TIMESTAMP)", "v2");

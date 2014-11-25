@@ -4,7 +4,6 @@
 // dbconnection needs to be switched to migration_dbconnection
 
 require_once("migration_dbconnection.php");
-require_once("migration_return_package.php");
 
 class mig_games extends migration_dbconnection
 {	
@@ -24,7 +23,6 @@ class mig_games extends migration_dbconnection
             (isset($pack->map_show_players)           ? "map_show_players,"           : "").
             (isset($pack->map_offsite_mode)           ? "map_offsite_mode,"           : "").
             (isset($pack->notebook_allow_comments)    ? "notebook_allow_comments,"    : "").
-            (isset($pack->notebook_allow_player_tags) ? "notebook_allow_player_tags," : "").
             (isset($pack->notebook_allow_likes)       ? "notebook_allow_likes,"       : "").
             (isset($pack->inventory_weight_cap)       ? "inventory_weight_cap,"       : "").
             (isset($pack->published)                  ? "published,"                  : "").
@@ -43,7 +41,6 @@ class mig_games extends migration_dbconnection
             (isset($pack->map_show_players)           ? "'".addslashes($pack->map_show_players)."',"           : "").
             (isset($pack->map_offsite_mode)           ? "'".addslashes($pack->map_offsite_mode)."',"           : "").
             (isset($pack->notebook_allow_comments)    ? "'".addslashes($pack->notebook_allow_comments)."',"    : "").
-            (isset($pack->notebook_allow_player_tags) ? "'".addslashes($pack->notebook_allow_player_tags)."'," : "").
             (isset($pack->notebook_allow_likes)       ? "'".addslashes($pack->notebook_allow_likes)."',"       : "").
             (isset($pack->inventory_weight_cap)       ? "'".addslashes($pack->inventory_weight_cap)."',"       : "").
             (isset($pack->published)                  ? "'".addslashes($pack->published)."',"                  : "").
@@ -62,7 +59,7 @@ class mig_games extends migration_dbconnection
         migration_dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', 'PLAYER',    'Player',    '0', '6', CURRENT_TIMESTAMP)", "v2");
         migration_dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', 'NOTE',      'Note',      '0', '7', CURRENT_TIMESTAMP)", "v2");
 
-        mkdir(Config::v2_gamedata_folder."/{$pack->game_id}",0777);
+        @mkdir(Config::v2_gamedata_folder."/{$pack->game_id}",0777);
 
         return $pack->game_id;
     }
