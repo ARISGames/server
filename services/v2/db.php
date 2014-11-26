@@ -7,9 +7,6 @@ class db extends dbconnection
     public static function upgrade($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return db::upgradePack($glob); }
     public static function upgradePack($pack)
     {
-        $pack->auth->permission = "read_write";
-        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
-
         //find existing upgrades
         $upgrade_files = scandir("db/upgrades", 0);
         $existing_upgrades = array();
@@ -47,7 +44,7 @@ class db extends dbconnection
             for($j = 0; $j < count($existing_upgrades[$i]); $j++)
             {
                 if(!isset($completed_upgrades[$i][$j]))
-                    db::applyUpgrade($pack->auth->user_id,$i,$j);
+                    db::applyUpgrade(0,$i,$j);
             }
         }
 
