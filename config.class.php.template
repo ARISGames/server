@@ -8,6 +8,11 @@ class Config
     const dbHost     = 'localhost';
     const adminEmail = ''; //This email address, if specified, will be notified of server errors
 
+	const v2_host    = 'localhost';
+	const v2_db      = 'aris2_db';
+	const v2_db_user = 'aris2_db_user';
+	const v2_db_pass = 'aris2_db_pass';
+
     const WWWPath         = 'http://www.yourdomain.com';
     const serverWWWPath   = 'http://www.yourdomain.com/path/to/aris/server';
     const gamedataWWWPath = 'http://www.yourdomain.com/path/to/gamedata';
