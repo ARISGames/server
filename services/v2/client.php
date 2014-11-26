@@ -383,7 +383,7 @@ class client extends dbconnection
                     $lon = 0;
                     if($fac->location_bound_type == 'PLAYER')
                     {
-                        $move = dbconnection::queryObject("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->auth->user_id}' AND event_type = 'MOVE' ORDER BY created ASC LIMIT 1");
+                        $move = dbconnection::queryObject("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->auth->user_id}' AND event_type = 'MOVE' ORDER BY created DESC LIMIT 1");
                         if(!$move)
                         {
                             $lat = 0;
