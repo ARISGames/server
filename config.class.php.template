@@ -12,6 +12,8 @@ class Config
 	const v2_db      = 'aris2_db';
 	const v2_db_user = 'aris2_db_user';
 	const v2_db_pass = 'aris2_db_pass';
+	const v2_gamedata_folder   = '/path/to/gamedata';
+	const v2_gamedata_www_path = 'http://www.yourdomain.com/path/to/<D-1>gamedata';
 
     const WWWPath         = 'http://www.yourdomain.com';
     const serverWWWPath   = 'http://www.yourdomain.com/path/to/aris/server';
