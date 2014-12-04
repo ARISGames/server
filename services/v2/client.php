@@ -445,7 +445,7 @@ class client extends dbconnection
         $scene_id = dbconnection::queryObject("SELECT * FROM user_game_scenes WHERE user_id = '{$pack->auth->user_id}' AND game_id = '{$pack->game_id}'")->scene_id;
         $item = dbconnection::queryObject("SELECT * FROM items WHERE item_id = '{$pack->item_id}'");
         $instance_id = dbconnection::queryInsert(" INSERT INTO instances (game_id, object_id, object_type, qty, infinite_qty, created) VALUES ('{$pack->game_id}', '{$pack->item_id}', 'ITEM', '{$pack->qty}', '0', CURRENT_TIMESTAMP)");
-        $trigger_id = dbconnection::queryInsert("INSERT INTO triggers (game_id, instance_id, scene_id, type, name, title, latitude, longitude, distance, infinite_distance, created) VALUES ('{$pack->game_id}', '{$instance_id}', '{$scene_id}', 'LOCATION', '{$item->name}', '{$item->name}', '{$pack->latitude}', '{$pack->longitude}', '20', '0', CURRENT_TIMESTAMP);");
+        $trigger_id = dbconnection::queryInsert("INSERT INTO triggers (game_id, instance_id, scene_id, type, latitude, longitude, distance, infinite_distance, created) VALUES ('{$pack->game_id}', '{$instance_id}', '{$scene_id}', 'LOCATION', '{$pack->latitude}', '{$pack->longitude}', '20', '0', CURRENT_TIMESTAMP);");
         return new return_package(0,$o);
     }
 
