@@ -194,7 +194,7 @@ class users extends dbconnection
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         //Note- uses $pack->user_id, NOT $pack->auth->user_id. as in, one user can request public details about another.
-        $sql_user = dbconnection::queryObject("SELECT * FROM user_games WHERE user_id = '{$pack->user_id}'");
+        $sql_user = dbconnection::queryObject("SELECT * FROM users WHERE user_id = '{$pack->user_id}'");
         return new return_package(0, users::userObjectFromSQL($sql_user));
     }
 
