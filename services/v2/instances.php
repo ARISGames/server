@@ -88,7 +88,8 @@ class instances extends dbconnection
     public static function getInstancesForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return instances::getInstancesForGamePack($glob); }
     public static function getInstancesForGamePack($pack)
     {
-        $sql_instances = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_id = '".(isset($pack->owner_id) ? $pack->owner_id : 0)."'");
+		// Return game owned, or game owned + specific player.
+        $sql_instances = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND (owner_id = '".(isset($pack->owner_id) ? $pack->owner_id : 0)."' OR owner_id = '0')");
         $instances = array();
         for($i = 0; $i < count($sql_instances); $i++)
             if($ob = instances::instanceObjectFromSQL($sql_instances[$i])) $instances[] = $ob;
