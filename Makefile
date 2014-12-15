@@ -17,18 +17,20 @@ help:
 	@echo ""
 	@echo "make [all|deploy|cache_clear]"
 
+CHECKOUT_COMMAND="cd /var/www/html/server/ && git checkout master && git pull && curl --silent localhost:81/server/resetAPC.php"
+
 deploy:
 	@echo "Pushing to Github."
 	@git push 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
 	@echo "Deploying to server 1."
-	@ssh aris-prod1 "cd /var/www/html/server/ && git checkout master && git pull" 1>/dev/null
+	@ssh -t aris-prod1 $(CHECKOUT_COMMAND) 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
 	@echo "Deploying to server 2."
-	@ssh aris-prod2 "cd /var/www/html/server/ && git checkout master && git pull" 1>/dev/null
+	@ssh -t aris-prod2 $(CHECKOUT_COMMAND) 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
 	@echo "Deploying to server 3."
-	@ssh aris-prod3 "cd /var/www/html/server/ && git checkout master && git pull" 1>/dev/null
+	@ssh -t aris-prod3 $(CHECKOUT_COMMAND) 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
 
 cache_clear:
