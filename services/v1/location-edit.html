@@ -77,7 +77,7 @@
 
       function saveLocation()
       {
-        sendRequest('locations.updateLocationLatLon/'+loc.location_id+'/'+marker.position.k+'/'+marker.position.B,null,'GET');
+        sendRequest('locations.updateLocationLatLon/'+loc.location_id+'/'+marker.position.lat()+'/'+marker.position.lng(),null,'GET');
       }
 
 </script>
