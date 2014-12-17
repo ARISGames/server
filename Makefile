@@ -17,7 +17,8 @@ help:
 	@echo ""
 	@echo "make [all|deploy|cache_clear]"
 
-CHECKOUT_COMMAND="cd /var/www/html/server/ && git checkout master && git pull && curl --silent localhost:81/server/resetAPC.php"
+CACHE_COMMAND=curl --silent localhost:81/server/resetAPC.php
+CHECKOUT_COMMAND="cd /var/www/html/server/ && git checkout master && git pull && $(CACHE_COMMAND)"
 
 deploy:
 	@echo "Pushing to Github."
@@ -34,5 +35,14 @@ deploy:
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
 
 cache_clear:
+	@echo "Clearing cache on server 1."
+	@ssh -t aris-prod1 $(CACHE_COMMAND) 1>/dev/null
+	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
+	@echo "Clearing cache on server 2."
+	@ssh -t aris-prod2 $(CACHE_COMMAND) 1>/dev/null
+	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
+	@echo "Clearing cache on server 3."
+	@ssh -t aris-prod3 $(CACHE_COMMAND) 1>/dev/null
+	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
 
 all: deploy cache_clear
