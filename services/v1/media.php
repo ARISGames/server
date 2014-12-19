@@ -269,6 +269,8 @@ class Media extends Module
               $image->resizeImage(0, $resizeTo, Imagick::FILTER_LANCZOS, 1);
             }
 
+            $image->setImageCompression(Imagick::COMPRESSION_JPEG);
+            $image->setImageCompressionQuality(40);
             $image->writeImage($fullFilePath);
             unlink($bigFilePath);
         }
