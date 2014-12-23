@@ -13,12 +13,24 @@ help:
 	@echo ""
 	@echo "Targets:"
 	@echo "      deploy: push master branch to aris"
+	@echo "         dev: push master branch to dev"
 	@echo " cache_clear: trigger apc cache clear"
 	@echo ""
 	@echo "make [all|deploy|cache_clear]"
 
+DEV_CACHE_COMMAND=curl --silent localhost:80/server/resetAPC.php
+DEV_CHECKOUT_COMMAND="cd /var/www/html/server/ && sudo git checkout master && sudo git pull && $(DEV_CACHE_COMMAND)"
+
 CACHE_COMMAND=curl --silent localhost:81/server/resetAPC.php
 CHECKOUT_COMMAND="cd /var/www/html/server/ && git checkout master && git pull && $(CACHE_COMMAND)"
+
+dev:
+	@echo "Pushing to Github."
+	@git push 1>/dev/null
+	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
+	@echo "Deploying to dev."
+	@ssh -t aris-dev $(CHECKOUT_COMMAND)
+	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
 
 deploy:
 	@echo "Pushing to Github."
