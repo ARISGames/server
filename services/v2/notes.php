@@ -246,5 +246,53 @@ class notes extends dbconnection
 
         return new return_package(0);
     }
+
+    public static function likeNote($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::likeNotePack($glob); }
+    public static function likeNotePack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $existing = dbconnection::queryObject(
+            "SELECT * FROM note_likes"
+            . " WHERE game_id = '{$pack->game_id}'"
+            . " AND note_id = '{$pack->note_id}'"
+            . " AND user_id = '{$pack->auth->user_id}'"
+        );
+        if($existing)
+        {
+            return new return_package(0);
+        }
+
+        dbconnection::queryInsert(
+            "INSERT INTO note_likes"
+            . " (game_id, note_id, user_id, created)".
+            . " VALUES"
+            . " ( '" . $pack->game_id       . "'"
+            . " , '" . $pack->note_id       . "'"
+            . " , '" . $pack->auth->user_id . "'"
+            . " , CURRENT_TIMESTAMP"
+            . " )"
+        );
+
+        return new return_package(0);
+    }
+
+    public static function unlikeNote($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::unlikeNotePack($glob); }
+    public static function unlikeNotePack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        dbconnection::query(
+            "DELETE FROM note_likes"
+            . " WHERE game_id = '{$pack->game_id}'"
+            . " WHERE note_id = '{$pack->note_id}'"
+            . " WHERE user_id = '{$pack->auth->user_id}'"
+            . " LIMIT 1"
+        );
+
+        return new return_package(0);
+    }
 }
 ?>
