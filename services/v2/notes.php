@@ -223,6 +223,70 @@ class notes extends dbconnection
         return new return_package(0,$notes);
     }
 
+    public static function searchNotes($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::searchNotesPack($glob); }
+    public static function searchNotesPack($pack)
+    {
+        $game_id = $pack->game_id;
+        $search_terms = $pack->search_terms;
+        $note_count = $pack->note_count;
+        $user_id = $pack->user_id;
+        $order_by = $pack->order_by;
+        $tag_ids = $pack->tag_ids;
+
+        $lines = array();
+
+        $lines[] = "SELECT notes.*, users.user_name, users.display_name, object_tags.tag_id FROM notes";
+        $lines[] = "JOIN users ON notes.user_id = users.user_id";
+        if ($order_by === 'popular' || !empty($search_terms)) {
+            $lines[] = "LEFT JOIN note_comments ON notes.note_id = note_comments.note_id";
+        }
+        if ($order_by = 'popular') {
+            $lines[] = "LEFT JOIN note_likes ON notes.note_id = note_likes.note_id";
+        }
+        $lines[] = "LEFT JOIN object_tags ON object_tags.object_type = 'NOTE' AND notes.note_id = object_tags.object_id";
+
+        $lines[] = "WHERE 1=1";
+        $lines[] = "AND notes.game_id = '{$game_id}'";
+        $searchables = array('notes.name', 'notes.description', 'notes.user_name', 'notes.display_name', 'note_comments.description');
+        foreach ($search_terms as $term) {
+            $matches = array();
+            foreach ($searchables as $key) {
+                $matches[] = "({$key} LIKE '%{$term}%')";
+            }
+            $lines[] = 'AND (' . implode(' OR ', $matches) . ')';
+        }
+        if ($user_id) {
+            $lines[] = "AND notes.user_id = '{$user_id}'";
+        }
+        if (!empty($tag_ids)) {
+            $tag_list = implode(',', $tag_ids);
+            $lines[] = "AND object_tags.tag_id IN ({$tag_list})";
+        }
+
+        $lines[] = "GROUP BY notes.note_id";
+        if ($order_by === 'popular') {
+            $lines[] = "ORDER BY (COUNT(note_likes.note_id) + COUNT(note_comments.note_id)) DESC";
+        }
+        else if ($order_by === 'recent') {
+            $lines[] = "ORDER BY notes.created DESC";
+        }
+
+        if ($note_count) {
+            $lines[] = "LIMIT '{$note_count}'";
+        }
+
+        $query = implode(' ', $lines);
+        $sql_notes = dbconnection::queryArray($query);
+        $notes = [];
+        for ($i = 0; $i < count($sql_notes); $i++) {
+            $ob = notes::noteObjectFromSQL($sql_notes[$i]);
+            if (!$ob) continue;
+            $ob->tag_id = $sql_notes[$i]->tag_id;
+            $notes[] = $ob;
+        }
+        return new return_package(0, $notes);
+    }
+
     public static function deleteNote($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::deleteNotePack($glob); }
     public static function deleteNotePack($pack)
     {
