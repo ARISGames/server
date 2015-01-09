@@ -277,7 +277,7 @@ class notes extends dbconnection
 
         $query = implode(' ', $lines);
         $sql_notes = dbconnection::queryArray($query);
-        $notes = [];
+        $notes = array();
         for ($i = 0; $i < count($sql_notes); $i++) {
             $ob = notes::noteObjectFromSQL($sql_notes[$i]);
             if (!$ob) continue;
@@ -330,7 +330,7 @@ class notes extends dbconnection
 
         dbconnection::queryInsert(
             "INSERT INTO note_likes"
-            . " (game_id, note_id, user_id, created)".
+            . " (game_id, note_id, user_id, created)"
             . " VALUES"
             . " ( '" . $pack->game_id       . "'"
             . " , '" . $pack->note_id       . "'"
