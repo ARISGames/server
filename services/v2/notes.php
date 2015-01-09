@@ -5,6 +5,7 @@ require_once("editors.php");
 require_once("return_package.php");
 
 require_once("media.php");
+require_once("note_comments.php");
 require_once("instances.php");
 require_once("triggers.php");
 
@@ -282,6 +283,8 @@ class notes extends dbconnection
             $ob = notes::noteObjectFromSQL($sql_notes[$i]);
             if (!$ob) continue;
             $ob->tag_id = $sql_notes[$i]->tag_id;
+            $ob->media = media::getMediaPack((object) array('media_id' => $ob->media_id));
+            $ob->comments = note_comments::getNoteCommentsForNotePack((object) array('game_id' => $ob->game_id, 'note_id' => $ob->note_id));
             $notes[] = $ob;
         }
         return new return_package(0, $notes);
