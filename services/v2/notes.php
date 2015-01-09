@@ -227,11 +227,11 @@ class notes extends dbconnection
     public static function searchNotesPack($pack)
     {
         $game_id = $pack->game_id;
-        $search_terms = $pack->search_terms;
+        $search_terms = isset($pack->search_terms) ? $pack->search_terms : array();
         $note_count = $pack->note_count;
         $user_id = $pack->user_id;
         $order_by = $pack->order_by;
-        $tag_ids = $pack->tag_ids;
+        $tag_ids = isset($pack->tag_ids) ? $pack->tag_ids : array();
 
         $lines = array();
 
@@ -240,7 +240,7 @@ class notes extends dbconnection
         if ($order_by === 'popular' || !empty($search_terms)) {
             $lines[] = "LEFT JOIN note_comments ON notes.note_id = note_comments.note_id";
         }
-        if ($order_by = 'popular') {
+        if ($order_by === 'popular') {
             $lines[] = "LEFT JOIN note_likes ON notes.note_id = note_likes.note_id";
         }
         $lines[] = "LEFT JOIN object_tags ON object_tags.object_type = 'NOTE' AND notes.note_id = object_tags.object_id";
@@ -272,7 +272,7 @@ class notes extends dbconnection
         }
 
         if ($note_count) {
-            $lines[] = "LIMIT '{$note_count}'";
+            $lines[] = "LIMIT {$note_count}";
         }
 
         $query = implode(' ', $lines);
