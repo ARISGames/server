@@ -354,8 +354,8 @@ class notes extends dbconnection
         dbconnection::query(
             "DELETE FROM note_likes"
             . " WHERE game_id = '{$pack->game_id}'"
-            . " WHERE note_id = '{$pack->note_id}'"
-            . " WHERE user_id = '{$pack->auth->user_id}'"
+            . " AND note_id = '{$pack->note_id}'"
+            . " AND user_id = '{$pack->auth->user_id}'"
             . " LIMIT 1"
         );
 
