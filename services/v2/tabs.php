@@ -98,7 +98,7 @@ class tabs extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        $sql_tabs = dbconnection::queryArray("SELECT * FROM tabs WHERE game_id = '{$pack->game_id}'");
+        $sql_tabs = dbconnection::queryArray("SELECT * FROM tabs WHERE game_id = '{$pack->game_id}' ORDER BY sort_index");
         $tabs = array();
         for($i = 0; $i < count($sql_tabs); $i++)
             if($ob = tabs::tabObjectFromSQL($sql_tabs[$i])) $tabs[] = $ob;

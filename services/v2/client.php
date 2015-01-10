@@ -93,7 +93,11 @@ class client extends dbconnection
         {
             $game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$sql_logs[$i]->game_id}'");
             if($game && $game->published)
-                $games[] = games::gameObjectFromSQL($game);
+            {
+                $game_object = games::gameObjectFromSQL($game);
+                $game_object->player_count = $sql_logs[$i]->count;
+                $games[] = $game_object;
+            }
         }
         $debugString .= "SELECT: ".(microtime(true)-$sTime)."\n";
 
