@@ -253,7 +253,7 @@ class notes extends dbconnection
 
         $lines[] = "WHERE 1=1";
         $lines[] = "AND notes.game_id = '{$game_id}'";
-        $searchables = array('notes.name', 'notes.description', 'notes.user_name', 'notes.display_name', 'note_comments.description');
+        $searchables = array('notes.name', 'notes.description', 'users.user_name', 'users.display_name', 'note_comments.description');
         foreach ($search_terms as $term) {
             $matches = array();
             foreach ($searchables as $key) {
@@ -287,7 +287,7 @@ class notes extends dbconnection
         for ($i = 0; $i < count($sql_notes); $i++) {
             $ob = notes::noteObjectFromSQL($sql_notes[$i]);
             if (!$ob) continue;
-            foreach (array('tag_id', 'note_likes', 'tag', 'latitude', 'longitude', 'user_name') as $field) {
+            foreach (array('tag_id', 'note_likes', 'tag', 'latitude', 'longitude', 'user_name', 'display_name') as $field) {
                 $ob->$field = $sql_notes[$i]->$field;
             }
             $ob->media = media::getMediaPack((object) array('media_id' => $ob->media_id));
