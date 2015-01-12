@@ -236,7 +236,7 @@ class notes extends dbconnection
 
         $lines = array();
 
-        $lines[] = "SELECT notes.*, users.user_name, users.display_name, object_tags.tag_id, tags.tag, COUNT(note_likes.note_like_id) AS note_likes";
+        $lines[] = "SELECT notes.*, users.user_name, users.display_name, object_tags.tag_id, tags.tag, COUNT(note_likes.note_like_id) AS note_likes, triggers.latitude, triggers.longitude";
         $lines[] = "FROM notes";
         $lines[] = "JOIN users ON notes.user_id = users.user_id";
         if ($order_by === 'popular' || !empty($search_terms)) {
@@ -248,6 +248,8 @@ class notes extends dbconnection
         $lines[] = "LEFT JOIN object_tags ON object_tags.object_type = 'NOTE' AND notes.note_id = object_tags.object_id";
         $lines[] = "LEFT JOIN tags ON object_tags.tag_id = tags.tag_id";
         $lines[] = "LEFT JOIN note_likes ON notes.note_id = note_likes.note_id";
+        $lines[] = "LEFT JOIN instances ON instances.object_type = 'NOTE' AND notes.note_id = instances.object_id";
+        $lines[] = "LEFT JOIN triggers ON triggers.instance_id = instances.instance_id AND triggers.type = 'LOCATION'";
 
         $lines[] = "WHERE 1=1";
         $lines[] = "AND notes.game_id = '{$game_id}'";
