@@ -285,6 +285,7 @@ class notes extends dbconnection
             $ob = notes::noteObjectFromSQL($sql_notes[$i]);
             if (!$ob) continue;
             $ob->tag_id = $sql_notes[$i]->tag_id;
+            $ob->note_likes = $sql_notes[$i]->note_likes;
             $ob->media = media::getMediaPack((object) array('media_id' => $ob->media_id));
             $ob->comments = note_comments::getNoteCommentsForNotePack((object) array('game_id' => $ob->game_id, 'note_id' => $ob->note_id));
             $notes[] = $ob;
