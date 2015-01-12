@@ -287,7 +287,7 @@ class notes extends dbconnection
         for ($i = 0; $i < count($sql_notes); $i++) {
             $ob = notes::noteObjectFromSQL($sql_notes[$i]);
             if (!$ob) continue;
-            foreach (array('tag_id', 'note_likes', 'tag', 'latitude', 'longitude') as $field) {
+            foreach (array('tag_id', 'note_likes', 'tag', 'latitude', 'longitude', 'user_name') as $field) {
                 $ob->$field = $sql_notes[$i]->$field;
             }
             $ob->media = media::getMediaPack((object) array('media_id' => $ob->media_id));
