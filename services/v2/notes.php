@@ -234,6 +234,7 @@ class notes extends dbconnection
         $order_by = $pack->order_by;
         $filter_by = $pack->filter_by;
         $tag_ids = isset($pack->tag_ids) ? $pack->tag_ids : array();
+        $note_id = $pack->note_id;
 
         $lines = array();
 
@@ -278,6 +279,9 @@ class notes extends dbconnection
         if (!empty($tag_ids)) {
             $tag_list = implode(',', $tag_ids);
             $lines[] = "AND object_tags.tag_id IN ({$tag_list})";
+        }
+        if ($note_id) {
+            $lines[] = "AND notes.note_id = '{$note_id}'";
         }
 
         $lines[] = "GROUP BY notes.note_id";
