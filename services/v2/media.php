@@ -29,6 +29,7 @@ class media extends dbconnection
         if($filenameext == "jpeg") $filenameext = "jpg"; //sanity
         $filename = md5((string)microtime().$pack->file_name);
         $newfilename = 'aris'.$filename.'.'.$filenameext;
+        $resizedfilename = 'aris'.$filename.'_resized.'.$filenameext;
         $newthumbfilename = 'aris'.$filename.'_128.'.$filenameext;
 
         if(
@@ -53,12 +54,67 @@ class media extends dbconnection
         if($pack->game_id) $filefolder = $pack->game_id;
         else               $filefolder = "players";
         $fspath      = Config::v2_gamedata_folder."/".$filefolder."/".$newfilename;
+        $resizedpath = Config::v2_gamedata_folder."/".$filefolder."/".$resizedfilename;
         $fsthumbpath = Config::v2_gamedata_folder."/".$filefolder."/".$newthumbfilename;
 
         $fp = fopen($fspath, 'w');
         if(!$fp) return new return_package(1,NULL,"Couldn't open file:$fspath");
         fwrite($fp,base64_decode($pack->data));
         fclose($fp);
+
+        $did_resize = false;
+        if (isset($pack->resize) && ($filenameext == "jpg" || $filenameext == "png" || $filenameext == "gif"))
+        {
+            $image = new Imagick($fspath);
+
+            // Reorient based on EXIF tag
+            switch ($image->getImageOrientation()) {
+                case Imagick::ORIENTATION_UNDEFINED:
+                    // We assume normal orientation
+                    break;
+                case Imagick::ORIENTATION_TOPLEFT:
+                    // All good
+                    break;
+                case Imagick::ORIENTATION_TOPRIGHT:
+                    $image->flopImage();
+                    break;
+                case Imagick::ORIENTATION_BOTTOMRIGHT:
+                    $image->rotateImage('#000', 180);
+                    break;
+                case Imagick::ORIENTATION_BOTTOMLEFT:
+                    $image->rotateImage('#000', 180);
+                    $image->flopImage();
+                    break;
+                case Imagick::ORIENTATION_LEFTTOP:
+                    $image->rotateImage('#000', 90);
+                    $image->flopImage();
+                    break;
+                case Imagick::ORIENTATION_RIGHTTOP:
+                    $image->rotateImage('#000', 90);
+                    break;
+                case Imagick::ORIENTATION_RIGHTBOTTOM:
+                    $image->rotateImage('#000', -90);
+                    $image->flopImage();
+                    break;
+                case Imagick::ORIENTATION_LEFTBOTTOM:
+                    $image->rotateImage('#000', -90);
+                    break;
+            }
+            $image->setImageOrientation(Imagick::ORIENTATION_TOPLEFT);
+
+            // Resize image proportionally so min(width, height) == $pack->resize
+            if ($image->getImageWidth() < $image->getImageHeight()) {
+              $image->resizeImage($pack->resize, 0, Imagick::FILTER_LANCZOS, 1);
+            }
+            else {
+              $image->resizeImage(0, $pack->resize, Imagick::FILTER_LANCZOS, 1);
+            }
+
+            $image->setImageCompression(Imagick::COMPRESSION_JPEG);
+            $image->setImageCompressionQuality(40);
+            $image->writeImage($resizedpath);
+            $did_resize = true;
+        }
 
         if($filenameext == "jpg" || $filenameext == "png" || $filenameext == "gif")
         {
@@ -67,6 +123,8 @@ class media extends dbconnection
             $thumb = $thumb->crop('center','center',128,128);
             $thumb->saveToFile($fsthumbpath);
         }
+
+        if($did_resize) unlink($fspath); // after making the 128 thumbnail
 
         $pack->media_id = dbconnection::queryInsert(
             "INSERT INTO media (".
@@ -78,7 +136,7 @@ class media extends dbconnection
             "created".
             ") VALUES (".
             "'".$filefolder."',".
-            "'".$newfilename."',".
+            "'".($did_resize ? $resizedfilename : $newfilename)."',".
             (isset($pack->game_id)       ? "'".addslashes($pack->game_id)."',"       : "").
             (isset($pack->auth->user_id) ? "'".addslashes($pack->auth->user_id)."'," : "").
             (isset($pack->name)          ? "'".addslashes($pack->name)."',"          : "").
