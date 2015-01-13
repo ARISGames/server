@@ -232,11 +232,24 @@ class notes extends dbconnection
         $note_count = $pack->note_count;
         $user_id = $pack->user_id;
         $order_by = $pack->order_by;
+        $filter_by = $pack->filter_by;
         $tag_ids = isset($pack->tag_ids) ? $pack->tag_ids : array();
 
         $lines = array();
 
-        $lines[] = "SELECT notes.*, users.user_name, users.display_name, object_tags.tag_id, tags.tag, COUNT(note_likes.note_like_id) AS note_likes, triggers.latitude, triggers.longitude";
+        $selects = array(
+            "notes.*",
+            "users.user_name",
+            "users.display_name",
+            "object_tags.tag_id",
+            "tags.tag",
+            "COUNT(note_likes.note_like_id) AS note_likes",
+            "COUNT(my_likes.note_like_id) > 0 AS player_liked",
+            "triggers.latitude",
+            "triggers.longitude",
+        );
+        $lines[] = "SELECT " . implode(", ", $selects);
+
         $lines[] = "FROM notes";
         $lines[] = "JOIN users ON notes.user_id = users.user_id";
         if ($order_by === 'popular' || !empty($search_terms)) {
@@ -248,6 +261,7 @@ class notes extends dbconnection
         $lines[] = "LEFT JOIN object_tags ON object_tags.object_type = 'NOTE' AND notes.note_id = object_tags.object_id";
         $lines[] = "LEFT JOIN tags ON object_tags.tag_id = tags.tag_id";
         $lines[] = "LEFT JOIN note_likes ON notes.note_id = note_likes.note_id";
+        $lines[] = "LEFT JOIN note_likes AS my_likes ON notes.note_id = note_likes.note_id AND note_likes.user_id = '{$user_id}'";
         $lines[] = "LEFT JOIN instances ON instances.object_type = 'NOTE' AND notes.note_id = instances.object_id";
         $lines[] = "LEFT JOIN triggers ON triggers.instance_id = instances.instance_id AND triggers.type = 'LOCATION'";
 
@@ -261,7 +275,7 @@ class notes extends dbconnection
             }
             $lines[] = 'AND (' . implode(' OR ', $matches) . ')';
         }
-        if ($user_id) {
+        if ($user_id && $filter_by === 'mine') {
             $lines[] = "AND notes.user_id = '{$user_id}'";
         }
         if (!empty($tag_ids)) {
@@ -287,7 +301,7 @@ class notes extends dbconnection
         for ($i = 0; $i < count($sql_notes); $i++) {
             $ob = notes::noteObjectFromSQL($sql_notes[$i]);
             if (!$ob) continue;
-            foreach (array('tag_id', 'note_likes', 'tag', 'latitude', 'longitude', 'user_name', 'display_name') as $field) {
+            foreach (array('tag_id', 'note_likes', 'tag', 'latitude', 'longitude', 'user_name', 'display_name', 'player_liked') as $field) {
                 $ob->$field = $sql_notes[$i]->$field;
             }
             $ob->media = media::getMediaPack((object) array('media_id' => $ob->media_id));
