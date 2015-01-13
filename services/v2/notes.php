@@ -243,7 +243,7 @@ class notes extends dbconnection
             "users.display_name",
             "object_tags.tag_id",
             "tags.tag",
-            "COUNT(note_likes.note_like_id) AS note_likes",
+            "COUNT(all_likes.note_like_id) AS note_likes",
             "COUNT(my_likes.note_like_id) > 0 AS player_liked",
             "triggers.latitude",
             "triggers.longitude",
@@ -255,13 +255,10 @@ class notes extends dbconnection
         if ($order_by === 'popular' || !empty($search_terms)) {
             $lines[] = "LEFT JOIN note_comments ON notes.note_id = note_comments.note_id";
         }
-        if ($order_by === 'popular') {
-            $lines[] = "LEFT JOIN note_likes ON notes.note_id = note_likes.note_id";
-        }
         $lines[] = "LEFT JOIN object_tags ON object_tags.object_type = 'NOTE' AND notes.note_id = object_tags.object_id";
         $lines[] = "LEFT JOIN tags ON object_tags.tag_id = tags.tag_id";
-        $lines[] = "LEFT JOIN note_likes ON notes.note_id = note_likes.note_id";
-        $lines[] = "LEFT JOIN note_likes AS my_likes ON notes.note_id = note_likes.note_id AND note_likes.user_id = '{$user_id}'";
+        $lines[] = "LEFT JOIN note_likes AS all_likes ON notes.note_id = all_likes.note_id";
+        $lines[] = "LEFT JOIN note_likes AS my_likes ON notes.note_id = my_likes.note_id AND my_likes.user_id = '{$user_id}'";
         $lines[] = "LEFT JOIN instances ON instances.object_type = 'NOTE' AND notes.note_id = instances.object_id";
         $lines[] = "LEFT JOIN triggers ON triggers.instance_id = instances.instance_id AND triggers.type = 'LOCATION'";
 
@@ -285,7 +282,7 @@ class notes extends dbconnection
 
         $lines[] = "GROUP BY notes.note_id";
         if ($order_by === 'popular') {
-            $lines[] = "ORDER BY (COUNT(note_likes.note_id) + COUNT(note_comments.note_id)) DESC";
+            $lines[] = "ORDER BY (COUNT(all_likes.note_id) + COUNT(note_comments.note_id)) DESC";
         }
         else if ($order_by === 'recent') {
             $lines[] = "ORDER BY notes.created DESC";
