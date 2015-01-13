@@ -325,12 +325,7 @@ class notes extends dbconnection
         dbconnection::query("DELETE FROM notes WHERE note_id = '{$pack->note_id}' LIMIT 1");
 
         //cleanup
-        $tags = dbconnection::queryArray("SELECT * FROM object_tags WHERE object_type = 'NOTE' AND object_id = '{$pack->note_id}'");
-        for($i = 0; $i < count($tags); $i++)
-        {
-            $pack->object_tag_id = $tags[$i]->object_tag_id;
-            tags::deleteObjectTagPack($pack);
-        }
+        dbconnection::query("DELETE FROM object_tags WHERE object_type = 'NOTE' AND object_id = '{$pack->note_id}'");
 
         return new return_package(0);
     }
