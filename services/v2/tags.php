@@ -6,6 +6,7 @@ require_once("return_package.php");
 
 require_once("tags.php");
 require_once("requirements.php");
+require_once("media.php");
 
 class tags extends dbconnection
 {	
@@ -96,6 +97,9 @@ class tags extends dbconnection
         $tag->game_id        = $sql_tag->game_id;
         $tag->tag            = $sql_tag->tag;
         $tag->media_id       = $sql_tag->media_id;
+        if ($sql_tag->media_id) {
+            $tag->media      = media::getMediaPack($sql_tag);
+        }
         $tag->visible        = $sql_tag->visible;
         $tag->curated        = $sql_tag->curated;
         $tag->sort_index     = $sql_tag->sort_index;
