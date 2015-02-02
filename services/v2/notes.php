@@ -227,14 +227,14 @@ class notes extends dbconnection
     public static function searchNotes($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::searchNotesPack($glob); }
     public static function searchNotesPack($pack)
     {
-        $game_id = $pack->game_id;
+        $game_id = intval($pack->game_id);
         $search_terms = isset($pack->search_terms) ? $pack->search_terms : array();
-        $note_count = $pack->note_count;
-        $user_id = $pack->user_id;
+        $note_count = intval($pack->note_count);
+        $user_id = intval($pack->user_id);
         $order_by = $pack->order_by;
         $filter_by = $pack->filter_by;
-        $tag_ids = isset($pack->tag_ids) ? $pack->tag_ids : array();
-        $note_id = $pack->note_id;
+        $tag_ids = isset($pack->tag_ids) ? array_map('intval', $pack->tag_ids) : array();
+        $note_id = intval($pack->note_id);
 
         $lines = array();
 
@@ -268,6 +268,7 @@ class notes extends dbconnection
         $searchables = array('notes.name', 'notes.description', 'users.user_name', 'users.display_name', 'note_comments.description');
         foreach ($search_terms as $term) {
             $matches = array();
+            $term = addslashes($term);
             foreach ($searchables as $key) {
                 $matches[] = "({$key} LIKE '%{$term}%')";
             }
