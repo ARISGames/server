@@ -6,6 +6,7 @@ require_once("return_package.php");
 
 require_once("tags.php");
 require_once("requirements.php");
+require_once("media.php");
 
 class tags extends dbconnection
 {	
@@ -96,6 +97,9 @@ class tags extends dbconnection
         $tag->game_id        = $sql_tag->game_id;
         $tag->tag            = $sql_tag->tag;
         $tag->media_id       = $sql_tag->media_id;
+        if ($sql_tag->media_id) {
+            $tag->media      = media::getMediaPack($sql_tag);
+        }
         $tag->visible        = $sql_tag->visible;
         $tag->curated        = $sql_tag->curated;
         $tag->sort_index     = $sql_tag->sort_index;
@@ -134,9 +138,6 @@ class tags extends dbconnection
     public static function getTagsForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return tags::getTagsForGamePack($glob); }
     public static function getTagsForGamePack($pack)
     {
-        $pack->auth->permission = "read_write";
-        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
-
         $sql_tags = dbconnection::queryArray("SELECT * FROM tags WHERE game_id = '{$pack->game_id}'");
         $tags = array();
         for($i = 0; $i < count($sql_tags); $i++)
@@ -149,9 +150,6 @@ class tags extends dbconnection
     public static function getObjectTagsForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return tags::getObjectTagsForGamePack($glob); }
     public static function getObjectTagsForGamePack($pack)
     {
-        $pack->auth->permission = "read_write";
-        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
-
         $sql_object_tags = dbconnection::queryArray("SELECT * FROM object_tags WHERE game_id = '{$pack->game_id}'");
         $object_tags = array();
         for($i = 0; $i < count($sql_object_tags); $i++)
@@ -164,9 +162,6 @@ class tags extends dbconnection
     public static function getObjectTagsForObject($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return tags::getObjectTagsForObjectPack($glob); }
     public static function getObjectTagsForObjectPack($pack)
     {
-        $pack->auth->permission = "read_write";
-        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
-
         $sql_object_tags = dbconnection::queryArray("SELECT * FROM object_tags WHERE game_id = '{$pack->game_id}' AND object_type = '{$pack->object_type}' AND object_id = '{$pack->object_id}'");
         $object_tags = array();
         for($i = 0; $i < count($sql_object_tags); $i++)

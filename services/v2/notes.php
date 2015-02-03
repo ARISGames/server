@@ -5,6 +5,7 @@ require_once("editors.php");
 require_once("return_package.php");
 
 require_once("media.php");
+require_once("note_comments.php");
 require_once("instances.php");
 require_once("triggers.php");
 
@@ -223,6 +224,95 @@ class notes extends dbconnection
         return new return_package(0,$notes);
     }
 
+    public static function searchNotes($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::searchNotesPack($glob); }
+    public static function searchNotesPack($pack)
+    {
+        $game_id = intval($pack->game_id);
+        $search_terms = isset($pack->search_terms) ? $pack->search_terms : array();
+        $note_count = intval($pack->note_count);
+        $user_id = intval($pack->user_id);
+        $order_by = $pack->order_by;
+        $filter_by = $pack->filter_by;
+        $tag_ids = isset($pack->tag_ids) ? array_map('intval', $pack->tag_ids) : array();
+        $note_id = intval($pack->note_id);
+
+        $lines = array();
+
+        $selects = array(
+            "notes.*",
+            "users.user_name",
+            "users.display_name",
+            "object_tags.tag_id",
+            "tags.tag",
+            "COUNT(all_likes.note_like_id) AS note_likes",
+            "COUNT(my_likes.note_like_id) > 0 AS player_liked",
+            "triggers.latitude",
+            "triggers.longitude",
+        );
+        $lines[] = "SELECT " . implode(", ", $selects);
+
+        $lines[] = "FROM notes";
+        $lines[] = "JOIN users ON notes.user_id = users.user_id";
+        if ($order_by === 'popular' || !empty($search_terms)) {
+            $lines[] = "LEFT JOIN note_comments ON notes.note_id = note_comments.note_id";
+        }
+        $lines[] = "LEFT JOIN object_tags ON object_tags.object_type = 'NOTE' AND notes.note_id = object_tags.object_id";
+        $lines[] = "LEFT JOIN tags ON object_tags.tag_id = tags.tag_id";
+        $lines[] = "LEFT JOIN note_likes AS all_likes ON notes.note_id = all_likes.note_id";
+        $lines[] = "LEFT JOIN note_likes AS my_likes ON notes.note_id = my_likes.note_id AND my_likes.user_id = '{$user_id}'";
+        $lines[] = "LEFT JOIN instances ON instances.object_type = 'NOTE' AND notes.note_id = instances.object_id";
+        $lines[] = "LEFT JOIN triggers ON triggers.instance_id = instances.instance_id AND triggers.type = 'LOCATION'";
+
+        $lines[] = "WHERE 1=1";
+        $lines[] = "AND notes.game_id = '{$game_id}'";
+        $searchables = array('notes.name', 'notes.description', 'users.user_name', 'users.display_name', 'note_comments.description');
+        foreach ($search_terms as $term) {
+            $matches = array();
+            $term = addslashes($term);
+            foreach ($searchables as $key) {
+                $matches[] = "({$key} LIKE '%{$term}%')";
+            }
+            $lines[] = 'AND (' . implode(' OR ', $matches) . ')';
+        }
+        if ($user_id && $filter_by === 'mine') {
+            $lines[] = "AND notes.user_id = '{$user_id}'";
+        }
+        if (!empty($tag_ids)) {
+            $tag_list = implode(',', $tag_ids);
+            $lines[] = "AND object_tags.tag_id IN ({$tag_list})";
+        }
+        if ($note_id) {
+            $lines[] = "AND notes.note_id = '{$note_id}'";
+        }
+
+        $lines[] = "GROUP BY notes.note_id";
+        if ($order_by === 'popular') {
+            $lines[] = "ORDER BY (COUNT(all_likes.note_id) + COUNT(note_comments.note_id)) DESC";
+        }
+        else if ($order_by === 'recent') {
+            $lines[] = "ORDER BY notes.created DESC";
+        }
+
+        if ($note_count) {
+            $lines[] = "LIMIT {$note_count}";
+        }
+
+        $query = implode(' ', $lines);
+        $sql_notes = dbconnection::queryArray($query);
+        $notes = array();
+        for ($i = 0; $i < count($sql_notes); $i++) {
+            $ob = notes::noteObjectFromSQL($sql_notes[$i]);
+            if (!$ob) continue;
+            foreach (array('tag_id', 'note_likes', 'tag', 'latitude', 'longitude', 'user_name', 'display_name', 'player_liked') as $field) {
+                $ob->$field = $sql_notes[$i]->$field;
+            }
+            $ob->media = media::getMediaPack((object) array('media_id' => $ob->media_id));
+            $ob->comments = note_comments::getNoteCommentsForNotePack((object) array('game_id' => $ob->game_id, 'note_id' => $ob->note_id));
+            $notes[] = $ob;
+        }
+        return new return_package(0, $notes);
+    }
+
     public static function deleteNote($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::deleteNotePack($glob); }
     public static function deleteNotePack($pack)
     {
@@ -237,12 +327,55 @@ class notes extends dbconnection
         dbconnection::query("DELETE FROM notes WHERE note_id = '{$pack->note_id}' LIMIT 1");
 
         //cleanup
-        $tags = dbconnection::queryArray("SELECT * FROM object_tags WHERE object_type = 'NOTE' AND object_id = '{$pack->note_id}'");
-        for($i = 0; $i < count($tags); $i++)
+        dbconnection::query("DELETE FROM object_tags WHERE object_type = 'NOTE' AND object_id = '{$pack->note_id}'");
+
+        return new return_package(0);
+    }
+
+    public static function likeNote($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::likeNotePack($glob); }
+    public static function likeNotePack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $existing = dbconnection::queryObject(
+            "SELECT * FROM note_likes"
+            . " WHERE game_id = '{intval($pack->game_id)}'"
+            . " AND note_id = '{intval($pack->note_id)}'"
+            . " AND user_id = '{intval($pack->auth->user_id)}'"
+        );
+        if($existing)
         {
-            $pack->object_tag_id = $tags[$i]->object_tag_id;
-            tags::deleteObjectTagPack($pack);
+            return new return_package(0);
         }
+
+        dbconnection::queryInsert(
+            "INSERT INTO note_likes"
+            . " (game_id, note_id, user_id, created)"
+            . " VALUES"
+            . " ( '" . intval($pack->game_id)       . "'"
+            . " , '" . intval($pack->note_id)       . "'"
+            . " , '" . intval($pack->auth->user_id) . "'"
+            . " , CURRENT_TIMESTAMP"
+            . " )"
+        );
+
+        return new return_package(0);
+    }
+
+    public static function unlikeNote($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::unlikeNotePack($glob); }
+    public static function unlikeNotePack($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        dbconnection::query(
+            "DELETE FROM note_likes"
+            . " WHERE game_id = '{intval($pack->game_id)}'"
+            . " AND note_id = '{intval($pack->note_id)}'"
+            . " AND user_id = '{intval($pack->auth->user_id)}'"
+            . " LIMIT 1"
+        );
 
         return new return_package(0);
     }

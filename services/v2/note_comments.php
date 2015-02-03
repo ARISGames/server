@@ -96,7 +96,7 @@ class note_comments extends dbconnection
     public static function getNoteCommentsForNote($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return note_comments::getNoteCommentsForNotePack($glob); }
     public static function getNoteCommentsForNotePack($pack)
     {
-        $sql_note_comments = dbconnection::queryArray("SELECT note_comments.*, users.user_name, users.display_name FROM note_comments LEFT JOIN users ON note_comments.user_id = users.user_id WHERE game_id = '{$pack->game_id}' AND note_id = '{$pack->note_id}'");
+        $sql_note_comments = dbconnection::queryArray("SELECT note_comments.*, users.user_name, users.display_name FROM note_comments LEFT JOIN users ON note_comments.user_id = users.user_id WHERE game_id = '{$pack->game_id}' AND note_id = '{$pack->note_id}' ORDER BY note_comments.created ASC");
         $note_comments = array();
         for($i = 0; $i < count($sql_note_comments); $i++)
         {
