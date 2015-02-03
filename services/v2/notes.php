@@ -340,9 +340,9 @@ class notes extends dbconnection
 
         $existing = dbconnection::queryObject(
             "SELECT * FROM note_likes"
-            . " WHERE game_id = '{$pack->game_id}'"
-            . " AND note_id = '{$pack->note_id}'"
-            . " AND user_id = '{$pack->auth->user_id}'"
+            . " WHERE game_id = '{intval($pack->game_id)}'"
+            . " AND note_id = '{intval($pack->note_id)}'"
+            . " AND user_id = '{intval($pack->auth->user_id)}'"
         );
         if($existing)
         {
@@ -353,9 +353,9 @@ class notes extends dbconnection
             "INSERT INTO note_likes"
             . " (game_id, note_id, user_id, created)"
             . " VALUES"
-            . " ( '" . $pack->game_id       . "'"
-            . " , '" . $pack->note_id       . "'"
-            . " , '" . $pack->auth->user_id . "'"
+            . " ( '" . intval($pack->game_id)       . "'"
+            . " , '" . intval($pack->note_id)       . "'"
+            . " , '" . intval($pack->auth->user_id) . "'"
             . " , CURRENT_TIMESTAMP"
             . " )"
         );
@@ -371,9 +371,9 @@ class notes extends dbconnection
 
         dbconnection::query(
             "DELETE FROM note_likes"
-            . " WHERE game_id = '{$pack->game_id}'"
-            . " AND note_id = '{$pack->note_id}'"
-            . " AND user_id = '{$pack->auth->user_id}'"
+            . " WHERE game_id = '{intval($pack->game_id)}'"
+            . " AND note_id = '{intval($pack->note_id)}'"
+            . " AND user_id = '{intval($pack->auth->user_id)}'"
             . " LIMIT 1"
         );
 
