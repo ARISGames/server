@@ -12,7 +12,7 @@ require_once("factories.php");
 require_once("requirements.php");
 
 class plaques extends dbconnection
-{	
+{
     //Takes in plaque JSON, all fields optional except game_id + user_id + key
     public static function createPlaque($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return plaques::createPlaquePack($glob); }
     public static function createPlaquePack($pack)
@@ -95,7 +95,7 @@ class plaques extends dbconnection
         $plaques = array();
         for($i = 0; $i < count($sql_plaques); $i++)
             if($ob = plaques::plaqueObjectFromSQL($sql_plaques[$i])) $plaques[] = $ob;
-        
+
         return new return_package(0,$plaques);
     }
 
@@ -122,7 +122,7 @@ class plaques extends dbconnection
             $pack->dialog_option_id = $options[$i]->dialog_option_id;
             dialogs::deleteDialogOptionPack($pack);
         }
-    
+
         $tabs = dbconnection::queryArray("SELECT * FROM tabs WHERE type = 'PLAQUE' AND content_id = '{$pack->plaque_id}'");
         for($i = 0; $i < count($tabs); $i++)
         {

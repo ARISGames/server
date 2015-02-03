@@ -9,7 +9,7 @@ require_once("requirements.php");
 require_once("media.php");
 
 class tags extends dbconnection
-{	
+{
     //Takes in tag JSON, all fields optional except user_id + key
     public static function createTag($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return tags::createTagPack($glob); }
     public static function createTagPack($pack)

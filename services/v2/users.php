@@ -6,7 +6,7 @@ require_once("return_package.php");
 require_once("media.php");
 
 class users extends dbconnection
-{    
+{
     //Used by other services
     public static function authenticateUser($pack)
     {
@@ -114,7 +114,7 @@ class users extends dbconnection
 
     public static function changePassword($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::changePasswordPack($glob); }
     public static function changePasswordPack($pack)
-    {	
+    {
         $username = addslashes($pack->user_name);
         $oldPass  = addslashes($pack->old_password);
         $newPass  = addslashes($pack->new_password);
@@ -145,7 +145,7 @@ class users extends dbconnection
         $pack->password = $pack->new_password;
         $pack->permission = "read_write";
         return users::logInPack($pack);
-    }	
+    }
 
     private static function breakPassword($userId)
     {
@@ -156,7 +156,7 @@ class users extends dbconnection
 
     public static function fixPassword($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::fixPasswordPack($glob); }
     public static function fixPasswordPack($pack)
-    {	
+    {
         $user_id = addslashes($pack->user_id);
         $junk = addslashes($pack->junk);
         $newPass  = addslashes($pack->new_password);
@@ -172,7 +172,7 @@ class users extends dbconnection
         dbconnection::query("UPDATE users SET salt = '{$salt}', hash = '{$hash}', read_key = '{$read_ley}', write_key = '{$write_key}', read_write_key = '{$read_write_key}' WHERE user_id = '{$user_id}'");
 
         return new return_package(0, NULL);
-    }	
+    }
 
     public static function userObjectFromSQL($sql_user)
     {

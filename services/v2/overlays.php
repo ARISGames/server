@@ -6,7 +6,7 @@ require_once("return_package.php");
 require_once("requirements.php");
 
 class overlays extends dbconnection
-{ 
+{
     //Takes in overlay JSON, all fields optional except game_id + user_id + key
     public static function createOverlay($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return overlays::createOverlayPack($glob); }
     public static function createOverlayPack($pack)
@@ -109,7 +109,7 @@ class overlays extends dbconnection
         $overlays = array();
         for($i = 0; $i < count($sql_overlays); $i++)
             if($ob = overlays::overlayObjectFromSQL($sql_overlays[$i])) $overlays[] = $ob;
-        
+
         return new return_package(0,$overlays);
     }
 

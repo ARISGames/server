@@ -61,7 +61,7 @@ class notes extends dbconnection
     {
         $pack->auth->permission = "read_write";
         if(
-          $pack->auth->user_id != dbconnection::queryObject("SELECT * FROM notes WHERE note_id = '{$pack->note_id}'")->user_id || 
+          $pack->auth->user_id != dbconnection::queryObject("SELECT * FROM notes WHERE note_id = '{$pack->note_id}'")->user_id ||
           !users::authenticateUser($pack->auth)
         ) return new return_package(6, NULL, "Failed Authentication");
 
@@ -92,7 +92,7 @@ class notes extends dbconnection
             dbconnection::query("DELETE FROM object_tags WHERE game_id = '{$pack->game_id}' AND object_type = 'NOTE' AND object_id = '{$pack->note_id}'");
             dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$pack->game_id}', 'NOTE', '{$pack->note_id}', '{$pack->tag_id}', CURRENT_TIMESTAMP)");
         }
-        
+
         return notes::getNotePack($pack);
     }
 
@@ -182,7 +182,7 @@ class notes extends dbconnection
                 //allow for 'tag_id' in API, but really just use object_tags
                 if($tag = dbconnection::queryObject("SELECT * FROM object_tags WHERE game_id = '{$ob->game_id}' AND object_type = 'NOTE' AND object_id = '{$ob->note_id}'"))
                     $ob->tag_id = $tag->tag_id;
-                else 
+                else
                     $ob->tag_id = "0";
 
                 $notes[] = $ob;
@@ -198,7 +198,7 @@ class notes extends dbconnection
                 //allow for 'tag_id' in API, but really just use object_tags
                 if($tag = dbconnection::queryObject("SELECT * FROM object_tags WHERE game_id = '{$ob->game_id}' AND object_type = 'NOTE' AND object_id = '{$ob->note_id}'"))
                     $ob->tag_id = $tag->tag_id;
-                else 
+                else
                     $ob->tag_id = "0";
 
                 $notes[] = $ob;
@@ -214,13 +214,13 @@ class notes extends dbconnection
                 //allow for 'tag_id' in API, but really just use object_tags
                 if($tag = dbconnection::queryObject("SELECT * FROM object_tags WHERE game_id = '{$ob->game_id}' AND object_type = 'NOTE' AND object_id = '{$ob->note_id}'"))
                     $ob->tag_id = $tag->tag_id;
-                else 
+                else
                     $ob->tag_id = "0";
 
                 $notes[] = $ob;
             }
         }
-        
+
         return new return_package(0,$notes);
     }
 

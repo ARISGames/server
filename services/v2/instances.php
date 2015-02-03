@@ -6,7 +6,7 @@ require_once("return_package.php");
 require_once("triggers.php");
 
 class instances extends dbconnection
-{	
+{
     //Takes in instance JSON, all fields optional except user_id + key
     public static function createInstance($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return instances::createInstancePack($glob); }
     public static function createInstancePack($pack)
@@ -14,7 +14,7 @@ class instances extends dbconnection
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
-    
+
         $pack->instance_id = dbconnection::queryInsert(
             "INSERT INTO instances (".
             "game_id,".

@@ -4,7 +4,7 @@ require_once("editors.php");
 require_once("return_package.php");
 
 class requirements extends dbconnection
-{	
+{
     //Takes in requirementPackage JSON, all fields optional except game_id.
     //all individual ids (requirement_root_package_id, etc...) ignored if present ( = easy duplication)
     public function createRequirementPackage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return requirements::createRequirementPackagePack($glob); }
@@ -60,7 +60,7 @@ class requirements extends dbconnection
             "CURRENT_TIMESTAMP".
             ")"
         );
-        
+
         for($i = 0; $pack->atoms && $i < count($pack->atoms); $i++)
         {
             $pack->atoms[$i]->requirement_and_package_id = $requirementAndPackageId;
@@ -308,7 +308,7 @@ class requirements extends dbconnection
         $pack->auth->game_id = dbconnection::queryObject("SELECT game_id FROM requirement_root_packages WHERE requirement_root_package_id = '{$pack->requirement_root_package_id}'")->game_id;
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
-         
+
         dbconnection::query("DELETE FROM requirement_root_packages WHERE requirement_root_package_id = '{$pack->requirement_root_package_id}'");
         //cleanup
         $sql_andPacks = dbconnection::queryArray("SELECT * FROM requirement_and_packages WHERE requirement_root_package_id = '{$pack->requirement_root_package_id}'");

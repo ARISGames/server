@@ -189,7 +189,7 @@ class media extends dbconnection
         if(!($sql_media = dbconnection::queryObject("SELECT * FROM media WHERE media_id = '{$pack->media_id}' LIMIT 1")))
             return new return_package(0,media::defaultMediaObject($pack->media_id));
         return new return_package(0, media::mediaObjectFromSQL($sql_media));
-    }	
+    }
 
     public static function getMediaForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return media::getMediaForGamePack($glob); }
     public static function getMediaForGamePack($pack)
@@ -211,7 +211,7 @@ class media extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        if(!unlink(Config::v2_gamedata_folder."/".$media_sql->file_folder."/".$media_sql->file_name)) 
+        if(!unlink(Config::v2_gamedata_folder."/".$media_sql->file_folder."/".$media_sql->file_name))
             return new return_package(1, "Could not delete file.");
 
         dbconnection::query("DELETE FROM media WHERE media_id = '{$pack->media_id}' LIMIT 1");

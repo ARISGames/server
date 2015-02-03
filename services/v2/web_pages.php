@@ -11,7 +11,7 @@ require_once("factories.php");
 require_once("requirements.php");
 
 class web_pages extends dbconnection
-{	
+{
     //Takes in web_page JSON, all fields optional except game_id + user_id + key
     public static function createWebPage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return web_pages::createWebPagePack($glob); }
     public static function createWebPagePack($pack)
@@ -86,7 +86,7 @@ class web_pages extends dbconnection
         $webPages = array();
         for($i = 0; $i < count($sql_webPages); $i++)
             if($ob = web_pages::webPageObjectFromSQL($sql_webPages[$i])) $webPages[] = $ob;
-        
+
         return new return_package(0,$webPages);
     }
 
@@ -106,7 +106,7 @@ class web_pages extends dbconnection
             $pack->dialog_option_id = $options[$i]->dialog_option_id;
             dialogs::deleteDialogOptionPack($pack);
         }
-    
+
         $tabs = dbconnection::queryArray("SELECT * FROM tabs WHERE type = 'WEB_PAGE' AND content_id = '{$pack->web_page_id}'");
         for($i = 0; $i < count($tabs); $i++)
         {

@@ -9,7 +9,7 @@ require_once("events.php");
 require_once("requirements.php");
 
 class quests extends dbconnection
-{	
+{
     //Takes in quest JSON, all fields optional except user_id + key
     public static function createQuest($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return quests::createQuestPack($glob); }
     public static function createQuestPack($pack)

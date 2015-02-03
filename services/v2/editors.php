@@ -22,7 +22,7 @@ class editors extends dbconnection
 
         //note $pack->user_id is DIFFERENT than $pack->auth->user_id
         dbconnection::queryInsert("INSERT INTO user_games (game_id, user_id, created) VALUES ('{$pack->game_id}','{$pack->user_id}',CURRENT_TIMESTAMP)");
-        return new return_package(0);	
+        return new return_package(0);
     }
 
     public static function removeEditorFromGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return editors::removeEditorFromGamePack($glob); }

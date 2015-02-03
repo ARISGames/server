@@ -4,7 +4,7 @@ require_once("editors.php");
 require_once("return_package.php");
 
 class events extends dbconnection
-{	
+{
     public function createEventPackage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return events::createEventPackagePack($glob); }
     public function createEventPackagePack($pack)
     {

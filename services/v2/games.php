@@ -6,7 +6,7 @@ require_once("media.php");
 require_once("return_package.php");
 
 class games extends dbconnection
-{	
+{
     //Takes in game JSON, all fields optional except user_id + key
     public static function createGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return games::createGamePack($glob); }
     public static function createGamePack($pack)

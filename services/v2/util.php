@@ -2,7 +2,7 @@
 require_once('../../config.class.php');
 
 class util
-{	
+{
     public static function serverErrorLog($message)
     {
         $errorLogFile = fopen(Config::serverErrorLog, "a");
@@ -52,9 +52,9 @@ class util
     }
 
     /* stolen from http://www.lateralcode.com/creating-a-random-string-with-php/ */
-    public static function rand_string($length) 
+    public static function rand_string($length)
     {
-        $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";  
+        $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         $size = strlen($chars);
         for($i = 0; $i < $length; $i++)
             $str .= $chars[rand(0, $size-1)];

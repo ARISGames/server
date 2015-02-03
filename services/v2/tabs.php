@@ -8,7 +8,7 @@ require_once("dialogs.php");
 require_once("requirements.php");
 
 class tabs extends dbconnection
-{	
+{
     //Takes in tab JSON, all fields optional except user_id + key
     public static function createTab($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return tabs::createTabPack($glob); }
     public static function createTabPack($pack)
@@ -130,7 +130,7 @@ class tabs extends dbconnection
             $pack->requirement_root_package_id = $reqPack->requirement_root_package_id;
             requirements::deleteRequirementPackagePack($pack);
         }
-        
+
         return new return_package(0);
     }
 }

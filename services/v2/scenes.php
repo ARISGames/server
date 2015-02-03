@@ -7,7 +7,7 @@ require_once("instances.php");
 require_once("triggers.php");
 
 class scenes extends dbconnection
-{	
+{
     //Takes in game JSON, all fields optional except user_id + key
     public static function createScene($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return scenes::createScenePack($glob); }
     public static function createScenePack($pack)

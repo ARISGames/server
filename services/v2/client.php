@@ -284,7 +284,7 @@ class client extends dbconnection
         for($i = 0; $i < count($gameTabs); $i++)
         {
             $gameTabs[$i]->user_id = $pack->auth->user_id;
-            if(requirements::evaluateRequirementPackagePack($gameTabs[$i])) 
+            if(requirements::evaluateRequirementPackagePack($gameTabs[$i]))
                 $playerTabs[] = $gameTabs[$i];
         }
         return new return_package(0, $playerTabs);
@@ -301,7 +301,7 @@ class client extends dbconnection
         for($i = 0; $i < count($gameOverlays); $i++)
         {
             $gameOverlays[$i]->user_id = $pack->auth->user_id;
-            if(requirements::evaluateRequirementPackagePack($gameOverlays[$i])) 
+            if(requirements::evaluateRequirementPackagePack($gameOverlays[$i]))
                 $playerOverlays[] = $gameOverlays[$i];
         }
         return new return_package(0, $playerOverlays);
@@ -318,7 +318,7 @@ class client extends dbconnection
         for($i = 0; $i < count($scriptOptions); $i++)
         {
             $scriptOptions[$i]->user_id = $pack->auth->user_id;
-            if(requirements::evaluateRequirementPackagePack($scriptOptions[$i])) 
+            if(requirements::evaluateRequirementPackagePack($scriptOptions[$i]))
                 $playerOptions[] = $scriptOptions[$i];
         }
         return new return_package(0, $playerOptions);

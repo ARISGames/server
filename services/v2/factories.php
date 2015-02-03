@@ -7,7 +7,7 @@ require_once("instances.php");
 require_once("requirements.php");
 
 class factories extends dbconnection
-{	
+{
     //Takes in factory JSON, all fields optional except game_id + user_id + key
     public static function createFactory($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return factories::createFactoryPack($glob); }
     public static function createFactoryPack($pack)
@@ -170,7 +170,7 @@ class factories extends dbconnection
         $factories = array();
         for($i = 0; $i < count($sql_factories); $i++)
             if($ob = factories::factoryObjectFromSQL($sql_factories[$i])) $factories[] = $ob;
-        
+
         return new return_package(0,$factories);
     }
 

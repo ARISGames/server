@@ -8,7 +8,7 @@ require_once("requirements.php");
 require_once("instances.php");
 
 class triggers extends dbconnection
-{	
+{
     //Takes in trigger JSON, all fields optional except user_id + key
     public static function createTrigger($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return triggers::createTriggerPack($glob); }
     public static function createTriggerPack($pack)
@@ -16,7 +16,7 @@ class triggers extends dbconnection
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
-    
+
         $pack->trigger_id = dbconnection::queryInsert(
             "INSERT INTO triggers (".
             "game_id,".

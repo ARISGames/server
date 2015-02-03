@@ -6,7 +6,7 @@ require_once("return_package.php");
 require_once("requirements.php");
 
 class web_hooks extends dbconnection
-{	
+{
     //Takes in web_hook JSON, all fields optional except game_id + user_id + key
     public static function createWebHook($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return web_hooks::createWebHookPack($glob); }
     public static function createWebHookPack($pack)
@@ -85,7 +85,7 @@ class web_hooks extends dbconnection
         $webHooks = array();
         for($i = 0; $i < count($sql_webHooks); $i++)
             if($ob = web_hooks::webHookObjectFromSQL($sql_webHooks[$i])) $webHooks[] = $ob;
-        
+
         return new return_package(0,$webHooks);
     }
 

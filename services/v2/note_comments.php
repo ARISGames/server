@@ -38,7 +38,7 @@ class note_comments extends dbconnection
     {
         $pack->auth->permission = "read_write";
         if(
-          $pack->auth->user_id != dbconnection::queryObject("SELECT * FROM note_comments WHERE note_comment_id = '{$pack->note_comment_id}'")->user_id || 
+          $pack->auth->user_id != dbconnection::queryObject("SELECT * FROM note_comments WHERE note_comment_id = '{$pack->note_comment_id}'")->user_id ||
           !users::authenticateUser($pack->auth)
         ) return new return_package(6, NULL, "Failed Authentication");
 
@@ -89,7 +89,7 @@ class note_comments extends dbconnection
             if(!($ob = note_comments::noteCommentObjectFromSQL($sql_note_comments[$i]))) continue;
             $note_comments[] = $ob;
         }
-        
+
         return new return_package(0,$note_comments);
     }
 
@@ -103,7 +103,7 @@ class note_comments extends dbconnection
             if(!($ob = note_comments::noteCommentObjectFromSQL($sql_note_comments[$i]))) continue;
             $note_comments[] = $ob;
         }
-        
+
         return new return_package(0,$note_comments);
     }
 
