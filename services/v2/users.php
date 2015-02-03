@@ -40,8 +40,9 @@ class users extends dbconnection
             "write_key,".
             "read_write_key,".
             "display_name,".
-            (isset($pack->email)    ? "email,"    : "").
-            (isset($pack->media_id) ? "media_id," : "").
+            (isset($pack->group_name) ? "group_name," : "").
+            (isset($pack->email)      ? "email,"      : "").
+            (isset($pack->media_id)   ? "media_id,"   : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->user_name)."',".
@@ -51,6 +52,7 @@ class users extends dbconnection
             "'".addslashes($write)."',".
             "'".addslashes($read_write)."',".
             (isset($pack->display_name) ? "'".addslashes($pack->display_name)."'," : "'".addslashes($pack->user_name)."',").
+            (isset($pack->group_name)   ? "'".addslashes($pack->group_name)."',"   : "").
             (isset($pack->email)        ? "'".addslashes($pack->email)."',"        : "").
             (isset($pack->media_id)     ? "'".addslashes($pack->media_id)."',"     : "").
             "CURRENT_TIMESTAMP".
@@ -59,6 +61,36 @@ class users extends dbconnection
 
         $pack->permission = "read_write";
         return users::logInPack($pack);
+    }
+
+    public static function autoGenerateUser($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::autoGenerateUserPack($glob); }
+    public static function autoGenerateUserPack($pack)
+    {
+        if(isset($pack->group_name) && strlen($pack->group_name))
+        {
+          //derive from group_name
+          $exists = true;
+          while($exists)
+          {
+            $pack->user_name = $pack->group_name.util::rand_string(5);
+            $exists = dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}'");
+          }
+          $pack->password = $pack->group_name;
+        }
+        else
+        {
+          //populate with garbage
+          $exists = true;
+          while($exists)
+          {
+            $pack->user_name = util::rand_string(10);
+            $exists = dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}'");
+          }
+          $pack->password = util::rand_string(10); //this is legit probably never going to be recoverable...
+        }
+        if(!isset($pack->display_name)) $pack->display_name = ""; //explicitly set display_name so default doesn't get set to the gibberish user_name
+
+        return users::createUserPack($pack);
     }
 
     public static function updateUser($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::updateUserPack($glob); }
