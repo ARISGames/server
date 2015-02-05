@@ -7,7 +7,7 @@ class Prune extends Module
     {
         $TBD = new stdClass;
         $TBD->locations = Prune::pruneLocationsForGame($gameId)->data;
-        $TBD->media = Prune::pruneMediaForGame($gameId)->data;
+        $TBD->media = Prune::pruneMediaForGame($gameId);
         $TBD->note_content = Prune::pruneNoteContentFromGame($gameId)->data;
 
         return new returnData(0,$TBD);
@@ -100,11 +100,57 @@ class Prune extends Module
 
     public function pruneMediaForGame($gameId)
     {
-        $TBD = array();
+        $known_media = array();
+        $used_media = array();
+        $unused_media = array();
 
         $media = Module::queryArray("SELECT * FROM media WHERE game_id = '{$gameId}'");
+        for($i = 0; $i < count($media); $i++) $known_media[] = $media[$i]->media_id;
 
-        $nodeMediaMap = array();
+        $mediasrc = array();
+        $a = new stdClass();
+        $a->table = "aug_bubble_media";
+        $a->column = "media_id";
+        $mediasrc[] = $a;
+        $a = new stdClass(); $a->table = "game_object_tags"; $a->column = "media_id";                       $mediasrc[] = $a;
+        $a = new stdClass(); $a->table = "game_tags";        $a->column = "media_id";                       $mediasrc[] = $a;
+        $a = new stdClass(); $a->table = "games";            $a->column = "pc_media_id";                    $mediasrc[] = $a;
+        $a = new stdClass(); $a->table = "games";            $a->column = "icon_media_id";                  $mediasrc[] = $a;
+        $a = new stdClass(); $a->table = "games";            $a->column = "media_id";                       $mediasrc[] = $a;
+        $a = new stdClass(); $a->table = "games";            $a->column = "game_icon_media_id";             $mediasrc[] = $a;
+        $a = new stdClass(); $a->table = "items";            $a->column = "icon_media_id";                  $mediasrc[] = $a;
+        $a = new stdClass(); $a->table = "items";            $a->column = "media_id";                       $mediasrc[] = $a;
+        $a = new stdClass(); $a->table = "nodes";            $a->column = "media_id";                       $mediasrc[] = $a;
+        $a = new stdClass(); $a->table = "nodes";            $a->column = "icon_media_id";                  $mediasrc[] = $a;
+        $a = new stdClass(); $a->table = "note_content";     $a->column = "media_id";                       $mediasrc[] = $a;
+        $a = new stdClass(); $a->table = "npcs";             $a->column = "media_id";                       $mediasrc[] = $a;
+        $a = new stdClass(); $a->table = "npcs";             $a->column = "icon_media_id";                  $mediasrc[] = $a;
+        $a = new stdClass(); $a->table = "overlays";         $a->column = "media_id";                       $mediasrc[] = $a;
+        $a = new stdClass(); $a->table = "quests";           $a->column = "active_media_id";                $mediasrc[] = $a;
+        $a = new stdClass(); $a->table = "quests";           $a->column = "complete_media_id";              $mediasrc[] = $a;
+        $a = new stdClass(); $a->table = "quests";           $a->column = "active_icon_media_id";           $mediasrc[] = $a;
+        $a = new stdClass(); $a->table = "quests";           $a->column = "complete_icon_media_id";         $mediasrc[] = $a;
+        $a = new stdClass(); $a->table = "quests";           $a->column = "active_notification_media_id";   $mediasrc[] = $a;
+        $a = new stdClass(); $a->table = "quests";           $a->column = "complete_notification_media_id"; $mediasrc[] = $a;
+        $a = new stdClass(); $a->table = "web_pages";        $a->column = "icon_media_id";                  $mediasrc[] = $a;
+
+        for($i = 0; $i < count($mediasrc); $i++)
+        {
+          $tablemedia = Module::queryArray("SELECT * FROM {$mediasrc[$i]->table} WHERE game_id = '{$gameId}'");
+          $col = $mediasrc[$i]->column;
+          for($j = 0; $j < count($tablemedia); $j++)
+          {
+            $found = false;
+            for($k = 0; $k < count($used_media) && $tablemedia[$j]->$col; $k++)
+            {
+              if($used_media[$k] == $tablemedia[$j]->$col)
+                $found = true;
+            }
+            if(!$found && $tablemedia[$j]->$col)
+              $used_media[] = $tablemedia[$j]->$col;
+          }
+        }
+
         $nodes = Module::queryArray("SELECT * FROM nodes WHERE game_id = '{$gameId}'");
         for($i = 0; $i < count($nodes); $i++)
         {
@@ -136,36 +182,50 @@ class Prune extends Module
                         $attrib_value = $matches[2]; //123
                         $attribs = $matches[3]; //name="billy"
     
-                        if(preg_match("@mediaId@i",$attrib_name)) $nodeMediaMap[$attrib_value] = true;
+                        if(preg_match("@mediaId@i",$attrib_name))
+                        {
+                            $found = false;
+                            for($k = 0; $k < count($used_media) && $attrib_value; $k++)
+                            {
+                              if($used_media[$k] == $attrib_value)
+                                $found = true;
+                            }
+                            if(!$found && $attrib_value)
+                              $used_media[] = $attrib_value;
+                        }
                     }
                 }
             }
         }
 
-        for($i = 0; $i < count($media); $i++)
-        {
-            $mid = $media[$i]->media_id;
-            if($nodeMediaMap[$mid]) continue;
-            if(Module::queryObject("SELECT * FROM games WHERE game_id = '{$gameId}' AND (game_icon_media_id = '{$mid}' OR pc_media_id = '{$mid}' OR icon_media_id = '{$mid}' OR media_id = '{$mid}')")) continue;
-            if(Module::queryObject("SELECT * FROM game_object_tags WHERE game_id = '{$gameId}' AND (media_id = '{$mid}')")) continue;
-            if(Module::queryObject("SELECT * FROM game_tags WHERE game_id = '{$gameId}' AND (media_id = '{$mid}')")) continue;
-            if(Module::queryObject("SELECT * FROM items WHERE game_id = '{$gameId}' AND (media_id = '{$mid}' OR icon_media_id = '{$mid}')")) continue;
-            if(Module::queryObject("SELECT * FROM locations WHERE game_id = '{$gameId}' AND (icon_media_id = '{$mid}')")) continue;
-            if(Module::queryObject("SELECT * FROM nodes WHERE game_id = '{$gameId}' AND (media_id = '{$mid}' OR icon_media_id = '{$mid}')")) continue;
-            if(Module::queryObject("SELECT * FROM note_content WHERE game_id = '{$gameId}' AND (media_id = '{$mid}')")) continue;
-            if(Module::queryObject("SELECT * FROM npcs WHERE game_id = '{$gameId}' AND (media_id = '{$mid}' OR icon_media_id = '{$mid}')")) continue;
-            if(Module::queryObject("SELECT * FROM overlays WHERE game_id = '{$gameId}' AND (media_id = '{$mid}')")) continue;
-            if(Module::queryObject("SELECT * FROM quests WHERE game_id = '{$gameId}' AND (active_notification_media_id = '{$mid}' OR complete_notification_media_id = '{$mid}' OR active_media_id = '{$mid}' OR complete_media_id = '{$mid}' OR active_icon_media_id = '{$mid}' OR complete_icon_media_id = '{$mid}')")) continue;
-            if(Module::queryObject("SELECT * FROM web_pages WHERE game_id = '{$gameId}' AND (icon_media_id = '{$mid}')")) continue;
 
-            $D = new stdClass;
-            $D->type = "Media";
-            $D->id = $mid;
-            $D->description = "(Media ".$mid.")";
-            $TBD[] = $D;
+
+
+
+
+
+
+        for($i = 0; $i < count($known_media); $i++)
+        {
+            $used = false;
+            for($j = 0; $j < count($used_media); $j++)
+            {
+                if($known_media[$i] == $used_media[$j])
+                    $used = true;
+            }
+            if(!$used)
+            {
+                $unused_media[] = $known_media[$i];
+            }
+        }
+        
+        $return = array();
+        for($i = 0; $i < count($unused_media); $i++)
+        {
+            $return[] = Module::queryObject("SELECT * FROM media WHERE game_id = '{$gameId}' AND media_id = '{$unused_media[$i]}'");
         }
 
-        return new returnData(0,$TBD);
+        return $return;
     }
 
     public function pruneNoteContentFromGame($gameId)
