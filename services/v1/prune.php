@@ -6,16 +6,16 @@ class Prune extends Module
     public function pruneGame($gameId)
     {
         $TBD = new stdClass;
-        $TBD->locations = Prune::pruneLocationsForGame($gameId)->data;
+        $TBD->locations = Prune::pruneLocationsForGame($gameId);
         $TBD->media = Prune::pruneMediaForGame($gameId);
-        $TBD->note_content = Prune::pruneNoteContentFromGame($gameId)->data;
+        $TBD->note_content = Prune::pruneNoteContentFromGame($gameId);
 
-        return new returnData(0,$TBD);
+        return $TBD;
     }
 
     public function pruneLocationsForGame($gameId)
     {
-        $TBD = array();
+        $unused_locs = array();
 
         $locations = Module::queryArray("SELECT * FROM locations WHERE game_id = '{$gameId}'");
         $nodeLocs = array();
@@ -38,64 +38,34 @@ class Prune extends Module
         for($i = 0; $i < count($nodeLocs); $i++)
         {
             if(!Module::queryObject("SELECT * FROM nodes WHERE node_id = '{$nodeLocs[$i]->type_id}'"))
-            {
-                $D = new stdClass;
-                $D->type = "Location";
-                $D->id = $nodeLocs[$i]->location_id;
-                $D->description = "(Loc Node ".$nodeLocs[$i]->location_id.")";
-                $TBD[] = $D;
-            }
+                $unused_locs[] = $nodeLocs[$i]->location_id;
         }
 
         for($i = 0; $i < count($itemLocs); $i++)
         {
             if(!Module::queryObject("SELECT * FROM items WHERE item_id = '{$itemLocs[$i]->type_id}'"))
-            {
-                $D = new stdClass;
-                $D->type = "Location";
-                $D->id = $itemLocs[$i]->location_id;
-                $D->description = "(Loc Item ".$itemLocs[$i]->location_id.")";
-                $TBD[] = $D;
-            }
+                $unused_locs[] = $itemLocs[$i]->location_id;
         }
 
         for($i = 0; $i < count($npcLocs); $i++)
         {
             if(!Module::queryObject("SELECT * FROM npcs WHERE npc_id = '{$npcLocs[$i]->type_id}'"))
-            {
-                $D = new stdClass;
-                $D->type = "Location";
-                $D->id = $npcLocs[$i]->location_id;
-                $D->description = "(Loc Npc ".$npcLocs[$i]->location_id.")";
-                $TBD[] = $D;
-            }
+                $unused_locs[] = $npcLocs[$i]->location_id;
         }
 
         for($i = 0; $i < count($webpageLocs); $i++)
         {
             if(!Module::queryObject("SELECT * FROM web_pages WHERE web_page_id = '{$webpageLocs[$i]->type_id}'"))
-            {
-                $D = new stdClass;
-                $D->type = "Location";
-                $D->id = $webpageLocs[$i]->location_id;
-                $D->description = "(Loc WebPage ".$webpageLocs[$i]->location_id.")";
-                $TBD[] = $D;
-            }
+                $unused_locs[] = $webpageLocs[$i]->location_id;
         }
 
         for($i = 0; $i < count($noteLocs); $i++)
         {
             if(!Module::queryObject("SELECT * FROM notes WHERE note_id = '{$noteLocs[$i]->type_id}'"))
-            {
-                $D = new stdClass;
-                $D->type = "Location";
-                $D->id = $noteLocs[$i]->location_id;
-                $D->description = "(Loc Note ".$noteLocs[$i]->location_id.")";
-                $TBD[] = $D;
-            }
+                $unused_locs[] = $noteLocs[$i]->location_id;
         }
 
-        return new returnData(0,$TBD);
+        return $unused_locs;
     }
 
     public function pruneMediaForGame($gameId)
