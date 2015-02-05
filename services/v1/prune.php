@@ -65,7 +65,13 @@ class Prune extends Module
                 $unused_locs[] = $noteLocs[$i]->location_id;
         }
 
-        return $unused_locs;
+        $return = array();
+        for($i = 0; $i < count($unused_locs); $i++)
+        {
+            $return[] = Module::queryObject("SELECT * FROM locations WHERE game_id = '{$gameId}' AND location_id = '{$unused_locs[$i]}'");
+        }
+
+        return $return;
     }
 
     public function pruneMediaForGame($gameId)
