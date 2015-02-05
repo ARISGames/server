@@ -3,18 +3,24 @@ require_once("module.php");
 
 class Prune extends Module
 {	
-    public function pruneGame($gameId)
+    public function pruneGame($gameId, $surrogate, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $TBD = new stdClass;
-        $TBD->locations = Prune::pruneLocationsForGame($gameId);
-        $TBD->media = Prune::pruneMediaForGame($gameId);
-        $TBD->note_content = Prune::pruneNoteContentFromGame($gameId);
+        $TBD->locations = Prune::pruneLocationsForGame($gameId, $surrogate, $editorId, $editorToken);
+        $TBD->media = Prune::pruneMediaForGame($gameId, $surrogate, $editorId, $editorToken);
+        $TBD->note_content = Prune::pruneNoteContentFromGame($gameId, $surrogate, $editorId, $editorToken);
 
         return $TBD;
     }
 
-    public function pruneLocationsForGame($gameId)
+    public function pruneLocationsForGame($gameId, $surrogate, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $unused_locs = array();
 
         $locations = Module::queryArray("SELECT * FROM locations WHERE game_id = '{$gameId}'");
@@ -65,17 +71,31 @@ class Prune extends Module
                 $unused_locs[] = $noteLocs[$i]->location_id;
         }
 
-        $return = array();
-        for($i = 0; $i < count($unused_locs); $i++)
+        if($surrogate)
         {
-            $return[] = Module::queryObject("SELECT * FROM locations WHERE game_id = '{$gameId}' AND location_id = '{$unused_locs[$i]}'");
+            for($i = 0; $i < count($unused_locs); $i++)
+            {
+                echo "UPDATE locations SET game_id = '{$surrogate}' WHERE game_id = '{$gameId}' AND location_id = '{$unused_locs[$i]}'\n";
+                //Module::queryObject("UPDATE locations SET game_id = '{$surrogate}' WHERE game_id = '{$gameId}' AND location_id = '{$unused_locs[$i]}'");
+            }
+        }
+        else
+        {
+            for($i = 0; $i < count($unused_locs); $i++)
+            {
+                echo "DELETE FROM locations WHERE game_id = '{$gameId}' AND location_id = '{$unused_locs[$i]}'\n";
+                //Module::queryObject("DELETE FROM locations WHERE game_id = '{$gameId}' AND location_id = '{$unused_locs[$i]}'");
+            }
         }
 
-        return $return;
+        return $unused_locs;
     }
 
-    public function pruneMediaForGame($gameId)
+    public function pruneMediaForGame($gameId, $surrogate, $editorId, $editorToken)
     {
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
         $known_media = array();
         $used_media = array();
         $unused_media = array();
@@ -195,33 +215,58 @@ class Prune extends Module
             }
         }
         
-        $return = array();
-        for($i = 0; $i < count($unused_media); $i++)
+        if($surrogate)
         {
-            $return[] = Module::queryObject("SELECT * FROM media WHERE game_id = '{$gameId}' AND media_id = '{$unused_media[$i]}'");
+            for($i = 0; $i < count($unused_media); $i++)
+            {
+                echo "UPDATE media SET game_id = '{$surrogate}' WHERE game_id = '{$gameId}' AND media_id = '{$unused_media[$i]}'";
+                //Module::queryObject("UPDATE media SET game_id = '{$surrogate}' WHERE game_id = '{$gameId}' AND media_id = '{$unused_media[$i]}'");
+            }
+        }
+        else
+        {
+            for($i = 0; $i < count($unused_media); $i++)
+            {
+                echo "DELETE FROM media WHERE game_id = '{$gameId}' AND media_id = '{$unused_media[$i]}'\n";
+                //Module::queryObject("DELETE FROM media WHERE game_id = '{$gameId}' AND media_id = '{$unused_media[$i]}'");
+            }
         }
 
-        return $return;
+        return $unused_media;
     }
 
-    public function pruneNoteContentFromGame($gameId)
+    public function pruneNoteContentFromGame($gameId, $surrogate, $editorId, $editorToken)
     {
-        $TBD = array();
+        if(!Module::authenticateGameEditor($gameId, $editorId, $editorToken, "read_write"))
+            return new returnData(6, NULL, "Failed Authentication");
+
+        $unused_content = array();
 
         $noteContent = Module::queryArray("SELECT * FROM note_content WHERE game_id = '{$gameId}'");
         for($i = 0; $i < count($noteContent); $i++)
         {
             if(!Module::queryObject("SELECT * FROM notes WHERE note_id = '{$noteContent[$i]->note_id}'"))
+                $unused_content[] = $noteContent[$i]->content_id;
+        }
+
+        if($surrogate)
+        {
+            for($i = 0; $i < count($unused_content); $i++)
             {
-                $D = new stdClass;
-                $D->type = "NoteContent";
-                $D->id = $noteContent[$i]->content_id;
-                $D->description = "(NoteContent ".$noteContent[$i]->content_id.")";
-                $TBD[] = $D;
+                echo "UPDATE note_content SET game_id = '{$surrogate}' WHERE game_id = '{$gameId}' AND note_content_id = '{$unused_content[$i]}'\n";
+                //Module::queryObject("UPDATE note_content SET game_id = '{$surrogate}' WHERE game_id = '{$gameId}' AND note_content_id = '{$unused_content[$i]}'");
+            }
+        }
+        else
+        {
+            for($i = 0; $i < count($unused_content); $i++)
+            {
+                echo "DELETE FROM note_content WHERE game_id = '{$gameId}' AND note_content_id = '{$unused_content[$i]}'\n";
+                //Module::queryObject("DELETE FROM note_content WHERE game_id = '{$gameId}' AND note_content_id = '{$unused_content[$i]}'");
             }
         }
 
-        return new returnData(0,$TBD);
+        return $unused_content;
     }
 }
 
