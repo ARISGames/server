@@ -75,14 +75,14 @@ class Prune extends Module
         {
             for($i = 0; $i < count($unused_locs); $i++)
             {
-                Module::queryObject("UPDATE locations SET game_id = '{$surrogate}' WHERE game_id = '{$gameId}' AND location_id = '{$unused_locs[$i]}'");
+                Module::query("UPDATE locations SET game_id = '{$surrogate}' WHERE game_id = '{$gameId}' AND location_id = '{$unused_locs[$i]}'");
             }
         }
         else
         {
             for($i = 0; $i < count($unused_locs); $i++)
             {
-                Module::queryObject("DELETE FROM locations WHERE game_id = '{$gameId}' AND location_id = '{$unused_locs[$i]}'");
+                Module::query("DELETE FROM locations WHERE game_id = '{$gameId}' AND location_id = '{$unused_locs[$i]}'");
             }
         }
 
@@ -217,14 +217,14 @@ class Prune extends Module
         {
             for($i = 0; $i < count($unused_media); $i++)
             {
-                Module::queryObject("UPDATE media SET game_id = '{$surrogate}' WHERE game_id = '{$gameId}' AND media_id = '{$unused_media[$i]}'");
+                Module::query("UPDATE media SET game_id = '{$surrogate}' WHERE game_id = '{$gameId}' AND media_id = '{$unused_media[$i]}'");
             }
         }
         else
         {
             for($i = 0; $i < count($unused_media); $i++)
             {
-                Module::queryObject("DELETE FROM media WHERE game_id = '{$gameId}' AND media_id = '{$unused_media[$i]}'");
+                Module::query("DELETE FROM media WHERE game_id = '{$gameId}' AND media_id = '{$unused_media[$i]}'");
             }
         }
 
@@ -241,7 +241,7 @@ class Prune extends Module
         $noteContent = Module::queryArray("SELECT * FROM note_content WHERE game_id = '{$gameId}'");
         for($i = 0; $i < count($noteContent); $i++)
         {
-            if(!Module::queryObject("SELECT * FROM notes WHERE note_id = '{$noteContent[$i]->note_id}'"))
+            if(!Module::queryObject("SELECT * FROM notes WHERE game_id = '{$gameId}' AND note_id = '{$noteContent[$i]->note_id}'"))
                 $unused_content[] = $noteContent[$i]->content_id;
         }
 
@@ -249,14 +249,14 @@ class Prune extends Module
         {
             for($i = 0; $i < count($unused_content); $i++)
             {
-                Module::queryObject("UPDATE note_content SET game_id = '{$surrogate}' WHERE game_id = '{$gameId}' AND note_content_id = '{$unused_content[$i]}'");
+                Module::query("UPDATE note_content SET game_id = '{$surrogate}' WHERE game_id = '{$gameId}' AND content_id = '{$unused_content[$i]}'");
             }
         }
         else
         {
             for($i = 0; $i < count($unused_content); $i++)
             {
-                Module::queryObject("DELETE FROM note_content WHERE game_id = '{$gameId}' AND note_content_id = '{$unused_content[$i]}'");
+                Module::query("DELETE FROM note_content WHERE game_id = '{$gameId}' AND content_id = '{$unused_content[$i]}'");
             }
         }
 
