@@ -45,7 +45,7 @@
 	});
 
 	//Private
-	Pusher.channel_auth_endpoint = '<?php echo 'http://dev.arisgames.org/server/events/'.$private_default_auth; ?>';
+	Pusher.channel_auth_endpoint = window.location.origin+'<?php echo '/server/events/'.$private_default_auth; ?>';
 	var priv_channel = pusher.subscribe('<?php echo $private_default_channel; ?>');
 	priv_channel.bind('<?php echo $private_default_event; ?>', function(data) {
             var message = document.createElement('div');
@@ -55,7 +55,7 @@
 
         /* Can only 'authorize' once- either leave this commented out, or comment out 'Private'
 	//Presence
-	Pusher.channel_auth_endpoint = '<?php echo 'http://dev.arisgames.org/server/events/'.$presence_default_auth; ?>';
+	Pusher.channel_auth_endpoint = window.location.origin+'<?php echo '/server/events/'.$presence_default_auth; ?>';
 	var pres_channel = pusher.subscribe('<?php echo $presence_default_channel; ?>');
 	pres_channel.bind('<?php echo $presence_default_event; ?>', function(data) {
             var message = document.createElement('div');
@@ -78,7 +78,7 @@
 		    document.getElementById(room+'_messages').insertBefore(message,document.getElementById(room+'_messages').firstChild);
                 } 
             };
-            xmlhttp.open("POST","http://dev.arisgames.org/server/events/send.php",true);
+            xmlhttp.open("POST",window.location.origin+"/server/events/send.php",true);
             xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
             xmlhttp.send('channel='+channel+'&event='+event+'&data='+data);
             console.log('channel='+channel+'&event='+event+'&data='+data);
