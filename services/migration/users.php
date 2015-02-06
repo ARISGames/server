@@ -12,7 +12,7 @@ class mig_users extends migration_dbconnection
         $permission = addslashes($pack->permission);
         $key        = addslashes($pack->key);
 
-        $user = migration_dbconnection::queryObject("SELECT * FROM users WHERE user_id = '{$userId}' LIMIT 1");
+        $user = migration_dbconnection::queryObject("SELECT * FROM users WHERE user_id = '{$userId}' LIMIT 1","v2");
         if($user && $user->{$permission."_key"} == $key) return true;
         util::serverErrorLog("Failed Editor Authentication!"); return false;
     }
@@ -20,7 +20,7 @@ class mig_users extends migration_dbconnection
     public static function createUser($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return mig_users::createUserPack($glob); }
     public static function createUserPack($pack)
     {
-        if(migration_dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}'"))
+        if(migration_dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}'","v2"))
             return new migration_return_package(1, NULL, "User already exists");
 
         $salt       = util::rand_string(64);
@@ -53,7 +53,7 @@ class mig_users extends migration_dbconnection
             (isset($pack->media_id)     ? "'".addslashes($pack->media_id)."',"     : "").
             "CURRENT_TIMESTAMP".
             ")"
-        );
+        ,"v2");
 
         $pack->permission = "read_write";
         return mig_users::logInPack($pack);
@@ -67,9 +67,9 @@ class mig_users extends migration_dbconnection
         {
             $pack->auth->permission = "read_write";
             if(!mig_users::authenticateUser($pack->auth)) return new migration_return_package(6, NULL, "Failed Authentication");
-            $user = migration_dbconnection::queryObject("SELECT * FROM users WHERE user_id = '{$pack->user_id}'");
+            $user = migration_dbconnection::queryObject("SELECT * FROM users WHERE user_id = '{$pack->user_id}'","v2");
         }
-        else if(!($user = migration_dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}'")) || hash("sha256",$user->salt.$pack->password) != $user->hash)
+        else if(!($user = migration_dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}'","v2")) || hash("sha256",$user->salt.$pack->password) != $user->hash)
             return new migration_return_package(1, NULL, "Incorrect username/password");
 
         $ret = new stdClass();
@@ -81,7 +81,7 @@ class mig_users extends migration_dbconnection
         if($pack->permission == "write")      $ret->write_key      = $user->write_key;
         if($pack->permission == "read_write") $ret->read_write_key = $user->read_write_key;
 
-        migration_dbconnection::queryInsert("INSERT INTO user_log (user_id, event_type, created) VALUES ('{$ret->user_id}', 'LOG_IN', CURRENT_TIMESTAMP);");
+        migration_dbconnection::queryInsert("INSERT INTO user_log (user_id, event_type, created) VALUES ('{$ret->user_id}', 'LOG_IN', CURRENT_TIMESTAMP);","v2");
         return new migration_return_package(0, $ret);
     }
 }
