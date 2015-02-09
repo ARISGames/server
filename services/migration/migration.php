@@ -6,9 +6,7 @@ require_once("../v1/players.php");
 require_once("../v1/editors.php");
 require_once("../v1/games.php");
 
-//require gross copypastad stubs to account for above problem
-require_once("games.php");
-require_once("users.php");
+require_once("bridge.php"); //to account for above problem
 
 //actually meaningful migration includes
 require_once("migration_dbconnection.php");
@@ -24,7 +22,6 @@ class migration extends migration_dbconnection
     {
         $Players = new Players;
         $Editors = new Editors;
-        $users = new mig_users;
 
         $v1Player = $Players->getLoginPlayerObject($playerName, $playerPass)->data;
         $v1Editor = $Editors->getToken($editorName, $editorPass, "read_write")->data;
@@ -39,7 +36,9 @@ class migration extends migration_dbconnection
         $userpack->display_name = $newDisplay ? $newDisplay : $newName;
         $userpack->email = $newEmail;
         $userpack->permission = "read_write";
-        $v2User = $users->logInPack($userpack)->data;
+        $userpack->no_auto_migrate = true; //negative name because it's a hack and we want the default to be nonexistant
+        $v2User = bridgeService("v2", "users", "logIn", "", $userpack)->data;
+            
         if(!$v2User) //user doesn't exists
         {
             //Don't create new user if trying to migrate from already migrated data
@@ -48,7 +47,7 @@ class migration extends migration_dbconnection
             if($v1Editor && migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_editor_id = '{$v1Editor->editor_id}'"))
                 return new migration_return_package(1,NULL,"Editor already migrated.");
 
-            $v2User = $users->createUserPack($userpack)->data;
+            $v2User = bridgeService("v2", "users", "createUserPack", "", $userpack)->data;
             if(!$v2User) return new migration_return_package(1,NULL,"Username Taken");
         }
         else
@@ -75,7 +74,6 @@ class migration extends migration_dbconnection
     {
         $Editors = new Editors;
         $Games = new Games;
-        $migGames = new mig_games;
 
         $migData = migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_editor_id = '{$v1EditorId}'");
         if(!$migData) return new migration_return_package(1, NULL, "Editor not migrated");
@@ -96,7 +94,7 @@ class migration extends migration_dbconnection
         $oldGame->map_show_player = $oldGame->show_player_location;
         $oldGame->map_offsite_mode = $oldGame->full_quick_travel;
         $oldGame->auth = $v2Auth;
-        $v2GameId = $migGames->createGame($oldGame);
+        $v2GameId = bridgeService("v2", "games", "createGame", "", $oldGame)->data->game_id;
 
         $maps = new stdClass();
         $maps->media = migration::migrateMedia($v1GameId, $v2GameId);

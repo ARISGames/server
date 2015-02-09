@@ -136,7 +136,7 @@ class users extends dbconnection
 		*  BEGIN MIGRATION INJECTION
 		*/
 		//Login Failed. If username/password doesn't exist, check if we can re-route this to a migrate. 
-		if(!$user)
+		if(!$user && !$pack->no_auto_migrate)
 		{
 			//miguser api for reference
     			//public function migrateUser($playerName, $playerPass, $editorName, $editorPass, $newName, $newPass, $newDisplay, $newEmail)
