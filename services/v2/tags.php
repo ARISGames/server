@@ -214,5 +214,17 @@ class tags extends dbconnection
         dbconnection::query("DELETE FROM object_tags WHERE object_tag_id = '{$pack->object_tag_id}' LIMIT 1");
         return new return_package(0);
     }
+
+    public static function countObjectsWithTag($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::countObjectsWithTagPack($glob); }
+    public static function countObjectsWithTagPack($pack)
+    {
+        $object_type = addslashes($pack->object_type);
+        $tag_id = intval($pack->tag_id);
+
+        $obj = dbconnection::queryObject(
+            "SELECT COUNT(1) AS count FROM object_tags WHERE object_type = '{$object_type}' AND tag_id = '{$tag_id}'"
+        );
+        return new return_package(0, $obj);
+    }
 }
 ?>
