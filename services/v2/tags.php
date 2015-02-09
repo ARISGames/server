@@ -215,7 +215,7 @@ class tags extends dbconnection
         return new return_package(0);
     }
 
-    public static function countObjectsWithTag($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::countObjectsWithTagPack($glob); }
+    public static function countObjectsWithTag($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return tags::countObjectsWithTagPack($glob); }
     public static function countObjectsWithTagPack($pack)
     {
         $object_type = addslashes($pack->object_type);
