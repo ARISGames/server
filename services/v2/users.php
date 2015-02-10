@@ -24,8 +24,8 @@ class users extends dbconnection
     public static function createUser($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::createUserPack($glob); }
     public static function createUserPack($pack)
     {
-        if(dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}'"))
-            return new return_package(1, NULL, "User already exists");
+        if(!$pack->user_name || $pack->user_name == "") return new return_package(1, NULL, "Empty username invalid.");
+        if(dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}'")) return new return_package(1, NULL, "User already exists");
 
         $salt       = util::rand_string(64);
         $hash       = hash("sha256",$salt.$pack->password);

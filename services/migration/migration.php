@@ -34,12 +34,12 @@ class migration extends migration_dbconnection
         $userpack->user_name = $newName;
         $userpack->password = $newPass;
         $userpack->display_name = $newDisplay ? $newDisplay : $newName;
-        $userpack->email = $newEmail;
+        $userpack->email = $newEmail ? $newEmail : ($v1Editor ? $v1Editor->email : ($v1Player ? $v1Player->email : ""));
         $userpack->permission = "read_write";
-        $userpack->no_auto_migrate = true; //negative name because it's a hack and we want the default to be nonexistant
+        $userpack->no_auto_migrate = true; //negative var name because it's a hack and we want the default to be nonexistant
         $v2User = bridgeService("v2", "users", "logIn", "", $userpack)->data;
             
-        if(!$v2User) //user doesn't exists
+        if(!$v2User) //user (name/password pair) doesn't exists
         {
             //Don't create new user if trying to migrate from already migrated data
             if($v1Player && migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_player_id = '{$v1Player->player_id}'"))
@@ -68,6 +68,40 @@ class migration extends migration_dbconnection
             migration_dbconnection::query("INSERT INTO user_migrations (v2_user_id, v2_read_write_key, v1_player_id, v1_editor_id, v1_read_write_token) VALUES ('{$v2User->user_id}', '{$v2User->read_write_key}', '{$v1Player->player_id}', '{$v1Editor->editor_id}', '{$v1Editor->read_write_token}')");
 
         return new migration_return_package(0,true);
+    }
+
+    public function v1GamesForV2User($v2UserId, $v2Key)
+    {
+        $loginPack = new stdClass();
+        $loginPack->auth = new stdClass();
+        $loginPack->auth->user_id = $v2UserId;
+        $loginPack->auth->key = $v2Key;
+
+        $userRet = bridgeService("v2", "users", "logIn", "", $loginPack);
+        if($userRet->returnCode != 0) return new migration_return_package(1,"Invalid v2 credentials");
+
+        $migData = migration_dbconnection::queryObjet("SELECT * FROM user_migrations WHERE v2_user_id = '{$v2UserId}' LIMIT 1");
+        if(!$migData)               return new migration_return_package(1,"v2 user not migrated");
+        if(!$migData->v1_editor_id) return new migration_return_package(1,"No v1 editor linked to v2 user");
+
+        $gamesRet = bridgeService("v1", "games", "getGamesForEditor", "{$migData->v1_editor_id}/{$migData->v1_read_write_token}", "");
+        if($gamesRet->returnCode != 1) return new migration_return_package(1,"v1 getGames request failed -".$gamesRet->returnCodeDescription);
+
+        $games = $gamesRet->data;
+        for($i = 0; $i < count($games); $i++)
+        {
+            $games[$i]->prev_migrations = array();
+            $games[$i]->my_migrations = array();
+            $gameMigs = migration_dbconnection::queryArray("SELECT * FROM game_migrations WHERE v1_game_id = '{$games[$i]->game_id}'");
+            for($j = 0; $j < count($gameMigs); $j++)
+            {
+                if($gameMigs[$j]->v2_user_id == $v2UserId)
+                    $games[$i]->my_prev_migrations[] = $gameMigs[$j]->v2_game_id;
+                $games[$i]->prev_migrations[] = $gameMigs[$j]->v2_game_id;
+            }
+        }
+
+        return new migration_return_package(0, $games);
     }
 
     public function migrateGame($v1GameId, $v1EditorId, $v1EditorToken)

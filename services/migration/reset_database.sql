@@ -20,6 +20,7 @@ v1_read_write_token VARCHAR(255) NOT NULL
 DROP TABLE IF EXISTS game_migrations;
 CREATE TABLE game_migrations (
 v2_game_id INT(32) UNSIGNED NOT NULL PRIMARY KEY,
-v1_game_id INT(32) UNSIGNED NOT NULL
+v1_game_id INT(32) UNSIGNED NOT NULL,
+v2_user_id INT(32) UNSIGNED NOT NULL
 );
 
