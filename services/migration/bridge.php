@@ -8,8 +8,13 @@ function bridgeService($v, $class, $function, $url_args, $post_args)
     curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
     if($post_args)
     {
-        curl_setopt($c,CURLOPT_POST,true); 
-        curl_setopt($c,CURLOPT_POSTFIELDS,json_encode($post_args)); 
+	$str = json_encode($post_args);
+	curl_setopt($c,CURLOPT_POST,true);
+	curl_setopt($c,CURLOPT_POSTFIELDS,$str);
+	curl_setopt($c, CURLOPT_HTTPHEADER, array(
+		'Content-Type: application/json',
+		'Content-Length: '.strlen($str))
+	);
     }
 
     $response = curl_exec($c); 
