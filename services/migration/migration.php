@@ -47,7 +47,7 @@ class migration extends migration_dbconnection
             if($v1Editor && migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_editor_id = '{$v1Editor->editor_id}'"))
                 return new migration_return_package(1,NULL,"Editor already migrated.");
 
-            $v2User = bridgeService("v2", "users", "createUserPack", "", $userpack)->data;
+            $v2User = bridgeService("v2", "users", "createUser", "", $userpack)->data;
             if(!$v2User) return new migration_return_package(1,NULL,"Username Taken");
         }
         else
