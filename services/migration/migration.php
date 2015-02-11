@@ -70,8 +70,18 @@ class migration extends migration_dbconnection
         return new migration_return_package(0,true);
     }
 
-    public function v1GamesForV2User($v2UserId, $v2Key)
+    public function v1GamesForV2User($v2UserId, $v2Key = false)
     {
+        /*Huge hack to allow for either v1 style access or v2 access*/
+        if(!$v2Key)
+        {
+            $data = file_get_contents("php://input");
+            $glob = json_decode($data);
+            $v2UserId = $glob->auth->user_id;
+            $v2Key = $glob->auth->key;
+        }
+        /*End huge hack*/
+
         $loginPack = new stdClass();
         $loginPack->auth = new stdClass();
         $loginPack->auth->user_id = $v2UserId;
@@ -104,18 +114,35 @@ class migration extends migration_dbconnection
         return new migration_return_package(0, $games);
     }
 
-    public function migrateGame($v1GameId, $v1EditorId, $v1EditorToken)
+    public function migrateGame($v2UserId, $v2Key = false, $v1GameId = false)
     {
+        /*Huge hack to allow for either v1 style access or v2 access*/
+        if(!$v2Key)
+        {
+            $data = file_get_contents("php://input");
+            $glob = json_decode($data);
+            $v2UserId = $glob->auth->user_id;
+            $v2Key = $glob->auth->key;
+            $v1GameId = $glob->game_id;
+        }
+        /*End huge hack*/
+
+        //check permission by getting available v1 games
+        $retGames = migration::v1GamesForV2User($v2UserId, $v2Key);
+        if($retGames->returnCode != 0) return new migration_return_package(1, NULL, $retGames->returnCodeDescription);
+        $owned_v1_games = $retGames->data;
+        $authorized = false;
+        for($i = 0; $i < count($owned_v1_games); $i++)
+            if($owned_v1_games[$i]->game_id == $v1GameId) $authorized = true;
+        if(!$authorized)
+            return new migration_return_package(1, NULL, "Your attached v1 account does not have ownership of that game");
+
         $Editors = new Editors;
         $Games = new Games;
 
-        $migData = migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_editor_id = '{$v1EditorId}'");
-        if(!$migData) return new migration_return_package(1, NULL, "Editor not migrated");
-        if($migData->v1_read_write_token != $v1EditorToken) return new migration_return_package(1, NULL, "Editor Authentication Failed");
-
         $v2Auth = new stdClass();
-        $v2Auth->user_id = $migData->v2_user_id;
-        $v2Auth->key = $migData->v2_read_write_key;
+        $v2Auth->user_id = $v2UserId;
+        $v2Auth->key = $v2Key;
         $v2Auth->permission = "read_write";
         
         $oldGame = $Games->getGame($v1GameId)->data;
@@ -855,3 +882,4 @@ class migration extends migration_dbconnection
     }
 }
 ?>
+
