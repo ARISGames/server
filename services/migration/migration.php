@@ -101,7 +101,7 @@ class migration extends migration_dbconnection
         for($i = 0; $i < count($games); $i++)
         {
             $games[$i]->prev_migrations = array();
-            $games[$i]->my_migrations = array();
+            $games[$i]->my_prev_migrations = array();
             $gameMigs = migration_dbconnection::queryArray("SELECT * FROM game_migrations WHERE v1_game_id = '{$games[$i]->game_id}'");
             for($j = 0; $j < count($gameMigs); $j++)
             {
@@ -191,6 +191,8 @@ class migration extends migration_dbconnection
         //no maps generated from migrateRequirements
         migration::migrateRequirements($v1GameId, $v2GameId, $maps);
 
+        migration_dbconnection::queryInsert("INSERT INTO game_migrations (v2_game_id, v1_game_id, v2_user_id) VALUES ('{$v2GameId}','{$v1GameId}','{$v2UserId}')");
+
         return new migration_return_package(0,$v2Game);
     }
 
@@ -225,12 +227,15 @@ class migration extends migration_dbconnection
                 file_exists(Config::v2_gamedata_folder."/".$v2GameId."/".$filename)
                 ) 
             {
-                $thumb = @WideImage::load(Config::v2_gamedata_folder."/".$v2GameId."/".$filename);
-                if($thumb)
+                if(exif_imagetype(Config::v2_gamedata_folder."/".$v2GameId."/".$filename))
                 {
-                    $thumb = $thumb->resize(128, 128, 'outside');
-                    $thumb = $thumb->crop('center','center',128,128);
-                    $thumb->saveToFile(Config::v2_gamedata_folder."/".$v2GameId."/".$filenametitle."_128".$filenameext);
+                    $thumb = @WideImage::loadFromFile(Config::v2_gamedata_folder."/".$v2GameId."/".$filename);
+                    if($thumb)
+                    {
+                        $thumb = @$thumb->resize(128, 128, 'outside');
+                        $thumb = @$thumb->crop('center','center',128,128);
+                        @$thumb->saveToFile(Config::v2_gamedata_folder."/".$v2GameId."/".$filenametitle."_128".$filenameext);
+                    }
                 }
             }
 
