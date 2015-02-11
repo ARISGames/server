@@ -114,7 +114,7 @@ class migration extends migration_dbconnection
         return new migration_return_package(0, $games);
     }
 
-    public function migrateGame($v2UserId, $v2Key = false, $v1GameId = false)
+    public function migrateGame($v2UserId, $v2Key = false, $v1GameId = false, $sift = false)
     {
         /*Huge hack to allow for either v1 style access or v2 access*/
         if(!$v2Key)
@@ -124,6 +124,7 @@ class migration extends migration_dbconnection
             $v2UserId = $glob->auth->user_id;
             $v2Key = $glob->auth->key;
             $v1GameId = $glob->game_id;
+            $sift = isset($glob->sift) && $glob->sift;
         }
         /*End huge hack*/
 
@@ -172,7 +173,6 @@ class migration extends migration_dbconnection
         $maps->dialogs = $characterMaps->dialogsMap;
         $maps->scripts = $characterMaps->scriptsMap;
         $maps->options = $characterMaps->optionsMap;
-        //$maps->notes = migration::migrateNotes($v1GameId, $v2GameId, $maps); //don't migrate notes for now... (we'll get into if we should later)
         $maps->tags = migration::migrateTags($v1GameId, $v2GameId, $maps);
         $maps->webhooks = migration::migrateWebhooks($v1GameId, $v2GameId, $maps);
         $maps->quests = migration::migrateQuests($v1GameId, $v2GameId, $maps);
@@ -190,6 +190,10 @@ class migration extends migration_dbconnection
 
         //no maps generated from migrateRequirements
         migration::migrateRequirements($v1GameId, $v2GameId, $maps);
+        if($sift)
+        {
+          $maps->notes = migration::migrateNotes($v1GameId, $v2GameId, $maps);
+        }
 
         migration_dbconnection::queryInsert("INSERT INTO game_migrations (v2_game_id, v1_game_id, v2_user_id) VALUES ('{$v2GameId}','{$v1GameId}','{$v2UserId}')");
 
@@ -885,6 +889,98 @@ class migration extends migration_dbconnection
 
         return $root_req_id;
     }
+
+    //assumes siftr-like structure
+    public function migrateNotes($v1GameId, $v2GameId, $maps)
+    {
+        $noteIdMap = array();
+        $noteIdMap[0] = 0;
+        $commentIdMap = array();
+        $commentIdMap[0] = 0;
+        $userIdMap = array();
+        $userIdMap[0] = 0;
+
+        $notes = migration_dbconnection::queryArray("SELECT * FROM notes WHERE game_id = '{$v1GameId}'","v1");
+        $properNotes = array();
+        $commentNotes = array();
+        for($i = 0; $i < count($notes); $i++)
+        {
+            if(!$userIdMap[$notes[$i]->owner_id])
+                $userIdMap[$notes[$i]->owner_id] = migration::forceMigratePlayer($notes[$i]->owner_id);
+
+            if($note[$i]->parent_note_id) $commentNotes[] = $notes[$i];
+            else                           $properNotes[] = $notes[$i];
+        }
+
+        for($i = 0; $i < count($properNotes); $i++)
+        {
+            $noteIdMap[$properNotes[$i]->note_id] = 0; //set it to 0 in case of failure
+
+            $newNoteId = migration_dbconnection::queryInsert("INSERT INTO notes (game_id, user_id, name, description, media_id, created) VALUES ('{$v2GameId}','{$userIdMap[$properNotes[$i]->owner_id]}','".addslashes($properNotes[$i]->title)."','".addslashes($properNotes[$i]->title)."','0',CURRENT_TIMESTAMP)", "v2");
+
+            $notetags = migration_dbconnection::queryArray("SELECT * FROM note_tags WHERE note_id = '{$properNotes[$i]->note_id}'","v1");
+
+            for($j = 0; $j < count($notetags); $j++)
+                migration_dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$v2GameId}','NOTE','{$newNoteId}','{$maps->tags[$notetags[$j]->tag_id]}',CURRENT_TIMESTAMP","v2");
+
+            $noteIdMap[$properNotes[$i]->note_id] = $newNoteId;
+        }
+
+        for($i = 0; $i < count($commentNotes); $i++)
+        {
+            $commentIdMap[$commentNotes[$i]->note_id] = 0; //set it to 0 in case of failure
+
+            $newCommentId = migration_dbconnection::queryInsert("INSERT INTO note_comments (game_id, note_id, user_id, name, description, created) VALUES ('{$v2GameId}','{$noteIdMap[$commentNotes[$i]->parent_note_id]}','{$userIdMap[$commentNotes[$i]->owner_id]}','".addslashes($commentNotes[$i]->title)."','".addslashes($commentNotes[$i]->title)."',CURRENT_TIMESTAMP)", "v2");
+            $commentIdMap[$commentNotes[$i]->note_id] = $newCommentId;
+        }
+
+        $content = migration_dbconnection::queryArray("SELECT * FROM note_content WHERE game_id = '{$v1GameId}'","v1");
+        for($i = 0; $i < count($content); $i++)
+        {
+            if(($noteId = $noteIdMap[$content[$i]->note_id]))
+            {
+                if($content[$i]->type == 'TEXT') //content belongs to note
+                    migration_dbconnection::query("UPDATE notes SET description = '{$content[$i]->text}' WHERE note_id = '{$noteId}'","v2");
+                else //assume some type of media
+                    migration_dbconnection::query("UPDATE notes SET media_id = '{$maps->media[$content[$i]->media_id]}' WHERE note_id = '{$noteId}'","v2");
+            }
+            else if(($commentId = $commentIdMap[$content[$i]->note_id]))
+            {
+                if($content[$i]->type == 'TEXT') //content belongs to comment
+                    migration_dbconnection::query("UPDATE note_comments SET description = '{$content[$i]->text}' WHERE note_comment_id = '{$commentId}'","v2");
+            }
+            else continue; //orphan
+        }
+
+        return $noteIdMap;
+    }
+
+    private function forceMigratePlayer($v1PlayerId) //used in migrating siftrs
+    {
+        $v1Player = migration_dbconnection::queryObject("SELECT * FROM players WHERE player_id = '{$v1PlayerId}'","v1");
+        if(!$v1Player) return 0;
+
+        $mig = migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_player_id = '{$v1PlayerId}'");
+        if($mig) return $mig->v2_user_id;
+
+        $userpack = new stdClass();
+        $userpack->user_name = $v1Player->user_name;
+        $userpack->password = "iwasmigratedtov2andalligotwasthisstupidpassword";
+        $userpack->display_name = $v1Player->display_name;
+        $userpack->email = $v1Player->email;
+        $userpack->permission = "read_write";
+        $userpack->no_auto_migrate = true; //negative var name because it's a hack and we want the default to be nonexistant
+
+        $v2User = bridgeService("v2", "users", "createUser", "", $userpack)->data;
+        if(!$v2User) return 0; //username taken I guess
+
+        if(!$v1Player) { $v1Player = new stdClass(); $v1Player->player_id = 0; }
+
+        migration_dbconnection::query("INSERT INTO user_migrations (v2_user_id, v2_read_write_key, v1_player_id, v1_editor_id, v1_read_write_token) VALUES ('{$v2User->user_id}', '{$v2User->read_write_key}', '{$v1Player->player_id}', '0', '0')");
+
+        return $v2User->user_id;
+    }
+
 }
 ?>
 
