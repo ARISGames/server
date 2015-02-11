@@ -908,8 +908,8 @@ class migration extends migration_dbconnection
             if(!$userIdMap[$notes[$i]->owner_id])
                 $userIdMap[$notes[$i]->owner_id] = migration::forceMigratePlayer($notes[$i]->owner_id);
 
-            if($note[$i]->parent_note_id) $commentNotes[] = $notes[$i];
-            else                           $properNotes[] = $notes[$i];
+            if($notes[$i]->parent_note_id) $commentNotes[] = $notes[$i];
+            else $properNotes[] = $notes[$i];
         }
 
         for($i = 0; $i < count($properNotes); $i++)
