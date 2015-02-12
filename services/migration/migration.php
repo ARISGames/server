@@ -217,14 +217,16 @@ class migration extends migration_dbconnection
             if(!$filename || !$filenametitle || !$filenameext || $filename == "error moving file" || $filenameext == "(null)") continue;
 
             //copy
-            //if(!file_exists(Config::gamedataFSPath."/".$media[$i]->file_path)) continue;
-            //copy(Config::gamedataFSPath."/".$media[$i]->file_path,Config::v2_gamedata_folder."/".$v2GameId."/".$filename);
+            if(!file_exists(Config::gamedataFSPath."/".$media[$i]->file_path)) continue;
+            copy(Config::gamedataFSPath."/".$media[$i]->file_path,Config::v2_gamedata_folder."/".$v2GameId."/".$filename);
 
+            /*
             //download
             try{
                 file_put_contents(Config::v2_gamedata_folder."/".$v2GameId."/".$filename,fopen("http://arisgames.org/server/gamedata/".$media[$i]->file_path,'r'));
             }
             catch(Exception $e){}
+            */
             
             if( //if valid extension (image) and _128 doesn't exist, but non-_128 does, do thumbnailify here
                 ($filenameext == ".jpg" || $filenameext == ".png" || $filenameext == ".gif") &&
