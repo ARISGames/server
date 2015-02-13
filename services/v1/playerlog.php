@@ -10,6 +10,11 @@ class PlayerLog extends Module
 	$data = file_get_contents("php://input");
         $glob = json_decode($data);
 
+        return PlayerLog::getPlayerLogsGlob($glob);
+    }
+
+    public function getPlayerLogsGlob($glob)
+    {
         $reqOutputFormat = $glob->output_format;
 
         $reqGameId      = $glob->game_id;
@@ -25,6 +30,10 @@ class PlayerLog extends Module
 
         $reqGetExpired = $glob->get_expired;
         $reqVerbose    = $glob->verbose;
+
+        //for segmented csv creation
+        $includeHeader = $glob->include_header;
+        $append        = $glob->append;
 
         //validation
         $expectsNotice = 'Expects JSON argument of minimal form: {"output_format":"json","game_id":1,"editor_id":1,"editor_token":"abc123"}';
@@ -49,6 +58,8 @@ class PlayerLog extends Module
         if(!preg_match("/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/",$reqEndDate))   $reqEndDate   = "9999-00-00 00:00:00";
         if(!is_numeric($reqGetExpired)) $reqGetExpired = 0; else if(intval($reqGetExpired) > 0) $reqGetExpired = 1;
         if(!is_numeric($reqVerbose))    $reqVerbose    = 0; else if(intval($reqVerbose)    > 0) $reqVerbose    = 1;
+        if(!is_numeric($includeHeader)) $includeHeader = 1; else if(intval($includeHeader) > 0) $includeHeader = 1; else $includeHeader = 0; //default 1
+        if(!is_numeric($append))        $append        = 0; else if(intval($append)        > 0) $append        = 1;
 
         $playerLogs = array();
         if($filterMode == "group")
@@ -235,23 +246,25 @@ class PlayerLog extends Module
         {
             $csv = "";
 
-            //headers
-            $csv .= "group_name,";
-            $csv .= "player_id,";
-            $csv .= "display_name,";
-            $csv .= "timestamp,";
-            $csv .= "human".($reqVerbose ? "," : "\n" );
-            if($reqVerbose)
+            if($includeHeader)
             {
-            $csv .= "player_log_id,";
-            $csv .= "player_id,";
-            $csv .= "game_id,";
-            $csv .= "timestamp,";
-            $csv .= "event_type,";
-            $csv .= "event_detail_1,";
-            $csv .= "event_detail_2,";
-            $csv .= "event_detail_3,";
-            $csv .= "deleted\n";
+                $csv .= "group_name,";
+                $csv .= "player_id,";
+                $csv .= "display_name,";
+                $csv .= "timestamp,";
+                $csv .= "human".($reqVerbose ? "," : "\n" );
+                if($reqVerbose)
+                {
+                $csv .= "player_log_id,";
+                $csv .= "player_id,";
+                $csv .= "game_id,";
+                $csv .= "timestamp,";
+                $csv .= "event_type,";
+                $csv .= "event_detail_1,";
+                $csv .= "event_detail_2,";
+                $csv .= "event_detail_3,";
+                $csv .= "deleted\n";
+                }
             }
 
             for($i = 0; $i < count($playerLogs); $i++)
@@ -279,9 +292,37 @@ class PlayerLog extends Module
             }
         }
 
-        file_put_contents(Config::gamedataFSPath."/".$reqGameId."/mostrecentlogrequest.csv",$csv);
+        file_put_contents(Config::gamedataFSPath."/".$reqGameId."/mostrecentlogrequest.csv",$csv, ($append ? FILE_APPEND : 0));
 
         return new returnData(0,Config::gamedataWWWPath."/".$reqGameId."/mostrecentlogrequest.csv");
+    }
+
+    public function getPlayerLogsSegmented($glob)
+    {
+        //Grrr amfphp should take care of this...
+	$data = file_get_contents("php://input");
+        $glob = json_decode($data);
+
+        $reqStartDate = $glob->start_date;
+        $reqEndDate   = $glob->end_date;
+
+        if(!preg_match("/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/",$reqStartDate)) $reqStartDate = "2015-01-00 00:00:00";
+        if(!preg_match("/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/",$reqEndDate))   $reqEndDate   = "2015-02-00 00:00:00";
+
+        $start = date_create($reqStartDate);
+        $end   = date_create($reqEndDate);
+
+        $dates = array();
+        $ret = "";
+        while($start < $end)
+        {
+            $ret = PlayerLog::getPlayerLogsGlob($glob);
+            $glob->append = 1;
+            $glob->include_header = 0;
+            $start = strtotime("+1 day",$start);
+        }
+
+        return $ret;
     }
 }
 ?>
