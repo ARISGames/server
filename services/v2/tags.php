@@ -11,8 +11,7 @@ require_once("media.php");
 class tags extends dbconnection
 {
     //Takes in tag JSON, all fields optional except user_id + key
-    public static function createTag($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return tags::createTagPack($glob); }
-    public static function createTagPack($pack)
+    public static function createTag($pack)
     {
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
@@ -38,12 +37,11 @@ class tags extends dbconnection
             ")"
         );
 
-        return tags::getTagPack($pack);
+        return tags::getTag($pack);
     }
 
     //Takes in tag JSON, all fields optional except user_id + key
-    public static function createObjectTag($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return tags::createObjectTagPack($glob); }
-    public static function createObjectTagPack($pack)
+    public static function createObjectTag($pack)
     {
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
@@ -65,11 +63,10 @@ class tags extends dbconnection
             ")"
         );
 
-        return tags::getObjectTagPack($pack);
+        return tags::getObjectTag($pack);
     }
 
-    public static function updateTag($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return tags::updateTagPack($glob); }
-    public static function updateTagPack($pack)
+    public static function updateTag($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM tags WHERE tag_id = '{$pack->tag_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -86,7 +83,7 @@ class tags extends dbconnection
             "WHERE tag_id = '{$pack->tag_id}'"
         );
 
-        return tags::getTagPack($pack);
+        return tags::getTag($pack);
     }
 
     private static function tagObjectFromSQL($sql_tag)
@@ -98,7 +95,7 @@ class tags extends dbconnection
         $tag->tag            = $sql_tag->tag;
         $tag->media_id       = $sql_tag->media_id;
         if ($sql_tag->media_id) {
-            $tag->media      = media::getMediaPack($sql_tag);
+            $tag->media      = media::getMedia($sql_tag);
         }
         $tag->visible        = $sql_tag->visible;
         $tag->curated        = $sql_tag->curated;
@@ -119,24 +116,21 @@ class tags extends dbconnection
         return $tag;
     }
 
-    public static function getTag($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return tags::getTagPack($glob); }
-    public static function getTagPack($pack)
+    public static function getTag($pack)
     {
         $sql_tag = dbconnection::queryObject("SELECT * FROM tags WHERE tag_id = '{$pack->tag_id}' LIMIT 1");
         if(!$sql_tag) return new return_package(2, NULL, "The tag you've requested does not exist");
         return new return_package(0,tags::tagObjectFromSQL($sql_tag));
     }
 
-    public static function getObjectTag($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return tags::getObjectTagPack($glob); }
-    public static function getObjectTagPack($pack)
+    public static function getObjectTag($pack)
     {
         $sql_object_tag = dbconnection::queryObject("SELECT * FROM object_tags WHERE object_tag_id = '{$pack->object_tag_id}' LIMIT 1");
         if(!$sql_object_tag) return new return_package(2, NULL, "The tag you've requested does not exist");
         return new return_package(0,tags::objectTagObjectFromSQL($sql_object_tag));
     }
 
-    public static function getTagsForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return tags::getTagsForGamePack($glob); }
-    public static function getTagsForGamePack($pack)
+    public static function getTagsForGame($pack)
     {
         $sql_tags = dbconnection::queryArray("SELECT * FROM tags WHERE game_id = '{$pack->game_id}'");
         $tags = array();
@@ -147,8 +141,7 @@ class tags extends dbconnection
 
     }
 
-    public static function getObjectTagsForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return tags::getObjectTagsForGamePack($glob); }
-    public static function getObjectTagsForGamePack($pack)
+    public static function getObjectTagsForGame($pack)
     {
         $sql_object_tags = dbconnection::queryArray("SELECT * FROM object_tags WHERE game_id = '{$pack->game_id}'");
         $object_tags = array();
@@ -159,8 +152,7 @@ class tags extends dbconnection
 
     }
 
-    public static function getObjectTagsForObject($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return tags::getObjectTagsForObjectPack($glob); }
-    public static function getObjectTagsForObjectPack($pack)
+    public static function getObjectTagsForObject($pack)
     {
         $sql_object_tags = dbconnection::queryArray("SELECT * FROM object_tags WHERE game_id = '{$pack->game_id}' AND object_type = '{$pack->object_type}' AND object_id = '{$pack->object_id}'");
         $object_tags = array();
@@ -171,8 +163,7 @@ class tags extends dbconnection
 
     }
 
-    public static function deleteTag($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return tags::deleteTagPack($glob); }
-    public static function deleteTagPack($pack)
+    public static function deleteTag($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM tags WHERE tag_id = '{$pack->tag_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -184,28 +175,27 @@ class tags extends dbconnection
         for($i = 0; $i < count($tags); $i++)
         {
             $pack->object_tag_id = $tags[$i]->object_tag_id;
-            tags::deleteObjectTagPack($pack);
+            tags::deleteObjectTag($pack);
         }
 
         $reqAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement = 'PLAYER_HAS_TAGGED_ITEM' AND content_id = '{$pack->tag_id}'");
         for($i = 0; $i < count($reqAtoms); $i++)
         {
             $pack->requirement_atom_id = $reqAtoms[$i]->requirement_atom_id;
-            requirements::deleteRequirementAtomPack($pack);
+            requirements::deleteRequirementAtom($pack);
         }
 
         $reqAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement = 'PLAYER_HAS_NOTE_WITH_TAG' AND content_id = '{$pack->tag_id}'");
         for($i = 0; $i < count($reqAtoms); $i++)
         {
             $pack->requirement_atom_id = $reqAtoms[$i]->requirement_atom_id;
-            requirements::deleteRequirementAtomPack($pack);
+            requirements::deleteRequirementAtom($pack);
         }
 
         return new return_package(0);
     }
 
-    public static function deleteObjectTag($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return tags::deleteObjectTagPack($glob); }
-    public static function deleteObjectTagPack($pack)
+    public static function deleteObjectTag($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM object_tags WHERE object_tag_id = '{$pack->object_tag_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -215,8 +205,7 @@ class tags extends dbconnection
         return new return_package(0);
     }
 
-    public static function countObjectsWithTag($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return tags::countObjectsWithTagPack($glob); }
-    public static function countObjectsWithTagPack($pack)
+    public static function countObjectsWithTag($pack)
     {
         $object_type = addslashes($pack->object_type);
         $tag_id = intval($pack->tag_id);

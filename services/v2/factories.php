@@ -9,8 +9,7 @@ require_once("requirements.php");
 class factories extends dbconnection
 {
     //Takes in factory JSON, all fields optional except game_id + user_id + key
-    public static function createFactory($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return factories::createFactoryPack($glob); }
-    public static function createFactoryPack($pack)
+    public static function createFactory($pack)
     {
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
@@ -76,12 +75,11 @@ class factories extends dbconnection
             ")"
         );
 
-        return factories::getFactoryPack($pack);
+        return factories::getFactory($pack);
     }
 
     //Takes in game JSON, all fields optional except factory_id + user_id + key
-    public static function updateFactory($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return factories::updateFactoryPack($glob); }
-    public static function updateFactoryPack($pack)
+    public static function updateFactory($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM factories WHERE factory_id = '{$pack->factory_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -118,7 +116,7 @@ class factories extends dbconnection
             "WHERE factory_id = '{$pack->factory_id}'"
         );
 
-        return factories::getFactoryPack($pack);
+        return factories::getFactory($pack);
     }
 
     private static function factoryObjectFromSQL($sql_factory)
@@ -156,15 +154,13 @@ class factories extends dbconnection
         return $factory;
     }
 
-    public static function getFactory($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return factories::getFactoryPack($glob); }
-    public static function getFactoryPack($pack)
+    public static function getFactory($pack)
     {
         $sql_factory = dbconnection::queryObject("SELECT * FROM factories WHERE factory_id = '{$pack->factory_id}' LIMIT 1");
         return new return_package(0,factories::factoryObjectFromSQL($sql_factory));
     }
 
-    public static function getFactoriesForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return factories::getFactoriesForGamePack($glob); }
-    public static function getFactoriesForGamePack($pack)
+    public static function getFactoriesForGame($pack)
     {
         $sql_factories = dbconnection::queryArray("SELECT * FROM factories WHERE game_id = '{$pack->game_id}'");
         $factories = array();
@@ -174,8 +170,7 @@ class factories extends dbconnection
         return new return_package(0,$factories);
     }
 
-    public static function deleteFactory($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return factories::deleteFactoryPack($glob); }
-    public static function deleteFactoryPack($pack)
+    public static function deleteFactory($pack)
     {
         $factory = dbconnection::queryObject("SELECT * FROM factories WHERE factory_id = '{$pack->factory_id}'");
         $pack->auth->game_id = $factory->game_id;
@@ -188,28 +183,28 @@ class factories extends dbconnection
         for($i = 0; $i < count($instances); $i++)
         {
             $pack->instance_id = $instances[$i]->instance_id;
-            instances::deleteInstancePack($pack);
+            instances::deleteInstance($pack);
         }
 
         $instances = dbconnection::queryArray("SELECT * FROM instances WHERE object_type = 'FACTORY' AND object_id = '{$pack->factory_id}'");
         for($i = 0; $i < count($instances); $i++)
         {
             $pack->instance_id = $instances[$i]->instance_id;
-            instances::deleteInstancePack($pack);
+            instances::deleteInstance($pack);
         }
 
         $reqPack = dbconnection::queryObject("SELECT * FROM requirement_root_packages WHERE requirement_root_package_id = '{$factory->requirement_root_package_id}'");
         if($reqPack)
         {
             $pack->requirement_root_package_id = $reqPack->requirement_root_package_id;
-            requirements::deleteRequirementPackagePack($pack);
+            requirements::deleteRequirementPackage($pack);
         }
 
         $reqPack = dbconnection::queryObject("SELECT * FROM requirement_root_packages WHERE requirement_root_package_id = '{$factory->trigger_requirement_root_package_id}'");
         if($reqPack)
         {
             $pack->requirement_root_package_id = $reqPack->requirement_root_package_id;
-            requirements::deleteRequirementPackagePack($pack);
+            requirements::deleteRequirementPackage($pack);
         }
 
         return new return_package(0);

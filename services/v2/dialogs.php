@@ -12,8 +12,7 @@ require_once("requirements.php");
 class dialogs extends dbconnection
 {
     //Takes in dialog JSON, all fields optional except game_id + user_id + key
-    public static function createDialog($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::createDialogPack($glob); }
-    public static function createDialogPack($pack)
+    public static function createDialog($pack)
     {
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
@@ -37,12 +36,11 @@ class dialogs extends dbconnection
             ")"
         );
 
-        return dialogs::getDialogPack($pack);
+        return dialogs::getDialog($pack);
     }
 
     //Takes in game JSON, all fields optional except dialog_id + user_id + key
-    public static function updateDialog($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::updateDialogPack($glob); }
-    public static function updateDialogPack($pack)
+    public static function updateDialog($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM dialogs WHERE dialog_id = '{$pack->dialog_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -58,7 +56,7 @@ class dialogs extends dbconnection
             "WHERE dialog_id = '{$pack->dialog_id}'"
         );
 
-        return dialogs::getDialogPack($pack);
+        return dialogs::getDialog($pack);
     }
 
     private static function dialogObjectFromSQL($sql_dialog)
@@ -75,15 +73,13 @@ class dialogs extends dbconnection
         return $dialog;
     }
 
-    public static function getDialog($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::getDialogPack($glob); }
-    public static function getDialogPack($pack)
+    public static function getDialog($pack)
     {
         $sql_dialog = dbconnection::queryObject("SELECT * FROM dialogs WHERE dialog_id = '{$pack->dialog_id}' LIMIT 1");
         return new return_package(0,dialogs::dialogObjectFromSQL($sql_dialog));
     }
 
-    public static function getDialogsForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::getDialogsForGamePack($glob); }
-    public static function getDialogsForGamePack($pack)
+    public static function getDialogsForGame($pack)
     {
         $sql_dialogs = dbconnection::queryArray("SELECT * FROM dialogs WHERE game_id = '{$pack->game_id}'");
         $dialogs = array();
@@ -93,8 +89,7 @@ class dialogs extends dbconnection
         return new return_package(0,$dialogs);
     }
 
-    public static function deleteDialog($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::deleteDialogPack($glob); }
-    public static function deleteDialogPack($pack)
+    public static function deleteDialog($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM dialogs WHERE dialog_id = '{$pack->dialog_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -106,63 +101,62 @@ class dialogs extends dbconnection
         for($i = 0; $i < count($scripts); $i++)
         {
             $pack->dialog_script_id = $scripts[$i]->dialog_script_id;
-            dialogs::deleteDialogScriptPack($pack);
+            dialogs::deleteDialogScript($pack);
         }
 
         $options = dbconnection::queryArray("SELECT * FROM dialog_options WHERE dialog_id = '{$pack->dialog_id}'");
         for($i = 0; $i < count($options); $i++)
         {
             $pack->dialog_option_id = $options[$i]->dialog_option_id;
-            dialogs::deleteDialogOptionPack($pack);
+            dialogs::deleteDialogOption($pack);
         }
         $options = dbconnection::queryArray("SELECT * FROM dialog_options WHERE link_type = 'EXIT_TO_DIALOG' AND link_id = '{$pack->dialog_id}'");
         for($i = 0; $i < count($options); $i++)
         {
             $pack->dialog_option_id = $options[$i]->dialog_option_id;
-            dialogs::deleteDialogOptionPack($pack);
+            dialogs::deleteDialogOption($pack);
         }
 
         $tabs = dbconnection::queryArray("SELECT * FROM tabs WHERE type = 'DIALOG' AND content_id = '{$pack->dialog_id}'");
         for($i = 0; $i < count($tabs); $i++)
         {
             $pack->tab_id = $tabs[$i]->tab_id;
-            tabs::deleteTabPack($pack);
+            tabs::deleteTab($pack);
         }
 
         $tags = dbconnection::queryArray("SELECT * FROM object_tags WHERE object_type = 'DIALOG' AND object_id = '{$pack->dialog_id}'");
         for($i = 0; $i < count($tags); $i++)
         {
             $pack->object_tag_id = $tags[$i]->object_tag_id;
-            tags::deleteObjectTagPack($pack);
+            tags::deleteObjectTag($pack);
         }
 
         $instances = dbconnection::queryArray("SELECT * FROM instances WHERE object_type = 'DIALOG' AND object_id = '{$pack->dialog_id}'");
         for($i = 0; $i < count($instances); $i++)
         {
             $pack->instance_id = $instances[$i]->instance_id;
-            instances::deleteInstancePack($pack);
+            instances::deleteInstance($pack);
         }
 
         $factories = dbconnection::queryArray("SELECT * FROM factories WHERE object_type = 'DIALOG' AND object_id = '{$pack->dialog_id}'");
         for($i = 0; $i < count($factories); $i++)
         {
             $pack->factory_id = $factories[$i]->factory_id;
-            factories::deleteFactoryPack($pack);
+            factories::deleteFactory($pack);
         }
 
         $reqAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement = 'PLAYER_VIEWED_DIALOG' AND content_id = '{$pack->dialog_id}'");
         for($i = 0; $i < count($reqAtoms); $i++)
         {
             $pack->requirement_atom_id = $reqAtoms[$i]->requirement_atom_id;
-            requirements::deleteRequirementAtomPack($pack);
+            requirements::deleteRequirementAtom($pack);
         }
 
         return new return_package(0);
     }
 
 
-    public static function createDialogCharacter($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::createDialogCharacterPack($glob); }
-    public static function createDialogCharacterPack($pack)
+    public static function createDialogCharacter($pack)
     {
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
@@ -184,12 +178,11 @@ class dialogs extends dbconnection
             ")"
         );
 
-        return dialogs::getDialogCharacterPack($pack);
+        return dialogs::getDialogCharacter($pack);
     }
 
     //Takes in game JSON, all fields optional except dialog_id + user_id + key
-    public static function updateDialogCharacter($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::updateDialogCharacterPack($glob); }
-    public static function updateDialogCharacterPack($pack)
+    public static function updateDialogCharacter($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM dialog_characters WHERE dialog_character_id = '{$pack->dialog_character_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -204,7 +197,7 @@ class dialogs extends dbconnection
             "WHERE dialog_character_id = '{$pack->dialog_character_id}'"
         );
 
-        return dialogs::getDialogCharacterPack($pack);
+        return dialogs::getDialogCharacter($pack);
     }
 
     private static function dialogCharacterObjectFromSQL($sql_dialogCharacter)
@@ -220,15 +213,13 @@ class dialogs extends dbconnection
         return $dialogCharacter;
     }
 
-    public static function getDialogCharacter($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::getDialogCharacterPack($glob); }
-    public static function getDialogCharacterPack($pack)
+    public static function getDialogCharacter($pack)
     {
         $sql_dialogCharacter = dbconnection::queryObject("SELECT * FROM dialog_characters WHERE dialog_character_id = '{$pack->dialog_character_id}' LIMIT 1");
         return new return_package(0,dialogs::dialogCharacterObjectFromSQL($sql_dialogCharacter));
     }
 
-    public static function getDialogCharactersForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::getDialogCharactersForGamePack($glob); }
-    public static function getDialogCharactersForGamePack($pack)
+    public static function getDialogCharactersForGame($pack)
     {
         $sql_dialogCharacters = dbconnection::queryArray("SELECT * FROM dialog_characters WHERE game_id = '{$pack->game_id}'");
         $dialogCharacters = array();
@@ -238,8 +229,7 @@ class dialogs extends dbconnection
         return new return_package(0,$dialogCharacters);
     }
 
-    public static function deleteDialogCharacter($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::deleteDialogCharacterPack($glob); }
-    public static function deleteDialogCharacterPack($pack)
+    public static function deleteDialogCharacter($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM dialog_characters WHERE dialog_character_id = '{$pack->dialog_character_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -252,8 +242,7 @@ class dialogs extends dbconnection
     }
 
 
-    public static function createDialogScript($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::createDialogScriptPack($glob); }
-    public static function createDialogScriptPack($pack)
+    public static function createDialogScript($pack)
     {
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
@@ -277,12 +266,11 @@ class dialogs extends dbconnection
             ")"
         );
 
-        return dialogs::getDialogScriptPack($pack);
+        return dialogs::getDialogScript($pack);
     }
 
     //Takes in game JSON, all fields optional except dialog_id + user_id + key
-    public static function updateDialogScript($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::updateDialogScriptPack($glob); }
-    public static function updateDialogScriptPack($pack)
+    public static function updateDialogScript($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM dialog_scripts WHERE dialog_script_id = '{$pack->dialog_script_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -297,7 +285,7 @@ class dialogs extends dbconnection
             "WHERE dialog_script_id = '{$pack->dialog_script_id}'"
         );
 
-        return dialogs::getDialogScriptPack($pack);
+        return dialogs::getDialogScript($pack);
     }
 
     private static function dialogScriptObjectFromSQL($sql_dialogScript)
@@ -314,15 +302,13 @@ class dialogs extends dbconnection
         return $dialogScript;
     }
 
-    public static function getDialogScript($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::getDialogScriptPack($glob); }
-    public static function getDialogScriptPack($pack)
+    public static function getDialogScript($pack)
     {
         $sql_dialogScript = dbconnection::queryObject("SELECT * FROM dialog_scripts WHERE dialog_script_id = '{$pack->dialog_script_id}' LIMIT 1");
         return new return_package(0,dialogs::dialogScriptObjectFromSQL($sql_dialogScript));
     }
 
-    public static function getDialogScriptsForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::getDialogScriptsForGamePack($glob); }
-    public static function getDialogScriptsForGamePack($pack)
+    public static function getDialogScriptsForGame($pack)
     {
         $sql_dialogScripts = dbconnection::queryArray("SELECT * FROM dialog_scripts WHERE game_id = '{$pack->game_id}'");
         $dialogScripts = array();
@@ -332,8 +318,7 @@ class dialogs extends dbconnection
         return new return_package(0,$dialogScripts);
     }
 
-    public static function getDialogScriptsForDialog($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::getDialogScriptsForDialogPack($glob); }
-    public static function getDialogScriptsForDialogPack($pack)
+    public static function getDialogScriptsForDialog($pack)
     {
         $sql_dialogScripts = dbconnection::queryArray("SELECT * FROM dialog_scripts WHERE dialog_id = '{$pack->dialog_id}'");
         $dialogScripts = array();
@@ -343,8 +328,7 @@ class dialogs extends dbconnection
         return new return_package(0,$dialogScripts);
     }
 
-    public static function deleteDialogScript($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::deleteDialogScriptPack($glob); }
-    public static function deleteDialogScriptPack($pack)
+    public static function deleteDialogScript($pack)
     {
         $script = dbconnection::queryObject("SELECT * FROM dialog_scripts WHERE dialog_script_id = '{$pack->dialog_script_id}'");
         $pack->auth->game_id = $script->game_id;
@@ -359,35 +343,34 @@ class dialogs extends dbconnection
         if($eventpack)
         {
             $pack->event_package_id = $eventpack->event_package_id;
-            events::deleteEventPackagePack($pack);
+            events::deleteEventPackage($pack);
         }
 
         $options = dbconnection::queryArray("SELECT * FROM dialog_options WHERE parent_dialog_script_id = '{$script->dialog_script_id}'");
         for($i = 0; $i < count($options); $i++)
         {
             $pack->dialog_option_id = $options[$i]->dialog_option_id;
-            dialogs::deleteDialogOptionPack($pack);
+            dialogs::deleteDialogOption($pack);
         }
         $options = dbconnection::queryArray("SELECT * FROM dialog_options WHERE link_type = 'DIALOG_SCRIPT' AND link_id = '{$script->dialog_script_id}'");
         for($i = 0; $i < count($options); $i++)
         {
             $pack->dialog_option_id = $options[$i]->dialog_option_id;
-            dialogs::deleteDialogOptionPack($pack);
+            dialogs::deleteDialogOption($pack);
         }
 
         $reqAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement = 'PLAYER_VIEWED_DIALOG_SCRIPT' AND content_id = '{$pack->dialog_script_id}'");
         for($i = 0; $i < count($reqAtoms); $i++)
         {
             $pack->requirement_atom_id = $reqAtoms[$i]->requirement_atom_id;
-            requirements::deleteRequirementAtomPack($pack);
+            requirements::deleteRequirementAtom($pack);
         }
 
         return new return_package(0);
     }
 
 
-    public static function createDialogOption($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::createDialogOptionPack($glob); }
-    public static function createDialogOptionPack($pack)
+    public static function createDialogOption($pack)
     {
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
@@ -419,12 +402,11 @@ class dialogs extends dbconnection
             ")"
         );
 
-        return dialogs::getDialogOptionPack($pack);
+        return dialogs::getDialogOption($pack);
     }
 
     //Takes in game JSON, all fields optional except dialog_id + user_id + key
-    public static function updateDialogOption($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::updateDialogOptionPack($glob); }
-    public static function updateDialogOptionPack($pack)
+    public static function updateDialogOption($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM dialog_options WHERE dialog_option_id = '{$pack->dialog_option_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -443,7 +425,7 @@ class dialogs extends dbconnection
             "WHERE dialog_option_id = '{$pack->dialog_option_id}'"
         );
 
-        return dialogs::getDialogOptionPack($pack);
+        return dialogs::getDialogOption($pack);
     }
 
     private static function dialogOptionObjectFromSQL($sql_dialogOption)
@@ -464,15 +446,13 @@ class dialogs extends dbconnection
         return $dialogOption;
     }
 
-    public static function getDialogOption($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::getDialogOptionPack($glob); }
-    public static function getDialogOptionPack($pack)
+    public static function getDialogOption($pack)
     {
         $sql_dialogOption = dbconnection::queryObject("SELECT * FROM dialog_options WHERE dialog_option_id = '{$pack->dialog_option_id}' LIMIT 1");
         return new return_package(0,dialogs::dialogOptionObjectFromSQL($sql_dialogOption));
     }
 
-    public static function getDialogOptionsForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::getDialogOptionsForGamePack($glob); }
-    public static function getDialogOptionsForGamePack($pack)
+    public static function getDialogOptionsForGame($pack)
     {
         $sql_dialogOptions = dbconnection::queryArray("SELECT * FROM dialog_options WHERE game_id = '{$pack->game_id}'");
         $dialogOptions = array();
@@ -482,8 +462,7 @@ class dialogs extends dbconnection
         return new return_package(0,$dialogOptions);
     }
 
-    public static function getDialogOptionsForDialog($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::getDialogOptionsForDialogPack($glob); }
-    public static function getDialogOptionsForDialogPack($pack)
+    public static function getDialogOptionsForDialog($pack)
     {
         $sql_dialogOptions = dbconnection::queryArray("SELECT * FROM dialog_options WHERE dialog_id = '{$pack->dialog_id}'");
         $dialogOptions = array();
@@ -493,8 +472,7 @@ class dialogs extends dbconnection
         return new return_package(0,$dialogOptions);
     }
 
-    public static function getDialogOptionsForScript($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::getDialogOptionsForScriptPack($glob); }
-    public static function getDialogOptionsForScriptPack($pack)
+    public static function getDialogOptionsForScript($pack)
     {
         $sql_dialogOptions = dbconnection::queryArray("SELECT * FROM dialog_options WHERE dialog_id = '{$pack->dialog_id}' AND parent_dialog_script_id = '{$pack->dialog_script_id}'");
         $dialogOptions = array();
@@ -504,8 +482,7 @@ class dialogs extends dbconnection
         return new return_package(0,$dialogOptions);
     }
 
-    public static function deleteDialogOption($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return dialogs::deleteDialogOptionPack($glob); }
-    public static function deleteDialogOptionPack($pack)
+    public static function deleteDialogOption($pack)
     {
         $option = dbconnection::queryObject("SELECT * FROM dialog_options WHERE dialog_option_id = '{$pack->dialog_option_id}'");
         $pack->auth->game_id = $option->game_id;
@@ -518,7 +495,7 @@ class dialogs extends dbconnection
         if($reqPack)
         {
             $pack->requirement_root_package_id = $reqPack->requirement_root_package_id;
-            requirements::deleteRequirementPackagePack($pack);
+            requirements::deleteRequirementPackage($pack);
         }
 
         return new return_package(0);

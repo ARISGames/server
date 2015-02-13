@@ -11,8 +11,7 @@ require_once("triggers.php");
 
 class notes extends dbconnection
 {
-    public static function createNote($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::createNotePack($glob); }
-    public static function createNotePack($pack)
+    public static function createNote($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -21,7 +20,7 @@ class notes extends dbconnection
         {
             $pack->media->auth = $pack->auth;
             $pack->media->game_id = $pack->game_id;
-            $pack->media_id = media::createMediaPack($pack->media)->data->media_id;
+            $pack->media_id = media::createMedia($pack->media)->data->media_id;
         }
 
         $pack->note_id = dbconnection::queryInsert(
@@ -53,11 +52,10 @@ class notes extends dbconnection
         //allow for 'tag_id' in API, but really just use object_tags
         if($pack->tag_id) dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$pack->game_id}', 'NOTE', '{$pack->note_id}', '{$pack->tag_id}', CURRENT_TIMESTAMP)");
 
-        return notes::getNotePack($pack);
+        return notes::getNote($pack);
     }
 
-    public static function updateNote($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::updateNotePack($glob); }
-    public static function updateNotePack($pack)
+    public static function updateNote($pack)
     {
         $pack->auth->permission = "read_write";
         if(
@@ -93,7 +91,7 @@ class notes extends dbconnection
             dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$pack->game_id}', 'NOTE', '{$pack->note_id}', '{$pack->tag_id}', CURRENT_TIMESTAMP)");
         }
 
-        return notes::getNotePack($pack);
+        return notes::getNote($pack);
     }
 
     private static function noteObjectFromSQL($sql_note)
@@ -115,8 +113,7 @@ class notes extends dbconnection
         return $note;
     }
 
-    public static function getNote($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::getNotePack($glob); }
-    public static function getNotePack($pack)
+    public static function getNote($pack)
     {
         $sql_note = dbconnection::queryObject("SELECT notes.*, users.user_name, users.display_name FROM notes LEFT JOIN users ON notes.user_id = users.user_id WHERE note_id = '{$pack->note_id}' LIMIT 1");
         $note = notes::noteObjectFromSQL($sql_note);
@@ -131,8 +128,7 @@ class notes extends dbconnection
         return new return_package(0,$note);
     }
 
-    public static function getNotesForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::getNotesForGamePack($glob); }
-    public static function getNotesForGamePack($pack)
+    public static function getNotesForGame($pack)
     {
         $notes = array();
         //two separate impls depending on presense of search. search makes query MUCH slower.
@@ -224,8 +220,7 @@ class notes extends dbconnection
         return new return_package(0,$notes);
     }
 
-    public static function searchNotes($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::searchNotesPack($glob); }
-    public static function searchNotesPack($pack)
+    public static function searchNotes($pack)
     {
         $game_id = intval($pack->game_id);
         $search_terms = isset($pack->search_terms) ? $pack->search_terms : array();
@@ -306,15 +301,14 @@ class notes extends dbconnection
             foreach (array('tag_id', 'note_likes', 'tag', 'latitude', 'longitude', 'user_name', 'display_name', 'player_liked') as $field) {
                 $ob->$field = $sql_notes[$i]->$field;
             }
-            $ob->media = media::getMediaPack((object) array('media_id' => $ob->media_id));
-            $ob->comments = note_comments::getNoteCommentsForNotePack((object) array('game_id' => $ob->game_id, 'note_id' => $ob->note_id));
+            $ob->media = media::getMedia((object) array('media_id' => $ob->media_id));
+            $ob->comments = note_comments::getNoteCommentsForNote((object) array('game_id' => $ob->game_id, 'note_id' => $ob->note_id));
             $notes[] = $ob;
         }
         return new return_package(0, $notes);
     }
 
-    public static function deleteNote($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::deleteNotePack($glob); }
-    public static function deleteNotePack($pack)
+    public static function deleteNote($pack)
     {
         $note = dbconnection::queryObject("SELECT * FROM notes WHERE note_id = '{$pack->note_id}'");
         $pack->auth->game_id = $note->game_id;
@@ -332,8 +326,7 @@ class notes extends dbconnection
         return new return_package(0);
     }
 
-    public static function likeNote($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::likeNotePack($glob); }
-    public static function likeNotePack($pack)
+    public static function likeNote($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -363,8 +356,7 @@ class notes extends dbconnection
         return new return_package(0);
     }
 
-    public static function unlikeNote($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return notes::unlikeNotePack($glob); }
-    public static function unlikeNotePack($pack)
+    public static function unlikeNote($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");

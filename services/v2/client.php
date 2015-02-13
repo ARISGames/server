@@ -16,8 +16,7 @@ require_once("return_package.php");
 class client extends dbconnection
 {
     //Phil tested on 7/17/14 determined method 1 (JOIN) was consistently ~3x as fast. //NOTE- ABNORMALLY SMALL DATA SET: NEEDS FURTHER TESTING
-    public static function getRecentGamesForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getRecentGamesForPlayerPack($glob); }
-    public static function getRecentGamesForPlayerPack($pack)
+    public static function getRecentGamesForPlayer($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -47,8 +46,7 @@ class client extends dbconnection
         return new return_package(0, $games);
     }
 
-    public static function getSearchGamesForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getSearchGamesForPlayerPack($glob); }
-    public static function getSearchGamesForPlayerPack($pack)
+    public static function getSearchGamesForPlayer($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -65,8 +63,7 @@ class client extends dbconnection
     }
 
     //Phil tested on 7/17/14 determined method 2 (SELECT) was consistently nearly twice as fast. //NOTE- ABNORMALLY SMALL DATA SET: NEEDS FURTHER TESTING
-    public static function getPopularGamesForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getPopularGamesForPlayerPack($glob); }
-    public static function getPopularGamesForPlayerPack($pack)
+    public static function getPopularGamesForPlayer($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -104,8 +101,7 @@ class client extends dbconnection
         return new return_package(0, $games);
     }
 
-    public static function getNearbyGamesForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getNearbyGamesForPlayerPack($glob); }
-    public static function getNearbyGamesForPlayerPack($pack)
+    public static function getNearbyGamesForPlayer($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -118,8 +114,7 @@ class client extends dbconnection
         return new return_package(0, $games);
     }
 
-    public static function getAnywhereGamesForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getAnywhereGamesForPlayerPack($glob); }
-    public static function getAnywhereGamesForPlayerPack($pack)
+    public static function getAnywhereGamesForPlayer($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -132,8 +127,7 @@ class client extends dbconnection
         return new return_package(0, $games);
     }
 
-    public static function getPlayerGamesForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getPlayerGamesForPlayerPack($glob); }
-    public static function getPlayerGamesForPlayerPack($pack)
+    public static function getPlayerGamesForPlayer($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -149,8 +143,7 @@ class client extends dbconnection
         return new return_package(0, $games);
     }
 
-    public static function getPlayerPlayedGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getPlayerPlayedGamePack($glob); }
-    public static function getPlayerPlayedGamePack($pack)
+    public static function getPlayerPlayedGame($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -163,8 +156,7 @@ class client extends dbconnection
 
     //an odd request...
     //Creates player scene if it doesn't already exist
-    public static function touchSceneForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::touchSceneForPlayerPack($glob); }
-    public static function touchSceneForPlayerPack($pack)
+    public static function touchSceneForPlayer($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -178,8 +170,7 @@ class client extends dbconnection
 
     //an odd request...
     //Creates player-owned instances for every item not already player-instantiated, with qty = 0. Makes qty transactions a million times easier.
-    public static function touchItemsForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::touchItemsForPlayerPack($glob); }
-    public static function touchItemsForPlayerPack($pack)
+    public static function touchItemsForPlayer($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -201,8 +192,7 @@ class client extends dbconnection
         return new return_package(0);
     }
 
-    public static function getSceneForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getSceneForPlayerPack($glob); }
-    public static function getSceneForPlayerPack($pack)
+    public static function getSceneForPlayer($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -211,47 +201,43 @@ class client extends dbconnection
         return new return_package(0, dbconnection::queryObject("SELECT * FROM scenes WHERE scene_id = '{$sceneId}'"));
     }
 
-    public static function getLogsForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getLogsForPlayerPack($glob); }
-    public static function getLogsForPlayerPack($pack)
+    public static function getLogsForPlayer($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
         return new return_package(0, array()); //return nothing, because we don't have offline mode implemented in client yet
     }
 
-    public static function getInstancesForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getInstancesForPlayerPack($glob); }
-    public static function getInstancesForPlayerPack($pack)
+    public static function getInstancesForPlayer($pack)
     {
-        return instances::getInstancesForGamePack($pack); //actually gets user instances (already wrapped in return_package), as owner_id is set on pack
+        return instances::getInstancesForGame($pack); //actually gets user instances (already wrapped in return_package), as owner_id is set on pack
     }
 
-    public static function getTriggersForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getTriggersForPlayerPack($glob); }
-    public static function getTriggersForPlayerPack($pack)
+    public static function getTriggersForPlayer($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        if($pack->tick_factories) Client::tickFactoriesForGamePack($pack);
+        if($pack->tick_factories) Client::tickFactoriesForGame($pack);
 
-        $scene = client::getSceneForPlayerPack($pack)->data;
-        $gameTriggers = triggers::getTriggersForGamePack($pack)->data;
+        $scene = client::getSceneForPlayer($pack)->data;
+        $gameTriggers = triggers::getTriggersForGame($pack)->data;
         $playerTriggers = array();
         for($i = 0; $i < count($gameTriggers); $i++)
         {
             $gameTriggers[$i]->user_id = $pack->auth->user_id;
-            if($gameTriggers[$i]->scene_id == $scene->scene_id && requirements::evaluateRequirementPackagePack($gameTriggers[$i]))
+            if($gameTriggers[$i]->scene_id == $scene->scene_id && requirements::evaluateRequirementPackage($gameTriggers[$i]))
                 $playerTriggers[] = $gameTriggers[$i];
         }
         return new return_package(0, $playerTriggers);
     }
 
-    public static function getQuestsForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getQuestsForPlayerPack($glob); }
-    public static function getQuestsForPlayerPack($pack)
+    public static function getQuestsForPlayer($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        $gameQuests = quests::getQuestsForGamePack($pack)->data;
+        $gameQuests = quests::getQuestsForGame($pack)->data;
         $playerQuests = new stdClass();
         $playerQuests->active   = array();
         $playerQuests->complete = array();
@@ -260,10 +246,10 @@ class client extends dbconnection
             $gameQuests[$i]->user_id = $pack->auth->user_id;
 
             $gameQuests[$i]->requirement_root_package_id = $gameQuests[$i]->active_requirement_root_package_id;
-            if(!requirements::evaluateRequirementPackagePack($gameQuests[$i])) continue; //ensure quest is active/visible
+            if(!requirements::evaluateRequirementPackage($gameQuests[$i])) continue; //ensure quest is active/visible
 
             $gameQuests[$i]->requirement_root_package_id = $gameQuests[$i]->complete_requirement_root_package_id;
-            if(requirements::evaluateRequirementPackagePack($gameQuests[$i]))
+            if(requirements::evaluateRequirementPackage($gameQuests[$i]))
                 $playerQuests->complete[] = $gameQuests[$i];
             else
                 $playerQuests->active[] = $gameQuests[$i];
@@ -273,42 +259,39 @@ class client extends dbconnection
         return new return_package(0, $playerQuests);
     }
 
-    public static function getTabsForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getTabsForPlayerPack($glob); }
-    public static function getTabsForPlayerPack($pack)
+    public static function getTabsForPlayer($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        $gameTabs = tabs::getTabsForGamePack($pack)->data;
+        $gameTabs = tabs::getTabsForGame($pack)->data;
         $playerTabs = array();
         for($i = 0; $i < count($gameTabs); $i++)
         {
             $gameTabs[$i]->user_id = $pack->auth->user_id;
-            if(requirements::evaluateRequirementPackagePack($gameTabs[$i]))
+            if(requirements::evaluateRequirementPackage($gameTabs[$i]))
                 $playerTabs[] = $gameTabs[$i];
         }
         return new return_package(0, $playerTabs);
     }
 
-    public static function getOverlaysForPlayer($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getOverlaysForPlayerPack($glob); }
-    public static function getOverlaysForPlayerPack($pack)
+    public static function getOverlaysForPlayer($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        $gameOverlays = overlays::getOverlaysForGamePack($pack)->data;
+        $gameOverlays = overlays::getOverlaysForGame($pack)->data;
         $playerOverlays = array();
         for($i = 0; $i < count($gameOverlays); $i++)
         {
             $gameOverlays[$i]->user_id = $pack->auth->user_id;
-            if(requirements::evaluateRequirementPackagePack($gameOverlays[$i]))
+            if(requirements::evaluateRequirementPackage($gameOverlays[$i]))
                 $playerOverlays[] = $gameOverlays[$i];
         }
         return new return_package(0, $playerOverlays);
     }
 
-    public static function getOptionsForPlayerForDialogScript($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::getOptionsForPlayerForDialogScriptPack($glob); }
-    public static function getOptionsForPlayerForDialogScriptPack($pack)
+    public static function getOptionsForPlayerForDialogScript($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -318,14 +301,13 @@ class client extends dbconnection
         for($i = 0; $i < count($scriptOptions); $i++)
         {
             $scriptOptions[$i]->user_id = $pack->auth->user_id;
-            if(requirements::evaluateRequirementPackagePack($scriptOptions[$i]))
+            if(requirements::evaluateRequirementPackage($scriptOptions[$i]))
                 $playerOptions[] = $scriptOptions[$i];
         }
         return new return_package(0, $playerOptions);
     }
 
-    public static function tickFactoriesForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::tickFactoriesForGamePack($glob); }
-    public static function tickFactoriesForGamePack($pack)
+    public static function tickFactoriesForGame($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -371,7 +353,7 @@ class client extends dbconnection
                     if($facinsttrigs[$j]->scene_id == $user_scene_id)
                     {
                         $reqQueryPack->requirement_root_package_id = $facinsttrigs[$j]->requirement_root_package_id;
-                        if(requirements::evaluateRequirementPackagePack($reqQueryPack)) $in_valid_scene = true;
+                        if(requirements::evaluateRequirementPackage($reqQueryPack)) $in_valid_scene = true;
                     }
                 }
             }
@@ -431,8 +413,7 @@ class client extends dbconnection
         return new return_package(0);
     }
 
-    public static function setQtyForInstance($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::setQtyForInstancePack($glob); }
-    public static function setQtyForInstancePack($pack)
+    public static function setQtyForInstance($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -440,8 +421,7 @@ class client extends dbconnection
         return new return_package(0);
     }
 
-    public static function dropItem($glob)  { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::dropItemPack($glob); }
-    public static function dropItemPack($pack)
+    public static function dropItem($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -453,8 +433,7 @@ class client extends dbconnection
         return new return_package(0,$o);
     }
 
-    public static function setPlayerScene($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::setPlayerScenePack($glob); }
-    public static function setPlayerScenePack($pack)
+    public static function setPlayerScene($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -463,8 +442,7 @@ class client extends dbconnection
         return new return_package(0);
     }
 
-    public static function logPlayerResetGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::logPlayerResetGamePack($glob); }
-    public static function logPlayerResetGamePack($pack)
+    public static function logPlayerResetGame($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -477,8 +455,7 @@ class client extends dbconnection
         return new return_package(0);
     }
 
-    public static function logPlayerBeganGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::logPlayerBeganGamePack($glob); }
-    public static function logPlayerBeganGamePack($pack)
+    public static function logPlayerBeganGame($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -487,8 +464,7 @@ class client extends dbconnection
         return new return_package(0);
     }
 
-    public static function logPlayerMoved($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::logPlayerMovedPack($glob); }
-    public static function logPlayerMovedPack($pack)
+    public static function logPlayerMoved($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -497,8 +473,7 @@ class client extends dbconnection
         return new return_package(0);
     }
 
-    public static function logPlayerViewedTab($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::logPlayerViewedTabPack($glob); }
-    public static function logPlayerViewedTabPack($pack)
+    public static function logPlayerViewedTab($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -507,8 +482,7 @@ class client extends dbconnection
         return new return_package(0);
     }
 
-    public static function logPlayerViewedContent($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::logPlayerViewedContentPack($glob); }
-    public static function logPlayerViewedContentPack($pack)
+    public static function logPlayerViewedContent($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -518,8 +492,7 @@ class client extends dbconnection
         return new return_package(0);
     }
 
-    public static function logPlayerViewedInstance($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::logPlayerViewedInstancePack($glob); }
-    public static function logPlayerViewedInstancePack($pack)
+    public static function logPlayerViewedInstance($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -528,8 +501,7 @@ class client extends dbconnection
         return new return_package(0);
     }
 
-    public static function logPlayerTriggeredTrigger($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::logPlayerTriggeredTriggerPack($glob); }
-    public static function logPlayerTriggeredTriggerPack($pack)
+    public static function logPlayerTriggeredTrigger($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -538,8 +510,7 @@ class client extends dbconnection
         return new return_package(0);
     }
 
-    public static function logPlayerCompletedQuest($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::logPlayerCompletedQuestPack($glob); }
-    public static function logPlayerCompletedQuestPack($pack)
+    public static function logPlayerCompletedQuest($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -549,8 +520,7 @@ class client extends dbconnection
         return new return_package(0);
     }
 
-    public static function logPlayerReceivedItem($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::logPlayerReceivedItemPack($glob); }
-    public static function logPlayerReceivedItemPack($pack)
+    public static function logPlayerReceivedItem($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -558,8 +528,7 @@ class client extends dbconnection
         return new return_package(0);
     }
 
-    public static function logPlayerLostItem($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::logPlayerLostItemPack($glob); }
-    public static function logPlayerLostItemPack($pack)
+    public static function logPlayerLostItem($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -567,8 +536,7 @@ class client extends dbconnection
         return new return_package(0);
     }
 
-    public static function logPlayerSetScene($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return client::logPlayerSetScenePack($glob); }
-    public static function logPlayerSetScenePack($pack)
+    public static function logPlayerSetScene($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -604,9 +572,9 @@ class client extends dbconnection
         {
             $reqQueryPack->requirement_root_package_id = $incompleteQuests[$i]->complete_requirement_root_package_id;
             $questQueryPack->quest_id = $incompleteQuests[$i]->quest_id;
-            if(requirements::evaluateRequirementPackagePack($reqQueryPack))
+            if(requirements::evaluateRequirementPackage($reqQueryPack))
             {
-                client::logPlayerCompletedQuestPack($questQueryPack);
+                client::logPlayerCompletedQuest($questQueryPack);
                 $dirty = true;
             }
         }

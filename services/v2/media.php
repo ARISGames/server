@@ -19,8 +19,7 @@ class media extends dbconnection
     }
 
     //Takes in media JSON, all fields optional except user_id + key
-    public static function createMedia($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return media::createMediaPack($glob); }
-    public static function createMediaPack($pack)
+    public static function createMedia($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -144,12 +143,11 @@ class media extends dbconnection
             ")"
         );
 
-        return media::getMediaPack($pack);
+        return media::getMedia($pack);
     }
 
     //Takes in game JSON, all fields optional except user_id + key
-    public static function updateMedia($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return media::updateMediaPack($glob); }
-    public static function updateMediaPack($pack)
+    public static function updateMedia($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -183,16 +181,14 @@ class media extends dbconnection
         return $media;
     }
 
-    public static function getMedia($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return media::getMediaPack($glob); }
-    public static function getMediaPack($pack)
+    public static function getMedia($pack)
     {
         if(!($sql_media = dbconnection::queryObject("SELECT * FROM media WHERE media_id = '{$pack->media_id}' LIMIT 1")))
             return new return_package(0,media::defaultMediaObject($pack->media_id));
         return new return_package(0, media::mediaObjectFromSQL($sql_media));
     }
 
-    public static function getMediaForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return media::getMediaForGamePack($glob); }
-    public static function getMediaForGamePack($pack)
+    public static function getMediaForGame($pack)
     {
         $sql_medias = dbconnection::queryArray("SELECT * FROM media WHERE (game_id = '{$pack->game_id}' OR (game_id = 0 AND user_id = 0))");
         $medias = array();
@@ -202,8 +198,7 @@ class media extends dbconnection
         return new return_package(0, $medias);
     }
 
-    public static function deleteMedia($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return media::deleteMediaPack($glob); }
-    public static function deleteMediaPack($pack)
+    public static function deleteMedia($pack)
     {
         $media_sql = dbconnection::queryObject("SELECT * FROM media WHERE media_id = '{$pack->media_id}'");
 

@@ -13,8 +13,7 @@ require_once("requirements.php");
 class web_pages extends dbconnection
 {
     //Takes in web_page JSON, all fields optional except game_id + user_id + key
-    public static function createWebPage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return web_pages::createWebPagePack($glob); }
-    public static function createWebPagePack($pack)
+    public static function createWebPage($pack)
     {
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
@@ -36,12 +35,11 @@ class web_pages extends dbconnection
             ")"
         );
 
-        return web_pages::getWebPagePack($pack);
+        return web_pages::getWebPage($pack);
     }
 
     //Takes in game JSON, all fields optional except web_page_id + user_id + key
-    public static function updateWebPage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return web_pages::updateWebPagePack($glob); }
-    public static function updateWebPagePack($pack)
+    public static function updateWebPage($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM web_pages WHERE web_page_id = '{$pack->web_page_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -56,7 +54,7 @@ class web_pages extends dbconnection
             "WHERE web_page_id = '{$pack->web_page_id}'"
         );
 
-        return web_pages::getWebPagePack($pack);
+        return web_pages::getWebPage($pack);
     }
 
     private static function webPageObjectFromSQL($sql_webPage)
@@ -72,15 +70,13 @@ class web_pages extends dbconnection
         return $webPage;
     }
 
-    public static function getWebPage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return web_pages::getWebPagePack($glob); }
-    public static function getWebPagePack($pack)
+    public static function getWebPage($pack)
     {
         $sql_webPage = dbconnection::queryObject("SELECT * FROM web_pages WHERE web_page_id = '{$pack->web_page_id}' LIMIT 1");
         return new return_package(0,web_pages::webPageObjectFromSQL($sql_webPage));
     }
 
-    public static function getWebPagesForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return web_pages::getWebPagesForGamePack($glob); }
-    public static function getWebPagesForGamePack($pack)
+    public static function getWebPagesForGame($pack)
     {
         $sql_webPages = dbconnection::queryArray("SELECT * FROM web_pages WHERE game_id = '{$pack->game_id}'");
         $webPages = array();
@@ -90,8 +86,7 @@ class web_pages extends dbconnection
         return new return_package(0,$webPages);
     }
 
-    public static function deleteWebPage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return web_pages::deleteWebPagePack($glob); }
-    public static function deleteWebPagePack($pack)
+    public static function deleteWebPage($pack)
     {
         $webpage = dbconnection::queryObject("SELECT * FROM web_pages WHERE web_page_id = '{$pack->web_page_id}'");
         $pack->auth->game_id = $webpage->game_id;
@@ -104,42 +99,42 @@ class web_pages extends dbconnection
         for($i = 0; $i < count($options); $i++)
         {
             $pack->dialog_option_id = $options[$i]->dialog_option_id;
-            dialogs::deleteDialogOptionPack($pack);
+            dialogs::deleteDialogOption($pack);
         }
 
         $tabs = dbconnection::queryArray("SELECT * FROM tabs WHERE type = 'WEB_PAGE' AND content_id = '{$pack->web_page_id}'");
         for($i = 0; $i < count($tabs); $i++)
         {
             $pack->tab_id = $tabs[$i]->tab_id;
-            tabs::deleteTabPack($pack);
+            tabs::deleteTab($pack);
         }
 
         $tags = dbconnection::queryArray("SELECT * FROM object_tags WHERE object_type = 'WEB_PAGE' AND object_id = '{$pack->web_page_id}'");
         for($i = 0; $i < count($tags); $i++)
         {
             $pack->object_tag_id = $tags[$i]->object_tag_id;
-            tags::deleteObjectTagPack($pack);
+            tags::deleteObjectTag($pack);
         }
 
         $instances = dbconnection::queryArray("SELECT * FROM instances WHERE object_type = 'WEB_PAGE' AND object_id = '{$pack->web_page_id}'");
         for($i = 0; $i < count($instances); $i++)
         {
             $pack->instance_id = $instances[$i]->instance_id;
-            instances::deleteInstancePack($pack);
+            instances::deleteInstance($pack);
         }
 
         $factories = dbconnection::queryArray("SELECT * FROM factories WHERE object_type = 'WEB_PAGE' AND object_id = '{$pack->web_page_id}'");
         for($i = 0; $i < count($factories); $i++)
         {
             $pack->factory_id = $factories[$i]->factory_id;
-            factories::deleteFactoryPack($pack);
+            factories::deleteFactory($pack);
         }
 
         $reqAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement = 'PLAYER_VIEWED_WEB_PAGE' AND content_id = '{$pack->web_page_id}'");
         for($i = 0; $i < count($reqAtoms); $i++)
         {
             $pack->requirement_atom_id = $reqAtoms[$i]->requirement_atom_id;
-            requirements::deleteRequirementAtomPack($pack);
+            requirements::deleteRequirementAtom($pack);
         }
 
         return new return_package(0);

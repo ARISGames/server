@@ -13,8 +13,7 @@ class editors extends dbconnection
         util::serverErrorLog("Failed Game Editor Authentication!"); return false;
     }
 
-    public static function addEditorToGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return editors::addEditorToGamePack($glob); }
-    public static function addEditorToGamePack($pack)
+    public static function addEditorToGame($pack)
     {
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
@@ -25,8 +24,7 @@ class editors extends dbconnection
         return new return_package(0);
     }
 
-    public static function removeEditorFromGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return editors::removeEditorFromGamePack($glob); }
-    public static function removeEditorFromGamePack($pack)
+    public static function removeEditorFromGame($pack)
     {
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
@@ -37,10 +35,9 @@ class editors extends dbconnection
         return new return_package(0);
     }
 
-    public static function getEditorsForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return editors::getEditorsForGamePack($glob); }
-    public static function getEditorsForGamePack($pack)
+    public static function getEditorsForGame($pack)
     {
-        return users::getUsersForGamePack($pack);
+        return users::getUsersForGame($pack);
     }
 }
 ?>

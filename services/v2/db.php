@@ -4,8 +4,7 @@ require_once("users.php");
 
 class db extends dbconnection
 {
-    public static function upgrade($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return db::upgradePack($glob); }
-    public static function upgradePack($pack)
+    public static function upgrade($pack)
     {
         //find existing upgrades
         $upgrade_files = scandir("db/upgrades", 0);

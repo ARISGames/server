@@ -8,8 +8,7 @@ require_once("requirements.php");
 class overlays extends dbconnection
 {
     //Takes in overlay JSON, all fields optional except game_id + user_id + key
-    public static function createOverlay($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return overlays::createOverlayPack($glob); }
-    public static function createOverlayPack($pack)
+    public static function createOverlay($pack)
     {
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
@@ -45,12 +44,11 @@ class overlays extends dbconnection
             ")"
         );
 
-        return overlays::getOverlayPack($pack);
+        return overlays::getOverlay($pack);
     }
 
     //Takes in game JSON, all fields optional except overlay_id + user_id + key
-    public static function updateOverlay($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return overlays::updateOverlayPack($glob); }
-    public static function updateOverlayPack($pack)
+    public static function updateOverlay($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM overlays WHERE overlay_id = '{$pack->overlay_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -72,7 +70,7 @@ class overlays extends dbconnection
             "WHERE overlay_id = '{$pack->overlay_id}'"
         );
 
-        return overlays::getOverlayPack($pack);
+        return overlays::getOverlay($pack);
     }
 
     private static function overlayObjectFromSQL($sql_overlay)
@@ -95,15 +93,13 @@ class overlays extends dbconnection
         return $overlay;
     }
 
-    public static function getOverlay($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return overlays::getOverlayPack($glob); }
-    public static function getOverlayPack($pack)
+    public static function getOverlay($pack)
     {
         $sql_overlay = dbconnection::queryObject("SELECT * FROM overlays WHERE overlay_id = '{$pack->overlay_id}' LIMIT 1");
         return new return_package(0,overlays::overlayObjectFromSQL($sql_overlay));
     }
 
-    public static function getOverlaysForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return overlays::getOverlaysForGamePack($glob); }
-    public static function getOverlaysForGamePack($pack)
+    public static function getOverlaysForGame($pack)
     {
         $sql_overlays = dbconnection::queryArray("SELECT * FROM overlays WHERE game_id = '{$pack->game_id}'");
         $overlays = array();
@@ -113,8 +109,7 @@ class overlays extends dbconnection
         return new return_package(0,$overlays);
     }
 
-    public static function deleteOverlay($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return overlays::deleteOverlayPack($glob); }
-    public static function deleteOverlayPack($pack)
+    public static function deleteOverlay($pack)
     {
         $overlay = dbconnection::queryObject("SELECT * FROM overlays WHERE overlay_id = '{$pack->overlay_id}'");
         $pack->auth->game_id = $overlay->game_id;
@@ -127,7 +122,7 @@ class overlays extends dbconnection
         if($reqPack)
         {
             $pack->requirement_root_package_id = $reqPack->requirement_root_package_id;
-            requirements::deleteRequirementRootPackagePack($pack);
+            requirements::deleteRequirementRootPackage($pack);
         }
 
         return new return_package(0);

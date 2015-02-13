@@ -5,8 +5,7 @@ require_once("return_package.php");
 
 class events extends dbconnection
 {
-    public function createEventPackage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return events::createEventPackagePack($glob); }
-    public function createEventPackagePack($pack)
+    public function createEventPackage($pack)
     {
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
@@ -29,15 +28,14 @@ class events extends dbconnection
             $pack->events[$i]->event_package_id = $pack->event_package_id;
             $pack->events[$i]->game_id = $pack->game_id;
             $pack->events[$i]->auth = $pack->auth;
-            events::createEventPack($pack->events[$i]);
+            events::createEvent($pack->events[$i]);
         }
 
-        return events::getEventPackagePack($pack);
+        return events::getEventPackage($pack);
     }
 
     //Takes in event JSON, all fields optional except game_id + user_id + key
-    public static function createEvent($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return events::createEventPack($glob); }
-    public static function createEventPack($pack)
+    public static function createEvent($pack)
     {
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
@@ -61,11 +59,10 @@ class events extends dbconnection
             ")"
         );
 
-        return events::getEventPack($pack);
+        return events::getEvent($pack);
     }
 
-    public function updateEventPackage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return events::updateEventPackagePack($glob); }
-    public function updateEventPackagePack($pack)
+    public function updateEventPackage($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM event_packages WHERE event_package_id = '{$pack->event_package_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -82,7 +79,7 @@ class events extends dbconnection
 
         $auth = $pack->auth; //save for later (getEventPackagePack unsets it)
         $reqEvents = $pack->events;
-        $curEvents = events::getEventPackagePack($pack)->data->events;
+        $curEvents = events::getEventPackage($pack)->data->events;
 
         $eventsToDelete = array();
         $eventsToAdd = array();
@@ -112,18 +109,17 @@ class events extends dbconnection
         }
 
         for($i = 0; $i < count($eventsToDelete); $i++)
-        { $eventsToDelete[$i]->auth = $auth; events::deleteEventPack($eventsToDelete[$i]); }
+        { $eventsToDelete[$i]->auth = $auth; events::deleteEvent($eventsToDelete[$i]); }
         for($i = 0; $i < count($eventsToUpdate); $i++)
-        { $eventsToUpdate[$i]->auth = $auth; events::updateEventPack($eventsToUpdate[$i]); }
+        { $eventsToUpdate[$i]->auth = $auth; events::updateEvent($eventsToUpdate[$i]); }
         for($i = 0; $i < count($eventsToAdd); $i++)
-        { $eventsToAdd[$i]->event_package_id = $pack->event_package_id; $eventsToAdd[$i]->auth = $auth; events::createEventPack($eventsToAdd[$i]); }
+        { $eventsToAdd[$i]->event_package_id = $pack->event_package_id; $eventsToAdd[$i]->auth = $auth; events::createEvent($eventsToAdd[$i]); }
 
-        return events::getEventPackagePack($pack);
+        return events::getEventPackage($pack);
     }
 
     //Takes in game JSON, all fields optional except event_id + user_id + key
-    public static function updateEvent($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return events::updateEventPack($glob); }
-    public static function updateEventPack($pack)
+    public static function updateEvent($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM events WHERE event_id = '{$pack->event_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -138,7 +134,7 @@ class events extends dbconnection
             "WHERE event_id = '{$pack->event_id}'"
         );
 
-        return events::getEventPack($pack);
+        return events::getEvent($pack);
     }
 
     private static function eventObjectFromSQL($sql_event)
@@ -155,8 +151,7 @@ class events extends dbconnection
         return $event;
     }
 
-    public function getEventPackage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return events::getEventPackagePack($glob); }
-    public function getEventPackagePack($pack)
+    public function getEventPackage($pack)
     {
         $sql_root = dbconnection::queryObject("SELECT * FROM event_packages WHERE event_package_id = '{$pack->event_package_id}'");
         $pack->event_package_id = $sql_root->event_package_id;
@@ -168,7 +163,7 @@ class events extends dbconnection
 
         for($i = 0; $i < count($sql_events); $i++)
         {
-            $pack->events[$i] = events::getEventPack($sql_events[$i])->data;
+            $pack->events[$i] = events::getEvent($sql_events[$i])->data;
             unset($pack->events[$i]->event_package_id);
         }
 
@@ -176,15 +171,13 @@ class events extends dbconnection
         return new return_package(0,$pack);
     }
 
-    public static function getEvent($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return events::getEventPack($glob); }
-    public static function getEventPack($pack)
+    public static function getEvent($pack)
     {
         $sql_event = dbconnection::queryObject("SELECT * FROM events WHERE event_id = '{$pack->event_id}' LIMIT 1");
         return new return_package(0,events::eventObjectFromSQL($sql_event));
     }
 
-    public static function getEventsForEventPackage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return events::getEventsForEventPackagePack($glob); }
-    public static function getEventsForEventPackagePack($pack)
+    public static function getEventsForEventPackage($pack)
     {
         $sql_events = dbconnection::queryArray("SELECT * FROM events WHERE event_package_id = '{$pack->event_package_id}'");
         $events = array();
@@ -194,8 +187,7 @@ class events extends dbconnection
         return new return_package(0,$events);
     }
 
-    public static function getEventsForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return events::getEventsForGamePack($glob); }
-    public static function getEventsForGamePack($pack)
+    public static function getEventsForGame($pack)
     {
         $sql_events = dbconnection::queryArray("SELECT * FROM events WHERE game_id = '{$pack->game_id}'");
         $events = array();
@@ -205,8 +197,7 @@ class events extends dbconnection
         return new return_package(0,$events);
     }
 
-    public static function getEventsForObject($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return events::getEventsForObjectPack($glob); }
-    public static function getEventsForObjectPack($pack)
+    public static function getEventsForObject($pack)
     {
         $sql_events = dbconnection::queryArray("SELECT * FROM events WHERE object_type = '{$pack->object_type}' AND content_id = '{$pack->content_id}'");
         $events = array();
@@ -216,8 +207,7 @@ class events extends dbconnection
         return new return_package(0,$events);
     }
 
-    public static function deleteEventPackage($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return events::deleteEventPackagePack($glob); }
-    public static function deleteEventPackagePack($pack)
+    public static function deleteEventPackage($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM events WHERE event_id = '{$pack->event_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -229,7 +219,7 @@ class events extends dbconnection
         for($i = 0; $i < count($events); $i++)
         {
             $pack->event_id = $events[$i]->event_id;
-            events::deleteEventPack($pack);
+            events::deleteEvent($pack);
         }
 
         dbconnection::query("UPDATE dialog_scripts SET event_package_id = 0 WHERE event_package_id = '{$pack->event_package_id}'");
@@ -240,8 +230,7 @@ class events extends dbconnection
         return new return_package(0);
     }
 
-    public static function deleteEvent($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return events::deleteEventPack($glob); }
-    public static function deleteEventPack($pack)
+    public static function deleteEvent($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM events WHERE event_id = '{$pack->event_id}'")->game_id;
         $pack->auth->permission = "read_write";

@@ -8,8 +8,7 @@ require_once("requirements.php");
 class web_hooks extends dbconnection
 {
     //Takes in web_hook JSON, all fields optional except game_id + user_id + key
-    public static function createWebHook($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return web_hooks::createWebHookPack($glob); }
-    public static function createWebHookPack($pack)
+    public static function createWebHook($pack)
     {
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
@@ -33,12 +32,11 @@ class web_hooks extends dbconnection
             ")"
         );
 
-        return web_hooks::getWebHookPack($pack);
+        return web_hooks::getWebHook($pack);
     }
 
     //Takes in game JSON, all fields optional except web_hook_id + user_id + key
-    public static function updateWebHook($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return web_hooks::updateWebHookPack($glob); }
-    public static function updateWebHookPack($pack)
+    public static function updateWebHook($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM web_hooks WHERE web_hook_id = '{$pack->web_hook_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -54,7 +52,7 @@ class web_hooks extends dbconnection
             "WHERE web_hook_id = '{$pack->web_hook_id}'"
         );
 
-        return web_hooks::getWebHookPack($pack);
+        return web_hooks::getWebHook($pack);
     }
 
     private static function webHookObjectFromSQL($sql_webHook)
@@ -71,15 +69,13 @@ class web_hooks extends dbconnection
         return $webHook;
     }
 
-    public static function getWebHook($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return web_hooks::getWebHookPack($glob); }
-    public static function getWebHookPack($pack)
+    public static function getWebHook($pack)
     {
         $sql_webHook = dbconnection::queryObject("SELECT * FROM web_hooks WHERE web_hook_id = '{$pack->web_hook_id}' LIMIT 1");
         return new return_package(0,web_hooks::webHookObjectFromSQL($sql_webHook));
     }
 
-    public static function getWebHooksForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return web_hooks::getWebHooksForGamePack($glob); }
-    public static function getWebHooksForGamePack($pack)
+    public static function getWebHooksForGame($pack)
     {
         $sql_webHooks = dbconnection::queryArray("SELECT * FROM web_hooks WHERE game_id = '{$pack->game_id}'");
         $webHooks = array();
@@ -89,8 +85,7 @@ class web_hooks extends dbconnection
         return new return_package(0,$webHooks);
     }
 
-    public static function deleteWebHook($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return web_hooks::deleteWebHookPack($glob); }
-    public static function deleteWebHookPack($pack)
+    public static function deleteWebHook($pack)
     {
         $webhook = dbconnection::queryObject("SELECT * FROM web_hooks WHERE web_hook_id = '{$pack->web_hook_id}'");
         $pack->auth->game_id = $webhook->game_id;
@@ -103,14 +98,14 @@ class web_hooks extends dbconnection
         if($reqPack)
         {
             $pack->requirement_root_package_id = $reqPack->requirement_root_package_id;
-            requirements::deleteRequirementRootPackagePack($pack);
+            requirements::deleteRequirementRootPackage($pack);
         }
 
         $reqAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement = 'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK' AND content_id = '{$pack->web_hook_id}'");
         for($i = 0; $i < count($reqAtoms); $i++)
         {
             $pack->requirement_atom_id = $reqAtoms[$i]->requirement_atom_id;
-            requirements::deleteRequirementAtomPack($pack);
+            requirements::deleteRequirementAtom($pack);
         }
 
         return new return_package(0);

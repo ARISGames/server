@@ -14,8 +14,7 @@ require_once("requirements.php");
 class plaques extends dbconnection
 {
     //Takes in plaque JSON, all fields optional except game_id + user_id + key
-    public static function createPlaque($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return plaques::createPlaquePack($glob); }
-    public static function createPlaquePack($pack)
+    public static function createPlaque($pack)
     {
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
@@ -41,12 +40,11 @@ class plaques extends dbconnection
             ")"
         );
 
-        return plaques::getPlaquePack($pack);
+        return plaques::getPlaque($pack);
     }
 
     //Takes in game JSON, all fields optional except plaque_id + user_id + key
-    public static function updatePlaque($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return plaques::updatePlaquePack($glob); }
-    public static function updatePlaquePack($pack)
+    public static function updatePlaque($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM plaques WHERE plaque_id = '{$pack->plaque_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -63,7 +61,7 @@ class plaques extends dbconnection
             "WHERE plaque_id = '{$pack->plaque_id}'"
         );
 
-        return plaques::getPlaquePack($pack);
+        return plaques::getPlaque($pack);
     }
 
     private static function plaqueObjectFromSQL($sql_plaque)
@@ -81,15 +79,13 @@ class plaques extends dbconnection
         return $plaque;
     }
 
-    public static function getPlaque($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return plaques::getPlaquePack($glob); }
-    public static function getPlaquePack($pack)
+    public static function getPlaque($pack)
     {
         $sql_plaque = dbconnection::queryObject("SELECT * FROM plaques WHERE plaque_id = '{$pack->plaque_id}' LIMIT 1");
         return new return_package(0,plaques::plaqueObjectFromSQL($sql_plaque));
     }
 
-    public static function getPlaquesForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return plaques::getPlaquesForGamePack($glob); }
-    public static function getPlaquesForGamePack($pack)
+    public static function getPlaquesForGame($pack)
     {
         $sql_plaques = dbconnection::queryArray("SELECT * FROM plaques WHERE game_id = '{$pack->game_id}'");
         $plaques = array();
@@ -99,8 +95,7 @@ class plaques extends dbconnection
         return new return_package(0,$plaques);
     }
 
-    public static function deletePlaque($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return plaques::deletePlaquePack($glob); }
-    public static function deletePlaquePack($pack)
+    public static function deletePlaque($pack)
     {
         $plaque = dbconnection::queryObject("SELECT * FROM plaques WHERE plaque_id = '{$pack->plaque_id}'");
         $pack->auth->game_id = $plaque->game_id;
@@ -113,49 +108,49 @@ class plaques extends dbconnection
         if($eventpack)
         {
             $pack->event_package_id = $eventpack->event_package_id;
-            events::deleteEventPackagePack($pack);
+            events::deleteEventPackage($pack);
         }
 
         $options = dbconnection::queryArray("SELECT * FROM dialog_options WHERE link_type = 'EXIT_TO_PLAQUE' AND link_id = '{$pack->plaque_id}'");
         for($i = 0; $i < count($options); $i++)
         {
             $pack->dialog_option_id = $options[$i]->dialog_option_id;
-            dialogs::deleteDialogOptionPack($pack);
+            dialogs::deleteDialogOption($pack);
         }
 
         $tabs = dbconnection::queryArray("SELECT * FROM tabs WHERE type = 'PLAQUE' AND content_id = '{$pack->plaque_id}'");
         for($i = 0; $i < count($tabs); $i++)
         {
             $pack->tab_id = $tabs[$i]->tab_id;
-            tabs::deleteTabPack($pack);
+            tabs::deleteTab($pack);
         }
 
         $tags = dbconnection::queryArray("SELECT * FROM object_tags WHERE object_type = 'PLAQUE' AND object_id = '{$pack->plaque_id}'");
         for($i = 0; $i < count($tags); $i++)
         {
             $pack->object_tag_id = $tags[$i]->object_tag_id;
-            tags::deleteObjectTagPack($pack);
+            tags::deleteObjectTag($pack);
         }
 
         $instances = dbconnection::queryArray("SELECT * FROM instances WHERE object_type = 'PLAQUE' AND object_id = '{$pack->plaque_id}'");
         for($i = 0; $i < count($instances); $i++)
         {
             $pack->instance_id = $instances[$i]->instance_id;
-            instances::deleteInstancePack($pack);
+            instances::deleteInstance($pack);
         }
 
         $factories = dbconnection::queryArray("SELECT * FROM factories WHERE object_type = 'PLAQUE' AND object_id = '{$pack->plaque_id}'");
         for($i = 0; $i < count($factories); $i++)
         {
             $pack->factory_id = $factories[$i]->factory_id;
-            factories::deleteFactoryPack($pack);
+            factories::deleteFactory($pack);
         }
 
         $reqAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement = 'PLAYER_VIEWED_PLAQUE' AND content_id = '{$pack->plaque_id}'");
         for($i = 0; $i < count($reqAtoms); $i++)
         {
             $pack->requirement_atom_id = $reqAtoms[$i]->requirement_atom_id;
-            requirements::deleteRequirementAtomPack($pack);
+            requirements::deleteRequirementAtom($pack);
         }
 
         return new return_package(0);

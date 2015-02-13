@@ -982,7 +982,6 @@ class migration extends migration_dbconnection
 
         return $v2User->user_id;
     }
-
 }
 ?>
 

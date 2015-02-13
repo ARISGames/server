@@ -14,8 +14,7 @@ require_once("requirements.php");
 class items extends dbconnection
 {
     //Takes in item JSON, all fields optional except game_id + user_id + key
-    public static function createItem($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return items::createItemPack($glob); }
-    public static function createItemPack($pack)
+    public static function createItem($pack)
     {
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
@@ -51,12 +50,11 @@ class items extends dbconnection
             ")"
         );
 
-        return items::getItemPack($pack);
+        return items::getItem($pack);
     }
 
     //Takes in game JSON, all fields optional except item_id + user_id + key
-    public static function updateItem($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return items::updateItemPack($glob); }
-    public static function updateItemPack($pack)
+    public static function updateItem($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM items WHERE item_id = '{$pack->item_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -78,7 +76,7 @@ class items extends dbconnection
             "WHERE item_id = '{$pack->item_id}'"
         );
 
-        return items::getItemPack($pack);
+        return items::getItem($pack);
     }
 
     private static function itemObjectFromSQL($sql_item)
@@ -101,15 +99,13 @@ class items extends dbconnection
         return $item;
     }
 
-    public static function getItem($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return items::getItemPack($glob); }
-    public static function getItemPack($pack)
+    public static function getItem($pack)
     {
         $sql_item = dbconnection::queryObject("SELECT * FROM items WHERE item_id = '{$pack->item_id}' LIMIT 1");
         return new return_package(0,items::itemObjectFromSQL($sql_item));
     }
 
-    public static function getItemsForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return items::getItemsForGamePack($glob); }
-    public static function getItemsForGamePack($pack)
+    public static function getItemsForGame($pack)
     {
         $sql_items = dbconnection::queryArray("SELECT * FROM items WHERE game_id = '{$pack->game_id}'");
         $items = array();
@@ -119,8 +115,7 @@ class items extends dbconnection
         return new return_package(0,$items);
     }
 
-    public static function deleteItem($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return items::deleteItemPack($glob); }
-    public static function deleteItemPack($pack)
+    public static function deleteItem($pack)
     {
         $item = dbconnection::queryObject("SELECT * FROM items WHERE item_id = '{$pack->item_id}'");
         $pack->auth->game_id = $item->game_id;
@@ -133,61 +128,61 @@ class items extends dbconnection
         for($i = 0; $i < count($options); $i++)
         {
             $pack->dialog_option_id = $options[$i]->dialog_option_id;
-            dialogs::deleteDialogOptionPack($pack);
+            dialogs::deleteDialogOption($pack);
         }
 
         $tabs = dbconnection::queryArray("SELECT * FROM tabs WHERE type = 'ITEM' AND content_id = '{$pack->item_id}'");
         for($i = 0; $i < count($tabs); $i++)
         {
             $pack->tab_id = $tabs[$i]->tab_id;
-            tabs::deleteTabPack($pack);
+            tabs::deleteTab($pack);
         }
 
         $tags = dbconnection::queryArray("SELECT * FROM object_tags WHERE object_type = 'ITEM' AND object_id = '{$pack->item_id}'");
         for($i = 0; $i < count($tags); $i++)
         {
             $pack->object_tag_id = $tags[$i]->object_tag_id;
-            tags::deleteObjectTagPack($pack);
+            tags::deleteObjectTag($pack);
         }
 
         $instances = dbconnection::queryArray("SELECT * FROM instances WHERE object_type = 'ITEM' AND object_id = '{$pack->item_id}'");
         for($i = 0; $i < count($instances); $i++)
         {
             $pack->instance_id = $instances[$i]->instance_id;
-            instances::deleteInstancePack($pack);
+            instances::deleteInstance($pack);
         }
 
         $factories = dbconnection::queryArray("SELECT * FROM factories WHERE object_type = 'ITEM' AND object_id = '{$pack->item_id}'");
         for($i = 0; $i < count($factories); $i++)
         {
             $pack->factory_id = $factories[$i]->factory_id;
-            factories::deleteFactoryPack($pack);
+            factories::deleteFactory($pack);
         }
 
         $events = dbconnection::queryArray("SELECT * FROM events WHERE (event = 'GIVE_ITEM' OR event = 'TAKE_ITEM') AND content_id = '{$pack->item_id}'");
         for($i = 0; $i < count($events); $i++)
         {
             $pack->event_id = $events[$i]->event_id;
-            events::deleteEventPack($pack);
+            events::deleteEvent($pack);
         }
 
         $reqAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement = 'PLAYER_VIEWED_ITEM' AND content_id = '{$pack->item_id}'");
         for($i = 0; $i < count($reqAtoms); $i++)
         {
             $pack->requirement_atom_id = $reqAtoms[$i]->requirement_atom_id;
-            requirements::deleteRequirementAtomPack($pack);
+            requirements::deleteRequirementAtom($pack);
         }
         $reqAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement = 'PLAYER_HAS_ITEM' AND content_id = '{$pack->item_id}'");
         for($i = 0; $i < count($reqAtoms); $i++)
         {
             $pack->requirement_atom_id = $reqAtoms[$i]->requirement_atom_id;
-            requirements::deleteRequirementAtomPack($pack);
+            requirements::deleteRequirementAtom($pack);
         }
         $reqAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement = 'PLAYER_HAS_TAGGED_ITEM' AND content_id = '{$pack->item_id}'");
         for($i = 0; $i < count($reqAtoms); $i++)
         {
             $pack->requirement_atom_id = $reqAtoms[$i]->requirement_atom_id;
-            requirements::deleteRequirementAtomPack($pack);
+            requirements::deleteRequirementAtom($pack);
         }
 
         return new return_package(0);

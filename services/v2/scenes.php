@@ -9,8 +9,7 @@ require_once("triggers.php");
 class scenes extends dbconnection
 {
     //Takes in game JSON, all fields optional except user_id + key
-    public static function createScene($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return scenes::createScenePack($glob); }
-    public static function createScenePack($pack)
+    public static function createScene($pack)
     {
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
@@ -39,12 +38,11 @@ class scenes extends dbconnection
         if(!dbconnection::queryObject("SELECT * FROM scenes WHERE scene_id = '{$game->intro_scene_id}' AND game_id = '{$game->game_id}'"))
             dbconnection::query("UPDATE games SET intro_scene_id = '{$pack->scene_id}' WHERE game_id = '{$pack->game_id}'");
 
-        return scenes::getScenePack($pack);
+        return scenes::getScene($pack);
     }
 
     //Takes in game JSON, all fields optional except user_id + key
-    public static function updateScene($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return scenes::updateScenePack($glob); }
-    public static function updateScenePack($pack)
+    public static function updateScene($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM scenes WHERE scene_id = '{$pack->scene_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -60,7 +58,7 @@ class scenes extends dbconnection
             "WHERE scene_id = '{$pack->scene_id}'"
         );
 
-        return scenes::getScenePack($pack);
+        return scenes::getScene($pack);
     }
 
     private static function sceneObjectFromSQL($sql_scene)
@@ -77,15 +75,13 @@ class scenes extends dbconnection
         return $scene;
     }
 
-    public static function getScene($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return scenes::getScenePack($glob); }
-    public static function getScenePack($pack)
+    public static function getScene($pack)
     {
         $sql_scene = dbconnection::queryObject("SELECT * FROM scenes WHERE scene_id = '{$pack->scene_id}' LIMIT 1");
         return new return_package(0,scenes::sceneObjectFromSQL($sql_scene));
     }
 
-    public static function getScenesForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return scenes::getScenesForGamePack($glob); }
-    public static function getScenesForGamePack($pack)
+    public static function getScenesForGame($pack)
     {
         $sql_scenes = dbconnection::queryArray("SELECT * FROM scenes WHERE game_id = '{$pack->game_id}'");
         $scenes = array();
@@ -95,8 +91,7 @@ class scenes extends dbconnection
         return new return_package(0,$scenes);
     }
 
-    public static function deleteScene($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return scenes::deleteScenePack($glob); }
-    public static function deleteScenePack($pack)
+    public static function deleteScene($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM scenes WHERE scene_id = '{$pack->scene_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -111,14 +106,14 @@ class scenes extends dbconnection
         for($i = 0; $i < count($triggers); $i++)
         {
             $pack->trigger_id = $triggers[$i]->trigger_id;
-            triggers::deleteTriggerPack($pack);
+            triggers::deleteTrigger($pack);
         }
 
         $instances = dbconnection::queryArray("SELECT * FROM instances WHERE object_type = 'SCENE' AND object_id = '{$pack->scene_id}'");
         for($i = 0; $i < count($instances); $i++)
         {
             $pack->instance_id = $instances[$i]->instance_id;
-            instances::deleteInstancePack($pack);
+            instances::deleteInstance($pack);
         }
 
         return new return_package(0);

@@ -8,8 +8,7 @@ require_once("return_package.php");
 class editor extends dbconnection
 {
     //NOT ACTUALLY USING THIS- STILL HERE JUST FOR EXAMPLE
-    public static function createTriggerAndInstance($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return triggers::createTriggerAndInstancePack($glob); }
-    public static function createTriggerAndInstancePack($pack)
+    public static function createTriggerAndInstance($pack)
     {
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";

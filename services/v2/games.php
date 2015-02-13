@@ -8,8 +8,7 @@ require_once("return_package.php");
 class games extends dbconnection
 {
     //Takes in game JSON, all fields optional except user_id + key
-    public static function createGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return games::createGamePack($glob); }
-    public static function createGamePack($pack)
+    public static function createGame($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -89,12 +88,11 @@ class games extends dbconnection
 
         mkdir(Config::v2_gamedata_folder."/{$pack->game_id}",0777);
 
-        return games::getGamePack($pack);
+        return games::getGame($pack);
     }
 
     //Takes in game JSON, all fields optional except user_id + key
-    public static function updateGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return games::updateGamePack($glob); }
-    public static function updateGamePack($pack)
+    public static function updateGame($pack)
     {
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
@@ -142,7 +140,7 @@ class games extends dbconnection
             "WHERE game_id = '{$pack->game_id}'"
         );
 
-        return games::getGamePack($pack);
+        return games::getGame($pack);
     }
 
     public static function gameObjectFromSQL($sql_game)
@@ -181,16 +179,14 @@ class games extends dbconnection
         return $game;
     }
 
-    public static function getGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return games::getGamePack($glob); }
-    public static function getGamePack($pack)
+    public static function getGame($pack)
     {
         $sql_game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$pack->game_id}' LIMIT 1");
         if(!$sql_game) return new return_package(2, NULL, "The game you've requested does not exist");
         return new return_package(0,games::gameObjectFromSQL($sql_game));
     }
 
-    public static function getGamesForUser($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return games::getGamesForUserPack($glob); }
-    public static function getGamesForUserPack($pack)
+    public static function getGamesForUser($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -203,8 +199,7 @@ class games extends dbconnection
         return new return_package(0,$games);
     }
 
-    public static function deleteGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return games::deleteGamePack($glob); }
-    public static function deleteGamePack($pack)
+    public static function deleteGame($pack)
     {
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
@@ -237,8 +232,7 @@ class games extends dbconnection
         return new return_package(0);
     }
 
-    public static function getFullGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return games::getFullGamePack($glob); }
-    public static function getFullGamePack($pack)
+    public static function getFullGame($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -246,17 +240,18 @@ class games extends dbconnection
         $sql_game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$pack->game_id}' LIMIT 1");
         if(!$sql_game) return new return_package(2, NULL, "The game you've requested does not exist");
 
-        $game = games::getGamePack($pack)->data;
+        $game = games::getGame($pack)->data;
 
-        $game->authors = users::getUsersForGamePack($pack)->data; //pack already has auth and game_id
+        $game->authors = users::getUsersForGame($pack)->data; //pack already has auth and game_id
 
         //heres where we just hack the pack for use in other requests without overhead of creating new packs
         $pack->media_id = $game->media_id;
-        $game->media = media::getMediaPack($pack)->data;
+        $game->media = media::getMedia($pack)->data;
         $pack->media_id = $game->icon_media_id;
-        $game->icon_media = media::getMediaPack($pack)->data;
+        $game->icon_media = media::getMedia($pack)->data;
 
         return new return_package(0,$game);
     }
 }
 ?>
+

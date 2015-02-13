@@ -10,8 +10,7 @@ require_once("requirements.php");
 class tabs extends dbconnection
 {
     //Takes in tab JSON, all fields optional except user_id + key
-    public static function createTab($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return tabs::createTabPack($glob); }
-    public static function createTabPack($pack)
+    public static function createTab($pack)
     {
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
@@ -41,11 +40,10 @@ class tabs extends dbconnection
             ")"
         );
 
-        return tabs::getTabPack($pack);
+        return tabs::getTab($pack);
     }
 
-    public static function updateTab($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return tabs::updateTabPack($glob); }
-    public static function updateTabPack($pack)
+    public static function updateTab($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM tabs WHERE tab_id = '{$pack->tab_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -64,7 +62,7 @@ class tabs extends dbconnection
             "WHERE tab_id = '{$pack->tab_id}'"
         );
 
-        return tabs::getTabPack($pack);
+        return tabs::getTab($pack);
     }
 
     private static function tabObjectFromSQL($sql_tab)
@@ -84,16 +82,14 @@ class tabs extends dbconnection
         return $tab;
     }
 
-    public static function getTab($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return tabs::getTabPack($glob); }
-    public static function getTabPack($pack)
+    public static function getTab($pack)
     {
         $sql_tab = dbconnection::queryObject("SELECT * FROM tabs WHERE tab_id = '{$pack->tab_id}' LIMIT 1");
         if(!$sql_tab) return new return_package(2, NULL, "The tab you've requested does not exist");
         return new return_package(0,tabs::tabObjectFromSQL($sql_tab));
     }
 
-    public static function getTabsForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return tabs::getTabsForGamePack($glob); }
-    public static function getTabsForGamePack($pack)
+    public static function getTabsForGame($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -107,8 +103,7 @@ class tabs extends dbconnection
 
     }
 
-    public static function deleteTab($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return tabs::deleteTabPack($glob); }
-    public static function deleteTabPack($pack)
+    public static function deleteTab($pack)
     {
         $tab = dbconnection::queryObject("SELECT * FROM tabs WHERE tab_id = '{$pack->tab_id}'");
         $pack->auth->game_id = $tab->game_id;
@@ -121,14 +116,14 @@ class tabs extends dbconnection
         for($i = 0; $i < count($options); $i++)
         {
             $pack->dialog_option_id = $options[$i]->dialog_option_id;
-            dialogs::deleteDialogOptionPack($pack);
+            dialogs::deleteDialogOption($pack);
         }
 
         $reqPack = dbconnection::queryObject("SELECT * FROM requirement_root_packages WHERE requirement_root_package_id = '{$tab->requirement_root_package_id}'");
         if($reqPack)
         {
             $pack->requirement_root_package_id = $reqPack->requirement_root_package_id;
-            requirements::deleteRequirementPackagePack($pack);
+            requirements::deleteRequirementPackage($pack);
         }
 
         return new return_package(0);

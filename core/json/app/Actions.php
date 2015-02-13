@@ -56,7 +56,7 @@ function deserializationAction(&$body)
 			}
 			else
 			{
-				$value = json_decode($value, true);
+				$value = json_decode($value);
 			}
 		}
 		$actualArgs[] = $value;
@@ -109,16 +109,9 @@ if(!function_exists("json_encode"))
 		return $json->encode($val);
 	}
 	
-	function json_decode($val, $asAssoc = FALSE)
+	function json_decode($val)
 	{
-		if($asAssoc)
-		{
-			$json = new Services_JSON(SERVICES_JSON_LOOSE_TYPE);
-		}
-		else
-		{
-			$json = new Services_JSON();
-		}
+		$json = new Services_JSON();
 		return $json->decode($val);
 	}
 }

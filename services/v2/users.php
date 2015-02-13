@@ -21,8 +21,7 @@ class users extends dbconnection
         util::serverErrorLog("Failed Editor Authentication!"); return false;
     }
 
-    public static function createUser($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::createUserPack($glob); }
-    public static function createUserPack($pack)
+    public static function createUser($pack)
     {
         if(!$pack->user_name || $pack->user_name == "") return new return_package(1, NULL, "Empty username invalid.");
         if(dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}'")) return new return_package(1, NULL, "User already exists");
@@ -62,11 +61,10 @@ class users extends dbconnection
         );
 
         $pack->permission = "read_write";
-        return users::logInPack($pack);
+        return users::logIn($pack);
     }
 
-    public static function autoGenerateUser($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::autoGenerateUserPack($glob); }
-    public static function autoGenerateUserPack($pack)
+    public static function autoGenerateUser($pack)
     {
         if(isset($pack->group_name) && strlen($pack->group_name))
         {
@@ -92,11 +90,10 @@ class users extends dbconnection
         }
         if(!isset($pack->display_name)) $pack->display_name = ""; //explicitly set display_name so default doesn't get set to the gibberish user_name
 
-        return users::createUserPack($pack);
+        return users::createUser($pack);
     }
 
-    public static function updateUser($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::updateUserPack($glob); }
-    public static function updateUserPack($pack)
+    public static function updateUser($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -105,7 +102,7 @@ class users extends dbconnection
         {
             $pack->media->auth = $pack->auth;
             $pack->media->user_id = $pack->user_id;
-            $pack->media_id = media::createMediaPack($pack->media)->data->media_id;
+            $pack->media_id = media::createMedia($pack->media)->data->media_id;
         }
 
         dbconnection::query(
@@ -117,12 +114,11 @@ class users extends dbconnection
             "WHERE user_id = '{$pack->user_id}'"
         );
 
-        return users::logInPack($pack);
+        return users::logIn($pack);
     }
 
     //Takes in user JSON, requires either (user_name and password) or (auth pack)
-    public static function logIn($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::logInPack($glob); }
-    public static function logInPack($pack)
+    public static function logIn($pack)
     {
         if($pack->auth && $pack->auth->user_id)
         {
@@ -181,8 +177,7 @@ class users extends dbconnection
         return new return_package(0, $ret);
     }
 
-    public static function changePassword($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::changePasswordPack($glob); }
-    public static function changePasswordPack($pack)
+    public static function changePassword($pack)
     {
         $username = addslashes($pack->user_name);
         $oldPass  = addslashes($pack->old_password);
@@ -192,7 +187,7 @@ class users extends dbconnection
         //log in with old
         $pack->password = $pack->old_password;
         $pack->permission = "read_write";
-        $user = users::logInPack($pack)->data;
+        $user = users::logIn($pack)->data;
         if(!$user->read_write_key) return new return_package(1, NULL, "Incorrect username/password");
 
         //if changing password, invalidate all keys
@@ -213,7 +208,7 @@ class users extends dbconnection
         //log in with new
         $pack->password = $pack->new_password;
         $pack->permission = "read_write";
-        return users::logInPack($pack);
+        return users::logIn($pack);
     }
 
     private static function breakPassword($userId)
@@ -223,8 +218,7 @@ class users extends dbconnection
         return MD5($userId."plzstophackingkthxbi");
     }
 
-    public static function fixPassword($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::fixPasswordPack($glob); }
-    public static function fixPasswordPack($pack)
+    public static function fixPassword($pack)
     {
         $user_id = addslashes($pack->user_id);
         $junk = addslashes($pack->junk);
@@ -256,8 +250,7 @@ class users extends dbconnection
         return $user;
     }
 
-    public static function getUser($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::getUserPack($glob); }
-    public static function getUserPack($pack)
+    public static function getUser($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -267,8 +260,7 @@ class users extends dbconnection
         return new return_package(0, users::userObjectFromSQL($sql_user));
     }
 
-    public static function getUsersForGame($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::getUsersForGamePack($glob); }
-    public static function getUsersForGamePack($pack)
+    public static function getUsersForGame($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -281,8 +273,7 @@ class users extends dbconnection
         return new return_package(0, $users);
     }
 
-    public static function getUsersForFuzzySearch($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::getUsersForFuzzySearchPack($glob); }
-    public static function getUsersForFuzzySearchPack($pack)
+    public static function getUsersForFuzzySearch($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -295,8 +286,7 @@ class users extends dbconnection
         return new return_package(0, $users);
     }
 
-    public static function getUserForSearch($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::getUserForSearchPack($glob); }
-    public static function getUserForSearchPack($pack)
+    public static function getUserForSearch($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
@@ -306,8 +296,7 @@ class users extends dbconnection
         else          return new return_package(1, NULL, "User not found");
     }
 
-    public static function requestForgotPasswordEmail($glob) { $data = file_get_contents("php://input"); $glob = json_decode($data); return users::requestForgotPasswordEmailPack($glob); }
-    public static function requestForgotPasswordEmailPack($pack)
+    public static function requestForgotPasswordEmail($pack)
     {
         if($pack->user_name)  $user = dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}' LIMIT 1");
         else if($pack->email) $user = dbconnection::queryObject("SELECT * FROM users WHERE email = '{$pack->email}' LIMIT 1");
