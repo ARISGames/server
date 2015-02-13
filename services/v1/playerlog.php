@@ -2,171 +2,6 @@
 require_once("module.php");
 require_once("media.php");
 
-/*
-+----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------+-----+-------------------+----------------+
-| Field          | Type                                                                                                                                                                                                                                                                                                                                                                                                                                                       | Null | Key | Default           | Extra          |
-+----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------+-----+-------------------+----------------+
-| id             | int(10) unsigned                                                                                                                                                                                                                                                                                                                                                                                                                                           | NO   | PRI | NULL              | auto_increment |
-| player_id      | int(10) unsigned                                                                                                                                                                                                                                                                                                                                                                                                                                           | NO   | MUL | NULL              |                |
-| game_id        | int(10) unsigned                                                                                                                                                                                                                                                                                                                                                                                                                                           | NO   | MUL | 0                 |                |
-| timestamp      | timestamp                                                                                                                                                                                                                                                                                                                                                                                                                                                  | NO   | MUL | CURRENT_TIMESTAMP |                |
-| event_type     | enum('COMPLETE_QUEST') | YES  | MUL | NULL              |                |
-| event_detail_1 | varchar(50)                                                                                                                                                                                                                                                                                                                                                                                                                                                | YES  |     | NULL              |                |
-| event_detail_2 | varchar(50)                                                                                                                                                                                                                                                                                                                                                                                                                                                | YES  |     | NULL              |                |
-| event_detail_3 | varchar(50)                                                                                                                                                                                                                                                                                                                                                                                                                                                | YES  |     | NULL              |                |
-| deleted        | tinyint(1)                                                                                                                                                                                                                                                                                                                                                                                                                                                 | NO   | MUL | 0                 |                |
-+----------------+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------+------+-----+-------------------+----------------+
-
-+--------------------+----------------------------------------------------------------------+------+-----+-------------------+----------------+
-| Field              | Type                                                                 | Null | Key | Default           | Extra          |
-+--------------------+----------------------------------------------------------------------+------+-----+-------------------+----------------+
-| location_id        | int(11)                                                              | NO   | PRI | NULL              | auto_increment |
-| game_id            | int(11)                                                              | NO   | MUL | NULL              |                |
-| name               | varchar(255)                                                         | NO   |     | NULL              |                |
-| description        | tinytext                                                             | NO   |     | NULL              |                |
-| latitude           | double                                                               | NO   |     | 43.0746561        |                |
-| longitude          | double                                                               | NO   |     | -89.384422        |                |
-| error              | double                                                               | NO   |     | 5                 |                |
-| type               | enum('Node','Event','Item','Npc','WebPage','AugBubble','PlayerNote') | NO   |     | Node              |                |
-| type_id            | int(11)                                                              | NO   |     | NULL              |                |
-| icon_media_id      | int(10) unsigned                                                     | NO   |     | 0                 |                |
-| item_qty           | int(11)                                                              | NO   |     | 0                 |                |
-| hidden             | enum('0','1')                                                        | NO   |     | 0                 |                |
-| force_view         | enum('0','1')                                                        | NO   |     | 0                 |                |
-| allow_quick_travel | enum('0','1')                                                        | NO   |     | 0                 |                |
-| wiggle             | tinyint(1)                                                           | NO   |     | 0                 |                |
-| show_title         | tinyint(1)                                                           | NO   |     | 0                 |                |
-| spawnstamp         | timestamp                                                            | NO   |     | CURRENT_TIMESTAMP |                |
-+--------------------+----------------------------------------------------------------------+------+-----+-------------------+----------------+
-
-+----------------+------------------+------+-----+------------------------------------------------------------------------+----------------+
-| Field          | Type             | Null | Key | Default                                                                | Extra          |
-+----------------+------------------+------+-----+------------------------------------------------------------------------+----------------+
-| qrcode_id      | int(11)          | NO   | PRI | NULL                                                                   | auto_increment |
-| game_id        | int(11)          | NO   | MUL | NULL                                                                   |                |
-| link_type      | enum('Location') | NO   |     | Location                                                               |                |
-| link_id        | int(11)          | NO   |     | NULL                                                                   |                |
-| code           | varchar(255)     | NO   |     | NULL                                                                   |                |
-| match_media_id | int(10) unsigned | NO   |     | 0                                                                      |                |
-| fail_text      | varchar(256)     | NO   |     | This code doesn't mean anything right now. You should come back later. |                |
-+----------------+------------------+------+-----+------------------------------------------------------------------------+----------------+
-
-+--------------+---------------------+------+-----+---------------------+-----------------------------+
-| Field        | Type                | Null | Key | Default             | Extra                       |
-+--------------+---------------------+------+-----+---------------------+-----------------------------+
-| player_id    | int(11) unsigned    | NO   | PRI | NULL                | auto_increment              |
-| first_name   | varchar(25)         | YES  |     | NULL                |                             |
-| last_name    | varchar(25)         | YES  |     | NULL                |                             |
-| email        | varchar(50)         | YES  |     | NULL                |                             |
-| media_id     | int(25) unsigned    | NO   |     | 0                   |                             |
-| password     | varchar(32)         | YES  |     | NULL                |                             |
-| user_name    | varchar(30)         | NO   |     | NULL                |                             |
-| latitude     | double              | NO   | MUL | 0                   |                             |
-| longitude    | double              | NO   |     | 0                   |                             |
-| last_game_id | int(10) unsigned    | NO   | MUL | 0                   |                             |
-| created      | timestamp           | NO   | MUL | 0000-00-00 00:00:00 |                             |
-| updated      | timestamp           | NO   |     | CURRENT_TIMESTAMP   | on update CURRENT_TIMESTAMP |
-| show_on_map  | tinyint(4)          | NO   |     | 1                   |                             |
-| display_name | varchar(32)         | NO   |     |                     |                             |
-| group_name   | varchar(32)         | NO   |     |                     |                             |
-| curator      | tinyint(1) unsigned | NO   |     | 0                   |                             |
-| facebook_id  | int(11) unsigned    | NO   |     | 0                   |                             |
-+--------------+---------------------+------+-----+---------------------+-----------------------------+
-
-+---------------------------------+-----------------------------------------------------------------------------------------------+------+-----+---------+----------------+
-| Field                           | Type                                                                                          | Null | Key | Default | Extra          |
-+---------------------------------+-----------------------------------------------------------------------------------------------+------+-----+---------+----------------+
-| quest_id                        | int(11) unsigned                                                                              | NO   | PRI | NULL    | auto_increment |
-| game_id                         | int(11)                                                                                       | NO   | MUL | NULL    |                |
-| name                            | tinytext                                                                                      | NO   |     | NULL    |                |
-| description                     | text                                                                                          | NO   |     | NULL    |                |
-| text_when_complete              | tinytext                                                                                      | NO   |     | NULL    |                |
-| sort_index                      | int(10) unsigned                                                                              | NO   |     | 0       |                |
-| active_media_id                 | int(10) unsigned                                                                              | NO   |     | 0       |                |
-| complete_media_id               | int(10) unsigned                                                                              | NO   |     | 0       |                |
-| full_screen_notify              | tinyint(1)                                                                                    | NO   |     | 1       |                |
-| active_icon_media_id            | int(10) unsigned                                                                              | NO   |     | 0       |                |
-| complete_icon_media_id          | int(10) unsigned                                                                              | NO   |     | 0       |                |
-| go_function                     | enum('NONE','NEARBY','GPS','QUESTS','INVENTORY','PLAYER','QR','NOTE','PICKGAME','JAVASCRIPT') | NO   |     | NONE    |                |
-| description_notification        | tinytext                                                                                      | NO   |     | NULL    |                |
-| text_when_complete_notification | tinytext                                                                                      | NO   |     | NULL    |                |
-| active_notification_media_id    | int(10) unsigned                                                                              | NO   |     | 0       |                |
-| complete_notification_media_id  | int(10) unsigned                                                                              | NO   |     | 0       |                |
-| complete_go_function            | enum('NONE','NEARBY','GPS','QUESTS','INVENTORY','PLAYER','QR','NOTE','PICKGAME','JAVASCRIPT') | NO   |     | NONE    |                |
-| complete_full_screen_notify     | tinyint(1)                                                                                    | NO   |     | 1       |                |
-| active_notif_show_dismiss       | tinyint(1)                                                                                    | NO   |     | 1       |                |
-| complete_notif_show_dismiss     | tinyint(1)                                                                                    | NO   |     | 1       |                |
-| notif_go_function               | enum('NONE','NEARBY','GPS','QUESTS','INVENTORY','PLAYER','QR','NOTE','PICKGAME','JAVASCRIPT') | NO   |     | NONE    |                |
-| complete_notif_go_function      | enum('NONE','NEARBY','GPS','QUESTS','INVENTORY','PLAYER','QR','NOTE','PICKGAME','JAVASCRIPT') | NO   |     | NONE    |                |
-+---------------------------------+-----------------------------------------------------------------------------------------------+------+-----+---------+----------------+
-
-+----------------------+--------------------------------------+------+-----+-------------------+-----------------------------+
-| Field                | Type                                 | Null | Key | Default           | Extra                       |
-+----------------------+--------------------------------------+------+-----+-------------------+-----------------------------+
-| item_id              | int(11) unsigned                     | NO   | PRI | NULL              | auto_increment              |
-| game_id              | int(11)                              | NO   | MUL | NULL              |                             |
-| name                 | varchar(255)                         | NO   |     | NULL              |                             |
-| description          | text                                 | NO   |     | NULL              |                             |
-| is_attribute         | enum('0','1')                        | NO   |     | 0                 |                             |
-| icon_media_id        | int(10) unsigned                     | NO   |     | 0                 |                             |
-| media_id             | int(10) unsigned                     | NO   |     | 0                 |                             |
-| dropable             | enum('0','1')                        | NO   |     | 0                 |                             |
-| destroyable          | enum('0','1')                        | NO   |     | 0                 |                             |
-| max_qty_in_inventory | int(11)                              | NO   |     | -1                |                             |
-| creator_player_id    | int(10) unsigned                     | NO   |     | 0                 |                             |
-| origin_latitude      | double                               | NO   |     | 0                 |                             |
-| origin_longitude     | double                               | NO   |     | 0                 |                             |
-| origin_timestamp     | timestamp                            | NO   |     | CURRENT_TIMESTAMP | on update CURRENT_TIMESTAMP |
-| weight               | int(10) unsigned                     | NO   |     | 0                 |                             |
-| url                  | tinytext                             | NO   |     | NULL              |                             |
-| type                 | enum('NORMAL','ATTRIB','URL','NOTE') | NO   |     | NORMAL            |                             |
-| tradeable            | tinyint(1)                           | NO   |     | 1                 |                             |
-+----------------------+--------------------------------------+------+-----+-------------------+-----------------------------+
-
-+---------------+------------------+------+-----+---------+----------------+
-| Field         | Type             | Null | Key | Default | Extra          |
-+---------------+------------------+------+-----+---------+----------------+
-| npc_id        | int(10) unsigned | NO   | PRI | NULL    | auto_increment |
-| game_id       | int(11)          | NO   | MUL | NULL    |                |
-| name          | varchar(255)     | NO   |     |         |                |
-| description   | text             | NO   |     | NULL    |                |
-| text          | text             | NO   |     | NULL    |                |
-| closing       | text             | NO   |     | NULL    |                |
-| media_id      | int(10) unsigned | NO   |     | 0       |                |
-| icon_media_id | int(10) unsigned | NO   |     | 0       |                |
-+---------------+------------------+------+-----+---------+----------------+
-
-+----------------------------------+------------------+------+-----+---------+----------------+
-| Field                            | Type             | Null | Key | Default | Extra          |
-+----------------------------------+------------------+------+-----+---------+----------------+
-| node_id                          | int(11) unsigned | NO   | PRI | NULL    | auto_increment |
-| game_id                          | int(11)          | NO   | MUL | NULL    |                |
-| title                            | varchar(255)     | NO   |     | NULL    |                |
-| text                             | text             | NO   |     | NULL    |                |
-| opt1_text                        | varchar(100)     | YES  |     | NULL    |                |
-| opt1_node_id                     | int(11) unsigned | NO   |     | 0       |                |
-| opt2_text                        | varchar(100)     | YES  |     | NULL    |                |
-| opt2_node_id                     | int(11) unsigned | NO   |     | 0       |                |
-| opt3_text                        | varchar(100)     | YES  |     | NULL    |                |
-| opt3_node_id                     | int(11) unsigned | NO   |     | 0       |                |
-| require_answer_incorrect_node_id | int(11) unsigned | NO   |     | 0       |                |
-| require_answer_string            | varchar(50)      | YES  |     | NULL    |                |
-| require_answer_correct_node_id   | int(10) unsigned | NO   |     | 0       |                |
-| media_id                         | int(10) unsigned | NO   |     | 0       |                |
-| icon_media_id                    | int(10) unsigned | NO   |     | 0       |                |
-+----------------------------------+------------------+------+-----+---------+----------------+
-
-+---------------+------------------+------+-----+---------+----------------+
-| Field         | Type             | Null | Key | Default | Extra          |
-+---------------+------------------+------+-----+---------+----------------+
-| web_page_id   | int(10) unsigned | NO   | PRI | NULL    | auto_increment |
-| game_id       | int(10) unsigned | NO   |     | NULL    |                |
-| icon_media_id | int(10) unsigned | NO   |     | 4       |                |
-| name          | varchar(20)      | NO   |     | NULL    |                |
-| url           | tinytext         | NO   |     | NULL    |                |
-+---------------+------------------+------+-----+---------+----------------+
-*/
-
 class PlayerLog extends Module
 {
     public function getPlayerLogs($glob)
@@ -214,7 +49,6 @@ class PlayerLog extends Module
         if(!preg_match("/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/",$reqEndDate))   $reqEndDate   = "9999-00-00 00:00:00";
         if(!is_numeric($reqGetExpired)) $reqGetExpired = 0; else if(intval($reqGetExpired) > 0) $reqGetExpired = 1;
         if(!is_numeric($reqVerbose))    $reqVerbose    = 0; else if(intval($reqVerbose)    > 0) $reqVerbose    = 1;
-
 
         $playerLogs = array();
         if($filterMode == "group")
@@ -378,6 +212,20 @@ class PlayerLog extends Module
                         $row->human = $playerLogs[$i]->player->display_name." ".$row->event;
                         break;
                 }
+                if($reqVerbose)
+                {
+                    $row->raw = new stdClass();
+                    $row->raw->id             = $r[$j]->id;
+                    $row->raw->player_id      = $r[$j]->player_id;
+                    $row->raw->game_id        = $r[$j]->game_id;
+                    $row->raw->timestamp      = $r[$j]->timestamp;
+                    $row->raw->event_type     = $r[$j]->event_type;
+                    $row->raw->event_detail_1 = $r[$j]->event_detail_1;
+                    $row->raw->event_detail_2 = $r[$j]->event_detail_2;
+                    $row->raw->event_detail_3 = $r[$j]->event_detail_3;
+                    $row->raw->deleted        = $r[$j]->deleted;
+                }
+
                 $playerLogs[$i]->log[] = $row;
             }
         }
@@ -385,7 +233,27 @@ class PlayerLog extends Module
             return new returnData(0,$playerLogs);
         if($reqOutputFormat == "csv")
         {
-            $csv = ""; //oh man. this is so slow.
+            $csv = "";
+
+            //headers
+            $csv .= "group_name,";
+            $csv .= "player_id,";
+            $csv .= "display_name,";
+            $csv .= "timestamp,";
+            $csv .= "human".($reqVerbose ? "," : "\n" );
+            if($reqVerbose)
+            {
+            $csv .= "player_log_id,";
+            $csv .= "player_id,";
+            $csv .= "game_id,";
+            $csv .= "timestamp,";
+            $csv .= "event_type,";
+            $csv .= "event_detail_1,";
+            $csv .= "event_detail_2,";
+            $csv .= "event_detail_3,";
+            $csv .= "deleted\n";
+            }
+
             for($i = 0; $i < count($playerLogs); $i++)
             {
                 for($j = 0; $j < count($playerLogs[$i]->log); $j++)
@@ -394,7 +262,19 @@ class PlayerLog extends Module
                     $csv .= $playerLogs[$i]->player->player_id.",";
                     $csv .= $playerLogs[$i]->player->display_name.",";
                     $csv .= $playerLogs[$i]->log[$j]->timestamp.",";
-                    $csv .= $playerLogs[$i]->log[$j]->human."\n";
+                    $csv .= $playerLogs[$i]->log[$j]->human. ( $reqVerbose ? "," : "\n" );
+                    if($reqVerbose)
+                    {
+                    $csv .= $playerLogs[$i]->log[$j]->raw->id.",";
+                    $csv .= $playerLogs[$i]->log[$j]->raw->player_id.",";
+                    $csv .= $playerLogs[$i]->log[$j]->raw->game_id.",";
+                    $csv .= $playerLogs[$i]->log[$j]->raw->timestamp.",";
+                    $csv .= $playerLogs[$i]->log[$j]->raw->event_type.",";
+                    $csv .= $playerLogs[$i]->log[$j]->raw->event_detail_1.",";
+                    $csv .= $playerLogs[$i]->log[$j]->raw->event_detail_2.",";
+                    $csv .= $playerLogs[$i]->log[$j]->raw->event_detail_3.",";
+                    $csv .= $playerLogs[$i]->log[$j]->raw->deleted."\n";
+                    }
                 }
             }
         }
