@@ -58,7 +58,7 @@ function deserializationAction(&$body)
 			{
 				$value = json_decode($value);
                                 //phil hack to preserve v1 behavior
-                                if(strpos($_SERVER['REQUEST_URI'],"v1.") !== fal
+                                if(strpos($_SERVER['REQUEST_URI'],"v1.") !== false)
                                     $value = json_decode($value, TRUE);
                                 else
                                     $value = json_decode($value);
