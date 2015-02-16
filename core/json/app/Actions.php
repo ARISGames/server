@@ -57,6 +57,12 @@ function deserializationAction(&$body)
 			else
 			{
 				$value = json_decode($value);
+                                //phil hack to preserve v1 behavior
+                                if(strpos($_SERVER['REQUEST_URI'],"v1.") !== fal
+                                    $value = json_decode($value, TRUE);
+                                else
+                                    $value = json_decode($value);
+                                //end hack
 			}
 		}
 		$actualArgs[] = $value;
@@ -109,9 +115,10 @@ if(!function_exists("json_encode"))
 		return $json->encode($val);
 	}
 	
-	function json_decode($val)
+	function json_decode($val, $assoc = false)
 	{
-		$json = new Services_JSON();
+                if($assoc) $json = new Services_JSON(SERVICES_JSON_LOOSE_TYPE);
+                else       $json = new Services_JSON();
 		return $json->decode($val);
 	}
 }
