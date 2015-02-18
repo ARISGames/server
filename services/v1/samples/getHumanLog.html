@@ -57,7 +57,7 @@
         };
         if(document.getElementById("group_id").value != "") logRequest.groupname = document.getElementById("group_id").value;
 
-        var response = sendRequest("playerlog.getPlayerLogsSegmented", JSON.stringify(logRequest), "POST");
+        var response = sendRequest("playerlog.getPlayerLogs", JSON.stringify(logRequest), "POST");
         if(response.returnCode > 0) { document.getElementById('logs').innerHTML = JSON.stringify(response); return; }
 
         if(getSelectedFormat() == "json" || getSelectedFormat() == "csv")
