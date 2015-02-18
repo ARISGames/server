@@ -204,7 +204,7 @@ function getMediaToUse(note) {
 	for (i = 0; i < note.contents.length; i++) {
 		if (note.contents[i].type == "PHOTO")
 			return note.contents[i].media_url;
-		if (note.contents[i].type == "MEDIA" && isPhotoURL(testnote.contents[i].media_url))
+		if (note.contents[i].type == "MEDIA" && isPhotoURL(note.contents[i].media_url))
 			return note.contents[i].media_url;
 	}
 
