@@ -128,10 +128,9 @@ class PlayerLog extends Module
 	$append = false;
 	$includeHeader = true;
 	$pagesize = 1000;
-        $playersi = 0;
-	while($playersi < count($playerLogs))
+        $i = 0;
+	while($i < count($playerLogs))
 	{
-                $i = $playersi;
                 $playerLogs[$i]->log = array();
                 $r = Module::queryArray("SELECT * FROM player_log WHERE player_id = '{$playerLogs[$i]->player->player_id}' AND game_id = '{$reqGameId}' AND timestamp BETWEEN '{$reqStartDate}' AND '{$reqEndDate}' AND (deleted = 0 OR deleted = {$reqGetExpired});");
                 for($j = 0; $j < count($r); $j++)
@@ -268,38 +267,34 @@ class PlayerLog extends Module
 			}
 		    }
 
-		    for($i = 0; $i < count($playerLogs); $i++)
-		    {
-			for($j = 0; $j < count($playerLogs[$i]->log); $j++)
-			{
-			    $csv .= $playerLogs[$i]->player->group_name.",";
-			    $csv .= $playerLogs[$i]->player->player_id.",";
-			    $csv .= $playerLogs[$i]->player->display_name.",";
-			    $csv .= $playerLogs[$i]->log[$j]->timestamp.",";
-			    $csv .= $playerLogs[$i]->log[$j]->human. ( $reqVerbose ? "," : "\n" );
-			    if($reqVerbose)
-			    {
-			    $csv .= $playerLogs[$i]->log[$j]->raw->id.",";
-			    $csv .= $playerLogs[$i]->log[$j]->raw->player_id.",";
-			    $csv .= $playerLogs[$i]->log[$j]->raw->game_id.",";
-			    $csv .= $playerLogs[$i]->log[$j]->raw->timestamp.",";
-			    $csv .= $playerLogs[$i]->log[$j]->raw->event_type.",";
-			    $csv .= $playerLogs[$i]->log[$j]->raw->event_detail_1.",";
-			    $csv .= $playerLogs[$i]->log[$j]->raw->event_detail_2.",";
-			    $csv .= $playerLogs[$i]->log[$j]->raw->event_detail_3.",";
-			    $csv .= $playerLogs[$i]->log[$j]->raw->deleted."\n";
-			    }
-			}
-		    }
+                    for($j = 0; $j < count($playerLogs[$i]->log); $j++)
+                    {
+                        $csv .= $playerLogs[$i]->player->group_name.",";
+                        $csv .= $playerLogs[$i]->player->player_id.",";
+                        $csv .= $playerLogs[$i]->player->display_name.",";
+                        $csv .= $playerLogs[$i]->log[$j]->timestamp.",";
+                        $csv .= $playerLogs[$i]->log[$j]->human. ( $reqVerbose ? "," : "\n" );
+                        if($reqVerbose)
+                        {
+                        $csv .= $playerLogs[$i]->log[$j]->raw->id.",";
+                        $csv .= $playerLogs[$i]->log[$j]->raw->player_id.",";
+                        $csv .= $playerLogs[$i]->log[$j]->raw->game_id.",";
+                        $csv .= $playerLogs[$i]->log[$j]->raw->timestamp.",";
+                        $csv .= $playerLogs[$i]->log[$j]->raw->event_type.",";
+                        $csv .= $playerLogs[$i]->log[$j]->raw->event_detail_1.",";
+                        $csv .= $playerLogs[$i]->log[$j]->raw->event_detail_2.",";
+                        $csv .= $playerLogs[$i]->log[$j]->raw->event_detail_3.",";
+                        $csv .= $playerLogs[$i]->log[$j]->raw->deleted."\n";
+                        }
+                    }
+
+        	    file_put_contents(Config::gamedataFSPath."/".$reqGameId."/".addslashes($reqOutputFilename).".csv",$csv, ($append ? FILE_APPEND : 0));
+                    $append = true;
+                    $includeHeader = false;
 		}
 
-        	file_put_contents(Config::gamedataFSPath."/".$reqGameId."/".addslashes($reqOutputFilename).".csv",$csv, ($append ? FILE_APPEND : 0));
-
                 $playerLogs[$i]->log = array(); //clear data to save memory
-
-		$append = true;
-		$includeHeader = false;
-                $playersi++;
+                $i++;
 	}
 
         return new returnData(0,Config::gamedataWWWPath."/".$reqGameId."/".addslashes($reqOutputFilename).".csv");
