@@ -102,6 +102,15 @@ class migration extends migration_dbconnection
         {
             $games[$i]->prev_migrations = array();
             $games[$i]->my_prev_migrations = array();
+
+            $mediaRet = bridgeService("v1", "media", "getMediaObject", "{$games[$i]->game_id}/{$games[$i]->icon_media_id}", false);
+            if($mediaRet->returnCode != 0) $games[$i]->icon_media_url = "";
+            else                           $games[$i]->icon_media_url = $mediaRet->data->url;
+
+            $mediaRet = bridgeService("v1", "media", "getMediaObject", "{$games[$i]->game_id}/{$games[$i]->media_id}", false);
+            if($mediaRet->returnCode != 0) $games[$i]->media_url = "";
+            else                           $games[$i]->media_url = $mediaRet->data->url;
+
             $gameMigs = migration_dbconnection::queryArray("SELECT * FROM game_migrations WHERE v1_game_id = '{$games[$i]->game_id}'");
             for($j = 0; $j < count($gameMigs); $j++)
             {
