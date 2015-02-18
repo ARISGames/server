@@ -29,6 +29,7 @@ class PlayerLog extends Module
 
         $reqOutputFilename = $glob->output_filename;
         $iknowwhatimdoing = $glob->i_know_what_im_doing == "yes"; //minimal level of "security" to prevent massive data requests
+        if($iknowwhatimdoing) set_time_limit(0);
 
         //validation
         $expectsNotice = 'Expects JSON argument of minimal form: {"output_format":"json","game_id":1,"editor_id":1,"editor_token":"abc123"}';
@@ -124,12 +125,11 @@ class PlayerLog extends Module
         $webhooksH = array(); for($i = 0; $i < count($webhooksA); $i++) $webhooksH[$webhooksA[$i]->web_hook_id] = $webhooksA[$i];
 
  	//used to segment writes so not too much memory is used
-	$done = false;
 	$append = false;
 	$includeHeader = true;
 	$pagesize = 1000;
         $playersi = 0;
-	while(!$done && $playersi < count($playerLogs))
+	while($playersi < count($playerLogs))
 	{
                 $i = $playersi;
                 $playerLogs[$i]->log = array();
@@ -294,6 +294,9 @@ class PlayerLog extends Module
 		}
 
         	file_put_contents(Config::gamedataFSPath."/".$reqGameId."/".addslashes($reqOutputFilename).".csv",$csv, ($append ? FILE_APPEND : 0));
+
+                $playerLogs[$i]->log = array(); //clear data to save memory
+
 		$append = true;
 		$includeHeader = false;
                 $playersi++;
