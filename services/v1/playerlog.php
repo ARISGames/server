@@ -27,11 +27,15 @@ class PlayerLog extends Module
         $reqGetExpired = $glob->get_expired;
         $reqVerbose    = $glob->verbose;
 
+        $reqOutputFilename = $glob->output_filename;
+        $iknowwhatimdoing = $glob->i_know_what_im_doing == "yes"; //minimal level of "security" to prevent massive data requests
+
         //validation
         $expectsNotice = 'Expects JSON argument of minimal form: {"output_format":"json","game_id":1,"editor_id":1,"editor_token":"abc123"}';
 	if(!is_string($reqOutputFormat)) $reqOutputFormat = "json"; else $reqOutputFormat = strToLower($reqOutputFormat);
         if($reqOutputFormat != "json" && $reqOutputFormat != "csv" && $reqOutputFormat != "xml")
 	return new returnData(1, NULL, "Error- Invalid output format (".$reqOutputFormat.")\n".$expectsNotice);
+        if(!is_string($reqOutputFilename)) $reqOutputFilename = "mostrecentlogrequest";
 	if(is_numeric($reqGameId)) $reqGameId = intval($reqGameId);
 	else return new returnData(1, NULL, "Error- Empty Game (".$reqGameId.")\n".$expectsNotice);
 	if(is_numeric($reqEditorId)) $reqEditorId = intval($reqEditorId);
@@ -48,7 +52,7 @@ class PlayerLog extends Module
         if(is_numeric($reqPlayer)) $filterMode = "player";
         if(!preg_match("/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/",$reqStartDate)) $reqStartDate = "0000-00-00 00:00:00";
         if(!preg_match("/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/",$reqEndDate))   $reqEndDate   = "9999-00-00 00:00:00";
-        if(floor(abs(strtotime($reqEndDate) - strtotime($reqStartDate)) / (60*60*24*31)) > 0) return new returnData(1, NULL, "Please don't ask for more than a month of data at a time!");
+        if(!$iknowwhatimdoing && floor(abs(strtotime($reqEndDate) - strtotime($reqStartDate)) / (60*60*24*31)) > 0) return new returnData(1, NULL, "Please don't ask for more than a month of data at a time!");
         if(!is_numeric($reqGetExpired)) $reqGetExpired = 0; else if(intval($reqGetExpired) > 0) $reqGetExpired = 1;
         if(!is_numeric($reqVerbose))    $reqVerbose    = 0; else if(intval($reqVerbose)    > 0) $reqVerbose    = 1;
 
@@ -289,13 +293,13 @@ class PlayerLog extends Module
 		    }
 		}
 
-        	file_put_contents(Config::gamedataFSPath."/".$reqGameId."/mostrecentlogrequest.csv",$csv, ($append ? FILE_APPEND : 0));
+        	file_put_contents(Config::gamedataFSPath."/".$reqGameId."/".addslashes($reqOutputFilename).".csv",$csv, ($append ? FILE_APPEND : 0));
 		$append = true;
 		$includeHeader = false;
                 $playersi++;
 	}
 
-        return new returnData(0,Config::gamedataWWWPath."/".$reqGameId."/mostrecentlogrequest.csv");
+        return new returnData(0,Config::gamedataWWWPath."/".$reqGameId."/".addslashes($reqOutputFilename).".csv");
     }
 
 }
