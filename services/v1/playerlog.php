@@ -48,6 +48,7 @@ class PlayerLog extends Module
         if(is_numeric($reqPlayer)) $filterMode = "player";
         if(!preg_match("/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/",$reqStartDate)) $reqStartDate = "0000-00-00 00:00:00";
         if(!preg_match("/\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}/",$reqEndDate))   $reqEndDate   = "9999-00-00 00:00:00";
+        if(floor(abs(strtotime($reqEndDate) - strtotime($reqStartDate)) / (60*60*24*31)) > 0) return new returnData(1, NULL, "Please don't ask for more than a month of data at a time!");
         if(!is_numeric($reqGetExpired)) $reqGetExpired = 0; else if(intval($reqGetExpired) > 0) $reqGetExpired = 1;
         if(!is_numeric($reqVerbose))    $reqVerbose    = 0; else if(intval($reqVerbose)    > 0) $reqVerbose    = 1;
 
