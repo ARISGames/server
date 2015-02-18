@@ -11,7 +11,9 @@ class PlayerLog extends Module
 	$data = file_get_contents("php://input");
         $glob = json_decode($data);
 
-        $reqOutputFormat = $glob->output_format;
+        $reqOutputFormat   = $glob->output_format;
+        $reqOutputToFile   = $glob->output_to_file;
+        $reqOutputFilename = $glob->output_filename;
 
         $reqGameId      = $glob->game_id;
         $reqEditorId    = $glob->editor_id;
@@ -27,7 +29,6 @@ class PlayerLog extends Module
         $reqGetExpired = $glob->get_expired;
         $reqVerbose    = $glob->verbose;
 
-        $reqOutputFilename = $glob->output_filename;
         $iknowwhatimdoing = $glob->i_know_what_im_doing == "yes"; //minimal level of "security" to prevent massive data requests
         if($iknowwhatimdoing) set_time_limit(0);
 
@@ -36,7 +37,8 @@ class PlayerLog extends Module
 	if(!is_string($reqOutputFormat)) $reqOutputFormat = "json"; else $reqOutputFormat = strToLower($reqOutputFormat);
         if($reqOutputFormat != "json" && $reqOutputFormat != "csv" && $reqOutputFormat != "xml")
 	return new returnData(1, NULL, "Error- Invalid output format (".$reqOutputFormat.")\n".$expectsNotice);
-        if(!is_string($reqOutputFilename)) $reqOutputFilename = "mostrecentlogrequest";
+        if(is_numeric($reqOutputToFile)) $reqOutputToFile = intval($reqOutputToFile); else $reqOutputToFile = 0;
+        if(!is_string($reqOutputFilename)) $reqOutputFilename = $reqOutputToFile ? "mostrecentlogrequest" : "tmpmostrecentlogrequest";
 	if(is_numeric($reqGameId)) $reqGameId = intval($reqGameId);
 	else return new returnData(1, NULL, "Error- Empty Game (".$reqGameId.")\n".$expectsNotice);
 	if(is_numeric($reqEditorId)) $reqEditorId = intval($reqEditorId);
@@ -125,10 +127,13 @@ class PlayerLog extends Module
         $webhooksH = array(); for($i = 0; $i < count($webhooksA); $i++) $webhooksH[$webhooksA[$i]->web_hook_id] = $webhooksA[$i];
 
  	//used to segment writes so not too much memory is used
-	$append = false;
-	$includeHeader = true;
 	$pagesize = 1000;
         $i = 0;
+
+        $output_filename = Config::gamedataFSPath."/".$reqGameId."/".addslashes($reqOutputFilename).".".$reqOutputFormat;
+        $output_fileurl  = Config::gamedataWWWPath."/".$reqGameId."/".addslashes($reqOutputFilename).".".$reqOutputFormat;
+
+        file_put_contents($output_filename,"", 0); //clear output file
 	while($i < count($playerLogs))
 	{
                 $playerLogs[$i]->log = array();
@@ -241,12 +246,21 @@ class PlayerLog extends Module
                     $playerLogs[$i]->log[] = $row;
                 }
 		if($reqOutputFormat == "json")
-		    return new returnData(0,$playerLogs);
+                {
+                    $json = "";
+
+                    if($i == 0) $json .= "[";
+                    else        $json .= ",";
+
+                    $json .= json_encode($playerLogs[$i]);
+
+        	    file_put_contents($output_filename,$json, FILE_APPEND);
+                }
 		if($reqOutputFormat == "csv")
 		{
 		    $csv = "";
 
-		    if($includeHeader)
+		    if($i == 0)
 		    {
 			$csv .= "group_name,";
 			$csv .= "player_id,";
@@ -288,16 +302,19 @@ class PlayerLog extends Module
                         }
                     }
 
-        	    file_put_contents(Config::gamedataFSPath."/".$reqGameId."/".addslashes($reqOutputFilename).".csv",$csv, ($append ? FILE_APPEND : 0));
-                    $append = true;
-                    $includeHeader = false;
+        	    file_put_contents($output_filename,$csv, FILE_APPEND);
 		}
 
                 $playerLogs[$i]->log = array(); //clear data to save memory
                 $i++;
 	}
+        if($reqOutputFormat == "json" && count($playerLogs) > 0) //closing ]
+            file_put_contents($output_filename,"]", FILE_APPEND);
 
-        return new returnData(0,Config::gamedataWWWPath."/".$reqGameId."/".addslashes($reqOutputFilename).".csv");
+        if($reqOutputToFile)
+            return new returnData(0,$output_fileurl);
+        else //literally json decodes valid json data so the framework can re-encode it...
+            return new returnData(0,json_decode(file_get_contents(Config::gamedataFSPath."/".$reqGameId."/".addslashes($reqOutputFilename).".".$reqOutputFormat)));
     }
 
 }
