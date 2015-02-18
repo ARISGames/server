@@ -194,12 +194,17 @@ function constructMarker(note) {
 	return html;
 }
 
+function isPhotoURL(url) {
+	return /\.(jpg|jpeg|png|gif)$/i.test(url);
+}
 
 function getMediaToUse(note) {
 	var mediaURL = "";
 	
 	for (i = 0; i < note.contents.length; i++) {
 		if (note.contents[i].type == "PHOTO")
+			return note.contents[i].media_url;
+		if (note.contents[i].type == "MEDIA" && isPhotoURL(testnote.contents[i].media_url))
 			return note.contents[i].media_url;
 	}
 
@@ -217,6 +222,8 @@ function mediaToUseType(note) {
 	
 	for (i = 0; i < note.contents.length; i++) {
 		if (note.contents[i].type == "PHOTO")
+			return "PHOTO";
+		if (note.contents[i].type == "MEDIA" && isPhotoURL(note.contents[i].media_url))
 			return "PHOTO";
 	}
 	
@@ -241,8 +248,13 @@ function getIconsForNoteContents(note)
 				videoCount++;
 			else if (note.contents[i].type == "PHOTO")
 				photoCount++;
-			else  if (note.contents[i].type == "TEXT")
+			else if (note.contents[i].type == "TEXT")
 				textCount++;
+			else if (note.contents[i].type == "MEDIA") {
+				if (isPhotoURL(note.contents[i].media_url)) {
+					photoCount++;
+				}
+			}
 		}
 		
 		var iconHTML = "";
@@ -500,6 +512,11 @@ function NoteView(html, object)
                 break;
             case 'VIDEO':
                 contentHTML.innerHTML = '<video class="note_media" controls="controls"><source src="'+content.media_url+'"><a href="'+content.media_url+'">video</a></video>';
+                break;
+            case 'MEDIA':
+                if (isPhotoURL(content.media_url)) {
+                    contentHTML.innerHTML = '<img class="note_media" src="'+content.media_url+'" />';
+                }
                 break;
         }
         return contentHTML;
