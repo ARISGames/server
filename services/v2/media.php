@@ -3,7 +3,6 @@ require_once("dbconnection.php");
 require_once("users.php");
 require_once("editors.php");
 require_once("return_package.php");
-require_once("../../libraries/wideimage/WideImage.php");
 
 class media extends dbconnection
 {
@@ -61,66 +60,75 @@ class media extends dbconnection
         fwrite($fp,base64_decode($pack->data));
         fclose($fp);
 
+
+
         $did_resize = false;
-        if (isset($pack->resize) && ($filenameext == "jpg" || $filenameext == "png" || $filenameext == "gif"))
-        {
-            $image = new Imagick($fspath);
-
-            // Reorient based on EXIF tag
-            switch ($image->getImageOrientation()) {
-                case Imagick::ORIENTATION_UNDEFINED:
-                    // We assume normal orientation
-                    break;
-                case Imagick::ORIENTATION_TOPLEFT:
-                    // All good
-                    break;
-                case Imagick::ORIENTATION_TOPRIGHT:
-                    $image->flopImage();
-                    break;
-                case Imagick::ORIENTATION_BOTTOMRIGHT:
-                    $image->rotateImage('#000', 180);
-                    break;
-                case Imagick::ORIENTATION_BOTTOMLEFT:
-                    $image->rotateImage('#000', 180);
-                    $image->flopImage();
-                    break;
-                case Imagick::ORIENTATION_LEFTTOP:
-                    $image->rotateImage('#000', 90);
-                    $image->flopImage();
-                    break;
-                case Imagick::ORIENTATION_RIGHTTOP:
-                    $image->rotateImage('#000', 90);
-                    break;
-                case Imagick::ORIENTATION_RIGHTBOTTOM:
-                    $image->rotateImage('#000', -90);
-                    $image->flopImage();
-                    break;
-                case Imagick::ORIENTATION_LEFTBOTTOM:
-                    $image->rotateImage('#000', -90);
-                    break;
-            }
-            $image->setImageOrientation(Imagick::ORIENTATION_TOPLEFT);
-
-            // Resize image proportionally so min(width, height) == $pack->resize
-            if ($image->getImageWidth() < $image->getImageHeight()) {
-              $image->resizeImage($pack->resize, 0, Imagick::FILTER_LANCZOS, 1);
-            }
-            else {
-              $image->resizeImage(0, $pack->resize, Imagick::FILTER_LANCZOS, 1);
-            }
-
-            $image->setImageCompression(Imagick::COMPRESSION_JPEG);
-            $image->setImageCompressionQuality(40);
-            $image->writeImage($resizedpath);
-            $did_resize = true;
-        }
-
         if($filenameext == "jpg" || $filenameext == "png" || $filenameext == "gif")
         {
-            $thumb = WideImage::load($fspath);
-            $thumb = $thumb->resize(128, 128, 'outside');
-            $thumb = $thumb->crop('center','center',128,128);
-            $thumb->saveToFile($fsthumbpath);
+            if(isset($pack->resize))
+            {
+                $image = new Imagick($fspath);
+
+                // Reorient based on EXIF tag
+                switch ($image->getImageOrientation()) {
+                    case Imagick::ORIENTATION_UNDEFINED:
+                        // We assume normal orientation
+                        break;
+                    case Imagick::ORIENTATION_TOPLEFT:
+                        // All good
+                        break;
+                    case Imagick::ORIENTATION_TOPRIGHT:
+                        $image->flopImage();
+                        break;
+                    case Imagick::ORIENTATION_BOTTOMRIGHT:
+                        $image->rotateImage('#000', 180);
+                        break;
+                    case Imagick::ORIENTATION_BOTTOMLEFT:
+                        $image->rotateImage('#000', 180);
+                        $image->flopImage();
+                        break;
+                    case Imagick::ORIENTATION_LEFTTOP:
+                        $image->rotateImage('#000', 90);
+                        $image->flopImage();
+                        break;
+                    case Imagick::ORIENTATION_RIGHTTOP:
+                        $image->rotateImage('#000', 90);
+                        break;
+                    case Imagick::ORIENTATION_RIGHTBOTTOM:
+                        $image->rotateImage('#000', -90);
+                        $image->flopImage();
+                        break;
+                    case Imagick::ORIENTATION_LEFTBOTTOM:
+                        $image->rotateImage('#000', -90);
+                        break;
+                }
+                $image->setImageOrientation(Imagick::ORIENTATION_TOPLEFT);
+
+                // Resize image proportionally so min(width, height) == $pack->resize
+                if ($image->getImageWidth() < $image->getImageHeight()) {
+                  $image->resizeImage($pack->resize, 0, Imagick::FILTER_LANCZOS, 1);
+                }
+                else {
+                  $image->resizeImage(0, $pack->resize, Imagick::FILTER_LANCZOS, 1);
+                }
+
+                $image->setImageCompression(Imagick::COMPRESSION_JPEG);
+                $image->setImageCompressionQuality(40);
+                $image->writeImage($resizedpath);
+                $did_resize = true;
+            }
+
+            $image = new Imagick($fspath);
+            //aspect fill to 128x128
+            $w = $image->getImageWidth();
+            $h = $image->getImageHeight();
+            if($w < $h) $image->thumbnailImage(128, 0, 1, 1);
+            else        $image->thumbnailImage(0, 128, 1, 1);
+            //crop around center
+            $w = $image->getImageWidth();
+            $h = $image->getImageHeight();
+            $image->cropImage(128, 128, ($w-128)/2, ($h-128)/2);
+            $image->writeImage($fsthumbpath);
         }
 
         if($did_resize) unlink($fspath); // after making the 128 thumbnail
