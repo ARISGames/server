@@ -62,8 +62,6 @@ class media extends dbconnection
         fwrite($fp,base64_decode($pack->data));
         fclose($fp);
 
-
-
         $did_resize = false;
         if($filenameext == "jpg" || $filenameext == "png" || $filenameext == "gif")
         {
@@ -107,12 +105,10 @@ class media extends dbconnection
                 $image->setImageOrientation(Imagick::ORIENTATION_TOPLEFT);
 
                 // Resize image proportionally so min(width, height) == $pack->resize
-                if ($image->getImageWidth() < $image->getImageHeight()) {
-                  $image->resizeImage($pack->resize, 0, Imagick::FILTER_LANCZOS, 1);
-                }
-                else {
-                  $image->resizeImage(0, $pack->resize, Imagick::FILTER_LANCZOS, 1);
-                }
+                $w = $image->getImageWidth();
+                $h = $image->getImageHeight();
+                if($w < $h) $image->resizeImage($pack->resize, ($pack->resize/$w)*$h, Imagick::FILTER_LANCZOS, 1);
+                else        $image->resizeImage(($pack->resize/$h)*$w, $pack->resize, Imagick::FILTER_LANCZOS, 1);
 
                 $image->setImageCompression(Imagick::COMPRESSION_JPEG);
                 $image->setImageCompressionQuality(40);
@@ -124,8 +120,8 @@ class media extends dbconnection
             //aspect fill to 128x128
             $w = $image->getImageWidth();
             $h = $image->getImageHeight();
-            if($w < $h) $image->thumbnailImage(128, 0, 1, 1);
-            else        $image->thumbnailImage(0, 128, 1, 1);
+            if($w < $h) $image->thumbnailImage(128, (128/$w)*$h, 1, 1);
+            else        $image->thumbnailImage((128/$h)*$w, 128, 1, 1);
             //crop around center
             $w = $image->getImageWidth();
             $h = $image->getImageHeight();
