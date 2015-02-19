@@ -12,11 +12,8 @@ require_once("bridge.php"); //to account for above problem
 require_once("migration_dbconnection.php");
 require_once("migration_return_package.php");
 
-//for in-place image resizing
-require_once("../../libraries/wideimage/WideImage.php");
-
 class migration extends migration_dbconnection
-{	
+{
     //Would be better if it used tokens rather than name/pass combos, but v1 player has no token
     public function migrateUser($playerName, $playerPass, $editorName, $editorPass, $newName, $newPass, $newDisplay, $newEmail)
     {
@@ -38,7 +35,7 @@ class migration extends migration_dbconnection
         $userpack->permission = "read_write";
         $userpack->no_auto_migrate = true; //negative var name because it's a hack and we want the default to be nonexistant
         $v2User = bridgeService("v2", "users", "logIn", "", $userpack)->data;
-            
+
         if(!$v2User) //user (name/password pair) doesn't exists
         {
             //Don't create new user if trying to migrate from already migrated data
@@ -154,7 +151,7 @@ class migration extends migration_dbconnection
         $v2Auth->user_id = $v2UserId;
         $v2Auth->key = $v2Key;
         $v2Auth->permission = "read_write";
-        
+
         $oldGame = $Games->getGame($v1GameId)->data;
         //conform old terminology to new
         $oldGame->published = $oldGame->ready_for_public;
@@ -218,7 +215,7 @@ class migration extends migration_dbconnection
         for($i = 0; $i < count($media); $i++)
         {
             $mediaIdMap[$media[$i]->media_id] = 0; //set it to 0 in case of failure
-            
+
             $filename = substr($media[$i]->file_path, strpos($media[$i]->file_path,'/')+1);
             $filenametitle = substr($filename,0,strrpos($filename,'.'));
             $filenameext   = substr($filename,strrpos($filename,'.'));
@@ -236,21 +233,25 @@ class migration extends migration_dbconnection
             }
             catch(Exception $e){}
             */
-            
+
             if( //if valid extension (image) and _128 doesn't exist, but non-_128 does, do thumbnailify here
                 ($filenameext == ".jpg" || $filenameext == ".png" || $filenameext == ".gif") &&
                 file_exists(Config::v2_gamedata_folder."/".$v2GameId."/".$filename)
-                ) 
+                )
             {
                 if(exif_imagetype(Config::v2_gamedata_folder."/".$v2GameId."/".$filename))
                 {
-                    $thumb = @WideImage::loadFromFile(Config::v2_gamedata_folder."/".$v2GameId."/".$filename);
-                    if($thumb)
-                    {
-                        $thumb = @$thumb->resize(128, 128, 'outside');
-                        $thumb = @$thumb->crop('center','center',128,128);
-                        @$thumb->saveToFile(Config::v2_gamedata_folder."/".$v2GameId."/".$filenametitle."_128".$filenameext);
-                    }
+                    $image = new Imagick(Config::v2_gamedata_folder."/".$v2GameId."/".$filename);
+                    //aspect fill to 128x128
+                    $w = $image->getImageWidth();
+                    $h = $image->getImageHeight();
+                    if($w < $h) $image->thumbnailImage(128, (128/$w)*$h, 1, 1);
+                    else        $image->thumbnailImage((128/$h)*$w, 128, 1, 1);
+                    //crop around center
+                    $w = $image->getImageWidth();
+                    $h = $image->getImageHeight();
+                    $image->cropImage(128, 128, ($w-128)/2, ($h-128)/2);
+                    $image->writeImage(Config::v2_gamedata_folder."/".$v2GameId."/".$filenametitle."_128".$filenameext);
                 }
             }
 
@@ -406,7 +407,7 @@ class migration extends migration_dbconnection
     }
 
     //helper for migrateDialogs
-    //returns package w/id of the first option, and first and last of the newly created chain of scripts. 
+    //returns package w/id of the first option, and first and last of the newly created chain of scripts.
     //(aka the option that inherits the node's requirements, the script to start it off, and the to-be-parent of any more scripts)
     //disclaimer: you should probably read up on regular expressions before messing around with this...
     public function textToScript($option, $optionIndex, $text, $gameId, $dialogId, $rootCharacterId, $rootCharacterTitle, $rootCharacterMediaId, $parentScriptId, &$characters, $maps)
@@ -421,11 +422,11 @@ class migration extends migration_dbconnection
         $newIds->lastScriptId = $parentScriptId;
         $newIds->exitToType = 0;
         $newIds->exitToId = 0;
-        
-        //The case where no parsing is necessary 
+
+        //The case where no parsing is necessary
         if(!preg_match("@<\s*dialog(ue)?\s*(\w*\s*=\s*[\"'][^\"']*[\"']\s*)*>(.*?)<\s*/\s*dialog(ue)?\s*>@is",$text,$matches))
         {
-            //phew. Nothing complicated. 
+            //phew. Nothing complicated.
             $tmpScriptId = migration_dbconnection::queryInsert("INSERT INTO dialog_scripts (game_id, dialog_id, dialog_character_id, text, created) VALUES ('{$gameId}','{$dialogId}','{$rootCharacterId}','".addslashes($text)."',CURRENT_TIMESTAMP)", "v2");
             if($option) $newIds->firstOptionId = migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, link_id, prompt, sort_index, created) VALUES ('{$gameId}','{$dialogId}','{$newIds->lastScriptId}','{$tmpScriptId}','".addslashes($option)."','{$optionIndex}',CURRENT_TIMESTAMP)", "v2");
             $newIds->firstScriptId = $tmpScriptId;
@@ -768,16 +769,16 @@ class migration extends migration_dbconnection
             if($tabs[$i]->tab == "WEBPAGE")   { $newType = "WEB_PAGE";  $newName = "WebPage";   $newDetail = $maps->webpages[$tabs[$i]->tab_detail_1]; }
             if($tabs[$i]->tab == "QR") $newType = ($tabs[$i]->tab_detail_1 == 0 || $tabs[$i]->tab_detail_1 == 2) ? "SCANNER" : "DECODER";
 
-            $newTabId = migration_dbconnection::queryInsert("INSERT INTO tabs (game_id, type, name, sort_index, content_id, created) VALUES 
+            $newTabId = migration_dbconnection::queryInsert("INSERT INTO tabs (game_id, type, name, sort_index, content_id, created) VALUES
             ('{$v2GameId}','{$newType}','{$newName}','{$tabs[$i]->tab_index}','{$newDetail}',CURRENT_TIMESTAMP)", "v2");
             $tabIdMap[$tabs[$i]->tab] = $newTabId;
 
             //if tab is QR in mode BOTH, we need to create two tabs in v2. above should have created SCANNER, so this will create QR
             //(literally copied/pasted above 3 lines. so if they change, this must as well)
             if($tabs[$i]->tab == "QR" && $tabs[$i]->tab_detail_1 == 0)
-            { 
+            {
                 $newType = "DECODER";
-                $newTabId = migration_dbconnection::queryInsert("INSERT INTO tabs (game_id, type, sort_index, content_id, created) VALUES 
+                $newTabId = migration_dbconnection::queryInsert("INSERT INTO tabs (game_id, type, sort_index, content_id, created) VALUES
                 ('{$v2GameId}','{$newType}','{$tabs[$i]->tab_index}','{$newDetail}',CURRENT_TIMESTAMP)", "v2");
                 $tabIdMap[$tabs[$i]->tab] = $newTabId;
             }
@@ -890,7 +891,7 @@ class migration extends migration_dbconnection
             if($requirementsList[$i]->requirement == "PLAYER_HAS_NOTE_WITH_LIKES")            { $requirement = "PLAYER_HAS_NOTE_WITH_LIKES";            }
             if($requirementsList[$i]->requirement == "PLAYER_HAS_NOTE_WITH_COMMENTS")         { $requirement = "PLAYER_HAS_NOTE_WITH_COMMENTS";         }
             if($requirementsList[$i]->requirement == "PLAYER_HAS_GIVEN_NOTE_COMMENTS")        { $requirement = "PLAYER_HAS_GIVEN_NOTE_COMMENTS";        }
-                
+
             $parent_and = $and_group_req_id;
             if($requirementsList[$i]->boolean_operator == "OR")
                 $parent_and = migration_dbconnection::queryInsert("INSERT INTO requirement_and_packages (game_id, requirement_root_package_id, created) VALUES ('{$gameId}', '{$root_req_id}', CURRENT_TIMESTAMP)","v2");
