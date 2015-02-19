@@ -5,7 +5,6 @@ require_once(AMFPHP_BASE . "shared/util/MessageBody.php");
 require_once(AMFPHP_BASE . "shared/util/functions.php");
 require_once(AMFPHP_BASE . "json/app/Actions.php");
 
-
 class Gateway extends BasicGateway
 {
 	function createBody()
