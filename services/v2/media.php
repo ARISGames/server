@@ -118,6 +118,7 @@ class media extends dbconnection
                 $did_resize = true;
             }
 
+/* //tmp disable to get upload back online
             $image = new Imagick($fspath);
             //aspect fill to 128x128
             $w = $image->getImageWidth();
@@ -129,6 +130,7 @@ class media extends dbconnection
             $h = $image->getImageHeight();
             $image->cropImage(128, 128, ($w-128)/2, ($h-128)/2);
             $image->writeImage($fsthumbpath);
+*/
         }
 
         if($did_resize) unlink($fspath); // after making the 128 thumbnail
