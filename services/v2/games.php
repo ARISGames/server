@@ -39,6 +39,8 @@ class games extends dbconnection
             (isset($pack->notebook_trigger_hidden)                      ? "notebook_trigger_hidden,"                      : "").
             (isset($pack->notebook_trigger_on_enter)                    ? "notebook_trigger_on_enter,"                    : "").
             (isset($pack->inventory_weight_cap)                         ? "inventory_weight_cap,"                         : "").
+            (isset($pack->is_siftr)                                     ? "is_siftr,"                                     : "").
+            (isset($pack->siftr_url)                                    ? "siftr_url,"                                    : "").
             (isset($pack->published)                                    ? "published,"                                    : "").
             (isset($pack->type)                                         ? "type,"                                         : "").
             (isset($pack->intro_scene_id)                               ? "intro_scene_id,"                               : "").
@@ -68,6 +70,8 @@ class games extends dbconnection
             (isset($pack->notebook_trigger_hidden)                      ? "'".addslashes($pack->notebook_trigger_hidden)."',"                      : "").
             (isset($pack->notebook_trigger_on_enter)                    ? "'".addslashes($pack->notebook_trigger_on_enter)."',"                    : "").
             (isset($pack->inventory_weight_cap)                         ? "'".addslashes($pack->inventory_weight_cap)."',"                         : "").
+            (isset($pack->is_siftr)                                     ? "'".addslashes($pack->is_siftr)."',"                                     : "").
+            (isset($pack->siftr_url)                                    ? "'".addslashes($pack->siftr_url)."',"                                    : "").
             (isset($pack->published)                                    ? "'".addslashes($pack->published)."',"                                    : "").
             (isset($pack->type)                                         ? "'".addslashes($pack->type)."',"                                         : "").
             (isset($pack->intro_scene_id)                               ? "'".addslashes($pack->intro_scene_id)."',"                               : "").
@@ -133,6 +137,8 @@ class games extends dbconnection
             (isset($pack->notebook_trigger_hidden)                      ? "notebook_trigger_hidden                      = '".addslashes($pack->notebook_trigger_hidden)."', "                      : "").
             (isset($pack->notebook_trigger_on_enter)                    ? "notebook_trigger_on_enter                    = '".addslashes($pack->notebook_trigger_on_enter)."', "                    : "").
             (isset($pack->inventory_weight_cap)                         ? "inventory_weight_cap                         = '".addslashes($pack->inventory_weight_cap)."', "                         : "").
+            (isset($pack->is_siftr)                                     ? "is_siftr                                     = '".addslashes($pack->is_siftr)."', "                                     : "").
+            (isset($pack->siftr_url)                                    ? "siftr_url                                    = '".addslashes($pack->siftr_url)."', "                                    : "").
             (isset($pack->published)                                    ? "published                                    = '".addslashes($pack->published)."', "                                    : "").
             (isset($pack->type)                                         ? "type                                         = '".addslashes($pack->type)."', "                                         : "").
             (isset($pack->intro_scene_id)                               ? "intro_scene_id                               = '".addslashes($pack->intro_scene_id)."', "                               : "").
@@ -172,6 +178,8 @@ class games extends dbconnection
         $game->notebook_trigger_hidden                      = $sql_game->notebook_trigger_hidden;
         $game->notebook_trigger_on_enter                    = $sql_game->notebook_trigger_on_enter;
         $game->inventory_weight_cap                         = $sql_game->inventory_weight_cap;
+        $game->is_siftr                                     = $sql_game->is_siftr;
+        $game->siftr_url                                    = $sql_game->siftr_url;
         $game->published                                    = $sql_game->published;
         $game->type                                         = $sql_game->type;
         $game->intro_scene_id                               = $sql_game->intro_scene_id;
@@ -182,6 +190,13 @@ class games extends dbconnection
     public static function getGame($pack)
     {
         $sql_game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$pack->game_id}' LIMIT 1");
+        if(!$sql_game) return new return_package(2, NULL, "The game you've requested does not exist");
+        return new return_package(0,games::gameObjectFromSQL($sql_game));
+    }
+
+    public static function getSiftrByURL($pack)
+    {
+        $sql_game = dbconnection::queryObject("SELECT * FROM games WHERE siftr_url = '{$pack->siftr_url}' AND is_siftr LIMIT 1");
         if(!$sql_game) return new return_package(2, NULL, "The game you've requested does not exist");
         return new return_package(0,games::gameObjectFromSQL($sql_game));
     }
