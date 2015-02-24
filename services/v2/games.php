@@ -191,7 +191,7 @@ class games extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        $sql_games = dbconnection::queryArray("SELECT * FROM user_games LEFT JOIN games ON user_games.game_id = games.game_id WHERE user_games.user_id = '{$pack->auth->user_id}'");
+        $sql_games = dbconnection::queryArray("SELECT * FROM user_games LEFT JOIN games ON user_games.game_id = games.game_id WHERE user_games.user_id = '{$pack->auth->user_id}' AND games.game_id IS NOT NULL");
         $games = array();
         for($i = 0; $i < count($sql_games); $i++)
             if($ob = games::gameObjectFromSQL($sql_games[$i])) $games[] = $ob;
