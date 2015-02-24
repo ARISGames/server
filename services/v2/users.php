@@ -124,7 +124,7 @@ class users extends dbconnection
         {
             $pack->auth->permission = "read_write";
             if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
-            $user = dbconnection::queryObject("SELECT * FROM users WHERE user_id = '{$pack->user_id}'");
+            $user = dbconnection::queryObject("SELECT * FROM users WHERE user_id = '{$pack->auth->user_id}'");
         }
         else if(!($user = dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}'")) || hash("sha256",$user->salt.$pack->password) != $user->hash)
 	{
@@ -169,9 +169,9 @@ class users extends dbconnection
         $ret->user_name    = $user->user_name;
         $ret->display_name = $user->display_name;
         $ret->media_id     = $user->media_id;
-        if($pack->permission == "read")       $ret->read_key       = $user->read_key;
-        if($pack->permission == "write")      $ret->write_key      = $user->write_key;
-        if($pack->permission == "read_write") $ret->read_write_key = $user->read_write_key;
+        if($pack->permission == "read"       || $pack->auth->permission == "read")       $ret->read_key       = $user->read_key;
+        if($pack->permission == "write"      || $pack->auth->permission == "write")      $ret->write_key      = $user->write_key;
+        if($pack->permission == "read_write" || $pack->auth->permission == "read_write") $ret->read_write_key = $user->read_write_key;
 
         dbconnection::queryInsert("INSERT INTO user_log (user_id, event_type, created) VALUES ('{$ret->user_id}', 'LOG_IN', CURRENT_TIMESTAMP);");
         return new return_package(0, $ret);

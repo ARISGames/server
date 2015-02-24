@@ -52,9 +52,59 @@ class migration extends migration_dbconnection
             //Don't link existing data if already linked to other user
             if($v1Player && migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_player_id = '{$v1Player->player_id}' AND v2_user_id != '{$v2User->user_id}'"))
                 return new migration_return_package(1,NULL,"Player already migrated.");
-            if($v1Editor && migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_editor_id = '{$v1Editor->editor_id} AND v2_user_id != '{$v2User->user_id}''"))
+            if($v1Editor && migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_editor_id = '{$v1Editor->editor_id}' AND v2_user_id != '{$v2User->user_id}'"))
                 return new migration_return_package(1,NULL,"Editor already migrated.");
         }
+
+        if(!$v1Player) { $v1Player = new stdClass(); $v1Player->player_id = 0; }
+        if(!$v1Editor) { $v1Editor = new stdClass(); $v1Editor->editor_id = 0; }
+
+        if(migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v2_user_id = '{$v2User->user_id}'")) //already in migrations
+            migration_dbconnection::query("UPDATE user_migrations SET v1_player_id = '{$v1Player->player_id}',  v1_editor_id = '{$v1Editor->editor_id}', v1_read_write_token = '{$v1Editor->read_write_token}' WHERE v2_user_id = '{$v2User->user_id}'");
+        else //not in migrations
+            migration_dbconnection::query("INSERT INTO user_migrations (v2_user_id, v2_read_write_key, v1_player_id, v1_editor_id, v1_read_write_token) VALUES ('{$v2User->user_id}', '{$v2User->read_write_key}', '{$v1Player->player_id}', '{$v1Editor->editor_id}', '{$v1Editor->read_write_token}')");
+
+        return new migration_return_package(0,true);
+    }
+
+    public function linkV1EditorToV2User($editorName, $editorPass = false, $v2UserId = false, $v2Key = false)
+    {
+        /*Huge hack to allow for either v1 style access or v2 access*/
+        if(!$editorPass)
+        {
+            $data = file_get_contents("php://input");
+            $glob = json_decode($data);
+            $editorName = $glob->v1_name;
+            $editorPass = $glob->v1_pass;
+            $v2UserId = $glob->auth->user_id;
+            $v2Key = $glob->auth->key;
+        }
+        /*End huge hack*/
+
+        $Players = new Players;
+        $Editors = new Editors;
+
+        $v1Player = $Players->getLoginPlayerObject($editorName, $editorPass)->data;
+        $v1Editor = $Editors->getToken($editorName, $editorPass, "read_write")->data;
+
+        //v1 player optional, v1 editor not
+        if(!$v1Editor) return new migration_return_package(1,NULL,"Editor Credentials Invalid");
+
+        $loginPack = new stdClass();
+        $loginPack->auth = new stdClass();
+        $loginPack->auth->user_id = $v2UserId;
+        $loginPack->auth->key = $v2Key;
+        $loginPack->no_auto_migrate = true; //negative var name because it's a hack and we want the default to be nonexistant
+
+        $v2User = bridgeService("v2", "users", "logIn", "", $loginPack);
+        if($v2User->returnCode != 0) return new migration_return_package(1,"Invalid v2 credentials");
+        $v2User = $v2User->data;
+
+        //Don't link existing data if already linked to other user
+        if($v1Editor && migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_editor_id = '{$v1Editor->editor_id}' AND v2_user_id != '{$v2User->user_id}'"))
+            return new migration_return_package(1,NULL,"Editor already migrated.");
+        if($v1Player && migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_player_id = '{$v1Player->player_id}' AND v2_user_id != '{$v2User->user_id}'"))
+            $v2Player = false; //v1 player migrated under diff account- don't try to link
 
         if(!$v1Player) { $v1Player = new stdClass(); $v1Player->player_id = 0; }
         if(!$v1Editor) { $v1Editor = new stdClass(); $v1Editor->editor_id = 0; }
@@ -88,8 +138,8 @@ class migration extends migration_dbconnection
         if($userRet->returnCode != 0) return new migration_return_package(1,"Invalid v2 credentials");
 
         $migData = migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v2_user_id = '{$v2UserId}' LIMIT 1");
-        if(!$migData)               return new migration_return_package(1,"v2 user not migrated");
-        if(!$migData->v1_editor_id) return new migration_return_package(1,"No v1 editor linked to v2 user");
+        if(!$migData)               return new migration_return_package(2,"v2 user not migrated");
+        if(!$migData->v1_editor_id) return new migration_return_package(2,"No v1 editor linked to v2 user");
 
         $gamesRet = bridgeService("v1", "games", "getGamesForEditor", "{$migData->v1_editor_id}/{$migData->v1_read_write_token}", false);
         if($gamesRet->returnCode != 0) return new migration_return_package(1,"v1 getGames request failed -".$gamesRet->returnCodeDescription);
