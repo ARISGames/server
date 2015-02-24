@@ -97,7 +97,7 @@ class migration extends migration_dbconnection
         $loginPack->no_auto_migrate = true; //negative var name because it's a hack and we want the default to be nonexistant
 
         $v2User = bridgeService("v2", "users", "logIn", "", $loginPack);
-        if($v2User->returnCode != 0) return new migration_return_package(1,"Invalid v2 credentials");
+        if($v2User->returnCode != 0) return new migration_return_package(1,NULL,"Invalid v2 credentials");
         $v2User = $v2User->data;
 
         //Don't link existing data if already linked to other user
@@ -135,14 +135,14 @@ class migration extends migration_dbconnection
         $loginPack->auth->key = $v2Key;
 
         $userRet = bridgeService("v2", "users", "logIn", "", $loginPack);
-        if($userRet->returnCode != 0) return new migration_return_package(1,"Invalid v2 credentials");
+        if($userRet->returnCode != 0) return new migration_return_package(1,NULL,"Invalid v2 credentials");
 
         $migData = migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v2_user_id = '{$v2UserId}' LIMIT 1");
-        if(!$migData)               return new migration_return_package(2,"v2 user not migrated");
-        if(!$migData->v1_editor_id) return new migration_return_package(2,"No v1 editor linked to v2 user");
+        if(!$migData)               return new migration_return_package(2,NULL,"v2 user not migrated");
+        if(!$migData->v1_editor_id) return new migration_return_package(2,NULL,"No v1 editor linked to v2 user");
 
         $gamesRet = bridgeService("v1", "games", "getGamesForEditor", "{$migData->v1_editor_id}/{$migData->v1_read_write_token}", false);
-        if($gamesRet->returnCode != 0) return new migration_return_package(1,"v1 getGames request failed -".$gamesRet->returnCodeDescription);
+        if($gamesRet->returnCode != 0) return new migration_return_package(1,NULL,"v1 getGames request failed -".$gamesRet->returnCodeDescription);
 
         $games = $gamesRet->data;
         for($i = 0; $i < count($games); $i++)
