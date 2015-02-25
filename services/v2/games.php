@@ -13,6 +13,11 @@ class games extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
+        if (isset($pack->siftr_url) && $pack->siftr_url == '') {
+            // For creation, a siftr_url of undefined, null, or empty string are all the same.
+            // They all become NULL in the db.
+            $pack->siftr_url = null;
+        }
         $url_result = games::isValidSiftrURL($pack);
         if ($url_result->returnCode != 0) return $url_result;
 
@@ -107,6 +112,9 @@ class games extends dbconnection
 
         $url_result = games::isValidSiftrURL($pack);
         if ($url_result->returnCode != 0) return $url_result;
+        // If the URL is an empty string (but NOT undefined or null), that means it is being explicitly set to NULL in db.
+        $unset_url = isset($pack->siftr_url) && $pack->siftr_url == '';
+        if ($unset_url) unset($pack->siftr_url);
 
         //ensure requested scene_id exists, otherwise pick one from list of existing scenes
         //this is a hack, in case you were wondering...
@@ -145,6 +153,7 @@ class games extends dbconnection
             (isset($pack->inventory_weight_cap)                         ? "inventory_weight_cap                         = '".addslashes($pack->inventory_weight_cap)."', "                         : "").
             (isset($pack->is_siftr)                                     ? "is_siftr                                     = '".addslashes($pack->is_siftr)."', "                                     : "").
             (isset($pack->siftr_url)                                    ? "siftr_url                                    = '".addslashes($pack->siftr_url)."', "                                    : "").
+            ($unset_url                                                 ? "siftr_url                                    = NULL, "                                                                  : "").
             (isset($pack->published)                                    ? "published                                    = '".addslashes($pack->published)."', "                                    : "").
             (isset($pack->type)                                         ? "type                                         = '".addslashes($pack->type)."', "                                         : "").
             (isset($pack->intro_scene_id)                               ? "intro_scene_id                               = '".addslashes($pack->intro_scene_id)."', "                               : "").
@@ -209,19 +218,26 @@ class games extends dbconnection
 
     public static function isValidSiftrURL($pack)
     {
+        // If URL is undefined, null, or empty string, return true.
+        // (but, these have different meanings in createGame and updateGame, see those fns for details)
         if (!property_exists($pack, 'siftr_url')) return new return_package(0, true);
-
         $url = (string) ($pack->siftr_url);
+        if ($url == '') return new return_package(0, true);
+
         $sql_game = dbconnection::queryObject("SELECT * FROM games WHERE siftr_url = '{$url}' LIMIT 1");
-        if ($sql_game)
-            return new return_package(2, NULL, "That URL is already taken");
-        if (strlen($url) == 0)
-            return new return_package(2, NULL, "The URL cannot be empty");
+        if ($sql_game) {
+            if (isset($pack->game_id) && intval($pack->game_id) == intval($sql_game->game_id)) {
+                // all good, we're updating an existing Siftr to have its existing URL
+            }
+            else {
+                return new return_package(2, NULL, "That URL is already taken");
+            }
+        }
         if (!preg_match('/[A-Za-z]/', $url))
             return new return_package(2, NULL, "The URL must have at least one letter");
         if (!preg_match('/^[A-Za-z0-9_-]+$/', $url))
             return new return_package(2, NULL, "The URL must consist only of letters, numbers, underscores, and dashes");
-        if ($url == 'editor')
+        if ($url == 'editor') // special case
             return new return_package(2, NULL, "That URL is already taken");
         return new return_package(0, true);
     }
