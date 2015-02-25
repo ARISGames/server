@@ -35,34 +35,29 @@ class migration extends migration_dbconnection
         $userpack->permission = "read_write";
         $userpack->no_auto_migrate = true; //negative var name because it's a hack and we want the default to be nonexistant
         $v2User = bridgeService("v2", "users", "logIn", "", $userpack)->data;
-
         if(!$v2User) //user (name/password pair) doesn't exists
         {
-            //Don't create new user if trying to migrate from already migrated data
-            if($v1Player && migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_player_id = '{$v1Player->player_id}'"))
-                return new migration_return_package(1,NULL,"Player already migrated.");
-            if($v1Editor && migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_editor_id = '{$v1Editor->editor_id}'"))
-                return new migration_return_package(1,NULL,"Editor already migrated.");
-
             $v2User = bridgeService("v2", "users", "createUser", "", $userpack)->data;
             if(!$v2User) return new migration_return_package(1,NULL,"Username Taken");
         }
-        else
+
+        //clear out existing links to v1 data
+        if($v1Player && ($mig = migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_player_id = '{$v1Player->player_id}'")))
         {
-            //Don't link existing data if already linked to other user
-            if($v1Player && migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_player_id = '{$v1Player->player_id}' AND v2_user_id != '{$v2User->user_id}'"))
-                return new migration_return_package(1,NULL,"Player already migrated.");
-            if($v1Editor && migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_editor_id = '{$v1Editor->editor_id}' AND v2_user_id != '{$v2User->user_id}'"))
-                return new migration_return_package(1,NULL,"Editor already migrated.");
+          if(!$mig->v1_editor_id) migration_dbconnection::query("DELETE FROM user_migrations WHERE v1_player_id = '{$v1Player->player_id}'");
+          else                    migration_dbconnection::query("UPDATE user_migrations SET v1_player_id = '0' WHERE v1_player_id = '{$v1Player->player_id}'");
+        }
+        if($v1Editor && migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_editor_id = '{$v1Editor->editor_id}'"))
+        {
+          if(!$mig->v1_player_id) migration_dbconnection::query("DELETE FROM user_migrations WHERE v1_editor_id = '{$v1Editor->editor_id}'");
+          else                    migration_dbconnection::query("UPDATE user_migrations SET v1_editor_id = '0' WHERE v1_editor_id = '{$v1Editor->editor_id}'");
         }
 
         if(!$v1Player) { $v1Player = new stdClass(); $v1Player->player_id = 0; }
         if(!$v1Editor) { $v1Editor = new stdClass(); $v1Editor->editor_id = 0; }
 
-        if(migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v2_user_id = '{$v2User->user_id}'")) //already in migrations
-            migration_dbconnection::query("UPDATE user_migrations SET v1_player_id = '{$v1Player->player_id}',  v1_editor_id = '{$v1Editor->editor_id}', v1_read_write_token = '{$v1Editor->read_write_token}' WHERE v2_user_id = '{$v2User->user_id}'");
-        else //not in migrations
-            migration_dbconnection::query("INSERT INTO user_migrations (v2_user_id, v2_read_write_key, v1_player_id, v1_editor_id, v1_read_write_token) VALUES ('{$v2User->user_id}', '{$v2User->read_write_key}', '{$v1Player->player_id}', '{$v1Editor->editor_id}', '{$v1Editor->read_write_token}')");
+        migration_dbconnection::query("DELETE FROM user_migrations WHERE v2_user_id = '{$v2User->user_id}'"); //clear out any previous migration data for v2 user
+        migration_dbconnection::query("INSERT INTO user_migrations (v2_user_id, v2_read_write_key, v1_player_id, v1_editor_id, v1_read_write_token) VALUES ('{$v2User->user_id}', '{$v2User->read_write_key}', '{$v1Player->player_id}', '{$v1Editor->editor_id}', '{$v1Editor->read_write_token}')");
 
         return new migration_return_package(0,true);
     }
@@ -100,19 +95,22 @@ class migration extends migration_dbconnection
         if($v2User->returnCode != 0) return new migration_return_package(1,NULL,"Invalid v2 credentials");
         $v2User = $v2User->data;
 
-        //Don't link existing data if already linked to other user
-        if($v1Editor && migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_editor_id = '{$v1Editor->editor_id}' AND v2_user_id != '{$v2User->user_id}'"))
-            return new migration_return_package(1,NULL,"Editor already migrated.");
-        if($v1Player && migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_player_id = '{$v1Player->player_id}' AND v2_user_id != '{$v2User->user_id}'"))
-            $v2Player = false; //v1 player migrated under diff account- don't try to link
+        //clear out existing links to v1 data
+        if($v1Player && ($mig = migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_player_id = '{$v1Player->player_id}'")))
+        {
+          $v1Player = false; //v1 player migrated under diff account- don't try to link
+        }
+        if($v1Editor && migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_editor_id = '{$v1Editor->editor_id}'"))
+        {
+          if(!$mig->v1_player_id) migration_dbconnection::query("DELETE FROM user_migrations WHERE v1_editor_id = '{$v1Editor->editor_id}'");
+          else                    migration_dbconnection::query("UPDATE user_migrations SET v1_editor_id = '0' WHERE v1_editor_id = '{$v1Editor->editor_id}'");
+        }
 
         if(!$v1Player) { $v1Player = new stdClass(); $v1Player->player_id = 0; }
         if(!$v1Editor) { $v1Editor = new stdClass(); $v1Editor->editor_id = 0; }
 
-        if(migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v2_user_id = '{$v2User->user_id}'")) //already in migrations
-            migration_dbconnection::query("UPDATE user_migrations SET v1_player_id = '{$v1Player->player_id}',  v1_editor_id = '{$v1Editor->editor_id}', v1_read_write_token = '{$v1Editor->read_write_token}' WHERE v2_user_id = '{$v2User->user_id}'");
-        else //not in migrations
-            migration_dbconnection::query("INSERT INTO user_migrations (v2_user_id, v2_read_write_key, v1_player_id, v1_editor_id, v1_read_write_token) VALUES ('{$v2User->user_id}', '{$v2User->read_write_key}', '{$v1Player->player_id}', '{$v1Editor->editor_id}', '{$v1Editor->read_write_token}')");
+        migration_dbconnection::query("DELETE FROM user_migrations WHERE v2_user_id = '{$v2User->user_id}'"); //clear out any previous migration data for v2 user
+        migration_dbconnection::query("INSERT INTO user_migrations (v2_user_id, v2_read_write_key, v1_player_id, v1_editor_id, v1_read_write_token) VALUES ('{$v2User->user_id}', '{$v2User->read_write_key}', '{$v1Player->player_id}', '{$v1Editor->editor_id}', '{$v1Editor->read_write_token}')");
 
         return new migration_return_package(0,true);
     }
