@@ -232,7 +232,13 @@ class users extends dbconnection
         $read       = util::rand_string(64);
         $write      = util::rand_string(64);
         $read_write = util::rand_string(64);
-        dbconnection::query("UPDATE users SET salt = '{$salt}', hash = '{$hash}', read_key = '{$read_ley}', write_key = '{$write_key}', read_write_key = '{$read_write_key}' WHERE user_id = '{$user_id}'");
+        dbconnection::query("UPDATE users SET ".
+          "salt = '{$salt}', ".
+          "hash = '{$hash}', ".
+          "read_key = '{$read}', ".
+          "write_key = '{$write}', ".
+          "read_write_key = '{$read_write}' ".
+          "WHERE user_id = '{$user_id}'");
 
         return new return_package(0, NULL);
     }
