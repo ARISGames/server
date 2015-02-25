@@ -205,31 +205,94 @@ class games extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
+        if(!is_numeric($pack->game_id)) return new return_package(1, NULL, "Invalid game ID format");
+
+        $tables = array();
+        $tables[] = "dialog_characters";
+        $tables[] = "dialog_options";
+        $tables[] = "dialog_scripts";
+        $tables[] = "dialogs";
+        $tables[] = "event_packages";
+        $tables[] = "events";
+        $tables[] = "factories";
+        $tables[] = "game_comments";
+        $tables[] = "instances";
+        $tables[] = "items";
+        $tables[] = "media";
+        $tables[] = "note_comments";
+        $tables[] = "note_likes";
+        $tables[] = "notes";
+        $tables[] = "object_tags";
+        $tables[] = "overlays";
+        $tables[] = "plaques";
+        $tables[] = "quests";
+        $tables[] = "requirement_and_packages";
+        $tables[] = "requirement_atoms";
+        $tables[] = "requirement_root_packages";
+        $tables[] = "scenes";
+        $tables[] = "tabs";
+        $tables[] = "tags";
+        $tables[] = "triggers";
+        $tables[] = "user_game_scenes";
+        $tables[] = "user_games";
+        $tables[] = "web_hooks";
+        $tables[] = "web_pages";
+
         dbconnection::query("DELETE FROM games WHERE game_id = '{$pack->game_id}' LIMIT 1");
-        dbconnection::query("DELETE FROM game_tab_data WHERE game_id = '{$pack->game_id}'");
-        dbconnection::query("DELETE FROM events WHERE game_id = '{$pack->game_id}'");
-        dbconnection::query("DELETE FROM items WHERE game_id = '{$pack->game_id}'");
-        dbconnection::query("DELETE FROM npcs WHERE game_id = '{$pack->game_id}'");
-        dbconnection::query("DELETE FROM npc_scripts WHERE game_id = '{$pack->game_id}'");
-        dbconnection::query("DELETE FROM plaques WHERE game_id = '{$pack->game_id}'");
-        dbconnection::query("DELETE FROM web_pages WHERE game_id = '{$pack->game_id}'");
-        dbconnection::query("DELETE FROM notes WHERE game_id = '{$pack->game_id}'");
-        dbconnection::query("DELETE FROM note_labels WHERE game_id = '{$pack->game_id}'");
-        dbconnection::query("DELETE FROM note_media WHERE game_id = '{$pack->game_id}'");
-        dbconnection::query("DELETE FROM quests WHERE game_id = '{$pack->game_id}'");
-        dbconnection::query("DELETE FROM media WHERE game_id = '{$pack->game_id}'");
-        dbconnection::query("DELETE FROM scenes WHERE game_id = '{$pack->game_id}'");
-        dbconnection::query("DELETE FROM instances WHERE game_id = '{$pack->game_id}'");
-        dbconnection::query("DELETE FROM triggers WHERE game_id = '{$pack->game_id}'");
-        dbconnection::query("DELETE FROM requirement_root_packages WHERE game_id = '{$pack->game_id}'");
-        dbconnection::query("DELETE FROM requirement_and_packages WHERE game_id = '{$pack->game_id}'");
-        dbconnection::query("DELETE FROM requirement_atoms WHERE game_id = '{$pack->game_id}'");
-        dbconnection::query("DELETE FROM user_game_scenes WHERE game_id = '{$pack->game_id}'");
-        dbconnection::query("DELETE FROM user_games WHERE game_id = '{$pack->game_id}'");
+        for($i = 0; $i < count($tables); $i++)
+          dbconnection::query("DELETE FROM '{$tables[$i]}' WHERE game_id = '{$pack->game_id}'");
+
         $command = 'rm -rf '. Config::v2_gamedata_folder . "/{$pack->game_id}";
         exec($command, $output, $return);
         if($return) return new return_package(4, NULL, "unable to delete game directory");
         return new return_package(0);
+    }
+
+    public static function cleanOrphans($pack)
+    {
+      $tables = array();
+      $tables[] = "dialog_characters";
+      $tables[] = "dialog_options";
+      $tables[] = "dialog_scripts";
+      $tables[] = "dialogs";
+      $tables[] = "event_packages";
+      $tables[] = "events";
+      $tables[] = "factories";
+      $tables[] = "game_comments";
+      $tables[] = "instances";
+      $tables[] = "items";
+      $tables[] = "media";
+      $tables[] = "note_comments";
+      $tables[] = "note_likes";
+      $tables[] = "notes";
+      $tables[] = "object_tags";
+      $tables[] = "overlays";
+      $tables[] = "plaques";
+      $tables[] = "quests";
+      $tables[] = "requirement_and_packages";
+      $tables[] = "requirement_atoms";
+      $tables[] = "requirement_root_packages";
+      $tables[] = "scenes";
+      $tables[] = "tabs";
+      $tables[] = "tags";
+      $tables[] = "triggers";
+      $tables[] = "user_game_scenes";
+      $tables[] = "user_games";
+      $tables[] = "web_hooks";
+      $tables[] = "web_pages";
+
+      dbconnection::query("DELETE FROM games WHERE game_id = '{$pack->game_id}' LIMIT 1");
+      for($i = 0; $i < count($tables); $i++)
+      {
+        $arr = dbconnection::queryArray("SELECT {$tables[$i]}.game_id as game_id, games.game_id as n_game_id FROM {$tables[$i]} LEFT JOIN games ON {$tables[$i]}.game_id = games.game_id WHERE games.game_id IS NULL GROUP BY game_id;");
+        for($j = 0; $j < count($arr); $j++)
+        {
+          if($tables[$i] == "media" && $arr[$j]->game_id == 0) continue; //allow default media
+          dbconnection::query("DELETE FROM {$tables[$i]} WHERE game_id = '{$arr[$j]->game_id}'");
+        }
+      }
+
+      return new return_package(0);
     }
 
     public static function getFullGame($pack)
