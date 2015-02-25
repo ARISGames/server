@@ -13,6 +13,9 @@ class games extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
+        $url_result = games::isValidSiftrURL($pack);
+        if ($url_result->returnCode != 0) return $url_result;
+
         $pack->game_id = dbconnection::queryInsert(
             "INSERT INTO games (".
             (isset($pack->name)                                         ? "name,"                                         : "").
@@ -101,6 +104,9 @@ class games extends dbconnection
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $url_result = games::isValidSiftrURL($pack);
+        if ($url_result->returnCode != 0) return $url_result;
 
         //ensure requested scene_id exists, otherwise pick one from list of existing scenes
         //this is a hack, in case you were wondering...
@@ -199,6 +205,25 @@ class games extends dbconnection
         $sql_game = dbconnection::queryObject("SELECT * FROM games WHERE siftr_url = '{$pack->siftr_url}' AND is_siftr LIMIT 1");
         if(!$sql_game) return new return_package(2, NULL, "The game you've requested does not exist");
         return new return_package(0,games::gameObjectFromSQL($sql_game));
+    }
+
+    public static function isValidSiftrURL($pack)
+    {
+        if (!property_exists($pack, 'siftr_url')) return new return_package(0, true);
+
+        $url = (string) ($pack->siftr_url);
+        $sql_game = dbconnection::queryObject("SELECT * FROM games WHERE siftr_url = '{$url}' LIMIT 1");
+        if ($sql_game)
+            return new return_package(2, NULL, "That URL is already taken");
+        if (strlen($url) == 0)
+            return new return_package(2, NULL, "The URL cannot be empty");
+        if (!preg_match('/[A-Za-z]/', $url))
+            return new return_package(2, NULL, "The URL must have at least one letter");
+        if (!preg_match('/^[A-Za-z0-9_-]+$/', $url))
+            return new return_package(2, NULL, "The URL must consist only of letters, numbers, underscores, and dashes");
+        if ($url == 'editor')
+            return new return_package(2, NULL, "That URL is already taken");
+        return new return_package(0, true);
     }
 
     public static function getGamesForUser($pack)
