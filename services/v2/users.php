@@ -127,42 +127,42 @@ class users extends dbconnection
             $user = dbconnection::queryObject("SELECT * FROM users WHERE user_id = '{$pack->auth->user_id}'");
         }
         else if(!($user = dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}'")) || hash("sha256",$user->salt.$pack->password) != $user->hash)
-	{
-		/*
-		*  BEGIN MIGRATION INJECTION
-		*/
-		//Login Failed. If username/password doesn't exist, check if we can re-route this to a migrate. 
-		if(!$user && !$pack->no_auto_migrate)
-		{
-			//miguser api for reference
-    			//public function migrateUser($playerName, $playerPass, $editorName, $editorPass, $newName, $newPass, $newDisplay, $newEmail)
+        {
+          /*
+          *  BEGIN MIGRATION INJECTION
+          */
+          //Login Failed. If username/password doesn't exist, check if we can re-route this to a migrate. 
+          if(!$user && !$pack->no_auto_migrate)
+          {
+            //miguser api for reference
+                //public function migrateUser($playerName, $playerPass, $editorName, $editorPass, $newName, $newPass, $newDisplay, $newEmail)
 
-			//first try to migrate full editor & player
-			$migArgs = $pack->user_name."/".$pack->password."/".$pack->user_name."/".$pack->password."/".$pack->user_name."/".$pack->password."/0/0";
-			$mig = bridgeService("migration", "migration", "migrateUser", $migArgs, false);
-			if($mig->returnCode != 0)
-			{
-			//if that doesn't work, just try editor
-			$migArgs = "0/0/".$pack->user_name."/".$pack->password."/".$pack->user_name."/".$pack->password."/0/0";
-			$mig = bridgeService("migration", "migration", "migrateUser", $migArgs, false);
-			}
-			//if THAT doesn't work, bad login
-			if($mig->returnCode != 0)
-            			return new return_package(1, NULL, "Incorrect username/password");
-			else //it worked!
-			{
-				//pretend the user was correctly recieved
-				$user = dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}'");
-			}
-		}
-		else //there already exists a user but they have an invalid password (so drop out of migration injection flow)
+            //first try to migrate full editor & player
+            $migArgs = $pack->user_name."/".$pack->password."/".$pack->user_name."/".$pack->password."/".$pack->user_name."/".$pack->password."/0/0";
+            $mig = bridgeService("migration", "migration", "migrateUser", $migArgs, false);
+            if($mig->returnCode != 0)
+            {
+            //if that doesn't work, just try editor
+            $migArgs = "0/0/".$pack->user_name."/".$pack->password."/".$pack->user_name."/".$pack->password."/0/0";
+            $mig = bridgeService("migration", "migration", "migrateUser", $migArgs, false);
+            }
+            //if THAT doesn't work, bad login
+            if($mig->returnCode != 0)
+                        return new return_package(1, NULL, "Incorrect username/password");
+            else //it worked!
+            {
+              //pretend the user was correctly recieved
+              $user = dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}'");
+            }
+          }
+          else //there already exists a user but they have an invalid password (so drop out of migration injection flow)
 
-		/*
-		*  END MIGRATION INJECTION
-		*/
+          /*
+          *  END MIGRATION INJECTION
+          */
 
-		return new return_package(1, NULL, "Incorrect username/password");
-	}
+          return new return_package(1, NULL, "Incorrect username/password");
+        }
 
         $ret = new stdClass();
         $ret->user_id      = $user->user_id;
