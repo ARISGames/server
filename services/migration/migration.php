@@ -12,11 +12,8 @@ require_once("bridge.php"); //to account for above problem
 require_once("migration_dbconnection.php");
 require_once("migration_return_package.php");
 
-//for in-place image resizing
-require_once("../../libraries/wideimage/WideImage.php");
-
 class migration extends migration_dbconnection
-{	
+{
     //Would be better if it used tokens rather than name/pass combos, but v1 player has no token
     public function migrateUser($playerName, $playerPass, $editorName, $editorPass, $newName, $newPass, $newDisplay, $newEmail)
     {
@@ -38,34 +35,82 @@ class migration extends migration_dbconnection
         $userpack->permission = "read_write";
         $userpack->no_auto_migrate = true; //negative var name because it's a hack and we want the default to be nonexistant
         $v2User = bridgeService("v2", "users", "logIn", "", $userpack)->data;
-            
         if(!$v2User) //user (name/password pair) doesn't exists
         {
-            //Don't create new user if trying to migrate from already migrated data
-            if($v1Player && migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_player_id = '{$v1Player->player_id}'"))
-                return new migration_return_package(1,NULL,"Player already migrated.");
-            if($v1Editor && migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_editor_id = '{$v1Editor->editor_id}'"))
-                return new migration_return_package(1,NULL,"Editor already migrated.");
-
             $v2User = bridgeService("v2", "users", "createUser", "", $userpack)->data;
             if(!$v2User) return new migration_return_package(1,NULL,"Username Taken");
         }
-        else
+
+        //clear out existing links to v1 data
+        if($v1Player && ($mig = migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_player_id = '{$v1Player->player_id}'")))
         {
-            //Don't link existing data if already linked to other user
-            if($v1Player && migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_player_id = '{$v1Player->player_id}' AND v2_user_id != '{$v2User->user_id}'"))
-                return new migration_return_package(1,NULL,"Player already migrated.");
-            if($v1Editor && migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_editor_id = '{$v1Editor->editor_id} AND v2_user_id != '{$v2User->user_id}''"))
-                return new migration_return_package(1,NULL,"Editor already migrated.");
+          if(!$mig->v1_editor_id) migration_dbconnection::query("DELETE FROM user_migrations WHERE v1_player_id = '{$v1Player->player_id}'");
+          else                    migration_dbconnection::query("UPDATE user_migrations SET v1_player_id = '0' WHERE v1_player_id = '{$v1Player->player_id}'");
+        }
+        if($v1Editor && migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_editor_id = '{$v1Editor->editor_id}'"))
+        {
+          if(!$mig->v1_player_id) migration_dbconnection::query("DELETE FROM user_migrations WHERE v1_editor_id = '{$v1Editor->editor_id}'");
+          else                    migration_dbconnection::query("UPDATE user_migrations SET v1_editor_id = '0' WHERE v1_editor_id = '{$v1Editor->editor_id}'");
         }
 
         if(!$v1Player) { $v1Player = new stdClass(); $v1Player->player_id = 0; }
         if(!$v1Editor) { $v1Editor = new stdClass(); $v1Editor->editor_id = 0; }
 
-        if(migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v2_user_id = '{$v2User->user_id}'")) //already in migrations
-            migration_dbconnection::query("UPDATE user_migrations SET v1_player_id = '{$v1Player->player_id}',  v1_editor_id = '{$v1Editor->editor_id}', v1_read_write_token = '{$v1Editor->read_write_token}' WHERE v2_user_id = '{$v2User->user_id}'");
-        else //not in migrations
-            migration_dbconnection::query("INSERT INTO user_migrations (v2_user_id, v2_read_write_key, v1_player_id, v1_editor_id, v1_read_write_token) VALUES ('{$v2User->user_id}', '{$v2User->read_write_key}', '{$v1Player->player_id}', '{$v1Editor->editor_id}', '{$v1Editor->read_write_token}')");
+        migration_dbconnection::query("DELETE FROM user_migrations WHERE v2_user_id = '{$v2User->user_id}'"); //clear out any previous migration data for v2 user
+        migration_dbconnection::query("INSERT INTO user_migrations (v2_user_id, v2_read_write_key, v1_player_id, v1_editor_id, v1_read_write_token) VALUES ('{$v2User->user_id}', '{$v2User->read_write_key}', '{$v1Player->player_id}', '{$v1Editor->editor_id}', '{$v1Editor->read_write_token}')");
+
+        return new migration_return_package(0,true);
+    }
+
+    public function linkV1EditorToV2User($editorName, $editorPass = false, $v2UserId = false, $v2Key = false)
+    {
+        /*Huge hack to allow for either v1 style access or v2 access*/
+        if(!$editorPass)
+        {
+            $data = file_get_contents("php://input");
+            $glob = json_decode($data);
+            $editorName = $glob->v1_name;
+            $editorPass = $glob->v1_pass;
+            $v2UserId = $glob->auth->user_id;
+            $v2Key = $glob->auth->key;
+        }
+        /*End huge hack*/
+
+        $Players = new Players;
+        $Editors = new Editors;
+
+        $v1Player = $Players->getLoginPlayerObject($editorName, $editorPass)->data;
+        $v1Editor = $Editors->getToken($editorName, $editorPass, "read_write")->data;
+
+        //v1 player optional, v1 editor not
+        if(!$v1Editor) return new migration_return_package(1,NULL,"Editor Credentials Invalid");
+
+        $loginPack = new stdClass();
+        $loginPack->auth = new stdClass();
+        $loginPack->auth->user_id = $v2UserId;
+        $loginPack->auth->key = $v2Key;
+        $loginPack->no_auto_migrate = true; //negative var name because it's a hack and we want the default to be nonexistant
+
+        $v2User = bridgeService("v2", "users", "logIn", "", $loginPack);
+        if($v2User->returnCode != 0) return new migration_return_package(1,NULL,"Invalid v2 credentials");
+        $v2User = $v2User->data;
+
+        //clear out existing links to v1 data
+        if($v1Player && ($mig = migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_player_id = '{$v1Player->player_id}'")))
+        {
+          $v1Player = false; //v1 player migrated under diff account- don't try to link
+        }
+        if($v1Editor && migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_editor_id = '{$v1Editor->editor_id}'"))
+        {
+          if(!$mig->v1_player_id) migration_dbconnection::query("DELETE FROM user_migrations WHERE v1_editor_id = '{$v1Editor->editor_id}'");
+          else                    migration_dbconnection::query("UPDATE user_migrations SET v1_editor_id = '0' WHERE v1_editor_id = '{$v1Editor->editor_id}'");
+        }
+
+        if(!$v1Player) { $v1Player = new stdClass(); $v1Player->player_id = 0; }
+        if(!$v1Editor) { $v1Editor = new stdClass(); $v1Editor->editor_id = 0; }
+
+        migration_dbconnection::query("DELETE FROM user_migrations WHERE v2_user_id = '{$v2User->user_id}'"); //clear out any previous migration data for v2 user
+        migration_dbconnection::query("INSERT INTO user_migrations (v2_user_id, v2_read_write_key, v1_player_id, v1_editor_id, v1_read_write_token) VALUES ('{$v2User->user_id}', '{$v2User->read_write_key}', '{$v1Player->player_id}', '{$v1Editor->editor_id}', '{$v1Editor->read_write_token}')");
 
         return new migration_return_package(0,true);
     }
@@ -88,14 +133,14 @@ class migration extends migration_dbconnection
         $loginPack->auth->key = $v2Key;
 
         $userRet = bridgeService("v2", "users", "logIn", "", $loginPack);
-        if($userRet->returnCode != 0) return new migration_return_package(1,"Invalid v2 credentials");
+        if($userRet->returnCode != 0) return new migration_return_package(1,NULL,"Invalid v2 credentials");
 
         $migData = migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v2_user_id = '{$v2UserId}' LIMIT 1");
-        if(!$migData)               return new migration_return_package(1,"v2 user not migrated");
-        if(!$migData->v1_editor_id) return new migration_return_package(1,"No v1 editor linked to v2 user");
+        if(!$migData)               return new migration_return_package(2,NULL,"v2 user not migrated");
+        if(!$migData->v1_editor_id) return new migration_return_package(2,NULL,"No v1 editor linked to v2 user");
 
         $gamesRet = bridgeService("v1", "games", "getGamesForEditor", "{$migData->v1_editor_id}/{$migData->v1_read_write_token}", false);
-        if($gamesRet->returnCode != 0) return new migration_return_package(1,"v1 getGames request failed -".$gamesRet->returnCodeDescription);
+        if($gamesRet->returnCode != 0) return new migration_return_package(1,NULL,"v1 getGames request failed -".$gamesRet->returnCodeDescription);
 
         $games = $gamesRet->data;
         for($i = 0; $i < count($games); $i++)
@@ -154,7 +199,7 @@ class migration extends migration_dbconnection
         $v2Auth->user_id = $v2UserId;
         $v2Auth->key = $v2Key;
         $v2Auth->permission = "read_write";
-        
+
         $oldGame = $Games->getGame($v1GameId)->data;
         //conform old terminology to new
         $oldGame->published = $oldGame->ready_for_public;
@@ -218,7 +263,7 @@ class migration extends migration_dbconnection
         for($i = 0; $i < count($media); $i++)
         {
             $mediaIdMap[$media[$i]->media_id] = 0; //set it to 0 in case of failure
-            
+
             $filename = substr($media[$i]->file_path, strpos($media[$i]->file_path,'/')+1);
             $filenametitle = substr($filename,0,strrpos($filename,'.'));
             $filenameext   = substr($filename,strrpos($filename,'.'));
@@ -236,21 +281,25 @@ class migration extends migration_dbconnection
             }
             catch(Exception $e){}
             */
-            
+
             if( //if valid extension (image) and _128 doesn't exist, but non-_128 does, do thumbnailify here
                 ($filenameext == ".jpg" || $filenameext == ".png" || $filenameext == ".gif") &&
                 file_exists(Config::v2_gamedata_folder."/".$v2GameId."/".$filename)
-                ) 
+                )
             {
                 if(exif_imagetype(Config::v2_gamedata_folder."/".$v2GameId."/".$filename))
                 {
-                    $thumb = @WideImage::loadFromFile(Config::v2_gamedata_folder."/".$v2GameId."/".$filename);
-                    if($thumb)
-                    {
-                        $thumb = @$thumb->resize(128, 128, 'outside');
-                        $thumb = @$thumb->crop('center','center',128,128);
-                        @$thumb->saveToFile(Config::v2_gamedata_folder."/".$v2GameId."/".$filenametitle."_128".$filenameext);
-                    }
+                    $image = new Imagick(Config::v2_gamedata_folder."/".$v2GameId."/".$filename);
+                    //aspect fill to 128x128
+                    $w = $image->getImageWidth();
+                    $h = $image->getImageHeight();
+                    if($w < $h) $image->thumbnailImage(128, (128/$w)*$h, 1, 1);
+                    else        $image->thumbnailImage((128/$h)*$w, 128, 1, 1);
+                    //crop around center
+                    $w = $image->getImageWidth();
+                    $h = $image->getImageHeight();
+                    $image->cropImage(128, 128, ($w-128)/2, ($h-128)/2);
+                    $image->writeImage(Config::v2_gamedata_folder."/".$v2GameId."/".$filenametitle."_128".$filenameext);
                 }
             }
 
@@ -406,7 +455,7 @@ class migration extends migration_dbconnection
     }
 
     //helper for migrateDialogs
-    //returns package w/id of the first option, and first and last of the newly created chain of scripts. 
+    //returns package w/id of the first option, and first and last of the newly created chain of scripts.
     //(aka the option that inherits the node's requirements, the script to start it off, and the to-be-parent of any more scripts)
     //disclaimer: you should probably read up on regular expressions before messing around with this...
     public function textToScript($option, $optionIndex, $text, $gameId, $dialogId, $rootCharacterId, $rootCharacterTitle, $rootCharacterMediaId, $parentScriptId, &$characters, $maps)
@@ -421,11 +470,11 @@ class migration extends migration_dbconnection
         $newIds->lastScriptId = $parentScriptId;
         $newIds->exitToType = 0;
         $newIds->exitToId = 0;
-        
-        //The case where no parsing is necessary 
+
+        //The case where no parsing is necessary
         if(!preg_match("@<\s*dialog(ue)?\s*(\w*\s*=\s*[\"'][^\"']*[\"']\s*)*>(.*?)<\s*/\s*dialog(ue)?\s*>@is",$text,$matches))
         {
-            //phew. Nothing complicated. 
+            //phew. Nothing complicated.
             $tmpScriptId = migration_dbconnection::queryInsert("INSERT INTO dialog_scripts (game_id, dialog_id, dialog_character_id, text, created) VALUES ('{$gameId}','{$dialogId}','{$rootCharacterId}','".addslashes($text)."',CURRENT_TIMESTAMP)", "v2");
             if($option) $newIds->firstOptionId = migration_dbconnection::queryInsert("INSERT INTO dialog_options (game_id, dialog_id, parent_dialog_script_id, link_id, prompt, sort_index, created) VALUES ('{$gameId}','{$dialogId}','{$newIds->lastScriptId}','{$tmpScriptId}','".addslashes($option)."','{$optionIndex}',CURRENT_TIMESTAMP)", "v2");
             $newIds->firstScriptId = $tmpScriptId;
@@ -768,16 +817,16 @@ class migration extends migration_dbconnection
             if($tabs[$i]->tab == "WEBPAGE")   { $newType = "WEB_PAGE";  $newName = "WebPage";   $newDetail = $maps->webpages[$tabs[$i]->tab_detail_1]; }
             if($tabs[$i]->tab == "QR") $newType = ($tabs[$i]->tab_detail_1 == 0 || $tabs[$i]->tab_detail_1 == 2) ? "SCANNER" : "DECODER";
 
-            $newTabId = migration_dbconnection::queryInsert("INSERT INTO tabs (game_id, type, name, sort_index, content_id, created) VALUES 
+            $newTabId = migration_dbconnection::queryInsert("INSERT INTO tabs (game_id, type, name, sort_index, content_id, created) VALUES
             ('{$v2GameId}','{$newType}','{$newName}','{$tabs[$i]->tab_index}','{$newDetail}',CURRENT_TIMESTAMP)", "v2");
             $tabIdMap[$tabs[$i]->tab] = $newTabId;
 
             //if tab is QR in mode BOTH, we need to create two tabs in v2. above should have created SCANNER, so this will create QR
             //(literally copied/pasted above 3 lines. so if they change, this must as well)
             if($tabs[$i]->tab == "QR" && $tabs[$i]->tab_detail_1 == 0)
-            { 
+            {
                 $newType = "DECODER";
-                $newTabId = migration_dbconnection::queryInsert("INSERT INTO tabs (game_id, type, sort_index, content_id, created) VALUES 
+                $newTabId = migration_dbconnection::queryInsert("INSERT INTO tabs (game_id, type, sort_index, content_id, created) VALUES
                 ('{$v2GameId}','{$newType}','{$tabs[$i]->tab_index}','{$newDetail}',CURRENT_TIMESTAMP)", "v2");
                 $tabIdMap[$tabs[$i]->tab] = $newTabId;
             }
@@ -890,7 +939,7 @@ class migration extends migration_dbconnection
             if($requirementsList[$i]->requirement == "PLAYER_HAS_NOTE_WITH_LIKES")            { $requirement = "PLAYER_HAS_NOTE_WITH_LIKES";            }
             if($requirementsList[$i]->requirement == "PLAYER_HAS_NOTE_WITH_COMMENTS")         { $requirement = "PLAYER_HAS_NOTE_WITH_COMMENTS";         }
             if($requirementsList[$i]->requirement == "PLAYER_HAS_GIVEN_NOTE_COMMENTS")        { $requirement = "PLAYER_HAS_GIVEN_NOTE_COMMENTS";        }
-                
+
             $parent_and = $and_group_req_id;
             if($requirementsList[$i]->boolean_operator == "OR")
                 $parent_and = migration_dbconnection::queryInsert("INSERT INTO requirement_and_packages (game_id, requirement_root_package_id, created) VALUES ('{$gameId}', '{$root_req_id}', CURRENT_TIMESTAMP)","v2");

@@ -35,24 +35,24 @@ function deserializationAction(&$body)
 	foreach($args as $key => $value)
 	{
 		//Look at the value to see if it is JSON-encoded
-		$value = urldecode($value);
-		if($value != "")
+		$urlvalue = urldecode($value);
+		if($urlvalue != "")
 		{
-			if($value[0] != '[' && $value[0] != '{' && $value != "null" && $value != "false" && $value != "true")
+			if($urlvalue[0] != '[' && $urlvalue[0] != '{' && $urlvalue != "null" && $urlvalue != "false" && $urlvalue != "true")
 			{
 				
 				//check to see if it is a number
-				$char1 = ord($value[0]);
+				$char1 = ord($urlvalue[0]);
 				if($char1 >= 0x30 && $char1 <= 0x39)
 				{
 					//Then this is a number
-					//This line was always setting the $value to an empty string
-					//$value = json_decode($value, true);
-				} //Else leave value as is
+					//This line was always setting the $urlvalue to an empty string
+					//$urlvalue = json_decode($urlvalue, true);
+				} //Else leave urlvalue as is
                 
-                // decode slashes. slashes are double encoded on client side so that they don't get confused as part of the overall URL
-                $value = str_replace("%2F", "/", $value);
-                
+                                // decode slashes. slashes are double encoded on client side so that they don't get confused as part of the overall URL
+                                $urlvalue = str_replace("%2F", "/", $urlvalue);
+                                $value = $urlvalue;
 			}
 			else
 			{
@@ -102,23 +102,5 @@ function serializationAction(& $body)
 	}
 	
 	$body->setResults($encodedResponse);
-}
-
-if(!function_exists("json_encode"))
-{
-	include_once(AMFPHP_BASE . "shared/util/JSON.php");
-	
-	function json_encode($val)
-	{
-		$json = new Services_JSON();
-		return $json->encode($val);
-	}
-	
-	function json_decode($val, $assoc = false)
-	{
-                if($assoc) $json = new Services_JSON(SERVICES_JSON_LOOSE_TYPE);
-                else       $json = new Services_JSON();
-		return $json->decode($val);
-	}
 }
 ?>
