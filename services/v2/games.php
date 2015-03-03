@@ -209,11 +209,33 @@ class games extends dbconnection
         return new return_package(0,games::gameObjectFromSQL($sql_game));
     }
 
-    public static function getSiftrByURL($pack)
+    public static function searchSiftrs($pack)
     {
-        $sql_game = dbconnection::queryObject("SELECT * FROM games WHERE siftr_url = '{$pack->siftr_url}' AND is_siftr LIMIT 1");
-        if(!$sql_game) return new return_package(2, NULL, "The game you've requested does not exist");
-        return new return_package(0,games::gameObjectFromSQL($sql_game));
+        $siftr_url = isset($pack->siftr_url) ? addslashes($pack->siftr_url) : null;
+        $count     = isset($pack->count    ) ? intval    ($pack->count    ) : 0   ;
+        $order_by  = isset($pack->order_by ) ?            $pack->order_by   : null;
+
+        $q = "SELECT * FROM games";
+        if ($order_by === "recent") {
+            // TODO
+        }
+
+        $q .= " WHERE is_siftr";
+        if ($siftr_url) $q .= " AND siftr_url = '".$pack->siftr_url."'";
+        if ($order_by === "recent") {
+            // TODO
+        }
+
+        if ($count) $q .= " LIMIT $count";
+
+        $sql_games = dbconnection::queryArray($q);
+        $games = array();
+        for($i = 0; $i < count($sql_games); $i++) {
+            if ( $ob = games::gameObjectFromSQL($sql_games[$i]) ) {
+                $games[] = $ob;
+            }
+        }
+        return new return_package(0, $games);
     }
 
     public static function isValidSiftrURL($pack)
