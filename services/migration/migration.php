@@ -168,6 +168,35 @@ class migration extends migration_dbconnection
         return new migration_return_package(0, $games);
     }
 
+
+    /* stolen from http://www.lateralcode.com/creating-a-random-string-with-php/ */
+    public static function rand_string($length)
+    {
+        $chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+        $size = strlen($chars);
+        for($i = 0; $i < $length; $i++)
+            $str .= $chars[rand(0, $size-1)];
+        return $str;
+    }
+    public function populateMissingKeys()
+    {
+      $users = migration_dbconnection::queryArray("SELECT * FROM users WHERE read_write_key = ''","v2");
+
+      for($i = 0; $i < count($users); $i++)
+      {
+        $read       = migration::rand_string(64);
+        $write      = migration::rand_string(64);
+        $read_write = migration::rand_string(64);
+        migration_dbconnection::query("UPDATE users SET ".
+          "read_key = '{$read}', ".
+          "write_key = '{$write}', ".
+          "read_write_key = '{$read_write}' ".
+          "WHERE user_id = '{$users[$i]->user_id}'","v2");
+        migration_dbconnection::query("UPDATE user_migrations SET v2_read_write_key = '{$read_write}' WHERE v2_user_id = '{$users[$i]->user_id}'");
+      }
+      return new migration_return_package(0);
+    }
+
     public function migrateGame($v2UserId, $v2Key = false, $v1GameId = false, $sift = false)
     {
         /*Huge hack to allow for either v1 style access or v2 access*/
