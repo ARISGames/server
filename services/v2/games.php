@@ -215,15 +215,17 @@ class games extends dbconnection
         $count     = isset($pack->count    ) ? intval    ($pack->count    ) : 0   ;
         $order_by  = isset($pack->order_by ) ?            $pack->order_by   : null;
 
-        $q = "SELECT * FROM games";
+        $q = "SELECT g.* FROM games AS g";
         if ($order_by === "recent") {
-            // TODO
+            $q .= " LEFT JOIN notes AS n ON g.game_id = n.game_id";
+            // TODO: also use note_comments?
         }
 
-        $q .= " WHERE is_siftr";
-        if ($siftr_url) $q .= " AND siftr_url = '".$pack->siftr_url."'";
+        $q .= " WHERE g.is_siftr";
+        if ($siftr_url) $q .= " AND g.siftr_url = '".$pack->siftr_url."'";
         if ($order_by === "recent") {
-            // TODO
+            $q .= " GROUP BY g.game_id";
+            $q .= " ORDER BY MAX(n.last_active) DESC";
         }
 
         if ($count) $q .= " LIMIT $count";
