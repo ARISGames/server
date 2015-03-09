@@ -214,9 +214,10 @@ class games extends dbconnection
         $siftr_url = isset($pack->siftr_url) ? addslashes($pack->siftr_url) : null;
         $count     = isset($pack->count    ) ? intval    ($pack->count    ) : 0   ;
         $order_by  = isset($pack->order_by ) ?            $pack->order_by   : null;
+        $days      = isset($pack->days     ) ? intval    ($pack->days     ) : 30  ;
 
         $q = "SELECT g.* FROM games AS g";
-        if ($order_by === "recent") {
+        if ($order_by === "recent" || $order_by === "popular") {
             $q .= " LEFT JOIN notes AS n ON g.game_id = n.game_id";
             // TODO: also use note_comments?
         }
@@ -226,6 +227,11 @@ class games extends dbconnection
         if ($order_by === "recent") {
             $q .= " GROUP BY g.game_id";
             $q .= " ORDER BY MAX(n.last_active) DESC";
+        }
+        else if ($order_by === "popular") {
+            $q .= " AND (n.created IS NULL OR DATEDIFF(NOW(), n.created) <= $days)";
+            $q .= " GROUP BY g.game_id";
+            $q .= " ORDER BY COUNT(n.note_id) DESC";
         }
 
         if ($count) $q .= " LIMIT $count";
