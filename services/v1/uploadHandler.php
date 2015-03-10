@@ -12,6 +12,7 @@ set_time_limit(0);
 
 require_once('media.php');
 require_once('../../libraries/wideimage/WideImage.php');
+require_once('../../config.class.php');
 
 header('HTTP/1.1 200 OK');
 header('Status: 200 OK');
@@ -102,7 +103,7 @@ else if($ext == "mp4") //only works with mp4
 //echo "data=$newMediaFileName&returnCode=0&returnCodeDescription=Success";
 echo $newMediaFileName;
 
-$errorLogFile = fopen('/var/www/html/server/gamedata/aris_error_log.txt', "a");
+$errorLogFile = fopen(Config::serverErrorLog, "a");
 fwrite($errorLogFile, "File Uploaded: ".$gameMediaDirectory."/".$newMediaFileName."");
 fclose($errorLogFile);
 

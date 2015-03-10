@@ -13,11 +13,9 @@ class Config
     const dbHost     = 'host';
     const adminEmail = 'admin@email.com'; //This email address, if specified, will be notified of server errors
 
-	//Link urls for password pages
-    const WWWPath         = 'http://ariswebsite';
-    const serverWWWPath   = 'http://aris/server';
-
 	//v1 data dirs
+    const serverWWWPath   = 'http://aris/server';
+    const WWWPath         = 'http://ariswebsite';
     const gamedataWWWPath = 'http://aris/server/gamedata';
     const gamedataFSPath  = '/path/to/server/gamedata'; //Make Sure this directory is writable
     const migrationsDir   = '/path/to/server/migrations';
@@ -27,6 +25,7 @@ class Config
 	// VERSION TWO ///////////////////////////////
 	//
 	//
+
 
     const serverErrorLog  = '/path/to/server/gamedata/aris_error_log.txt'; //Make sure this file is writable
 
@@ -62,5 +61,7 @@ class Config
     const v2_gamedata_folder   = '/path/to/server/gamedata/v2';
     const v2_gamedata_www_path = 'http://aris/server/gamedata/v2';
     const v2_error_log         = '/path/to/server/gamedata/v2/aris_error_log.txt';
+
+    const bridge_api_path = "localhost/server";
 }
 ?>

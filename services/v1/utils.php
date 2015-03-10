@@ -1,5 +1,5 @@
 <?php
-require_once('/var/www/html/server/config.class.php');
+require_once('../../config.class.php');
 
 abstract class Utils
 {
