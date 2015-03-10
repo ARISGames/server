@@ -27,8 +27,8 @@ class scenes extends dbconnection
             "'".$pack->game_id."',".
             (isset($pack->name)        ? "'".addslashes($pack->name)."',"        : "").
             (isset($pack->description) ? "'".addslashes($pack->description)."'," : "").
-            (isset($pack->eitor_x)     ? "'".addslashes($pack->eitor_x)."',"     : "").
-            (isset($pack->eitor_y)     ? "'".addslashes($pack->eitor_y)."',"     : "").
+            (isset($pack->editor_x)     ? "'".addslashes($pack->editor_x)."',"     : "").
+            (isset($pack->editor_y)     ? "'".addslashes($pack->editor_y)."',"     : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
