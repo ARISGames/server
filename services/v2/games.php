@@ -13,6 +13,14 @@ class games extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
+        if (isset($pack->siftr_url) && $pack->siftr_url == '') {
+            // For creation, a siftr_url of undefined, null, or empty string are all the same.
+            // They all become NULL in the db.
+            $pack->siftr_url = null;
+        }
+        $url_result = games::isValidSiftrURL($pack);
+        if ($url_result->returnCode != 0) return $url_result;
+
         $pack->game_id = dbconnection::queryInsert(
             "INSERT INTO games (".
             (isset($pack->name)                                         ? "name,"                                         : "").
@@ -39,6 +47,8 @@ class games extends dbconnection
             (isset($pack->notebook_trigger_hidden)                      ? "notebook_trigger_hidden,"                      : "").
             (isset($pack->notebook_trigger_on_enter)                    ? "notebook_trigger_on_enter,"                    : "").
             (isset($pack->inventory_weight_cap)                         ? "inventory_weight_cap,"                         : "").
+            (isset($pack->is_siftr)                                     ? "is_siftr,"                                     : "").
+            (isset($pack->siftr_url)                                    ? "siftr_url,"                                    : "").
             (isset($pack->published)                                    ? "published,"                                    : "").
             (isset($pack->type)                                         ? "type,"                                         : "").
             (isset($pack->intro_scene_id)                               ? "intro_scene_id,"                               : "").
@@ -68,6 +78,8 @@ class games extends dbconnection
             (isset($pack->notebook_trigger_hidden)                      ? "'".addslashes($pack->notebook_trigger_hidden)."',"                      : "").
             (isset($pack->notebook_trigger_on_enter)                    ? "'".addslashes($pack->notebook_trigger_on_enter)."',"                    : "").
             (isset($pack->inventory_weight_cap)                         ? "'".addslashes($pack->inventory_weight_cap)."',"                         : "").
+            (isset($pack->is_siftr)                                     ? "'".addslashes($pack->is_siftr)."',"                                     : "").
+            (isset($pack->siftr_url)                                    ? "'".addslashes($pack->siftr_url)."',"                                    : "").
             (isset($pack->published)                                    ? "'".addslashes($pack->published)."',"                                    : "").
             (isset($pack->type)                                         ? "'".addslashes($pack->type)."',"                                         : "").
             (isset($pack->intro_scene_id)                               ? "'".addslashes($pack->intro_scene_id)."',"                               : "").
@@ -97,6 +109,12 @@ class games extends dbconnection
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $url_result = games::isValidSiftrURL($pack);
+        if ($url_result->returnCode != 0) return $url_result;
+        // If the URL is an empty string (but NOT undefined or null), that means it is being explicitly set to NULL in db.
+        $unset_url = isset($pack->siftr_url) && $pack->siftr_url == '';
+        if ($unset_url) unset($pack->siftr_url);
 
         //ensure requested scene_id exists, otherwise pick one from list of existing scenes
         //this is a hack, in case you were wondering...
@@ -133,6 +151,9 @@ class games extends dbconnection
             (isset($pack->notebook_trigger_hidden)                      ? "notebook_trigger_hidden                      = '".addslashes($pack->notebook_trigger_hidden)."', "                      : "").
             (isset($pack->notebook_trigger_on_enter)                    ? "notebook_trigger_on_enter                    = '".addslashes($pack->notebook_trigger_on_enter)."', "                    : "").
             (isset($pack->inventory_weight_cap)                         ? "inventory_weight_cap                         = '".addslashes($pack->inventory_weight_cap)."', "                         : "").
+            (isset($pack->is_siftr)                                     ? "is_siftr                                     = '".addslashes($pack->is_siftr)."', "                                     : "").
+            (isset($pack->siftr_url)                                    ? "siftr_url                                    = '".addslashes($pack->siftr_url)."', "                                    : "").
+            ($unset_url                                                 ? "siftr_url                                    = NULL, "                                                                  : "").
             (isset($pack->published)                                    ? "published                                    = '".addslashes($pack->published)."', "                                    : "").
             (isset($pack->type)                                         ? "type                                         = '".addslashes($pack->type)."', "                                         : "").
             (isset($pack->intro_scene_id)                               ? "intro_scene_id                               = '".addslashes($pack->intro_scene_id)."', "                               : "").
@@ -172,6 +193,8 @@ class games extends dbconnection
         $game->notebook_trigger_hidden                      = $sql_game->notebook_trigger_hidden;
         $game->notebook_trigger_on_enter                    = $sql_game->notebook_trigger_on_enter;
         $game->inventory_weight_cap                         = $sql_game->inventory_weight_cap;
+        $game->is_siftr                                     = $sql_game->is_siftr;
+        $game->siftr_url                                    = $sql_game->siftr_url;
         $game->published                                    = $sql_game->published;
         $game->type                                         = $sql_game->type;
         $game->intro_scene_id                               = $sql_game->intro_scene_id;
@@ -184,6 +207,69 @@ class games extends dbconnection
         $sql_game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$pack->game_id}' LIMIT 1");
         if(!$sql_game) return new return_package(2, NULL, "The game you've requested does not exist");
         return new return_package(0,games::gameObjectFromSQL($sql_game));
+    }
+
+    public static function searchSiftrs($pack)
+    {
+        $siftr_url = isset($pack->siftr_url) ? addslashes($pack->siftr_url) : null;
+        $count     = isset($pack->count    ) ? intval    ($pack->count    ) : 0   ;
+        $order_by  = isset($pack->order_by ) ?            $pack->order_by   : null;
+        $days      = isset($pack->days     ) ? intval    ($pack->days     ) : 30  ;
+
+        $q = "SELECT g.* FROM games AS g";
+        if ($order_by === "recent" || $order_by === "popular") {
+            $q .= " LEFT JOIN notes AS n ON g.game_id = n.game_id";
+            // TODO: also use note_comments?
+        }
+
+        $q .= " WHERE g.is_siftr";
+        if ($siftr_url) $q .= " AND g.siftr_url = '".$pack->siftr_url."'";
+        if ($order_by === "recent") {
+            $q .= " GROUP BY g.game_id";
+            $q .= " ORDER BY MAX(n.last_active) DESC";
+        }
+        else if ($order_by === "popular") {
+            $q .= " AND (n.created IS NULL OR DATEDIFF(NOW(), n.created) <= $days)";
+            $q .= " GROUP BY g.game_id";
+            $q .= " ORDER BY COUNT(n.note_id) DESC";
+        }
+
+        if ($count) $q .= " LIMIT $count";
+
+        $sql_games = dbconnection::queryArray($q);
+        $games = array();
+        for($i = 0; $i < count($sql_games); $i++) {
+            if ( $ob = games::gameObjectFromSQL($sql_games[$i]) ) {
+                $games[] = $ob;
+            }
+        }
+        return new return_package(0, $games);
+    }
+
+    public static function isValidSiftrURL($pack)
+    {
+        // If URL is undefined, null, or empty string, return true.
+        // (but, these have different meanings in createGame and updateGame, see those fns for details)
+        if (!property_exists($pack, 'siftr_url')) return new return_package(0, true);
+        $url = (string) ($pack->siftr_url);
+        if ($url == '') return new return_package(0, true);
+
+        $sql_game = dbconnection::queryObject("SELECT * FROM games WHERE siftr_url = '{$url}' LIMIT 1");
+        if ($sql_game) {
+            if (isset($pack->game_id) && intval($pack->game_id) == intval($sql_game->game_id)) {
+                // all good, we're updating an existing Siftr to have its existing URL
+            }
+            else {
+                return new return_package(2, NULL, "That URL is already taken");
+            }
+        }
+        if (!preg_match('/[A-Za-z]/', $url))
+            return new return_package(2, NULL, "The URL must have at least one letter");
+        if (!preg_match('/^[A-Za-z0-9_-]+$/', $url))
+            return new return_package(2, NULL, "The URL must consist only of letters, numbers, underscores, and dashes");
+        if ($url == 'editor') // special case
+            return new return_package(2, NULL, "That URL is already taken");
+        return new return_package(0, true);
     }
 
     public static function getGamesForUser($pack)
