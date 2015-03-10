@@ -1,36 +1,66 @@
 <?php
 
-class Config 
+class Config
 {
-    const dbUser     = 'aris_db_username';
-    const dbPass     = 'aris_db_password';
-    const dbSchema   = 'aris_schema';
-    const dbHost     = 'localhost';
-    const adminEmail = ''; //This email address, if specified, will be notified of server errors
+	// LEGACY SECTION ///////////////////////////
+	//
+	//
 
-	const v2_host    = 'localhost';
-	const v2_db      = 'aris2_db';
-	const v2_db_user = 'aris2_db_user';
-	const v2_db_pass = 'aris2_db_pass';
-	const v2_gamedata_folder   = '/path/to/gamedata';
-	const v2_gamedata_www_path = 'http://www.yourdomain.com/path/to/<D-1>gamedata';
+	// old v1 conf
+    const dbUser     = 'user';
+    const dbPass     = 'pass';
+    const dbSchema   = 'dbname';
+    const dbHost     = 'host';
+    const adminEmail = 'admin@email.com'; //This email address, if specified, will be notified of server errors
 
-    const WWWPath         = 'http://www.yourdomain.com';
-    const serverWWWPath   = 'http://www.yourdomain.com/path/to/aris/server';
-    const gamedataWWWPath = 'http://www.yourdomain.com/path/to/gamedata';
-    const gamedataFSPath  = '/path/to/gamedata'; //Make Sure this directory is writable
-    const serverErrorLog  = '/path/to/aris_error_log.txt'; //Make sure this file is writable
-    const gameMediaSubdir = ''; //if this is used, you must include the trailing slash
-    const migrationsDir   = '/var/www/html/server/migrations';
+	//Link urls for password pages
+    const WWWPath         = 'http://ariswebsite';
+    const serverWWWPath   = 'http://aris/server';
 
-    const mysqlBinPath = '/Applications/MAMP/Library/bin';
+	//v1 data dirs
+    const gamedataWWWPath = 'http://aris/server/gamedata';
+    const gamedataFSPath  = '/path/to/server/gamedata'; //Make Sure this directory is writable
+    const migrationsDir   = '/path/to/server/migrations';
+
+
+
+	// VERSION TWO ///////////////////////////////
+	//
+	//
+
+    const serverErrorLog  = '/path/to/server/gamedata/aris_error_log.txt'; //Make sure this file is writable
+
+    const mysqlBinPath = '/usr/bin';
 
     //pusher.com service
-    const pusher_key    = 'key';
-    const pusher_secret = 'secret';
-    const pusher_app_id = 'app';
+    const pusher_key    = '####################';
+    const pusher_secret = '####################';
+    const pusher_app_id = '#####';
 
     //PHP accelerator and cache
     const isAPCLoaded = FALSE; //Change to TRUE if the APC server extension has been configured
+
+
+    //v1 conf
+    const v1_host     = 'host';
+    const v1_db_user  = 'user';
+    const v1_db_pass  = 'pass';
+    const v1_db       = 'dbname';
+
+    //migration conf
+    const mig_host    = 'host';
+    const mig_db_user = 'user';
+    const mig_db_pass = 'pass';
+    const mig_db      = 'dbname';
+
+    //v2 conf
+    const v2_host     = 'host';
+    const v2_db_user  = 'user';
+    const v2_db_pass  = 'pass';
+    const v2_db       = 'dbname';
+
+    const v2_gamedata_folder   = '/path/to/server/gamedata/v2';
+    const v2_gamedata_www_path = 'http://aris/server/gamedata/v2';
+    const v2_error_log         = '/path/to/server/gamedata/v2/aris_error_log.txt';
 }
 ?>
