@@ -1,0 +1,13 @@
+ALTER TABLE dialog_scripts ALTER COLUMN text text NULL;
+ALTER TABLE dialogs ALTER COLUMN description text NULL;
+ALTER TABLE factories ALTER COLUMN description text NULL;
+ALTER TABLE games ALTER COLUMN description text NULL;
+ALTER TABLE items ALTER COLUMN description text NULL;
+ALTER TABLE note_comments ALTER COLUMN description text NULL;
+ALTER TABLE notes ALTER COLUMN description text NULL;
+ALTER TABLE plaques ALTER COLUMN description text NULL;
+ALTER TABLE quests ALTER COLUMN description text NULL;
+ALTER TABLE quests ALTER COLUMN active_description text NULL;
+ALTER TABLE quests ALTER COLUMN complete_description text NULL;
+ALTER TABLE scenes ALTER COLUMN description text NULL;
+ALTER TABLE tabs ALTER COLUMN description text NULL;
