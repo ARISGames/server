@@ -65,5 +65,29 @@ class db extends dbconnection
 
         dbconnection::queryInsert("INSERT INTO db_upgrades (user_id, version_major, version_minor, timestamp) VALUES ('{$user_id}', '{$maj}', '{$min}', CURRENT_TIMESTAMP)");
     }
+
+
+
+
+/*
+    //Helper for manual schema cleanup
+    public static function getDefaultlessColumns($pack)
+    {
+      $columns = dbconnection::queryArray("SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='tmp_db';");
+
+      $defaultless = array();
+      for($i = 0; $i < count($columns); $i++)
+      {
+        $r;
+        if(($r = dbconnection::queryObject("SELECT DEFAULT({$columns[$i]->COLUMN_NAME}) FROM {$columns[$i]->TABLE_NAME} LIMIT 1;")) === false)
+          $defaultless[] = $columns[$i];
+      }
+
+      for($i = 0; $i < count($defaultless); $i++)
+        echo "ALTER TABLE {$defaultless[$i]->TABLE_NAME} ALTER COLUMN {$defaultless[$i]->COLUMN_NAME} SET DEFAULT NULL;\n";
+
+      return $defaultless;
+    }
+*/
 }
 ?>

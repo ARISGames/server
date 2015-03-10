@@ -11,7 +11,7 @@ This will check the db_upgrades table for what upgrades have already run, and cr
 
 Upgrades are simply SQL files (newline separated MySQL queries) in the upgrades folder, and take the filename of VER_MAJ.VER_MIN.sql. Running db.upgrade will run those upgrades not already run, in order. That's it.
 
-For example, if there exists 0.0.sql, 0.0.sql, 0.1.sql, 0.2.sql, 1.0.sql, and 1.1.sql in the upgrades folder, and the upgrade script has recorded that 0.0.sql and 0.1.sql have already been run, running the upgrade service will result in 0.2.sql, 1.0.sql, and 1.1.sql being run, and being marked as such. running the upgrade service again will result in nothing new happening (all scripts have already been run, and won't be re-run).
+For example, if there exists 0.0.sql, 0.1.sql, 0.2.sql, 1.0.sql, and 1.1.sql in the upgrades folder, and the upgrade script has recorded that 0.0.sql and 0.1.sql have already been run, running the upgrade service will result in 0.2.sql, 1.0.sql, and 1.1.sql being run, and being marked as such. running the upgrade service again will result in nothing new happening (all scripts have already been run, and won't be re-run).
 
 To add an upgrade, simply find the latest upgrade in the upgrades folder, and add a new file with incremented version major or version minor as its file name. Then run db.upgrade.
 
