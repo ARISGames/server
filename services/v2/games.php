@@ -380,6 +380,29 @@ class games extends dbconnection
         }
       }
 
+      //instances
+      $types = array();
+      $tables = array();
+      $ids = array();
+      $types[] = "PLAQUE"; $tables[] = "plaques"; $ids[] = "plaque_id";
+      $types[] = "ITEM"; $tables[] = "items"; $ids[] = "item_id";
+      $types[] = "DIALOG"; $tables[] = "dialogs"; $ids[] = "dialog_id";
+      $types[] = "WEB_PAGE"; $tables[] = "web_pages"; $ids[] = "web_page_id";
+      $types[] = "NOTE"; $tables[] = "notes"; $ids[] = "note_id";
+      $types[] = "FACTORY"; $tables[] = "factories"; $ids[] = "factory_id";
+
+      for($i = 0; $i < count($types); $i++)
+      {
+        $arr = dbconnection::queryArray("SELECT * FROM instances LEFT JOIN {$tables[$i]} ON instances.object_id = {$tables[$i]}.{$ids[$i]} WHERE instances.object_type = '{$types[$i]}' AND {$tables[$i]}.{$ids[$i]} IS NULL;");
+        for($j = 0; $j < count($arr); $j++)
+        {
+          if($pack->execute)
+            dbconnection::query("DELETE FROM instances WHERE instance_id = '{$arr[$j]->instance_id}';");
+          else //dry run
+            echo "DELETE FROM instances WHERE instance_id = '{$arr[$j]->instance_id}';\n";
+        }
+      }
+
       return new return_package(0);
     }
 
