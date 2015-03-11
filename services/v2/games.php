@@ -326,7 +326,7 @@ class games extends dbconnection
 
         dbconnection::query("DELETE FROM games WHERE game_id = '{$pack->game_id}' LIMIT 1");
         for($i = 0; $i < count($tables); $i++)
-          dbconnection::query("DELETE FROM '{$tables[$i]}' WHERE game_id = '{$pack->game_id}'");
+          dbconnection::query("DELETE FROM {$tables[$i]} WHERE game_id = '{$pack->game_id}'");
 
         $command = 'rm -rf '. Config::v2_gamedata_folder . "/{$pack->game_id}";
         exec($command, $output, $return);
