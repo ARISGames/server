@@ -326,7 +326,7 @@ class games extends dbconnection
 
         dbconnection::query("DELETE FROM games WHERE game_id = '{$pack->game_id}' LIMIT 1");
         for($i = 0; $i < count($tables); $i++)
-          dbconnection::query("DELETE FROM '{$tables[$i]}' WHERE game_id = '{$pack->game_id}'");
+          dbconnection::query("DELETE FROM {$tables[$i]} WHERE game_id = '{$pack->game_id}'");
 
         $command = 'rm -rf '. Config::v2_gamedata_folder . "/{$pack->game_id}";
         exec($command, $output, $return);
@@ -367,15 +367,50 @@ class games extends dbconnection
       $tables[] = "web_hooks";
       $tables[] = "web_pages";
 
-      dbconnection::query("DELETE FROM games WHERE game_id = '{$pack->game_id}' LIMIT 1");
       for($i = 0; $i < count($tables); $i++)
       {
         $arr = dbconnection::queryArray("SELECT {$tables[$i]}.game_id as game_id, games.game_id as n_game_id FROM {$tables[$i]} LEFT JOIN games ON {$tables[$i]}.game_id = games.game_id WHERE games.game_id IS NULL GROUP BY game_id;");
         for($j = 0; $j < count($arr); $j++)
         {
           if($tables[$i] == "media" && $arr[$j]->game_id == 0) continue; //allow default media
-          dbconnection::query("DELETE FROM {$tables[$i]} WHERE game_id = '{$arr[$j]->game_id}'");
+          if($pack->execute)
+            dbconnection::query("DELETE FROM {$tables[$i]} WHERE game_id = '{$arr[$j]->game_id}';");
+          else //dry run
+            echo "DELETE FROM {$tables[$i]} WHERE game_id = '{$arr[$j]->game_id}';\n";
         }
+      }
+
+      //instances
+      $types = array();
+      $tables = array();
+      $ids = array();
+      $types[] = "PLAQUE"; $tables[] = "plaques"; $ids[] = "plaque_id";
+      $types[] = "ITEM"; $tables[] = "items"; $ids[] = "item_id";
+      $types[] = "DIALOG"; $tables[] = "dialogs"; $ids[] = "dialog_id";
+      $types[] = "WEB_PAGE"; $tables[] = "web_pages"; $ids[] = "web_page_id";
+      $types[] = "NOTE"; $tables[] = "notes"; $ids[] = "note_id";
+      $types[] = "FACTORY"; $tables[] = "factories"; $ids[] = "factory_id";
+
+      for($i = 0; $i < count($types); $i++)
+      {
+        $arr = dbconnection::queryArray("SELECT * FROM instances LEFT JOIN {$tables[$i]} ON instances.object_id = {$tables[$i]}.{$ids[$i]} WHERE instances.object_type = '{$types[$i]}' AND {$tables[$i]}.{$ids[$i]} IS NULL;");
+        for($j = 0; $j < count($arr); $j++)
+        {
+          if($pack->execute)
+            dbconnection::query("DELETE FROM instances WHERE instance_id = '{$arr[$j]->instance_id}';");
+          else //dry run
+            echo "DELETE FROM instances WHERE instance_id = '{$arr[$j]->instance_id}';\n";
+        }
+      }
+
+      //triggers
+      $arr = dbconnection::queryArray("SELECT * FROM triggers LEFT JOIN instances ON triggers.instance_id = instances.instance_id WHERE instances.instance_id IS NULL;");
+      for($j = 0; $j < count($arr); $j++) //use '$j' for consistency
+      {
+        if($pack->execute)
+          dbconnection::query("DELETE FROM triggers WHERE trigger_id = '{$arr[$j]->trigger_id}';");
+        else //dry run
+          echo "DELETE FROM triggers WHERE trigger_id = '{$arr[$j]->trigger_id}';\n";
       }
 
       return new return_package(0);

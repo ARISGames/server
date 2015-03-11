@@ -43,8 +43,7 @@ class notes extends dbconnection
 
         if($pack->trigger)
         {
-
-			$scene_id    = dbconnection::queryObject("SELECT * FROM user_game_scenes WHERE user_id = '{$pack->auth->user_id}' AND game_id = '{$pack->game_id}'")->scene_id;
+            $scene_id    = dbconnection::queryObject("SELECT * FROM user_game_scenes WHERE user_id = '{$pack->auth->user_id}' AND game_id = '{$pack->game_id}'")->scene_id;
             $instance_id = dbconnection::queryInsert("INSERT INTO instances (game_id, object_id, object_type, created) VALUES ('{$pack->game_id}', '{$pack->note_id}', 'NOTE', CURRENT_TIMESTAMP)");
             $trigger_id  = dbconnection::queryInsert("INSERT INTO triggers (game_id, instance_id, scene_id, type, latitude, longitude, infinite_distance, created) VALUES ( '{$pack->game_id}', '{$instance_id}', '{$scene_id}', 'LOCATION', '{$pack->trigger->latitude}', '{$pack->trigger->longitude}', '1', CURRENT_TIMESTAMP);");
         }
@@ -328,9 +327,27 @@ class notes extends dbconnection
         ) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM notes WHERE note_id = '{$pack->note_id}' LIMIT 1");
-
         //cleanup
-        dbconnection::query("DELETE FROM object_tags WHERE object_type = 'NOTE' AND object_id = '{$pack->note_id}'");
+        $noteComments = dbconnection::queryArray("SELECT * FROM note_comments WHERE note_id = '{$pack->note_id}'");
+        for($i = 0; $i < count($note_comments); $i++)
+        {
+            $pack->note_comment_id = $noteComments[$i]->note_comment_id;
+            note_comments::deleteNoteComment($pack);
+        }
+
+        $tags = dbconnection::queryArray("SELECT * FROM object_tags WHERE object_type = 'NOTE' AND object_id = '{$pack->note_id}'");
+        for($i = 0; $i < count($tags); $i++)
+        {
+            $pack->object_tag_id = $tags[$i]->object_tag_id;
+            tags::deleteObjectTag($pack);
+        }
+
+        $instances = dbconnection::queryArray("SELECT * FROM instances WHERE object_type = 'NOTE' AND object_id = '{$pack->note_id}'");
+        for($i = 0; $i < count($instances); $i++)
+        {
+            $pack->instance_id = $instances[$i]->instance_id;
+            instances::deleteInstance($pack);
+        }
 
         return new return_package(0);
     }

@@ -105,12 +105,21 @@ class note_comments extends dbconnection
     public static function deleteNoteComment($pack)
     {
         $note_comment = dbconnection::queryObject("SELECT * FROM note_comments WHERE note_comment_id = '{$pack->note_comment_id}'");
+        $note = dbconnection::queryObject("SELECT * FROM notes WHERE note_id = '{$note_comment->note_id}'");
         $pack->auth->game_id = $note_comment->game_id;
         $pack->auth->permission = "read_write";
+
+        //tl;dr: must be game owner, note owner, or comment owner to delete comment
         if(
-          ($pack->auth->user_id != $note_comment->user_id || !users::authenticateUser($pack->auth)) &&
-          !editors::authenticateGameEditor($pack->auth)
-        ) return new return_package(6, NULL, "Failed Authentication");
+            !( //it is not the case that
+              users::authenticateUser($pack->auth) && //you are who you say you are and
+              (
+                $pack->auth->user_id == $note_comment->user_id || //you are comment owner or
+                $pack->auth->user_id == $note->user_id) //you are note owner
+              ) && //and
+          !editors::authenticateGameEditor($pack->auth) //you are not game editor
+        )
+          return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM note_comments WHERE note_comment_id = '{$pack->note_comment_id}' LIMIT 1");
 
