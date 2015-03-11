@@ -46,7 +46,7 @@ class notes extends dbconnection
 
 			$scene_id    = dbconnection::queryObject("SELECT * FROM user_game_scenes WHERE user_id = '{$pack->auth->user_id}' AND game_id = '{$pack->game_id}'")->scene_id;
             $instance_id = dbconnection::queryInsert("INSERT INTO instances (game_id, object_id, object_type, created) VALUES ('{$pack->game_id}', '{$pack->note_id}', 'NOTE', CURRENT_TIMESTAMP)");
-            $trigger_id  = dbconnection::queryInsert("INSERT INTO triggers (game_id, instance_id, scene_id, type, latitude, longitude, distance, created) VALUES ( '{$pack->game_id}', '{$instance_id}', '{$scene_id}', 'LOCATION', '{$pack->trigger->latitude}', '{$pack->trigger->longitude}', '25', CURRENT_TIMESTAMP);");
+            $trigger_id  = dbconnection::queryInsert("INSERT INTO triggers (game_id, instance_id, scene_id, type, latitude, longitude, infinite_distance, created) VALUES ( '{$pack->game_id}', '{$instance_id}', '{$scene_id}', 'LOCATION', '{$pack->trigger->latitude}', '{$pack->trigger->longitude}', '1', CURRENT_TIMESTAMP);");
         }
 
         //allow for 'tag_id' in API, but really just use object_tags
@@ -72,8 +72,17 @@ class notes extends dbconnection
                 $instance = dbconnection::queryObject("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND object_type = 'NOTE' AND object_id = '{$pack->note_id}'");
             }
 
-            dbconnection::query("DELETE FROM triggers WHERE game_id = '{$pack->game_id}' AND instance_id = '{$instance->instance_id}'");
-            dbconnection::queryInsert("INSERT INTO triggers (game_id, instance_id, type, name, title, latitude, longitude, distance, created) VALUES ( '{$pack->game_id}', '{$instance->instance_id}', 'LOCATION', '{$pack->name}', '{$pack->name}', '{$pack->trigger->latitude}', '{$pack->trigger->longitude}', '25', CURRENT_TIMESTAMP);");
+            // Find existing
+            $trigger = dbconnection::queryObject("SELECT * FROM triggers WHERE game_id = '{$pack->game_id}' AND instance_id = '{$instance->instance_id}'");
+            if($trigger)
+            {
+                dbconnection::query("UPDATE triggers SET latitude = '{$pack->trigger->latitude}', longitude = '{$pack->trigger->longitude}' WHERE trigger_id = '{$trigger->trigger_id}'");
+            }
+            else
+            {
+                $scene_id = dbconnection::queryObject("SELECT * FROM user_game_scenes WHERE user_id = '{$pack->auth->user_id}' AND game_id = '{$pack->game_id}'")->scene_id;
+                dbconnection::queryInsert("INSERT INTO triggers (game_id, instance_id, scene_id, type, latitude, longitude, infinite_distance, created) VALUES ( '{$pack->game_id}', '{$instance->instance_id}', '{$scene_id}', 'LOCATION', '{$pack->name}', '{$pack->name}', '{$pack->trigger->latitude}', '{$pack->trigger->longitude}', '1', CURRENT_TIMESTAMP);");
+            }
         }
 
         dbconnection::query(
