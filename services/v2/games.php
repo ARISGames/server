@@ -367,14 +367,16 @@ class games extends dbconnection
       $tables[] = "web_hooks";
       $tables[] = "web_pages";
 
-      dbconnection::query("DELETE FROM games WHERE game_id = '{$pack->game_id}' LIMIT 1");
       for($i = 0; $i < count($tables); $i++)
       {
         $arr = dbconnection::queryArray("SELECT {$tables[$i]}.game_id as game_id, games.game_id as n_game_id FROM {$tables[$i]} LEFT JOIN games ON {$tables[$i]}.game_id = games.game_id WHERE games.game_id IS NULL GROUP BY game_id;");
         for($j = 0; $j < count($arr); $j++)
         {
           if($tables[$i] == "media" && $arr[$j]->game_id == 0) continue; //allow default media
-          dbconnection::query("DELETE FROM {$tables[$i]} WHERE game_id = '{$arr[$j]->game_id}'");
+          if($pack->execute)
+            dbconnection::query("DELETE FROM {$tables[$i]} WHERE game_id = '{$arr[$j]->game_id}';");
+          else //dry run
+            echo "DELETE FROM {$tables[$i]} WHERE game_id = '{$arr[$j]->game_id}';\n";
         }
       }
 
