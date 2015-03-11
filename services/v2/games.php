@@ -403,6 +403,16 @@ class games extends dbconnection
         }
       }
 
+      //triggers
+      $arr = dbconnection::queryArray("SELECT * FROM triggers LEFT JOIN instances ON triggers.instance_id = instances.instance_id WHERE instances.instance_id IS NULL;");
+      for($j = 0; $j < count($arr); $j++) //use '$j' for consistency
+      {
+        if($pack->execute)
+          dbconnection::query("DELETE FROM triggers WHERE trigger_id = '{$arr[$j]->trigger_id}';");
+        else //dry run
+          echo "DELETE FROM triggers WHERE trigger_id = '{$arr[$j]->trigger_id}';\n";
+      }
+
       return new return_package(0);
     }
 
