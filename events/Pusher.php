@@ -24,9 +24,9 @@
 class PusherInstance {
 	
 	private static $instance = null;
-	private static $app_id = '15816';
-	private static $secret = 'b540e483876b09874ce6';
-	private static $api_key = '79f6a265dbb7402a49c9';
+	private static $app_id = '';
+	private static $secret = '';
+	private static $api_key = '';
 	
 	private function __construct() { }
 	private function __clone() { }
