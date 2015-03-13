@@ -2,113 +2,120 @@
 <head>
 <script type="text/javascript">
 
-    function parseURLParams(url) 
+var i_know_what_im_doing = false;
+
+function parseURLParams(url) 
+{
+  var queryStart = url.indexOf("?") + 1;
+  var queryEnd   = url.indexOf("#") + 1 || url.length + 1;
+  var query      = url.slice(queryStart, queryEnd - 1);
+
+  var params  = {};
+  if (query === url || query === "") return params;
+  var nvPairs = query.replace(/\+/g, " ").split("&");
+
+  for(var i=0; i<nvPairs.length; i++)
+  {
+    var nv = nvPairs[i].split("=");
+    var n  = decodeURIComponent(nv[0]);
+    var v  = decodeURIComponent(nv[1]);
+    if(!(n in params)) params[n] = [];
+    params[n].push(nv.length === 2 ? v : null);
+  }
+  return params;
+}
+
+function sendRequest(fn, params, method)
+{
+  var xmlhttp;
+  xmlhttp=new XMLHttpRequest();
+  xmlhttp.open(method,"../../../json.php/v1."+fn,false);
+  xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+  xmlhttp.send(params); //Synchronous call
+
+  return JSON.parse(xmlhttp.responseText);
+}
+
+function makeRequest()
+{
+  if(document.getElementById("username").value != "" && document.getElementById("password").value != "")
+  {
+    var editor = sendRequest("editors.getToken/"+document.getElementById("username").value+"/"+document.getElementById("password").value+"/read_write",null,"GET");
+    if(editor.returnCode > 0) { document.getElementById('logs').innerHTML = JSON.stringify(editor); return; }
+
+    document.getElementById("editor_id").value = editor.data.editor_id;
+    document.getElementById("editor_token").value = editor.data.read_write_token;
+  }
+
+  var logRequest = 
+  {
+    "game_id":document.getElementById("game_id").value,
+    "editor_id":document.getElementById("editor_id").value,
+    "editor_token":document.getElementById("editor_token").value,
+    "output_format":getSelectedFormat() == "human" ? "json" : getSelectedFormat(),
+    "start_date":document.getElementById("start_date").value,
+    "end_date":document.getElementById("end_date").value,
+    "verbose":1
+  };
+  if(i_know_what_im_doing)
+  {
+    logRequest["i_know_what_im_doing"] = i_know_what_im_doing;
+    logRequest["output_to_file"] = 1;
+  }
+  if(document.getElementById("group_id").value != "") logRequest.groupname = document.getElementById("group_id").value;
+
+  var response = sendRequest("playerlog.getPlayerLogs", JSON.stringify(logRequest), "POST");
+  if(response.returnCode > 0) { document.getElementById('logs').innerHTML = JSON.stringify(response); return; }
+
+  if(getSelectedFormat() == "json" || getSelectedFormat() == "csv")
+    document.getElementById('logs').innerHTML = JSON.stringify(response.data);	
+  else if(getSelectedFormat() == "human")
+  {
+    var humanOut = document.createElement('div');
+    for(var i = 0; i < response.data.length; i++)
     {
-        var queryStart = url.indexOf("?") + 1;
-        var queryEnd   = url.indexOf("#") + 1 || url.length + 1;
-        var query      = url.slice(queryStart, queryEnd - 1);
+      var player = document.createElement('div');
+      player.innerHTML = response.data[i].player.display_name+" (p_id="+response.data[i].player.player_id+", g_id="+response.data[i].player.group_name+")<br /><img width=\"100px\"; src=\""+response.data[i].player.pic_url+"\"/>";
+      humanOut.appendChild(player);
 
-        var params  = {};
-        if (query === url || query === "") return params;
-        var nvPairs = query.replace(/\+/g, " ").split("&");
-
-        for(var i=0; i<nvPairs.length; i++)
-        {
-            var nv = nvPairs[i].split("=");
-            var n  = decodeURIComponent(nv[0]);
-            var v  = decodeURIComponent(nv[1]);
-            if(!(n in params)) params[n] = [];
-            params[n].push(nv.length === 2 ? v : null);
-        }
-        return params;
+      response.data[i].log.sort(function(a,b){ return a.timestamp > b.timestamp ? 1 : -1;});
+      for(var j = 0; j < response.data[i].log.length; j++)
+      {
+        var log = document.createElement('div');
+        log.innerHTML = response.data[i].log[j].timestamp+" : "+response.data[i].log[j].human;
+        humanOut.appendChild(log);
+      }
+      var log = document.createElement('div');
+      log.innerHTML = "<br /><br />";
+      humanOut.appendChild(log);
     }
-
-    function sendRequest(fn, params, method)
-    {
-        var xmlhttp;
-        xmlhttp=new XMLHttpRequest();
-        xmlhttp.open(method,"../../../json.php/v1."+fn,false);
-        xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        xmlhttp.send(params); //Synchronous call
-
-        return JSON.parse(xmlhttp.responseText);
-    }
-
-    function makeRequest()
-    {
-        if(document.getElementById("username").value != "" && document.getElementById("password").value != "")
-        {
-            var editor = sendRequest("editors.getToken/"+document.getElementById("username").value+"/"+document.getElementById("password").value+"/read_write",null,"GET");
-            if(editor.returnCode > 0) { document.getElementById('logs').innerHTML = JSON.stringify(editor); return; }
-
-            document.getElementById("editor_id").value = editor.data.editor_id;
-            document.getElementById("editor_token").value = editor.data.read_write_token;
-        }
-
-        var logRequest = 
-        {
-            "game_id":document.getElementById("game_id").value,
-            "editor_id":document.getElementById("editor_id").value,
-            "editor_token":document.getElementById("editor_token").value,
-            "output_format":getSelectedFormat() == "human" ? "json" : getSelectedFormat(),
-            "start_date":document.getElementById("start_date").value,
-            "end_date":document.getElementById("end_date").value,
-            "verbose":1
-        };
-        if(document.getElementById("group_id").value != "") logRequest.groupname = document.getElementById("group_id").value;
-
-        var response = sendRequest("playerlog.getPlayerLogs", JSON.stringify(logRequest), "POST");
-        if(response.returnCode > 0) { document.getElementById('logs').innerHTML = JSON.stringify(response); return; }
-
-        if(getSelectedFormat() == "json" || getSelectedFormat() == "csv")
-            document.getElementById('logs').innerHTML = JSON.stringify(response.data);	
-        else if(getSelectedFormat() == "human")
-        {
-            var humanOut = document.createElement('div');
-            for(var i = 0; i < response.data.length; i++)
-            {
-                var player = document.createElement('div');
-                player.innerHTML = response.data[i].player.display_name+" (p_id="+response.data[i].player.player_id+", g_id="+response.data[i].player.group_name+")<br /><img width=\"100px\"; src=\""+response.data[i].player.pic_url+"\"/>";
-                humanOut.appendChild(player);
-
-                response.data[i].log.sort(function(a,b){ return a.timestamp > b.timestamp ? 1 : -1;});
-                for(var j = 0; j < response.data[i].log.length; j++)
-                {
-                    var log = document.createElement('div');
-                    log.innerHTML = response.data[i].log[j].timestamp+" : "+response.data[i].log[j].human;
-                    humanOut.appendChild(log);
-                }
-                var log = document.createElement('div');
-                log.innerHTML = "<br /><br />";
-                humanOut.appendChild(log);
-            }
-            document.getElementById('logs').innerHTML = "";
-            document.getElementById('logs').appendChild(humanOut);
-        }
-    }
-    function getSelectedFormat() //wrapper for radio functionality because HTML and javascript are fundamentally broken
-    {
-        if(document.getElementById('human_radio').checked) return "human";
-        if(document.getElementById('json_radio').checked)  return "json";
-        if(document.getElementById('csv_radio').checked)   return "csv";
-    }
+    document.getElementById('logs').innerHTML = "";
+    document.getElementById('logs').appendChild(humanOut);
+  }
+}
+function getSelectedFormat() //wrapper for radio functionality because HTML and javascript are fundamentally broken
+{
+  if(document.getElementById('human_radio').checked) return "human";
+  if(document.getElementById('json_radio').checked)  return "json";
+  if(document.getElementById('csv_radio').checked)   return "csv";
+}
 </script>
 </head>
 <body>
 <div id='input'> 
-    Editor id:<input type="text" id="editor_id" /> <br />
-    Editor token:<input type="text" id="editor_token" /> <br />
-    Username:<input type="text" id="username" /> <br />
-    Password:<input type="password" id="password" /> <br />
-    Game id:<input type="text" id="game_id" /> <br />
-    Group id:<input type="text" id="group_id" /> <br />
-    Start Date:<input type="text" id="start_date" value="2014-03-18 00:00:00"/> <br />
-    End Date:<input type="text" id="end_date" value="2014-03-19 00:00:00" /> <br />
-    <input type="radio" name="format" id="human_radio" checked="true" />Human <br />
-    <input type="radio" name="format" id="json_radio" />JSON <br />
-    <input type="radio" name="format" id="csv_radio" />CSV <br />
+Editor id:<input type="text" id="editor_id" /> <br />
+Editor token:<input type="text" id="editor_token" /> <br />
+Username:<input type="text" id="username" /> <br />
+Password:<input type="password" id="password" /> <br />
+Game id:<input type="text" id="game_id" /> <br />
+Group id:<input type="text" id="group_id" /> <br />
+Start Date:<input type="text" id="start_date" value="2014-03-18 00:00:00"/> <br />
+End Date:<input type="text" id="end_date" value="2014-03-19 00:00:00" /> <br />
+<input type="radio" name="format" id="human_radio" checked="true" />Human <br />
+<input type="radio" name="format" id="json_radio" />JSON <br />
+<input type="radio" name="format" id="csv_radio" />CSV <br />
 
-    <input type="button" value="go" onclick="makeRequest()"/>
+<input type="button" value="go" onclick="makeRequest()"/>
 </div>
 <div id='logs'> 
 </div>
