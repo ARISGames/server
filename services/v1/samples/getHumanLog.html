@@ -57,7 +57,7 @@ function makeRequest()
     "end_date":document.getElementById("end_date").value,
     "verbose":1
   };
-  if(i_know_what_im_doing) logRequest["i_know_what_im_doing"] = true;
+  if(i_know_what_im_doing) logRequest["i_know_what_im_doing"] = i_know_what_im_doing;
   if(document.getElementById("group_id").value != "") logRequest.groupname = document.getElementById("group_id").value;
 
   var response = sendRequest("playerlog.getPlayerLogs", JSON.stringify(logRequest), "POST");
