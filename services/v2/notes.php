@@ -49,7 +49,9 @@ class notes extends dbconnection
         }
 
         //allow for 'tag_id' in API, but really just use object_tags
-        if($pack->tag_id) dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$pack->game_id}', 'NOTE', '{$pack->note_id}', '{$pack->tag_id}', CURRENT_TIMESTAMP)");
+        if($pack->tag_id) {
+            dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$pack->game_id}', 'NOTE', '{$pack->note_id}', '{$pack->tag_id}', CURRENT_TIMESTAMP)");
+        }
 
         return notes::getNote($pack);
     }
@@ -93,10 +95,13 @@ class notes extends dbconnection
         );
 
         //allow for 'tag_id' in API, but really just use object_tags
-        if($pack->tag_id)
+        if(isset($pack->tag_id))
         {
             dbconnection::query("DELETE FROM object_tags WHERE game_id = '{$pack->game_id}' AND object_type = 'NOTE' AND object_id = '{$pack->note_id}'");
-            dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$pack->game_id}', 'NOTE', '{$pack->note_id}', '{$pack->tag_id}', CURRENT_TIMESTAMP)");
+            if($pack->tag_id != 0)
+            {
+                dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$pack->game_id}', 'NOTE', '{$pack->note_id}', '{$pack->tag_id}', CURRENT_TIMESTAMP)");
+            }
         }
 
         return notes::getNote($pack);
@@ -129,9 +134,15 @@ class notes extends dbconnection
         {
             //allow for 'tag_id' in API, but really just use object_tags
             if($tag = dbconnection::queryObject("SELECT * FROM object_tags WHERE game_id = '{$note->game_id}' AND object_type = 'NOTE' AND object_id = '{$note->note_id}'"))
+            {
                 $note->tag_id = $tag->tag_id;
+                $note->object_tag_id = $tag->object_tag_id;
+            }
             else
+            {
                 $note->tag_id = "0";
+                $note->object_tag_id = "0";
+            }
         }
         return new return_package(0,$note);
     }
