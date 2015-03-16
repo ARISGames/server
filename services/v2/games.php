@@ -215,6 +215,7 @@ class games extends dbconnection
         $count     = isset($pack->count    ) ? intval    ($pack->count    ) : 0   ;
         $order_by  = isset($pack->order_by ) ?            $pack->order_by   : null;
         $days      = isset($pack->days     ) ? intval    ($pack->days     ) : 30  ;
+        $search    = isset($pack->search   ) ? addslashes($pack->search   ) : null;
 
         $q = "SELECT g.* FROM games AS g";
         if ($order_by === "recent" || $order_by === "popular") {
@@ -224,6 +225,13 @@ class games extends dbconnection
 
         $q .= " WHERE g.is_siftr";
         if ($siftr_url) $q .= " AND g.siftr_url = '".$pack->siftr_url."'";
+        if ($search) {
+            foreach (preg_split('/\s+/', $search) as $word) {
+                if ($word != '') {
+                    $q .= " AND (g.name LIKE '%$search%' OR g.description LIKE '%$search%' OR g.siftr_url LIKE '%$search%')";
+                }
+            }
+        }
         if ($order_by === "recent") {
             $q .= " GROUP BY g.game_id";
             $q .= " ORDER BY MAX(n.last_active) DESC";
