@@ -228,7 +228,7 @@ class games extends dbconnection
         if ($search) {
             foreach (preg_split('/\s+/', $search) as $word) {
                 if ($word != '') {
-                    $q .= " AND (g.name LIKE '%$search%' OR g.description LIKE '%$search%' OR g.siftr_url LIKE '%$search%')";
+                    $q .= " AND (g.name LIKE '%$word%' OR g.description LIKE '%$word%' OR g.siftr_url LIKE '%$word%')";
                 }
             }
         }
