@@ -325,7 +325,7 @@ class client extends dbconnection
             {
                 $inst = $insts[$j];
                 $created = strtotime($inst->created);
-                if(($now-$created)/1000 > $fac->produce_expiration_time)
+                if(($now-$created) > $fac->produce_expiration_time)
                 {
                     $trig = dbconnection::queryObject("SELECT * FROM triggers WHERE game_id = '{$pack->game_id}' AND instance_id = '{$inst->instance_id}'");
                     dbconnection::query("DELETE FROM triggers WHERE trigger_id = '{$trig->trigger_id}'");
