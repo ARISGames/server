@@ -8,6 +8,7 @@ require_once("media.php");
 require_once("note_comments.php");
 require_once("instances.php");
 require_once("triggers.php");
+require_once("tags.php");
 
 class notes extends dbconnection
 {
@@ -337,8 +338,7 @@ class notes extends dbconnection
           !editors::authenticateGameEditor($pack->auth)
         ) return new return_package(6, NULL, "Failed Authentication");
 
-        dbconnection::query("DELETE FROM notes WHERE note_id = '{$pack->note_id}' LIMIT 1");
-        //cleanup
+        // Cleanup related items.
         $noteComments = dbconnection::queryArray("SELECT * FROM note_comments WHERE note_id = '{$pack->note_id}'");
         for($i = 0; $i < count($note_comments); $i++)
         {
@@ -346,19 +346,31 @@ class notes extends dbconnection
             note_comments::deleteNoteComment($pack);
         }
 
+        // NOTE duplicated from tags.php/instances.php/triggers.php due to amf framework public methods being accessible via url.
         $tags = dbconnection::queryArray("SELECT * FROM object_tags WHERE object_type = 'NOTE' AND object_id = '{$pack->note_id}'");
         for($i = 0; $i < count($tags); $i++)
         {
             $pack->object_tag_id = $tags[$i]->object_tag_id;
-            tags::deleteObjectTag($pack);
+            dbconnection::query("DELETE FROM object_tags WHERE object_tag_id = '{$pack->object_tag_id}' LIMIT 1");
         }
 
         $instances = dbconnection::queryArray("SELECT * FROM instances WHERE object_type = 'NOTE' AND object_id = '{$pack->note_id}'");
         for($i = 0; $i < count($instances); $i++)
         {
             $pack->instance_id = $instances[$i]->instance_id;
-            instances::deleteInstance($pack);
+            dbconnection::query("DELETE FROM instances WHERE instance_id = '{$pack->instance_id}' LIMIT 1");
+
+            $triggers = dbconnection::queryArray("SELECT * FROM triggers WHERE instance_id = '{$pack->instance_id}'");
+            for($i = 0; $i < count($triggers); $i++)
+            {
+                $pack->trigger_id = $triggers[$i]->trigger_id;
+                dbconnection::query("DELETE FROM triggers WHERE trigger_id = '{$pack->trigger_id}' LIMIT 1");
+                // TODO fix and clean the rest of the hierarchy (requirement package)
+            }
         }
+
+        // After everything is cleaned up.
+        dbconnection::query("DELETE FROM notes WHERE note_id = '{$pack->note_id}' LIMIT 1");
 
         return new return_package(0);
     }
