@@ -98,7 +98,7 @@ class web_hooks extends dbconnection
         if($reqPack)
         {
             $pack->requirement_root_package_id = $reqPack->requirement_root_package_id;
-            requirements::deleteRequirementRootPackage($pack);
+            requirements::deleteRequirementPackage($pack);
         }
 
         $reqAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement = 'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK' AND content_id = '{$pack->web_hook_id}'");
