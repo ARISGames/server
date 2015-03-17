@@ -18,7 +18,7 @@ class users extends dbconnection
 
         $user = dbconnection::queryObject("SELECT * FROM users WHERE user_id = '{$userId}' LIMIT 1");
         if($user && $user->{$permission."_key"} == $key) return true;
-        util::serverErrorLog("Failed Editor Authentication!"); return false;
+        util::errorLog("Failed Editor Authentication!"); return false;
     }
 
     public static function createUser($pack)

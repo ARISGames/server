@@ -19,6 +19,7 @@ class Config
     const gamedataWWWPath = 'http://aris/server/gamedata';
     const gamedataFSPath  = '/path/to/server/gamedata'; //Make Sure this directory is writable
     const migrationsDir   = '/path/to/server/migrations';
+    const serverErrorLog  = '/path/to/server/gamedata/aris_error_log.txt'; //Make sure this file is writable
 
 
 
@@ -27,8 +28,7 @@ class Config
 	//
 
 
-    const serverErrorLog  = '/path/to/server/gamedata/aris_error_log.txt'; //Make sure this file is writable
-
+    const errorLog  = '/path/to/server/gamedata/aris_error_log.txt'; //Make sure this file is writable
     const mysqlBinPath = '/usr/bin';
 
     //pusher.com service
