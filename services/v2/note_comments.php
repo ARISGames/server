@@ -58,6 +58,7 @@ class note_comments extends dbconnection
         $note_comment->note_id         = $sql_note_comment->note_id;
         $note_comment->game_id         = $sql_note_comment->game_id;
         $note_comment->user_id         = $sql_note_comment->user_id;
+        $note_comment->created         = $sql_note_comment->created;
         $note_comment->name            = $sql_note_comment->name;
         $note_comment->description     = $sql_note_comment->description;
         $note_comment->user               = new stdClass();
