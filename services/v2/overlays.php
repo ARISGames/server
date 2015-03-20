@@ -122,7 +122,7 @@ class overlays extends dbconnection
         if($reqPack)
         {
             $pack->requirement_root_package_id = $reqPack->requirement_root_package_id;
-            requirements::deleteRequirementRootPackage($pack);
+            requirements::deleteRequirementPackage($pack);
         }
 
         return new return_package(0);

@@ -3,16 +3,16 @@ require_once('../../config.class.php');
 
 class util
 {
-    public static function serverErrorLog($message)
+    public static function errorLog($message)
     {
-        $errorLogFile = fopen(Config::serverErrorLog, "a");
+        $errorLogFile = fopen(Config::errorLog, "a");
         $errorData = date('c').":\nRequest:\n"."http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]"."\n".$message."\n\n";
         fwrite($errorLogFile, $errorData);
         fclose($errorLogFile);
     }
-    public static function serverErrorJot($message) //only log message, no metadata
+    public static function errorJot($message) //only log message, no metadata
     {
-        $errorLogFile = fopen(Config::serverErrorLog, "a");
+        $errorLogFile = fopen(Config::errorLog, "a");
         fwrite($errorLogFile, $message."\n");
         fclose($errorLogFile);
     }

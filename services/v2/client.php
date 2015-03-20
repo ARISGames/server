@@ -325,7 +325,7 @@ class client extends dbconnection
             {
                 $inst = $insts[$j];
                 $created = strtotime($inst->created);
-                if(($now-$created)/1000 > $fac->produce_expiration_time)
+                if(($now-$created) > $fac->produce_expiration_time)
                 {
                     $trig = dbconnection::queryObject("SELECT * FROM triggers WHERE game_id = '{$pack->game_id}' AND instance_id = '{$inst->instance_id}'");
                     dbconnection::query("DELETE FROM triggers WHERE trigger_id = '{$trig->trigger_id}'");
@@ -403,7 +403,7 @@ class client extends dbconnection
                     $lat += $latdelta;
                     $lon += $londelta;
 
-                    $instance_id = dbconnection::queryInsert("INSERT INTO instances (game_id, object_id, object_type, qty, infinite_qty, factory_id, created) VALUES ('{$pack->game_id}', '{$fac->object_id}', '{$fac->object_type}', '0', '0', '{$fac->factory_id}', CURRENT_TIMESTAMP)");
+                    $instance_id = dbconnection::queryInsert("INSERT INTO instances (game_id, object_id, object_type, qty, infinite_qty, factory_id, created) VALUES ('{$pack->game_id}', '{$fac->object_id}', '{$fac->object_type}', '1', '0', '{$fac->factory_id}', CURRENT_TIMESTAMP)");
                     $trigger_id = dbconnection::queryInsert("INSERT INTO triggers (game_id, instance_id, scene_id, requirement_root_package_id, type, name, title, latitude, longitude, distance, infinite_distance, wiggle, show_title, hidden, trigger_on_enter, created) VALUES ('{$pack->game_id}', '{$instance_id}', '{$user_scene_id}', '{$fac->trigger_requirement_root_package_id}', 'LOCATION', '{$fac->trigger_title}', '{$fac->trigger_title}', '{$lat}', '{$lon}', '{$fac->distance}', '{$fac->infinite_distance}', '{$fac->trigger_wiggle}', '{$fac->trigger_show_title}', '{$fac->trigger_hidden}', '{$fac->trigger_on_enter}', CURRENT_TIMESTAMP);");
                 }
                 dbconnection::query("UPDATE factories SET production_timestamp = CURRENT_TIMESTAMP WHERE factory_id = '{$fac->factory_id}'");

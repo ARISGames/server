@@ -177,13 +177,13 @@ class quests extends dbconnection
         if($reqPack)
         {
             $pack->requirement_root_package_id = $reqPack->requirement_root_package_id;
-            requirements::deleteRequirementRootPackage($pack);
+            requirements::deleteRequirementPackage($pack);
         }
         $reqPack = dbconnection::queryObject("SELECT * FROM requirement_root_packages WHERE requirement_root_package_id = '{$quest->complete_requirement_root_package_id}'");
         if($reqPack)
         {
             $pack->requirement_root_package_id = $reqPack->requirement_root_package_id;
-            requirements::deleteRequirementRootPackage($pack);
+            requirements::deleteRequirementPackage($pack);
         }
 
         return new return_package(0);
