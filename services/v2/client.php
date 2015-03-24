@@ -106,10 +106,16 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        $sql_games = dbconnection::queryArray("SELECT * FROM games WHERE latitude BETWEEN {$pack->latitude}-.5 AND {$pack->latitude}+.5 AND longitude BETWEEN {$pack->longitude}-.5 AND {$pack->longitude}+.5 AND published = TRUE GROUP BY game_id LIMIT 50");
+        $dist = 0.5;
         $games = array();
-        for($i = 0; $i < count($sql_games); $i++)
-            $games[] = games::gameObjectFromSQL($sql_games[$i]);
+
+        while(count($games) == 0 && $dist < 64)
+        {
+          $sql_games = dbconnection::queryArray("SELECT * FROM games WHERE latitude BETWEEN {$pack->latitude}-{$dist} AND {$pack->latitude}+{$dist} AND longitude BETWEEN {$pack->longitude}-{$dist} AND {$pack->longitude}+{$dist} AND published = TRUE GROUP BY game_id LIMIT 50");
+          for($i = 0; $i < count($sql_games); $i++)
+              $games[] = games::gameObjectFromSQL($sql_games[$i]);
+          $dist *= 2;
+        }
 
         return new return_package(0, $games);
     }

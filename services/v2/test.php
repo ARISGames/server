@@ -6,10 +6,21 @@ class test extends dbconnection
 {
     public static function doTest($pack)
     {
-      echo dbconnection::queryObject("SELECT NOW() as now FROM games LIMIT 1")->now;
-      echo "\n";
-      echo date("Y-m-d H:i:s");
-      echo "\n";
+      $games = dbconnection::queryArray("SELECT * FROM games;");
+      for($i = 0; $i < count($games); $i++)
+      {
+        $lat = 0;
+        $lon = 0;
+        $triggers = dbconnection::queryArray("SELECT * FROM triggers WHERE game_id = '{$games[$i]->game_id}';");
+        $n = count($triggers);
+        for($j = 0; $j < $n; $j++)
+        {
+          $lat += $triggers[$j]->latitude/$n;
+          $lon += $triggers[$j]->longitude/$n;
+        }
+        dbconnection::query("UPDATE games SET latitude = '{$lat}', longitude = '{$lon}' WHERE game_id = '{$games[$i]->game_id}';");
+      }
+      return 0;
     }
 }
 ?>
