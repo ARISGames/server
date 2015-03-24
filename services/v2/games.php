@@ -3,6 +3,7 @@ require_once("dbconnection.php");
 require_once("users.php");
 require_once("editors.php");
 require_once("media.php");
+require_once("scenes.php");
 require_once("return_package.php");
 
 class games extends dbconnection
@@ -99,6 +100,12 @@ class games extends dbconnection
         dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', 'NOTEBOOK',  '', '0', '7', CURRENT_TIMESTAMP)");
 
         mkdir(Config::v2_gamedata_folder."/{$pack->game_id}",0777);
+
+
+        $pack->name = "Starting Scene";
+        $pack->description = "";
+        scenes::createScene($pack);
+
 
         return games::getGame($pack);
     }
