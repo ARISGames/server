@@ -42,6 +42,16 @@ Class dbconnection
     return mysqli_fetch_object($sql_data);
   }
 
+  protected static function queryObjectAssoc($query, $debug = false)
+  {
+    if($debug) echo $query;
+    if(!($sql_data = mysqli_query(dbconnection::$con, $query)))
+    {
+        return false;
+    }
+    return mysqli_fetch_array($sql_data,MYSQLI_ASSOC);
+  }
+
   protected static function queryArray($query, $debug = false)
   {
     if($debug) echo $query;
@@ -51,6 +61,19 @@ Class dbconnection
     }
     $ret = array();
     while($o = mysqli_fetch_object($sql_data))
+        $ret[] = $o;
+    return $ret;
+  }
+
+  protected static function queryArrayAssoc($query, $debug = false) //confusing name- returns "array of assoc objects"
+  {
+    if($debug) echo $query;
+    if(!($sql_data = mysqli_query(dbconnection::$con, $query)))
+    {
+        return false;
+    }
+    $ret = array();
+    while($o = mysqli_fetch_array($sql_data,MYSQLI_ASSOC))
         $ret[] = $o;
     return $ret;
   }
