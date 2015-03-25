@@ -262,7 +262,10 @@ class migration extends migration_dbconnection
         $maps->events = migration::migrateEvents($v1GameId, $v2GameId, $maps);
         $maps->factories = migration::migrateFactories($v1GameId, $v2GameId, $maps);
 
-        $sceneId = migration_dbconnection::queryInsert("INSERT INTO scenes (game_id, name, created) VALUES ('{$v2GameId}', 'Main Scene', CURRENT_TIMESTAMP)","v2");
+        $scene = migration_dbconnection::queryObject("SELECT * FROM scenes WHERE game_id = '{$v2GameId}';","v2");
+        if($scene) $sceneId = $scene->scene_id;
+        else       $sceneId = migration_dbconnection::queryInsert("INSERT INTO scenes (game_id, name, created) VALUES ('{$v2GameId}', 'Main Scene', CURRENT_TIMESTAMP)","v2");
+        migration_dbconnection::query("UPDATE games SET intro_scene_id = '{$sceneId}' WHERE game_id = '{$v2GameId}';","v2");
         $triggerMaps = migration::migrateTriggers($v1GameId, $v2GameId, $sceneId, $maps);
         //both of these maps have v1 location_id as key, v2 trigger as value
         $maps->locTriggers = $triggerMaps->locationTriggerMap;
