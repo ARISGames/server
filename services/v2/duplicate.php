@@ -1,10 +1,7 @@
 <?php
 require_once("dbconnection.php");
-require_once("users.php");
 require_once("editors.php");
-require_once("media.php");
-require_once("scenes.php");
-require_once("return_package.php");
+require_once("games.php");
 
 class column
 {
@@ -67,7 +64,7 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('notebook_trigger_on_enter','');
     $columns[$i][] = new column('inventory_weight_cap','');
     $columns[$i][] = new column('is_siftr','');
-    $columns[$i][] = new column('siftr_url','');
+    $columns[$i][] = new column('siftr_url','special');
     $columns[$i][] = new column('created','');
     $columns[$i][] = new column('last_active','');
     $i++;
@@ -483,17 +480,23 @@ class duplicate extends dbconnection
               $val_query .= ', ';
             }
             $col_query .= "{$col->name}";
-
-            if($col->meta == 'special' || $col->meta == 'map') $val_query .= "'0'"; //set to 0 so botched duplicate won't ruin other games
+            if($col->meta == 'special')
+            {
+              if($col->name == 'siftr_url') $val_query .= "NULL"; //needs to be NULL because "" or "0" is non-unique
+              else $val_query .= "'0'";
+            }
+            else if($col->meta == 'map') $val_query .= "'0'"; //set to 0 so botched duplicate won't ruin other games
             else $val_query .= "'{$old_datum[$col->name]}'";
           }
         }
-        //$maps[$table][$old_id] = dbconnection::queryInsert("INSERT INTO {$table} ({$col_query}) VALUES ({$val_query});");
-        $maps[$table][$old_id] = $fake_auto_inc++;
-        echo("INSERT INTO {$table} ({$col_query}) VALUES ({$val_query});<br />\n");
+        if($pack->verbose)
+        {
+          echo("INSERT INTO {$table} ({$col_query}) VALUES ({$val_query});");
+          echo("\n");
+        }
+        $maps[$table][$old_id] = dbconnection::queryInsert("INSERT INTO {$table} ({$col_query}) VALUES ({$val_query});");
       }
     }
-    var_dump($maps);
 
     //second pass- fill in bogus mappings with known maps
     for($i = 0; $i < count($tables); $i++)
@@ -534,7 +537,11 @@ class duplicate extends dbconnection
             if($update_query != '')
               $update_query .= ', ';
 
-            if($col->name == 'content_id')
+            if($col->name == 'siftr_url')
+            {
+              $update_query .= "siftr_url = NULL";
+            }
+            else if($col->name == 'content_id')
             {
               if($table == 'events')
                 $update_query .= "content_id = '{$maps['items'][$old_datum['content_id']]}'";
@@ -645,7 +652,7 @@ class duplicate extends dbconnection
             }
             else if($col->name == 'link_id')
             {
-              switch($old_datum['object_type'])
+              switch($old_datum['link_type'])
               {
                 case 'EXIT_TO_PLAQUE':
                   $update_query .= "link_id = '{$maps['plaques'][$old_datum['link_id']]}'";
@@ -675,13 +682,19 @@ class duplicate extends dbconnection
         }
         if($update_query != "")
         {
-          //dbconnection::query("UPDATE {$table} SET {$update_query} WHERE {$id_col} = '{$maps[$table][$old_id]}';<br />\n");
-          echo("UPDATE {$table} SET {$update_query} WHERE {$id_col} = '{$maps[$table][$old_id]}';<br />\n");
+          if($pack->verbose)
+          {
+            echo("UPDATE {$table} SET {$update_query} WHERE {$id_col} = '{$maps[$table][$old_id]}';");
+            echo("\n");
+          }
+          dbconnection::query("UPDATE {$table} SET {$update_query} WHERE {$id_col} = '{$maps[$table][$old_id]}';");
         }
       }
     }
 
-    return 0;//games::getGame($pack);
+    dbconnection::query("INSERT INTO user_games (game_id, user_id, created) VALUES ('{$maps['games'][$pack->game_id]}','{$pack->auth->user_id}',CURRENT_TIMESTAMP);");
+    $pack->game_id = $maps['games'][$pack->game_id];
+    return games::getGame($pack);
   }
 }
 ?>
