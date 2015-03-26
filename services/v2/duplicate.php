@@ -561,6 +561,8 @@ class duplicate extends dbconnection
 
                 if(($filenameext == ".jpg" || $filenameext == ".png" || $filenameext == ".gif"))
                 {
+                  try
+                  {
                     if(exif_imagetype($new_file_path))
                     {
                         $image = new Imagick($new_file_path);
@@ -575,6 +577,11 @@ class duplicate extends dbconnection
                         $image->cropImage(128, 128, ($w-128)/2, ($h-128)/2);
                         $image->writeImage($new_file_path_128);
                     }
+                  }
+                  catch (ImagickException $e) 
+                  {
+                  //do nothing
+                  }
                 }
               }
 
