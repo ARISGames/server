@@ -214,7 +214,7 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('game_id','map');
     $columns[$i][] = new column('user_id','');
     $columns[$i][] = new column('name','');
-    $columns[$i][] = new column('file_folder','');
+    $columns[$i][] = new column('file_folder','special');
     $columns[$i][] = new column('file_name','');
     $columns[$i][] = new column('created','');
     $columns[$i][] = new column('last_active','');
@@ -498,6 +498,10 @@ class duplicate extends dbconnection
       }
     }
 
+    //NOTE- must do setup normally handled by games::createGame
+    dbconnection::query("INSERT INTO user_games (game_id, user_id, created) VALUES ('{$maps['games'][$pack->game_id]}','{$pack->auth->user_id}',CURRENT_TIMESTAMP);");
+    mkdir(Config::v2_gamedata_folder."/{$maps['games'][$pack->game_id]}",0777);
+
     //second pass- fill in bogus mappings with known maps
     for($i = 0; $i < count($tables); $i++)
     {
@@ -540,6 +544,41 @@ class duplicate extends dbconnection
             if($col->name == 'siftr_url')
             {
               $update_query .= "siftr_url = NULL";
+            }
+            else if($col->name == 'file_folder')
+            {
+              //copy media to new folder
+
+              $filenametitle = substr($old_datum['file_name'],0,strrpos($old_datum['file_name'],'.'));
+              $filenameext = substr($old_datum['file_name'],strrpos($old_datum['file_name'],'.'));
+              $old_file_path = Config::v2_gamedata_folder."/".$old_datum['file_folder']."/".$old_datum['file_name'];
+              $new_file_path = Config::v2_gamedata_folder."/".$maps['games'][$pack->game_id]."/".$old_datum['file_name'];
+              $new_file_path_128 = Config::v2_gamedata_folder."/".$maps['games'][$pack->game_id]."/".$filenametitle."_128".$filenameext;
+
+              if(file_exists($old_file_path))
+              {
+                copy($old_file_path,$new_file_path);
+
+                if(($filenameext == ".jpg" || $filenameext == ".png" || $filenameext == ".gif"))
+                {
+                    if(exif_imagetype($new_file_path))
+                    {
+                        $image = new Imagick($new_file_path);
+                        //aspect fill to 128x128
+                        $w = $image->getImageWidth();
+                        $h = $image->getImageHeight();
+                        if($w < $h) $image->thumbnailImage(128, (128/$w)*$h, 1, 1);
+                        else        $image->thumbnailImage((128/$h)*$w, 128, 1, 1);
+                        //crop around center
+                        $w = $image->getImageWidth();
+                        $h = $image->getImageHeight();
+                        $image->cropImage(128, 128, ($w-128)/2, ($h-128)/2);
+                        $image->writeImage($new_file_path_128);
+                    }
+                }
+              }
+
+              $update_query .= "file_folder = '{$maps['games'][$pack->game_id]}'";
             }
             else if($col->name == 'content_id')
             {
@@ -692,7 +731,6 @@ class duplicate extends dbconnection
       }
     }
 
-    dbconnection::query("INSERT INTO user_games (game_id, user_id, created) VALUES ('{$maps['games'][$pack->game_id]}','{$pack->auth->user_id}',CURRENT_TIMESTAMP);");
     $pack->game_id = $maps['games'][$pack->game_id];
     return games::getGame($pack);
   }
