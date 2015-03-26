@@ -6,6 +6,16 @@ require_once("media.php");
 require_once("scenes.php");
 require_once("return_package.php");
 
+class column
+{
+  public $name; public $meta;
+  public function column($name, $meta)
+  {
+    $this->name = $name; $this->meta = $meta;
+    return $this;
+  }
+}
+
 class duplicate extends dbconnection
 {
   public static function duplicateGame($pack)
@@ -14,16 +24,6 @@ class duplicate extends dbconnection
     $pack->auth->permission = "read_write";
     if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-    class column
-    {
-      public $name; public $meta;
-      public function column($name, $meta)
-      {
-        $this->name = $name; $this->meta = $meta;
-        return $this;
-      }
-    }
-
     $tables = array();
     $columns = array();
     $i = 0;
@@ -31,6 +31,45 @@ class duplicate extends dbconnection
     //'id' = that tables identifier. gets changed (auto-inc) during migration, and must be recorded
     //'map' = a value that maps to the id of other migrated table (value changes during migration)
     //'' = nothing special- copy value as-is
+
+    $tables[] = 'games';
+    $columns[] = array();
+    $columns[$i][] = new column('game_id','id');
+    $columns[$i][] = new column('name','');
+    $columns[$i][] = new column('description','');
+    $columns[$i][] = new column('icon_media_id','map');
+    $columns[$i][] = new column('media_id','map');
+    $columns[$i][] = new column('rating','');
+    $columns[$i][] = new column('published','');
+    $columns[$i][] = new column('type','');
+    $columns[$i][] = new column('intro_scene_id','map');
+    $columns[$i][] = new column('latitude','');
+    $columns[$i][] = new column('longitude','');
+    $columns[$i][] = new column('map_type','');
+    $columns[$i][] = new column('map_latitude','');
+    $columns[$i][] = new column('map_longitude','');
+    $columns[$i][] = new column('map_zoom_level','');
+    $columns[$i][] = new column('map_show_player','');
+    $columns[$i][] = new column('map_show_players','');
+    $columns[$i][] = new column('map_offsite_mode','');
+    $columns[$i][] = new column('notebook_allow_comments','');
+    $columns[$i][] = new column('notebook_allow_likes','');
+    $columns[$i][] = new column('notebook_trigger_scene_id','map');
+    $columns[$i][] = new column('notebook_trigger_requirement_root_package_id','map');
+    $columns[$i][] = new column('notebook_trigger_title','');
+    $columns[$i][] = new column('notebook_trigger_icon_media_id','map');
+    $columns[$i][] = new column('notebook_trigger_distance','');
+    $columns[$i][] = new column('notebook_trigger_infinite_distance','');
+    $columns[$i][] = new column('notebook_trigger_wiggle','');
+    $columns[$i][] = new column('notebook_trigger_show_title','');
+    $columns[$i][] = new column('notebook_trigger_hidden','');
+    $columns[$i][] = new column('notebook_trigger_on_enter','');
+    $columns[$i][] = new column('inventory_weight_cap','');
+    $columns[$i][] = new column('is_siftr','');
+    $columns[$i][] = new column('siftr_url','');
+    $columns[$i][] = new column('created','');
+    $columns[$i][] = new column('last_active','');
+    $i++;
 
     $tables[] = 'dialog_characters';
     $columns[] = array();
@@ -135,45 +174,6 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('trigger_show_title','');
     $columns[$i][] = new column('trigger_requirement_root_package_id','map');
     $columns[$i][] = new column('trigger_scene_id','map');
-    $columns[$i][] = new column('created','');
-    $columns[$i][] = new column('last_active','');
-    $i++;
-
-    $tables[] = 'games';
-    $columns[] = array();
-    $columns[$i][] = new column('game_id','id');
-    $columns[$i][] = new column('name','');
-    $columns[$i][] = new column('description','');
-    $columns[$i][] = new column('icon_media_id','map');
-    $columns[$i][] = new column('media_id','map');
-    $columns[$i][] = new column('rating','');
-    $columns[$i][] = new column('published','');
-    $columns[$i][] = new column('type','');
-    $columns[$i][] = new column('intro_scene_id','map');
-    $columns[$i][] = new column('latitude','');
-    $columns[$i][] = new column('longitude','');
-    $columns[$i][] = new column('map_type','');
-    $columns[$i][] = new column('map_latitude','');
-    $columns[$i][] = new column('map_longitude','');
-    $columns[$i][] = new column('map_zoom_level','');
-    $columns[$i][] = new column('map_show_player','');
-    $columns[$i][] = new column('map_show_players','');
-    $columns[$i][] = new column('map_offsite_mode','');
-    $columns[$i][] = new column('notebook_allow_comments','');
-    $columns[$i][] = new column('notebook_allow_likes','');
-    $columns[$i][] = new column('notebook_trigger_scene_id','map');
-    $columns[$i][] = new column('notebook_trigger_requirement_root_package_id','map');
-    $columns[$i][] = new column('notebook_trigger_title','');
-    $columns[$i][] = new column('notebook_trigger_icon_media_id','map');
-    $columns[$i][] = new column('notebook_trigger_distance','');
-    $columns[$i][] = new column('notebook_trigger_infinite_distance','');
-    $columns[$i][] = new column('notebook_trigger_wiggle','');
-    $columns[$i][] = new column('notebook_trigger_show_title','');
-    $columns[$i][] = new column('notebook_trigger_hidden','');
-    $columns[$i][] = new column('notebook_trigger_on_enter','');
-    $columns[$i][] = new column('inventory_weight_cap','');
-    $columns[$i][] = new column('is_siftr','');
-    $columns[$i][] = new column('siftr_url','');
     $columns[$i][] = new column('created','');
     $columns[$i][] = new column('last_active','');
     $i++;
@@ -449,7 +449,9 @@ class duplicate extends dbconnection
     $coltablemap['link_id']    = '';
 
     $maps = array();
-    $oldGameId = $pack->game_id;
+    $fake_auto_inc = 1;
+
+    //first pass- insert with bogus mapped IDs to generate mappings
     for($i = 0; $i < count($tables); $i++)
     {
       $table = $tables[$i];
@@ -458,7 +460,7 @@ class duplicate extends dbconnection
       $maps[$table] = array();
       $maps[$table][0] = 0;
 
-      $old_data = dbconnection::queryArrayAssoc("SELECT * FROM {$table} WHERE game_id = '{$oldGameId}';");
+      $old_data = dbconnection::queryArrayAssoc("SELECT * FROM {$table} WHERE game_id = '{$pack->game_id}';");
 
       for($j = 0; $j < count($old_data); $j++)
       {
@@ -491,19 +493,200 @@ class duplicate extends dbconnection
               $val_query .= ", ";
             }
             $col_query .= "{$col->name}";
-            if($coltablemap[$col->name] == '') //special case
-            {
-              
-            }
-            else
-              $val_query .= "'{$maps[$coltablemap[$col->name]][$old_datum[$col->name]]}'";
+            $val_query .= "'0'"; //bogus value to be filled in on next pass
           }
         }
-        $maps[$table][$old_id] = dbconnection::queryInsert("INSERT INTO {$table} ({$col_query}) VALUES ({$val_query});");
+        //$maps[$table][$old_id] = dbconnection::queryInsert("INSERT INTO {$table} ({$col_query}) VALUES ({$val_query});");
+        $maps[$table][$old_id] = $fake_auto_inc++;
+        echo("INSERT INTO {$table} ({$col_query}) VALUES ({$val_query});<br />\n");
+      }
+    }
+    var_dump($maps);
+
+    //second pass- fill in bogus mappings with known maps
+    for($i = 0; $i < count($tables); $i++)
+    {
+      $table = $tables[$i];
+      $cols = $columns[$i];
+
+      $old_data = dbconnection::queryArrayAssoc("SELECT * FROM {$table} WHERE game_id = '{$pack->game_id}';");
+
+      for($j = 0; $j < count($old_data); $j++)
+      {
+        $old_datum = $old_data[$j];
+        $update_query = "";
+        $id_col = "";
+        $old_id = 0;
+        for($k = 0; $k < count($cols); $k++)
+        {
+          $col = $cols[$k];
+          if($col->meta == 'id') //id value- auto-increment handled its creation
+          {
+            $id_col = $col->name;
+            $old_id = $old_datum[$col->name]; //just store old id to find new id to update
+          }
+          else if($col->meta == '') //boring value- already direct copied in first pass- ignore
+          {
+          }
+          else if($col->meta == 'map') //references other table- update mapped value
+          {
+            if($update_query != "")
+            {
+              $update_query .= ", ";
+            }
+            if($coltablemap[$col->name] == '') //special case
+            {
+              if($col->name == 'content_id')
+              {
+                if($table == 'events')
+                  $update_query .= "content_id = '{$maps['items'][$old_datum['content_id']]}'";
+                else if($table == 'requirement_atoms')
+                {
+                  switch($old_datum['requirement'])
+                  {
+                    case 'PLAYER_HAS_ITEM':
+                    case 'PLAYER_HAS_TAGGED_ITEM':
+                    case 'PLAYER_VIEWED_ITEM':
+                      $update_query .= "content_id = '{$maps['items'][$old_datum['content_id']]}'";
+                      break;
+                    case 'PLAYER_VIEWED_PLAQUE':
+                      $update_query .= "content_id = '{$maps['plaques'][$old_datum['content_id']]}'";
+                      break;
+                    case 'PLAYER_VIEWED_DIALOG':
+                      $update_query .= "content_id = '{$maps['dialogs'][$old_datum['content_id']]}'";
+                      break;
+                    case 'PLAYER_VIEWED_DIALOG_SCRIPT':
+                      $update_query .= "content_id = '{$maps['dialog_scripts'][$old_datum['content_id']]}'";
+                      break;
+                    case 'PLAYER_VIEWED_WEB_PAGE':
+                      $update_query .= "content_id = '{$maps['web_pages'][$old_datum['content_id']]}'";
+                      break;
+                    case 'PLAYER_HAS_COMPLETED_QUEST':
+                      $update_query .= "content_id = '{$maps['quests'][$old_datum['content_id']]}'";
+                      break;
+                    case 'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK':
+                      $update_query .= "content_id = '{$maps['web_hooks'][$old_datum['content_id']]}'";
+                      break;
+                    case 'ALWAYS_TRUE':
+                    case 'ALWAYS_FALSE':
+                    case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM':
+                    case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE':
+                    case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO':
+                    case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO':
+                    case 'PLAYER_HAS_NOTE':
+                    case 'PLAYER_HAS_NOTE_WITH_TAG':
+                    case 'PLAYER_HAS_NOTE_WITH_LIKES':
+                    case 'PLAYER_HAS_NOTE_WITH_COMMENTS':
+                    case 'PLAYER_HAS_GIVEN_NOTE_COMMENTS':
+                    default:
+                      $update_query .= "content_id = '{$old_datum['content_id']}'";
+                      break;
+                  }
+                }
+                else if($table == 'tabs')
+                {
+                  switch($old_datum['type'])
+                  {
+                    case 'NOTE':
+                      $update_query .= "content_id = '{$maps['notes'][$old_datum['content_id']]}'";
+                      break;
+                    case 'DIALOG':
+                      $update_query .= "content_id = '{$maps['dialogs'][$old_datum['content_id']]}'";
+                      break;
+                    case 'ITEM':
+                      $update_query .= "content_id = '{$maps['items'][$old_datum['content_id']]}'";
+                      break;
+                    case 'PLAQUE':
+                      $update_query .= "content_id = '{$maps['plaques'][$old_datum['content_id']]}'";
+                      break;
+                    case 'WEB_PAGE':
+                      $update_query .= "content_id = '{$maps['web_pages'][$old_datum['content_id']]}'";
+                      break;
+                    case 'MAP':
+                    case 'DECODER':
+                    case 'SCANNER':
+                    case 'QUESTS':
+                    case 'INVENTORY':
+                    case 'PLAYER':
+                    case 'NOTEBOOK':
+                    default:
+                      $update_query .= "content_id = '{$old_datum['content_id']}'";
+                      break;
+                  }
+                }
+              }
+              else if($col->name == 'object_id')
+              {
+                switch($old_datum['object_type'])
+                {
+                  case 'PLAQUE':
+                    $update_query .= "object_id = '{$maps['plaques'][$old_datum['object_id']]}'";
+                    break;
+                  case 'ITEM':
+                    $update_query .= "object_id = '{$maps['items'][$old_datum['object_id']]}'";
+                    break;
+                  case 'DIALOG':
+                    $update_query .= "object_id = '{$maps['dialogs'][$old_datum['object_id']]}'";
+                    break;
+                  case 'WEB_PAGE':
+                    $update_query .= "object_id = '{$maps['web_pages'][$old_datum['object_id']]}'";
+                    break;
+                  case 'NOTE':
+                    $update_query .= "object_id = '{$maps['notes'][$old_datum['object_id']]}'";
+                    break;
+                  case 'FACTORY':
+                    $update_query .= "object_id = '{$maps['factories'][$old_datum['object_id']]}'";
+                    break;
+                  case 'SCENE':
+                    $update_query .= "object_id = '{$maps['scenes'][$old_datum['object_id']]}'";
+                    break;
+                  default:
+                    $update_query .= "object_id = '{$old_datum['object_id']}'";
+                    break;
+                }
+              }
+              else if($col->name == 'link_id')
+              {
+                switch($old_datum['object_type'])
+                {
+                  case 'EXIT_TO_PLAQUE':
+                    $update_query .= "link_id = '{$maps['plaques'][$old_datum['link_id']]}'";
+                    break;
+                  case 'EXIT_TO_ITEM':
+                    $update_query .= "link_id = '{$maps['items'][$old_datum['link_id']]}'";
+                    break;
+                  case 'EXIT_TO_WEB_PAGE':
+                    $update_query .= "link_id = '{$maps['web_pages'][$old_datum['link_id']]}'";
+                    break;
+                  case 'EXIT_TO_DIALOG':
+                    $update_query .= "link_id = '{$maps['dialogs'][$old_datum['link_id']]}'";
+                    break;
+                  case 'EXIT_TO_TAB':
+                    $update_query .= "link_id = '{$maps['tabs'][$old_datum['link_id']]}'";
+                    break;
+                  case 'DIALOG_SCRIPT':
+                    $update_query .= "link_id = '{$maps['dialog_scripts'][$old_datum['link_id']]}'";
+                    break;
+                  case 'EXIT':
+                  default:
+                    $update_query .= "link_id = '{$old_datum['link_id']}'";
+                    break;
+                }
+              }
+            }
+            else
+              $update_query .= "{$col->name} = '{$maps[$coltablemap[$col->name]][$old_datum[$col->name]]}'";
+          }
+        }
+        if($update_query != "")
+        {
+          //dbconnection::query("UPDATE {$table} SET {$update_query} WHERE {$id_col} = '{$maps[$table][$old_id]}';<br />\n");
+          echo("UPDATE {$table} SET {$update_query} WHERE {$id_col} = '{$maps[$table][$old_id]}';<br />\n");
+        }
       }
     }
 
-    return games::getGame($pack);
+    return 0;//games::getGame($pack);
   }
 }
 ?>
