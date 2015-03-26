@@ -30,6 +30,7 @@ class duplicate extends dbconnection
 
     //'id' = that tables identifier. gets changed (auto-inc) during migration, and must be recorded
     //'map' = a value that maps to the id of other migrated table (value changes during migration)
+    //'special' = a value that changes according to something more complicated than just a mapping. must be handled in php.
     //'' = nothing special- copy value as-is
 
     $tables[] = 'games';
@@ -90,7 +91,7 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('parent_dialog_script_id','map');
     $columns[$i][] = new column('prompt','');
     $columns[$i][] = new column('link_type','');
-    $columns[$i][] = new column('link_id','map');
+    $columns[$i][] = new column('link_id','special');
     $columns[$i][] = new column('link_info','');
     $columns[$i][] = new column('requirement_root_package_id','map');
     $columns[$i][] = new column('sort_index','');
@@ -137,7 +138,7 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('game_id','map');
     $columns[$i][] = new column('event_package_id','map');
     $columns[$i][] = new column('event','');
-    $columns[$i][] = new column('content_id','map');
+    $columns[$i][] = new column('content_id','special');
     $columns[$i][] = new column('qty','');
     $columns[$i][] = new column('created','');
     $columns[$i][] = new column('last_active','');
@@ -150,7 +151,7 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('name','');
     $columns[$i][] = new column('description','');
     $columns[$i][] = new column('object_type','');
-    $columns[$i][] = new column('object_id','map');
+    $columns[$i][] = new column('object_id','special');
     $columns[$i][] = new column('seconds_per_production','');
     $columns[$i][] = new column('production_probability','');
     $columns[$i][] = new column('max_production','');
@@ -183,7 +184,7 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('instance_id','id');
     $columns[$i][] = new column('game_id','map');
     $columns[$i][] = new column('object_type','');
-    $columns[$i][] = new column('object_id','map');
+    $columns[$i][] = new column('object_id','special');
     $columns[$i][] = new column('qty','');
     $columns[$i][] = new column('infinite_qty','');
     $columns[$i][] = new column('factory_id','map');
@@ -227,7 +228,7 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('object_tag_id','id');
     $columns[$i][] = new column('game_id','map');
     $columns[$i][] = new column('object_type','');
-    $columns[$i][] = new column('object_id','map');
+    $columns[$i][] = new column('object_id','special');
     $columns[$i][] = new column('tag_id','map');
     $columns[$i][] = new column('created','');
     $columns[$i][] = new column('last_active','');
@@ -305,7 +306,7 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('requirement_and_package_id','map');
     $columns[$i][] = new column('bool_operator','');
     $columns[$i][] = new column('requirement','');
-    $columns[$i][] = new column('content_id','map');
+    $columns[$i][] = new column('content_id','special');
     $columns[$i][] = new column('distance','');
     $columns[$i][] = new column('qty','');
     $columns[$i][] = new column('latitude','');
@@ -343,7 +344,7 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('name','');
     $columns[$i][] = new column('description','');
     $columns[$i][] = new column('icon_media_id','map');
-    $columns[$i][] = new column('content_id','map');
+    $columns[$i][] = new column('content_id','special');
     $columns[$i][] = new column('info','');
     $columns[$i][] = new column('requirement_root_package_id','map');
     $columns[$i][] = new column('sort_index','');
@@ -413,6 +414,7 @@ class duplicate extends dbconnection
 
     //final layer of indirection
     $coltablemap = array();
+    $coltablemap['game_id'] = 'games';
     $coltablemap['media_id']                       = 'media';
     $coltablemap['icon_media_id']                  = 'media';
     $coltablemap['complete_media_id']              = 'media';
@@ -443,10 +445,6 @@ class duplicate extends dbconnection
     $coltablemap['dialog_character_id']     = 'dialog_characters';
     $coltablemap['intro_dialog_script_id']  = 'dialog_scripts';
     $coltablemap['parent_dialog_script_id'] = 'dialog_scripts';
-    //special maps- point to different things based on context
-    $coltablemap['content_id'] = '';
-    $coltablemap['object_id']  = '';
-    $coltablemap['link_id']    = '';
 
     $maps = array();
     $fake_auto_inc = 1;
@@ -471,29 +469,23 @@ class duplicate extends dbconnection
         for($k = 0; $k < count($cols); $k++)
         {
           $col = $cols[$k];
+          $old_datum[$col->name] = addslashes($old_datum[$col->name]); //best thing I can think of for sanitation...
+
           if($col->meta == 'id') //id value- let auto-increment handle
           {
             $old_id = $old_datum[$col->name];//just store old id
           }
-          else if($col->meta == '') //boring value- direct copy
+          else //just copy value- if meta == 'map' || 'special', will get overwritten in second pass anyways
           {
             if($col_query != "")
             {
-              $col_query .= ", ";
-              $val_query .= ", ";
+              $col_query .= ', ';
+              $val_query .= ', ';
             }
             $col_query .= "{$col->name}";
-            $val_query .= "'{$old_datum[$col->name]}'";
-          }
-          else if($col->meta == 'map') //references other table- map value
-          {
-            if($col_query != "")
-            {
-              $col_query .= ", ";
-              $val_query .= ", ";
-            }
-            $col_query .= "{$col->name}";
-            $val_query .= "'0'"; //bogus value to be filled in on next pass
+
+            if($col->meta == 'special' || $col->meta == 'map') $val_query .= "'0'"; //set to 0 so botched duplicate won't ruin other games
+            else $val_query .= "'{$old_datum[$col->name]}'";
           }
         }
         //$maps[$table][$old_id] = dbconnection::queryInsert("INSERT INTO {$table} ({$col_query}) VALUES ({$val_query});");
@@ -520,6 +512,8 @@ class duplicate extends dbconnection
         for($k = 0; $k < count($cols); $k++)
         {
           $col = $cols[$k];
+          $old_datum[$col->name] = addslashes($old_datum[$col->name]); //best thing I can think of for sanitation...
+
           if($col->meta == 'id') //id value- auto-increment handled its creation
           {
             $id_col = $col->name;
@@ -530,152 +524,153 @@ class duplicate extends dbconnection
           }
           else if($col->meta == 'map') //references other table- update mapped value
           {
-            if($update_query != "")
+            if($update_query != '')
+              $update_query .= ', ';
+
+            $update_query .= "{$col->name} = '{$maps[$coltablemap[$col->name]][$old_datum[$col->name]]}'";
+          }
+          else if($col->meta == 'special')
+          {
+            if($update_query != '')
+              $update_query .= ', ';
+
+            if($col->name == 'content_id')
             {
-              $update_query .= ", ";
-            }
-            if($coltablemap[$col->name] == '') //special case
-            {
-              if($col->name == 'content_id')
+              if($table == 'events')
+                $update_query .= "content_id = '{$maps['items'][$old_datum['content_id']]}'";
+              else if($table == 'requirement_atoms')
               {
-                if($table == 'events')
-                  $update_query .= "content_id = '{$maps['items'][$old_datum['content_id']]}'";
-                else if($table == 'requirement_atoms')
+                switch($old_datum['requirement'])
                 {
-                  switch($old_datum['requirement'])
-                  {
-                    case 'PLAYER_HAS_ITEM':
-                    case 'PLAYER_HAS_TAGGED_ITEM':
-                    case 'PLAYER_VIEWED_ITEM':
-                      $update_query .= "content_id = '{$maps['items'][$old_datum['content_id']]}'";
-                      break;
-                    case 'PLAYER_VIEWED_PLAQUE':
-                      $update_query .= "content_id = '{$maps['plaques'][$old_datum['content_id']]}'";
-                      break;
-                    case 'PLAYER_VIEWED_DIALOG':
-                      $update_query .= "content_id = '{$maps['dialogs'][$old_datum['content_id']]}'";
-                      break;
-                    case 'PLAYER_VIEWED_DIALOG_SCRIPT':
-                      $update_query .= "content_id = '{$maps['dialog_scripts'][$old_datum['content_id']]}'";
-                      break;
-                    case 'PLAYER_VIEWED_WEB_PAGE':
-                      $update_query .= "content_id = '{$maps['web_pages'][$old_datum['content_id']]}'";
-                      break;
-                    case 'PLAYER_HAS_COMPLETED_QUEST':
-                      $update_query .= "content_id = '{$maps['quests'][$old_datum['content_id']]}'";
-                      break;
-                    case 'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK':
-                      $update_query .= "content_id = '{$maps['web_hooks'][$old_datum['content_id']]}'";
-                      break;
-                    case 'ALWAYS_TRUE':
-                    case 'ALWAYS_FALSE':
-                    case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM':
-                    case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE':
-                    case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO':
-                    case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO':
-                    case 'PLAYER_HAS_NOTE':
-                    case 'PLAYER_HAS_NOTE_WITH_TAG':
-                    case 'PLAYER_HAS_NOTE_WITH_LIKES':
-                    case 'PLAYER_HAS_NOTE_WITH_COMMENTS':
-                    case 'PLAYER_HAS_GIVEN_NOTE_COMMENTS':
-                    default:
-                      $update_query .= "content_id = '{$old_datum['content_id']}'";
-                      break;
-                  }
-                }
-                else if($table == 'tabs')
-                {
-                  switch($old_datum['type'])
-                  {
-                    case 'NOTE':
-                      $update_query .= "content_id = '{$maps['notes'][$old_datum['content_id']]}'";
-                      break;
-                    case 'DIALOG':
-                      $update_query .= "content_id = '{$maps['dialogs'][$old_datum['content_id']]}'";
-                      break;
-                    case 'ITEM':
-                      $update_query .= "content_id = '{$maps['items'][$old_datum['content_id']]}'";
-                      break;
-                    case 'PLAQUE':
-                      $update_query .= "content_id = '{$maps['plaques'][$old_datum['content_id']]}'";
-                      break;
-                    case 'WEB_PAGE':
-                      $update_query .= "content_id = '{$maps['web_pages'][$old_datum['content_id']]}'";
-                      break;
-                    case 'MAP':
-                    case 'DECODER':
-                    case 'SCANNER':
-                    case 'QUESTS':
-                    case 'INVENTORY':
-                    case 'PLAYER':
-                    case 'NOTEBOOK':
-                    default:
-                      $update_query .= "content_id = '{$old_datum['content_id']}'";
-                      break;
-                  }
+                  case 'PLAYER_HAS_ITEM':
+                  case 'PLAYER_HAS_TAGGED_ITEM':
+                  case 'PLAYER_VIEWED_ITEM':
+                    $update_query .= "content_id = '{$maps['items'][$old_datum['content_id']]}'";
+                    break;
+                  case 'PLAYER_VIEWED_PLAQUE':
+                    $update_query .= "content_id = '{$maps['plaques'][$old_datum['content_id']]}'";
+                    break;
+                  case 'PLAYER_VIEWED_DIALOG':
+                    $update_query .= "content_id = '{$maps['dialogs'][$old_datum['content_id']]}'";
+                    break;
+                  case 'PLAYER_VIEWED_DIALOG_SCRIPT':
+                    $update_query .= "content_id = '{$maps['dialog_scripts'][$old_datum['content_id']]}'";
+                    break;
+                  case 'PLAYER_VIEWED_WEB_PAGE':
+                    $update_query .= "content_id = '{$maps['web_pages'][$old_datum['content_id']]}'";
+                    break;
+                  case 'PLAYER_HAS_COMPLETED_QUEST':
+                    $update_query .= "content_id = '{$maps['quests'][$old_datum['content_id']]}'";
+                    break;
+                  case 'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK':
+                    $update_query .= "content_id = '{$maps['web_hooks'][$old_datum['content_id']]}'";
+                    break;
+                  case 'ALWAYS_TRUE':
+                  case 'ALWAYS_FALSE':
+                  case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM':
+                  case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE':
+                  case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO':
+                  case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO':
+                  case 'PLAYER_HAS_NOTE':
+                  case 'PLAYER_HAS_NOTE_WITH_TAG':
+                  case 'PLAYER_HAS_NOTE_WITH_LIKES':
+                  case 'PLAYER_HAS_NOTE_WITH_COMMENTS':
+                  case 'PLAYER_HAS_GIVEN_NOTE_COMMENTS':
+                  default:
+                    $update_query .= "content_id = '{$old_datum['content_id']}'";
+                    break;
                 }
               }
-              else if($col->name == 'object_id')
+              else if($table == 'tabs')
               {
-                switch($old_datum['object_type'])
+                switch($old_datum['type'])
                 {
-                  case 'PLAQUE':
-                    $update_query .= "object_id = '{$maps['plaques'][$old_datum['object_id']]}'";
-                    break;
-                  case 'ITEM':
-                    $update_query .= "object_id = '{$maps['items'][$old_datum['object_id']]}'";
+                  case 'NOTE':
+                    $update_query .= "content_id = '{$maps['notes'][$old_datum['content_id']]}'";
                     break;
                   case 'DIALOG':
-                    $update_query .= "object_id = '{$maps['dialogs'][$old_datum['object_id']]}'";
+                    $update_query .= "content_id = '{$maps['dialogs'][$old_datum['content_id']]}'";
+                    break;
+                  case 'ITEM':
+                    $update_query .= "content_id = '{$maps['items'][$old_datum['content_id']]}'";
+                    break;
+                  case 'PLAQUE':
+                    $update_query .= "content_id = '{$maps['plaques'][$old_datum['content_id']]}'";
                     break;
                   case 'WEB_PAGE':
-                    $update_query .= "object_id = '{$maps['web_pages'][$old_datum['object_id']]}'";
+                    $update_query .= "content_id = '{$maps['web_pages'][$old_datum['content_id']]}'";
                     break;
-                  case 'NOTE':
-                    $update_query .= "object_id = '{$maps['notes'][$old_datum['object_id']]}'";
-                    break;
-                  case 'FACTORY':
-                    $update_query .= "object_id = '{$maps['factories'][$old_datum['object_id']]}'";
-                    break;
-                  case 'SCENE':
-                    $update_query .= "object_id = '{$maps['scenes'][$old_datum['object_id']]}'";
-                    break;
+                  case 'MAP':
+                  case 'DECODER':
+                  case 'SCANNER':
+                  case 'QUESTS':
+                  case 'INVENTORY':
+                  case 'PLAYER':
+                  case 'NOTEBOOK':
                   default:
-                    $update_query .= "object_id = '{$old_datum['object_id']}'";
-                    break;
-                }
-              }
-              else if($col->name == 'link_id')
-              {
-                switch($old_datum['object_type'])
-                {
-                  case 'EXIT_TO_PLAQUE':
-                    $update_query .= "link_id = '{$maps['plaques'][$old_datum['link_id']]}'";
-                    break;
-                  case 'EXIT_TO_ITEM':
-                    $update_query .= "link_id = '{$maps['items'][$old_datum['link_id']]}'";
-                    break;
-                  case 'EXIT_TO_WEB_PAGE':
-                    $update_query .= "link_id = '{$maps['web_pages'][$old_datum['link_id']]}'";
-                    break;
-                  case 'EXIT_TO_DIALOG':
-                    $update_query .= "link_id = '{$maps['dialogs'][$old_datum['link_id']]}'";
-                    break;
-                  case 'EXIT_TO_TAB':
-                    $update_query .= "link_id = '{$maps['tabs'][$old_datum['link_id']]}'";
-                    break;
-                  case 'DIALOG_SCRIPT':
-                    $update_query .= "link_id = '{$maps['dialog_scripts'][$old_datum['link_id']]}'";
-                    break;
-                  case 'EXIT':
-                  default:
-                    $update_query .= "link_id = '{$old_datum['link_id']}'";
+                    $update_query .= "content_id = '{$old_datum['content_id']}'";
                     break;
                 }
               }
             }
-            else
-              $update_query .= "{$col->name} = '{$maps[$coltablemap[$col->name]][$old_datum[$col->name]]}'";
+            else if($col->name == 'object_id')
+            {
+              switch($old_datum['object_type'])
+              {
+                case 'PLAQUE':
+                  $update_query .= "object_id = '{$maps['plaques'][$old_datum['object_id']]}'";
+                  break;
+                case 'ITEM':
+                  $update_query .= "object_id = '{$maps['items'][$old_datum['object_id']]}'";
+                  break;
+                case 'DIALOG':
+                  $update_query .= "object_id = '{$maps['dialogs'][$old_datum['object_id']]}'";
+                  break;
+                case 'WEB_PAGE':
+                  $update_query .= "object_id = '{$maps['web_pages'][$old_datum['object_id']]}'";
+                  break;
+                case 'NOTE':
+                  $update_query .= "object_id = '{$maps['notes'][$old_datum['object_id']]}'";
+                  break;
+                case 'FACTORY':
+                  $update_query .= "object_id = '{$maps['factories'][$old_datum['object_id']]}'";
+                  break;
+                case 'SCENE':
+                  $update_query .= "object_id = '{$maps['scenes'][$old_datum['object_id']]}'";
+                  break;
+                default:
+                  $update_query .= "object_id = '{$old_datum['object_id']}'";
+                  break;
+              }
+            }
+            else if($col->name == 'link_id')
+            {
+              switch($old_datum['object_type'])
+              {
+                case 'EXIT_TO_PLAQUE':
+                  $update_query .= "link_id = '{$maps['plaques'][$old_datum['link_id']]}'";
+                  break;
+                case 'EXIT_TO_ITEM':
+                  $update_query .= "link_id = '{$maps['items'][$old_datum['link_id']]}'";
+                  break;
+                case 'EXIT_TO_WEB_PAGE':
+                  $update_query .= "link_id = '{$maps['web_pages'][$old_datum['link_id']]}'";
+                  break;
+                case 'EXIT_TO_DIALOG':
+                  $update_query .= "link_id = '{$maps['dialogs'][$old_datum['link_id']]}'";
+                  break;
+                case 'EXIT_TO_TAB':
+                  $update_query .= "link_id = '{$maps['tabs'][$old_datum['link_id']]}'";
+                  break;
+                case 'DIALOG_SCRIPT':
+                  $update_query .= "link_id = '{$maps['dialog_scripts'][$old_datum['link_id']]}'";
+                  break;
+                case 'EXIT':
+                default:
+                  $update_query .= "link_id = '{$old_datum['link_id']}'";
+                  break;
+              }
+            }
           }
         }
         if($update_query != "")
