@@ -1055,20 +1055,22 @@ class migration extends migration_dbconnection
         $mig = migration_dbconnection::queryObject("SELECT * FROM user_migrations WHERE v1_player_id = '{$v1PlayerId}'");
         if($mig) return $mig->v2_user_id;
 
-        $userpack = new stdClass();
-        $userpack->user_name = $v1Player->user_name;
-        $userpack->password = "iwasmigratedtov2andalligotwasthisstupidpassword";
-        $userpack->display_name = $v1Player->display_name;
-        $userpack->email = $v1Player->email;
-        $userpack->permission = "read_write";
-        $userpack->no_auto_migrate = true; //negative var name because it's a hack and we want the default to be nonexistant
+        $v2User = migration_dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$v1Player->user_name}'","v2");
+        if(!$v2User)
+        {
+          $userpack = new stdClass();
+          $userpack->user_name = $v1Player->user_name."_legacy_siftr";
+          $userpack->password = "iwasmigratedtov2andalligotwasthisstupidpassword";
+          $userpack->display_name = $v1Player->display_name;
+          $userpack->email = $v1Player->email;
+          $userpack->permission = "read_write";
+          $userpack->no_auto_migrate = true; //negative var name because it's a hack and we want the default to be nonexistant
 
-        $v2User = bridgeService("v2", "users", "createUser", "", $userpack)->data;
-        if(!$v2User) return 0; //username taken I guess
+          $v2User = bridgeService("v2", "users", "createUser", "", $userpack)->data;
+          if(!$v2User) return 0; //username taken I guess
 
-        if(!$v1Player) { $v1Player = new stdClass(); $v1Player->player_id = 0; }
-
-        migration_dbconnection::query("INSERT INTO user_migrations (v2_user_id, v2_read_write_key, v1_player_id, v1_editor_id, v1_read_write_token) VALUES ('{$v2User->user_id}', '{$v2User->read_write_key}', '{$v1Player->player_id}', '0', '0')");
+          migration_dbconnection::query("INSERT INTO user_migrations (v2_user_id, v2_read_write_key, v1_player_id, v1_editor_id, v1_read_write_token) VALUES ('{$v2User->user_id}', '{$v2User->read_write_key}', '{$v1Player->player_id}', '0', '0')");
+        }
 
         return $v2User->user_id;
     }
