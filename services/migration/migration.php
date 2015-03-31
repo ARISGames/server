@@ -263,6 +263,7 @@ class migration extends migration_dbconnection
         $maps->quests = migration::migrateQuests($v1GameId, $v2GameId, $maps);
         $maps->events = migration::migrateEvents($v1GameId, $v2GameId, $maps);
         $maps->factories = migration::migrateFactories($v1GameId, $v2GameId, $maps);
+        if($sift) $maps->notes = migration::migrateNotes($v1GameId, $v2GameId, $maps);
 
         $scene = migration_dbconnection::queryObject("SELECT * FROM scenes WHERE game_id = '{$v2GameId}';","v2");
         if($scene) $sceneId = $scene->scene_id;
@@ -278,10 +279,6 @@ class migration extends migration_dbconnection
 
         //no maps generated from migrateRequirements
         migration::migrateRequirements($v1GameId, $v2GameId, $maps);
-        if($sift)
-        {
-          $maps->notes = migration::migrateNotes($v1GameId, $v2GameId, $maps);
-        }
 
         migration_dbconnection::queryInsert("INSERT INTO game_migrations (v2_game_id, v1_game_id, v2_user_id) VALUES ('{$v2GameId}','{$v1GameId}','{$v2UserId}')");
 
@@ -1009,6 +1006,7 @@ class migration extends migration_dbconnection
         for($i = 0; $i < count($properNotes); $i++)
         {
             $noteIdMap[$properNotes[$i]->note_id] = 0; //set it to 0 in case of failure
+            if($properNotes[$i]->incomplete) continue;
 
             $newNoteId = migration_dbconnection::queryInsert("INSERT INTO notes (game_id, user_id, name, description, media_id, created) VALUES ('{$v2GameId}','{$userIdMap[$properNotes[$i]->owner_id]}','".addslashes($properNotes[$i]->title)."','".addslashes($properNotes[$i]->title)."','0','{$properNotes[$i]->created}');", "v2");
 
