@@ -199,6 +199,7 @@ class migration extends migration_dbconnection
 
     public function migrateGame($v2UserId, $v2Key = false, $v1GameId = false, $sift = false)
     {
+        set_time_limit(0);
         /*Huge hack to allow for either v1 style access or v2 access*/
         if(!$v2Key)
         {
@@ -238,6 +239,7 @@ class migration extends migration_dbconnection
         $oldGame->notebook_allow_player_tags = $oldGame->allow_player_tags;
         $oldGame->map_show_player = $oldGame->show_player_location;
         $oldGame->map_offsite_mode = $oldGame->full_quick_travel;
+        $oldGame->is_siftr = $sift ? 1 : 0;
         $oldGame->auth = $v2Auth;
         $v2GameId = bridgeService("v2", "games", "createGame", "", $oldGame)->data->game_id;
 
@@ -1008,7 +1010,7 @@ class migration extends migration_dbconnection
         {
             $noteIdMap[$properNotes[$i]->note_id] = 0; //set it to 0 in case of failure
 
-            $newNoteId = migration_dbconnection::queryInsert("INSERT INTO notes (game_id, user_id, name, description, media_id, created) VALUES ('{$v2GameId}','{$userIdMap[$properNotes[$i]->owner_id]}','".addslashes($properNotes[$i]->title)."','".addslashes($properNotes[$i]->title)."','0',CURRENT_TIMESTAMP);", "v2");
+            $newNoteId = migration_dbconnection::queryInsert("INSERT INTO notes (game_id, user_id, name, description, media_id, created) VALUES ('{$v2GameId}','{$userIdMap[$properNotes[$i]->owner_id]}','".addslashes($properNotes[$i]->title)."','".addslashes($properNotes[$i]->title)."','0','{$properNotes[$i]->created}');", "v2");
 
             $notetags = migration_dbconnection::queryArray("SELECT * FROM note_tags WHERE note_id = '{$properNotes[$i]->note_id}';","v1");
 
@@ -1061,7 +1063,7 @@ class migration extends migration_dbconnection
           $userpack = new stdClass();
           $userpack->user_name = $v1Player->user_name."_legacy_siftr";
           $userpack->password = "iwasmigratedtov2andalligotwasthisstupidpassword";
-          $userpack->display_name = $v1Player->display_name;
+          $userpack->display_name = (!$v1Player->display_name || $v1Player->display_name == "") ? $v1Player->user_name : $v1Player->display_name;
           $userpack->email = $v1Player->email;
           $userpack->permission = "read_write";
           $userpack->no_auto_migrate = true; //negative var name because it's a hack and we want the default to be nonexistant
