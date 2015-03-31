@@ -1008,12 +1008,12 @@ class migration extends migration_dbconnection
         {
             $noteIdMap[$properNotes[$i]->note_id] = 0; //set it to 0 in case of failure
 
-            $newNoteId = migration_dbconnection::queryInsert("INSERT INTO notes (game_id, user_id, name, description, media_id, created) VALUES ('{$v2GameId}','{$userIdMap[$properNotes[$i]->owner_id]}','".addslashes($properNotes[$i]->title)."','".addslashes($properNotes[$i]->title)."','0',CURRENT_TIMESTAMP)", "v2");
+            $newNoteId = migration_dbconnection::queryInsert("INSERT INTO notes (game_id, user_id, name, description, media_id, created) VALUES ('{$v2GameId}','{$userIdMap[$properNotes[$i]->owner_id]}','".addslashes($properNotes[$i]->title)."','".addslashes($properNotes[$i]->title)."','0',CURRENT_TIMESTAMP);", "v2");
 
-            $notetags = migration_dbconnection::queryArray("SELECT * FROM note_tags WHERE note_id = '{$properNotes[$i]->note_id}'","v1");
+            $notetags = migration_dbconnection::queryArray("SELECT * FROM note_tags WHERE note_id = '{$properNotes[$i]->note_id}';","v1");
 
             for($j = 0; $j < count($notetags); $j++)
-                migration_dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$v2GameId}','NOTE','{$newNoteId}','{$maps->tags[$notetags[$j]->tag_id]}',CURRENT_TIMESTAMP","v2");
+                migration_dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$v2GameId}','NOTE','{$newNoteId}','{$maps->tags[$notetags[$j]->tag_id]}',CURRENT_TIMESTAMP);","v2");
 
             $noteIdMap[$properNotes[$i]->note_id] = $newNoteId;
         }
