@@ -1,0 +1,206 @@
+<html>
+<head>
+<script type="text/javascript" src="default_crud_data.js"></script>
+<script type="text/javascript">
+    function load()
+    {
+        //populate defaults dropdown
+        var defaults = document.getElementById('crud_defaults');
+        for(var i = 0; i < CRUD_DEFAULTS.length; i++)
+            defaults.innerHTML += "<option value='"+i+"'>"+CRUD_DEFAULTS[i].service+"</option>";
+        var params = parseURLParams(document.URL);
+        if(params.username && params.password)
+        {
+            document.getElementById('auth_request_user').value = params.username;
+            document.getElementById('auth_request_password').value = params.password;
+            submitAuth();
+        }
+    }
+
+    function parseURLParams(url) 
+    {
+        var queryStart = url.indexOf("?") + 1;
+        var queryEnd   = url.indexOf("#") + 1 || url.length + 1;
+        var query      = url.slice(queryStart, queryEnd - 1);
+
+        var params  = {};
+        if (query === url || query === "") return params;
+        var nvPairs = query.replace(/\+/g, " ").split("&");
+
+        for(var i=0; i<nvPairs.length; i++)
+        {
+            var nv = nvPairs[i].split("=");
+            var n  = decodeURIComponent(nv[0]);
+            var v  = decodeURIComponent(nv[1]);
+            if(!(n in params)) params[n] = [];
+            params[n].push(nv.length === 2 ? v : null);
+        }
+        return params;
+    }
+
+    function sendRequest(fn, params, method)
+    {
+        var xmlhttp;
+        xmlhttp=new XMLHttpRequest();
+        xmlhttp.open(method,"../../../json.php/migration."+fn,false);
+        xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xmlhttp.send(params); //Synchronous call
+
+        return JSON.parse(xmlhttp.responseText);
+    }
+
+    function defaultsChanged() { loadDefaults(parseInt(document.getElementById('crud_defaults').value)); }
+    function loadDefaults(index)
+    {
+        document.getElementById('create_request_method').value = CRUD_DEFAULTS[index].create;
+        document.getElementById('create_request').value = CRUD_DEFAULTS[index].createData;
+        document.getElementById('get_request_method').value = CRUD_DEFAULTS[index].get;
+        document.getElementById('get_request').value = CRUD_DEFAULTS[index].getData;
+        document.getElementById('update_request_method').value = CRUD_DEFAULTS[index].update;
+        document.getElementById('update_request').value = CRUD_DEFAULTS[index].updateData;
+        document.getElementById('delete_request_method').value = CRUD_DEFAULTS[index].delete;
+        document.getElementById('delete_request').value = CRUD_DEFAULTS[index].deleteData;
+    }
+
+    var userId = 0;
+    var rwkey = "";
+    function submitAuth()
+    {
+        var package = {"user_name":document.getElementById('auth_request_user').value,"password":document.getElementById('auth_request_password').value,"permission":"read_write"};
+        var response = sendRequest('users.logIn', JSON.stringify(package), "POST");
+        document.getElementById('result_text').innerHTML = JSON.stringify(response);
+        console.log(response);
+        userId = response.data.user_id; document.getElementById('auth_response_user_id').innerHTML = response.data.user_id;
+        rwkey = response.data.read_write_key; document.getElementById('auth_response_read_write_key').innerHTML = response.data.read_write_key;
+    }
+    function submitNewUser()
+    {
+        var package = {"user_name":document.getElementById('new_user_request_user').value,"password":document.getElementById('new_user_request_password').value};
+        var response = sendRequest('users.createUser', JSON.stringify(package), "POST");
+        document.getElementById('auth_request_user').value = document.getElementById('new_user_request_user').value;
+        document.getElementById('auth_request_password').value = document.getElementById('new_user_request_password').value;
+        document.getElementById('result_text').innerHTML = JSON.stringify(response);
+        userId = response.data.user_id; document.getElementById('auth_response_user_id').innerHTML = response.data.user_id;
+        rwkey = response.data.read_write_key; document.getElementById('auth_response_read_write_key').innerHTML = response.data.read_write_key;
+    }
+
+    function submitCreate()
+    {
+        var package = JSON.parse(document.getElementById('create_request').value);
+        //package.auth = {"user_id":userId,"key":rwkey};
+        var response = sendRequest(document.getElementById('create_request_method').value, JSON.stringify(package), "POST");
+        document.getElementById('result_text').innerHTML = JSON.stringify(response);
+    }
+
+    function submitUpdate()
+    {
+        var package = JSON.parse(document.getElementById('update_request').value);
+        //package.auth = {"user_id":userId,"key":rwkey};
+        var response = sendRequest(document.getElementById('update_request_method').value, JSON.stringify(package), "POST");
+        document.getElementById('result_text').innerHTML = JSON.stringify(response);
+    }
+
+    function submitGet()
+    {
+        var package = JSON.parse(document.getElementById('get_request').value);
+        //package.auth = {"user_id":userId,"key":rwkey};
+        var response = sendRequest(document.getElementById('get_request_method').value, JSON.stringify(package), "POST");
+        document.getElementById('result_text').innerHTML = JSON.stringify(response);
+    }
+
+    function submitDelete()
+    {
+        var package = JSON.parse(document.getElementById('delete_request').value);
+        //package.auth = {"user_id":userId,"key":rwkey};
+        var response = sendRequest(document.getElementById('delete_request_method').value, JSON.stringify(package), "POST");
+        document.getElementById('result_text').innerHTML = JSON.stringify(response);
+    }
+
+    function submitCustom()
+    {
+        var package = JSON.parse(document.getElementById('custom_request').value);
+        //package.auth = {"user_id":userId,"key":rwkey};
+        var response = sendRequest(document.getElementById('custom_request_method').value, JSON.stringify(package), "POST");
+        document.getElementById('result_text').innerHTML = JSON.stringify(response);
+    }
+
+</script>
+</head>
+<body onload="load()">
+
+<div style="float:left;">
+    <table id="auth_inputs">
+    <tr> <td> <button id='auth_request_submit' onclick='submitAuth()'>authenticate</button> </td> </tr>
+    <tr> <td style='text-align:right;'>Username:</td> <td><input id='auth_request_user'     type='text'>    </input></td> <td style='text-align:right;'>user_id:</td>        <td id='auth_response_user_id'>       </td> </tr>
+    <tr> <td style='text-align:right;'>Password:</td> <td><input id='auth_request_password' type='password'></input></td> <td style='text-align:right;'>read_write_key:</td> <td id='auth_response_read_write_key'></td> </tr>
+    </table>
+</div>
+<div style="float:left;">
+    <table id="new_user_inputs">
+    <tr> <td> <button id='new_user_request_submit' onclick='submitNewUser()'>create new user</button> </td> </tr>
+    <tr> <td style='text-align:right;'>Username:</td> <td><input id='new_user_request_user'     type='text'>    </input></td>  </tr>
+    <tr> <td style='text-align:right;'>Password:</td> <td><input id='new_user_request_password' type='password'></input></td>  </tr>
+    </table>
+</div>
+
+<div style="clear:both;"></div>
+<br />
+<br />
+
+Load Defaults:<br/>
+<select id='crud_defaults' onchange="defaultsChanged()">
+</select>
+
+<br />
+<br />
+<div>
+Note: "auth" info injected into requests before sending, based on login credentials above. "auth" format as follows:<br />
+{"auth":{"key":abcdefg1234567, "user_id":123}, ... (the rest of the JSON object...) } <br />
+</div>
+<br />
+<br />
+
+<div id="request_inputs" style="width:600px; float:left;">
+    <div>
+    <button id='create_request_submit' onclick='submitCreate()'>create</button><input id='create_request_method' type='text'></input><br />
+    <textarea id='create_request' style="width:100%; min-height:90;"></textarea><br />
+    </div>
+    <br />
+
+    <div>
+    <button id='update_request_submit' onclick='submitUpdate()'>update</button><input id='update_request_method' type='text'></input><br />
+    <textarea id='update_request' style="width:100%; min-height:90;"></textarea><br />
+    </div>
+    <br />
+
+    <div>
+    <button id='get_request_submit' onclick='submitGet()'>get</button><input id='get_request_method' type='text'></input><br />
+    <textarea id='get_request' style="width:100%; min-height:90;"></textarea><br />
+    </div>
+    <br />
+
+    <div>
+    <button id='delete_request_submit' onclick='submitDelete()'>delete</button><input id='delete_request_method' type='text'></input><br />
+    <textarea id='delete_request' style="width:100%; min-height:90;"></textarea><br />
+    </div>
+    <br />
+
+    <div>
+    <button id='custom_request_submit' onclick='submitCustom()'>custom</button> <input id='custom_request_method' type='text'></input>
+    <textarea id='custom_request' style="width:100%; min-height:90;"></textarea><br />
+    </div>
+    <br />
+
+   </div>
+</div>
+
+<div id='result' style="max-width:300px; float:left;"> 
+Result:<br />
+<div id='result_text'>
+(No Requests made)
+</div>
+</div>
+
+</body>
+</html>
+

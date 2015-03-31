@@ -652,7 +652,7 @@ class migration extends migration_dbconnection
         for($i = 0; $i < count($tags); $i++)
         {
             $tagIdMap[$tags[$i]->tag_id] = 0; //set it to 0 in case of failure
-            $newtagId = migration_dbconnection::queryInsert("INSERT INTO tags (game_id, tag, media_id, player_created, visible, sort_index, created) VALUES ('{$v2GameId}','{$tags[$i]->tag}','{$maps->media[$tags[$i]->media_id]}','{$tags[$i]->player_created}','1','0',CURRENT_TIMESTAMP)", "v2");
+            $newtagId = migration_dbconnection::queryInsert("INSERT INTO tags (game_id, tag, media_id, curated, visible, sort_index, created) VALUES ('{$v2GameId}','{$tags[$i]->tag}','{$maps->media[$tags[$i]->media_id]}','".(($tags[$i]->player_created == 1) ? 0 : 1)."','1','0',CURRENT_TIMESTAMP)", "v2");
             $tagIdMap[$tags[$i]->tag_id] = $newtagId;
         }
         return $tagIdMap;
