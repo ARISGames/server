@@ -551,6 +551,15 @@ class client extends dbconnection
         return new return_package(0);
     }
 
+    public static function logPlayerCreatedNote($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'CREATE_NOTE', '{$pack->note_id}', CURRENT_TIMESTAMP);");
+        return new return_package(0);
+    }
+
     //analyzes the player log to see if any other logs should exist (QUEST_COMPLETE for example is deterministic on the existence of other logs)
     public static function checkForCascadingLogs($pack)
     {

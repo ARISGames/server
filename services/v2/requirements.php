@@ -454,11 +454,32 @@ class requirements extends dbconnection
     }
     private function playerHasNote($pack)
     {
-        return false;
+        //two options...
+
+        //"has created n notes since last game reset" (checks the log, which clears itself on game reset)
+        $entries = dbconnection::queryArray("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}' AND event_type = 'CREATE_NOTE' AND deleted = 0");
+
+        //"has n notes in existence" (checks note list. can't create->delete->create->delete to get 2 note count)
+        //$entries = dbconnection::queryArray("SELECT * FROM notes WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}';");
+
+        return (count($entries) >= $pack->qty) ? true : false;
     }
     private function playerHasNoteWithTag($pack)
     {
-        return false;
+        $notes = dbconnection::queryArray("SELECT * FROM notes WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}';");
+        $object_tags = dbconnection::queryArray("SELECT * FROM object_tags WHERE game_id = '{$pack->game_id}' AND object_type = 'NOTE' AND tag_id = '{$pack->content_id}';");
+        $entries = array();
+
+        for($i = 0; $i < count($notes); $i++)
+        {
+          for($j = 0; $j < count($object_tags); $j++)
+          {
+            if($notes[$i]->note_id == $object_tags[$j]->object_id)
+              $entries[] = $notes[$i];
+          }
+        }
+
+        return (count($entries) >= $pack->qty) ? true : false;
     }
     private function playerHasNoteWithLikes($pack)
     {

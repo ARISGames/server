@@ -10,6 +10,8 @@ require_once("instances.php");
 require_once("triggers.php");
 require_once("tags.php");
 
+require_once("client.php");
+
 class notes extends dbconnection
 {
     public static function createNote($pack)
@@ -54,6 +56,7 @@ class notes extends dbconnection
             dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$pack->game_id}', 'NOTE', '{$pack->note_id}', '{$pack->tag_id}', CURRENT_TIMESTAMP)");
         }
 
+        client::logPlayerCreatedNote($pack);
         return notes::getNote($pack);
     }
 
