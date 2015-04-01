@@ -68,7 +68,7 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        else if ($pack->interval == "MONTH") $interval = '1 MONTH';
+             if ($pack->interval == "MONTH") $interval = '1 MONTH';
         else if ($pack->interval == "WEEK")  $interval = '7 DAY';
         else                                 $interval = '1 DAY';
 
