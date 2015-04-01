@@ -503,6 +503,13 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
+        $instance = dbconnection::queryObject("SELECT * FROM instances WHERE instance_id = '{$pack->instance_id}';");
+        if($instance->factory_id)
+        {
+          $factory = dbconnection::queryObject("SELECT * FROM factories WHERE factory_id = '{$instance->factory_id}';");
+          if($factory->produce_expire_on_view)
+            instances::noauth_deleteInstance($instance);
+        }
         dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'VIEW_INSTANCE', '{$pack->instance_id}', CURRENT_TIMESTAMP);");
         return new return_package(0);
     }

@@ -165,20 +165,29 @@ class triggers extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
+        return noauth_deleteTrigger($pack);
+    }
+
+    //this is a security risk...
+    public static function noauth_deleteTrigger($pack)
+    {
+        //and this "fixes" the security risk...
+        if(strpos($_SERVER['REQUEST_URI'],'noauth') !== false) return new return_package(6, NULL, "Attempt to bypass authentication externally.");
+
         dbconnection::query("DELETE FROM triggers WHERE trigger_id = '{$pack->trigger_id}' LIMIT 1");
         //cleanup
         $instances = dbconnection::queryArray("SELECT * FROM instances WHERE instance_id = '{$trigger->instance_id}'");
         for($i = 0; $i < count($instances); $i++)
         {
             $pack->instance_id = $instances[$i]->instance_id;
-            instances::deleteInstance($pack);
+            instances::noauth_deleteInstance($pack);
         }
 
         $reqPack = dbconnection::queryObject("SELECT * FROM requirement_root_packages WHERE requirement_root_package_id = '{$trigger->requirement_root_package_id}'");
         if($reqPack)
         {
             $pack->requirement_root_package_id = $reqPack->requirement_root_package_id;
-            requirements::deleteRequirementPackage($pack);
+            requirements::noauth_deleteRequirementPackage($pack);
         }
 
         return new return_package(0);

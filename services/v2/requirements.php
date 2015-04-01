@@ -299,13 +299,22 @@ class requirements extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
+        return noauth_deleteRequirementPackage($pack);
+    }
+
+    //this is a security risk...
+    public function noauth_deleteRequirementPackage($pack)
+    {
+        //and this "fixes" the security risk...
+        if(strpos($_server['request_uri'],'noauth') !== false) return new return_package(6, null, "attempt to bypass authentication externally.");
+
         dbconnection::query("DELETE FROM requirement_root_packages WHERE requirement_root_package_id = '{$pack->requirement_root_package_id}'");
         //cleanup
         $sql_andPacks = dbconnection::queryArray("SELECT * FROM requirement_and_packages WHERE requirement_root_package_id = '{$pack->requirement_root_package_id}'");
         for($i = 0; $i < count($sql_andPacks); $i++)
         {
             $sql_andPacks[$i]->auth = $pack->auth;
-            requirements::deleteRequirementAndPackage($sql_andPacks[$i]);
+            requirements::noauth_deleteRequirementAndPackage($sql_andPacks[$i]);
         }
         dbconnection::query("UPDATE quests SET complete_requirement_root_package_id = 0 WHERE game_id = '{$gameId}' AND complete_requirement_root_package_id = '{$requirementPackageId}'");
         dbconnection::query("UPDATE quests SET display_requirement_root_package_id = 0 WHERE game_id = '{$gameId}' AND display_requirement_root_package_id = '{$requirementPackageId}'");
@@ -320,6 +329,15 @@ class requirements extends dbconnection
         $pack->auth->game_id = dbconnection::queryObject("SELECT game_id FROM requirement_and_packages WHERE requirement_and_package_id = '{$pack->requirement_and_package_id}'")->game_id;
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        return noauth_deleteRequirementAndPackage($pack);
+    }
+
+    //this is a security risk...
+    public function noauth_deleteRequirementAndPackage($pack)
+    {
+        //and this "fixes" the security risk...
+        if(strpos($_server['request_uri'],'noauth') !== false) return new return_package(6, null, "attempt to bypass authentication externally.");
 
         dbconnection::query("DELETE FROM requirement_and_packages WHERE requirement_and_package_id = '{$pack->requirement_and_package_id}'");
         //cleanup
@@ -337,6 +355,15 @@ class requirements extends dbconnection
         $pack->auth->game_id = dbconnection::queryObject("SELECT game_id FROM requirement_atoms WHERE requirement_atom_id = '{$pack->requirement_atom_id}'")->game_id;
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        return noauth_deleteRequirementAtom($pack);
+    }
+
+    //this is a security risk...
+    public function noauth_deleteRequirementAtom($pack)
+    {
+        //and this "fixes" the security risk...
+        if(strpos($_server['request_uri'],'noauth') !== false) return new return_package(6, null, "attempt to bypass authentication externally.");
 
         dbconnection::query("DELETE FROM requirement_atoms WHERE requirement_atom_id = '{$pack->requirement_atom_id}'");
         return new return_package(0);

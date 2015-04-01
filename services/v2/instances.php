@@ -84,7 +84,7 @@ class instances extends dbconnection
 
     public static function getInstancesForGame($pack)
     {
-		// Return game owned, or game owned + specific player.
+        // Return game owned, or game owned + specific player.
         $sql_instances = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND (owner_id = '".(isset($pack->owner_id) ? $pack->owner_id : 0)."' OR owner_id = '0')");
         $instances = array();
         for($i = 0; $i < count($sql_instances); $i++)
@@ -109,13 +109,22 @@ class instances extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
+        return noauth_deleteInstance($pack);
+    }
+
+    //this is a security risk...
+    public static function noauth_deleteInstance($pack)
+    {
+        //and this "fixes" the security risk...
+        if(strpos($_SERVER['REQUEST_URI'],'noauth') !== false) return new return_package(6, NULL, "Attempt to bypass authentication externally.");
+
         dbconnection::query("DELETE FROM instances WHERE instance_id = '{$pack->instance_id}' LIMIT 1");
         //cleanup
         $triggers = dbconnection::queryArray("SELECT * FROM triggers WHERE instance_id = '{$pack->instance_id}'");
         for($i = 0; $i < count($triggers); $i++)
         {
             $pack->trigger_id = $triggers[$i]->trigger_id;
-            triggers::deleteTrigger($pack);
+            triggers::noauth_deleteTrigger($pack);
         }
 
         return new return_package(0);
