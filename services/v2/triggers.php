@@ -165,7 +165,7 @@ class triggers extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        return noauth_deleteTrigger($pack);
+        return triggers::noauth_deleteTrigger($pack);
     }
 
     //this is a security risk...

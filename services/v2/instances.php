@@ -109,7 +109,7 @@ class instances extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        return noauth_deleteInstance($pack);
+        return instances::noauth_deleteInstance($pack);
     }
 
     //this is a security risk...

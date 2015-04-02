@@ -299,7 +299,7 @@ class requirements extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        return noauth_deleteRequirementPackage($pack);
+        return requirements::noauth_deleteRequirementPackage($pack);
     }
 
     //this is a security risk...
@@ -330,7 +330,7 @@ class requirements extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        return noauth_deleteRequirementAndPackage($pack);
+        return requirements::noauth_deleteRequirementAndPackage($pack);
     }
 
     //this is a security risk...
@@ -356,7 +356,7 @@ class requirements extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        return noauth_deleteRequirementAtom($pack);
+        return requirements::noauth_deleteRequirementAtom($pack);
     }
 
     //this is a security risk...
