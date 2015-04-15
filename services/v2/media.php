@@ -179,8 +179,9 @@ class media extends dbconnection
         $filenametitle = substr($sql_media->file_name,0,strrpos($sql_media->file_name,'.'));
         $filenameext   = substr($sql_media->file_name,strrpos($sql_media->file_name,'.'));
 
-        if (substr($filenametitle, -8) === "_resized") {
-            $filenametitle = substr($filenametitle, 0, -8)
+        if(substr($filenametitle, -8) === "_resized")
+        {
+            $filenametitle = substr($filenametitle, 0, -8);
         }
 
         $media->url       = Config::v2_gamedata_www_path."/".$sql_media->file_folder."/".$sql_media->file_name;
