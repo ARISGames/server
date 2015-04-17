@@ -373,7 +373,7 @@ class migration extends migration_dbconnection
         for($i = 0; $i < count($items); $i++)
         {
             $itemIdMap[$items[$i]->item_id] = 0; //set it to 0 in case of failure
-            $newItemId = migration_dbconnection::queryInsert("INSERT INTO items (game_id, name, description, icon_media_id, media_id, droppable, destroyable, max_qty_in_inventory, weight, url, type, created) VALUES ('{$v2GameId}','".addslashes($items[$i]->name)."','".addslashes($items[$i]->description)."','{$maps->media[$items[$i]->icon_media_id]}','{$maps->media[$items[$i]->media_id]}','{$items[$i]->dropable}','{$items[$i]->destroyable}','{$items[$i]->max_qty_in_inventory}','{$items[$i]->weight}','{$items[$i]->url}','{$items[$i]->type}',CURRENT_TIMESTAMP)", "v2");
+            $newItemId = migration_dbconnection::queryInsert("INSERT INTO items (game_id, name, description, icon_media_id, media_id, droppable, destroyable, max_qty_in_inventory, weight, url, type, created) VALUES ('{$v2GameId}','".addslashes($items[$i]->name)."','".addslashes($items[$i]->description)."','{$maps->media[$items[$i]->icon_media_id]}','{$maps->media[$items[$i]->media_id]}','{$items[$i]->dropable}','{$items[$i]->destroyable}','".($items[$i]->max_qty_in_inventory < 0 ? 0 : $items[$i]->max_qty_in_inventory)."','{$items[$i]->weight}','{$items[$i]->url}','{$items[$i]->type}',CURRENT_TIMESTAMP)", "v2");
             $itemIdMap[$items[$i]->item_id] = $newItemId;
         }
         return $itemIdMap;
