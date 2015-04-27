@@ -232,6 +232,7 @@ class games extends dbconnection
 
         $q .= " WHERE g.is_siftr";
         if ($siftr_url) $q .= " AND g.siftr_url = '".$pack->siftr_url."'";
+        if (!$siftr_url) $q .= " AND g.published";
         if ($search) {
             foreach (preg_split('/\s+/', $search) as $word) {
                 if ($word != '') {
