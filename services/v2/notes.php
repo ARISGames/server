@@ -9,6 +9,7 @@ require_once("note_comments.php");
 require_once("instances.php");
 require_once("triggers.php");
 require_once("tags.php");
+require_once("games.php");
 
 require_once("client.php");
 
@@ -26,6 +27,8 @@ class notes extends dbconnection
             $pack->media_id = media::createMedia($pack->media)->data->media_id;
         }
 
+        $game = games::getGame($pack);
+
         $pack->note_id = dbconnection::queryInsert(
             "INSERT INTO notes (".
             "game_id,".
@@ -33,6 +36,7 @@ class notes extends dbconnection
             (isset($pack->name)        ? "name,"        : "").
             (isset($pack->description) ? "description," : "").
             (isset($pack->media_id)    ? "media_id,"    : "").
+            "published,".
             "created".
             ") VALUES (".
             "'".$pack->game_id."',".
@@ -40,6 +44,7 @@ class notes extends dbconnection
             (isset($pack->name)        ? "'".addslashes($pack->name)."',"        : "").
             (isset($pack->description) ? "'".addslashes($pack->description)."'," : "").
             (isset($pack->media_id)    ? "'".addslashes($pack->media_id)."',"    : "").
+            ($game->moderated ? "'PENDING'" : "'AUTO'").",".
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -122,6 +127,7 @@ class notes extends dbconnection
         $note->description = $sql_note->description;
         $note->media_id    = $sql_note->media_id;
         $note->created     = $sql_note->created;
+        $note->published   = $sql_note->published;
         $note->user               = new stdClass();
         $note->user->user_id      = $note->user_id;
         $note->user->user_name    = $sql_note->user_name;
@@ -302,6 +308,12 @@ class notes extends dbconnection
         if ($note_id) {
             $lines[] = "AND notes.note_id = '{$note_id}'";
         }
+        if ($user_id) {
+            $lines[] = "AND (notes.published != 'PENDING' OR notes.user_id = '{$user_id}')";
+        }
+        else {
+            $lines[] = "AND notes.published != 'PENDING'";
+        }
 
         $lines[] = "GROUP BY notes.note_id";
         if ($order_by === 'popular') {
@@ -329,6 +341,35 @@ class notes extends dbconnection
             $notes[] = $ob;
         }
         return new return_package(0, $notes);
+    }
+
+    public static function flagNote($pack)
+    {
+        $sql_note = dbconnection::queryObject("SELECT * FROM notes WHERE note_id = '{$pack->note_id}'");
+        $note = notes::noteObjectFromSQL($sql_note);
+        // No authentication; anyone can flag a note that is not in APPROVED state
+        if ($note->published == 'APPROVED') {
+            return new return_package(1, NULL, "Cannot flag note because it has already been approved by the moderator");
+        }
+        dbconnection::query(
+            "UPDATE notes SET published = 'PENDING' WHERE note_id = '{$pack->note_id}'";
+        );
+        return new return_package(0);
+    }
+
+    public static function approveNote($pack)
+    {
+        $note = dbconnection::queryObject("SELECT * FROM notes WHERE note_id = '{$pack->note_id}'");
+        $pack->auth->game_id = $note->game_id;
+        $pack->auth->permission = "read_write";
+        // You must be a game owner to approve notes
+        if (!editors::authenticateGameEditor($pack->auth)) {
+            return new return_package(6, NULL, "Failed Authentication");
+        }
+        dbconnection::query(
+            "UPDATE notes SET published = 'APPROVED' WHERE note_id = '{$pack->note_id}'";
+        );
+        return new return_package(0);
     }
 
     public static function deleteNote($pack)

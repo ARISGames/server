@@ -51,6 +51,7 @@ class games extends dbconnection
             (isset($pack->is_siftr)                                     ? "is_siftr,"                                     : "").
             (isset($pack->siftr_url)                                    ? "siftr_url,"                                    : "").
             (isset($pack->published)                                    ? "published,"                                    : "").
+            (isset($pack->moderated)                                    ? "moderated,"                                    : "").
             (isset($pack->type)                                         ? "type,"                                         : "").
             (isset($pack->intro_scene_id)                               ? "intro_scene_id,"                               : "").
             "created".
@@ -82,6 +83,7 @@ class games extends dbconnection
             (isset($pack->is_siftr)                                     ? "'".addslashes($pack->is_siftr)."',"                                     : "").
             (isset($pack->siftr_url)                                    ? "'".addslashes($pack->siftr_url)."',"                                    : "").
             (isset($pack->published)                                    ? "'".addslashes($pack->published)."',"                                    : "").
+            (isset($pack->moderated)                                    ? "'".addslashes($pack->moderated)."',"                                    : "").
             (isset($pack->type)                                         ? "'".addslashes($pack->type)."',"                                         : "").
             (isset($pack->intro_scene_id)                               ? "'".addslashes($pack->intro_scene_id)."',"                               : "").
             "CURRENT_TIMESTAMP".
@@ -162,6 +164,7 @@ class games extends dbconnection
             (isset($pack->siftr_url)                                    ? "siftr_url                                    = '".addslashes($pack->siftr_url)."', "                                    : "").
             ($unset_url                                                 ? "siftr_url                                    = NULL, "                                                                  : "").
             (isset($pack->published)                                    ? "published                                    = '".addslashes($pack->published)."', "                                    : "").
+            (isset($pack->moderated)                                    ? "moderated                                    = '".addslashes($pack->moderated)."', "                                    : "").
             (isset($pack->type)                                         ? "type                                         = '".addslashes($pack->type)."', "                                         : "").
             (isset($pack->intro_scene_id)                               ? "intro_scene_id                               = '".addslashes($pack->intro_scene_id)."', "                               : "").
             "last_active = CURRENT_TIMESTAMP ".
@@ -205,6 +208,7 @@ class games extends dbconnection
         $game->published                                    = $sql_game->published;
         $game->type                                         = $sql_game->type;
         $game->intro_scene_id                               = $sql_game->intro_scene_id;
+        $game->moderated                                    = $sql_game->moderated;
 
         return $game;
     }
