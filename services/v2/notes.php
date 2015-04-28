@@ -251,10 +251,21 @@ class notes extends dbconnection
 
     public static function searchNotes($pack)
     {
+        if (isset($pack->auth)) {
+            $pack->auth->game_id    = $pack->game_id;
+            $pack->auth->permission = "read_write"  ;
+            $auth_user   =   users::authenticateUser      ($pack->auth);
+            $auth_editor = editors::authenticateGameEditor($pack->auth);
+        }
+        else {
+            $auth_user   = null;
+            $auth_editor = null;
+        }
+
         $game_id = intval($pack->game_id);
         $search_terms = isset($pack->search_terms) ? $pack->search_terms : array();
         $note_count = intval($pack->note_count);
-        $user_id = intval($pack->user_id);
+        $user_id = $auth_user ? intval($auth_user->user_id) : 0;
         $order_by = $pack->order_by;
         $filter_by = $pack->filter_by;
         $tag_ids = isset($pack->tag_ids) ? array_map('intval', $pack->tag_ids) : array();
@@ -308,11 +319,13 @@ class notes extends dbconnection
         if ($note_id) {
             $lines[] = "AND notes.note_id = '{$note_id}'";
         }
-        if ($user_id) {
-            $lines[] = "AND (notes.published != 'PENDING' OR notes.user_id = '{$user_id}')";
-        }
-        else {
-            $lines[] = "AND notes.published != 'PENDING'";
+        if (!$auth_editor) {
+            if ($user_id) {
+                $lines[] = "AND (notes.published != 'PENDING' OR notes.user_id = '{$user_id}')";
+            }
+            else {
+                $lines[] = "AND notes.published != 'PENDING'";
+            }
         }
 
         $lines[] = "GROUP BY notes.note_id";
