@@ -258,9 +258,6 @@ class users extends dbconnection
 
     public static function getUser($pack)
     {
-        $pack->auth->permission = "read_write";
-        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
-
         //Note- uses $pack->user_id, NOT $pack->auth->user_id. as in, one user can request public details about another.
         $sql_user = dbconnection::queryObject("SELECT * FROM users WHERE user_id = '{$pack->user_id}'");
         return new return_package(0, users::userObjectFromSQL($sql_user));
@@ -268,9 +265,6 @@ class users extends dbconnection
 
     public static function getUsersForGame($pack)
     {
-        $pack->auth->permission = "read_write";
-        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
-
         $sql_users = dbconnection::queryArray("SELECT * FROM (SELECT * FROM user_games WHERE game_id = '{$pack->game_id}') as u_gs LEFT JOIN users ON u_gs.user_id = users.user_id");
         $users = array();
         for($i = 0; $i < count($sql_users); $i++)
@@ -281,9 +275,6 @@ class users extends dbconnection
 
     public static function getUsersForFuzzySearch($pack)
     {
-        $pack->auth->permission = "read_write";
-        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
-
         $sql_users = dbconnection::queryArray("SELECT * FROM users WHERE user_name LIKE '%{$pack->search}%' OR display_name LIKE '%{$pack->search}%' OR email LIKE '%{$pack->search}%'");
         $users = array();
         for($i = 0; $i < count($sql_users); $i++)
@@ -294,9 +285,6 @@ class users extends dbconnection
 
     public static function getUserForSearch($pack)
     {
-        $pack->auth->permission = "read_write";
-        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
-
         $sql_user = dbconnection::queryObject("SELECT * FROM users WHERE user_name LIKE '{$pack->search}' OR email LIKE '{$pack->search}'");
         if($sql_user) return new return_package(0, users::userObjectFromSQL($sql_user));
         else          return new return_package(1, NULL, "User not found");
