@@ -36,9 +36,6 @@ deploy:
 	@echo "Pushing to Github."
 	@git push 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
-	@echo "Deploying to server 1."
-	@ssh -t aris-prod1 $(CHECKOUT_COMMAND) 1>/dev/null
-	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
 	@echo "Deploying to server 2."
 	@ssh -t aris-prod2 $(CHECKOUT_COMMAND) 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
@@ -47,9 +44,6 @@ deploy:
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
 
 cache_clear:
-	@echo "Clearing cache on server 1."
-	@ssh -t aris-prod1 $(CACHE_COMMAND) 1>/dev/null
-	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
 	@echo "Clearing cache on server 2."
 	@ssh -t aris-prod2 $(CACHE_COMMAND) 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
