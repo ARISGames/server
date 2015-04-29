@@ -391,6 +391,8 @@ class requirements extends dbconnection
 
     public function evaluateRequirementPackage($pack)
     {
+        if($pack->requirement_root_package_id == 0) return true;
+
         $andPackages = dbconnection::queryArray("SELECT requirement_and_package_id FROM requirement_and_packages WHERE requirement_root_package_id= '{$pack->requirement_root_package_id}'");
 
         if(count($andPackages) == 0) return true;
