@@ -365,7 +365,7 @@ class notes extends dbconnection
             return new return_package(1, NULL, "Cannot flag note because it has already been approved by the moderator");
         }
         dbconnection::query(
-            "UPDATE notes SET published = 'PENDING' WHERE note_id = '{$pack->note_id}'";
+            "UPDATE notes SET published = 'PENDING' WHERE note_id = '{$pack->note_id}'"
         );
         return new return_package(0);
     }
@@ -380,7 +380,7 @@ class notes extends dbconnection
             return new return_package(6, NULL, "Failed Authentication");
         }
         dbconnection::query(
-            "UPDATE notes SET published = 'APPROVED' WHERE note_id = '{$pack->note_id}'";
+            "UPDATE notes SET published = 'APPROVED' WHERE note_id = '{$pack->note_id}'"
         );
         return new return_package(0);
     }
