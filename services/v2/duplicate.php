@@ -221,6 +221,19 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('last_active','timestamp');
     $i++;
 
+    $tables[] = 'notes';
+    $columns[] = array();
+    $columns[$i][] = new column('note_id','id');
+    $columns[$i][] = new column('game_id','map');
+    $columns[$i][] = new column('user_id','');
+    $columns[$i][] = new column('name','');
+    $columns[$i][] = new column('description','');
+    $columns[$i][] = new column('created','timestamp');
+    $columns[$i][] = new column('last_active','timestamp');
+    $columns[$i][] = new column('media_id','map');
+    $columns[$i][] = new column('published','');
+    $i++;
+
     $tables[] = 'object_tags';
     $columns[] = array();
     $columns[$i][] = new column('object_tag_id','id');
@@ -436,7 +449,6 @@ class duplicate extends dbconnection
     $coltablemap['trigger_scene_id']          = 'scenes';
     $coltablemap['instance_id'] = 'instances';
     $coltablemap['tag_id'] = 'tags';
-    $coltablemap['note_id'] = 'notes';
     $coltablemap['note_id'] = 'notes';
     $coltablemap['factory_id'] = 'factories';
     $coltablemap['dialog_id']               = 'dialogs';
