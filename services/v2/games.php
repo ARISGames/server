@@ -429,6 +429,26 @@ class games extends dbconnection
           echo "DELETE FROM triggers WHERE trigger_id = '{$arr[$j]->trigger_id}';\n";
       }
 
+      //requirements
+      // \/ query to manually see requirement tree in SQL. nice for debugging.
+      //SELECT ratom.requirement_atom_id, rand.requirement_and_package_id, rroot.requirement_root_package_id FROM requirement_atoms as ratom LEFT JOIN requirement_and_packages as rand ON ratom.requirement_and_package_id = rand.requirement_and_package_id LEFT JOIN requirement_root_packages as rroot ON rand.requirement_root_package_id = rroot.requirement_root_package_id WHERE rand.game_id = 3259;
+      $arr = dbconnection::queryArray("SELECT * FROM requirement_and_packages LEFT JOIN requirement_root_packages ON requirement_and_packages.requirement_root_package_id = requirement_root_packages.requirement_root_package_id WHERE requirement_root_packages.requirement_root_package_id IS NULL;");
+      for($j = 0; $j < count($arr); $j++) //use '$j' for consistency
+      {
+        if($pack->execute)
+          dbconnection::query("DELETE FROM requirement_and_packages WHERE requirement_and_package_id = '{$arr[$j]->requirement_and_package_id}';");
+        else //dry run
+          echo "DELETE FROM requirement_and_packages WHERE requirement_and_package_id = '{$arr[$j]->requirement_and_package_id}';\n";
+      }
+      $arr = dbconnection::queryArray("SELECT * FROM requirement_atoms LEFT JOIN requirement_and_packages ON requirement_atoms.requirement_and_package_id = requirement_and_packages.requirement_and_package_id WHERE requirement_and_packages.requirement_and_package_id IS NULL;");
+      for($j = 0; $j < count($arr); $j++) //use '$j' for consistency
+      {
+        if($pack->execute)
+          dbconnection::query("DELETE FROM requirement_atoms WHERE requirement_atom_id = '{$arr[$j]->requirement_atom_id}';");
+        else //dry run
+          echo "DELETE FROM requirement_atoms WHERE requirement_atom_id = '{$arr[$j]->requirement_atom_id}';\n";
+      }
+
       return new return_package(0);
     }
 
