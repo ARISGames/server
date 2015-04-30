@@ -17,7 +17,8 @@ Class dbconnection
     if($debug) echo $query;
     if(!(mysqli_query(dbconnection::$con, $query)))
     {
-        return false;
+      util::errorLog(mysqli_error(dbconnection::$con));
+      return false;
     }
     return dbconnection::$con->insert_id;
   }
@@ -27,7 +28,8 @@ Class dbconnection
     if($debug) echo $query;
     if(!(mysqli_query(dbconnection::$con, $query)))
     {
-        return false;
+      util::errorLog(mysqli_error(dbconnection::$con));
+      return false;
     }
     return mysqli_insert_id(dbconnection::$con);
   }
@@ -37,7 +39,8 @@ Class dbconnection
     if($debug) echo $query;
     if(!($sql_data = mysqli_query(dbconnection::$con, $query)))
     {
-        return false;
+      util::errorLog(mysqli_error(dbconnection::$con));
+      return false;
     }
     return mysqli_fetch_object($sql_data);
   }
@@ -47,7 +50,8 @@ Class dbconnection
     if($debug) echo $query;
     if(!($sql_data = mysqli_query(dbconnection::$con, $query)))
     {
-        return false;
+      util::errorLog(mysqli_error(dbconnection::$con));
+      return false;
     }
     return mysqli_fetch_array($sql_data,MYSQLI_ASSOC);
   }
@@ -57,11 +61,12 @@ Class dbconnection
     if($debug) echo $query;
     if(!($sql_data = mysqli_query(dbconnection::$con, $query)))
     {
-        return false;
+      util::errorLog(mysqli_error(dbconnection::$con));
+      return false;
     }
     $ret = array();
     while($o = mysqli_fetch_object($sql_data))
-        $ret[] = $o;
+      $ret[] = $o;
     return $ret;
   }
 
@@ -70,11 +75,12 @@ Class dbconnection
     if($debug) echo $query;
     if(!($sql_data = mysqli_query(dbconnection::$con, $query)))
     {
-        return false;
+      util::errorLog(mysqli_error(dbconnection::$con));
+      return false;
     }
     $ret = array();
     while($o = mysqli_fetch_array($sql_data,MYSQLI_ASSOC))
-        $ret[] = $o;
+      $ret[] = $o;
     return $ret;
   }
 

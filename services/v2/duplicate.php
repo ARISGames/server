@@ -27,6 +27,7 @@ class duplicate extends dbconnection
 
     //'id' = that tables identifier. gets changed (auto-inc) during migration, and must be recorded
     //'map' = a value that maps to the id of other migrated table (value changes during migration)
+    //'timestamp' = current timestamp (at time of duplicate)
     //'special' = a value that changes according to something more complicated than just a mapping. must be handled in php.
     //'' = nothing special- copy value as-is
 
@@ -65,8 +66,8 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('inventory_weight_cap','');
     $columns[$i][] = new column('is_siftr','');
     $columns[$i][] = new column('siftr_url','special');
-    $columns[$i][] = new column('created','');
-    $columns[$i][] = new column('last_active','');
+    $columns[$i][] = new column('created','timestamp');
+    $columns[$i][] = new column('last_active','timestamp');
     $i++;
 
     $tables[] = 'dialog_characters';
@@ -76,8 +77,8 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('name','');
     $columns[$i][] = new column('title','');
     $columns[$i][] = new column('media_id','map');
-    $columns[$i][] = new column('created','');
-    $columns[$i][] = new column('last_active','');
+    $columns[$i][] = new column('created','timestamp');
+    $columns[$i][] = new column('last_active','timestamp');
     $i++;
 
     $tables[] = 'dialog_options';
@@ -92,8 +93,8 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('link_info','');
     $columns[$i][] = new column('requirement_root_package_id','map');
     $columns[$i][] = new column('sort_index','');
-    $columns[$i][] = new column('created','');
-    $columns[$i][] = new column('last_active','');
+    $columns[$i][] = new column('created','timestamp');
+    $columns[$i][] = new column('last_active','timestamp');
     $i++;
 
     $tables[] = 'dialog_scripts';
@@ -104,8 +105,8 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('dialog_character_id','map');
     $columns[$i][] = new column('text','');
     $columns[$i][] = new column('event_package_id','map');
-    $columns[$i][] = new column('created','');
-    $columns[$i][] = new column('last_active','');
+    $columns[$i][] = new column('created','timestamp');
+    $columns[$i][] = new column('last_active','timestamp');
     $i++;
 
     $tables[] = 'dialogs';
@@ -116,8 +117,8 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('description','');
     $columns[$i][] = new column('icon_media_id','map');
     $columns[$i][] = new column('intro_dialog_script_id','map');
-    $columns[$i][] = new column('created','');
-    $columns[$i][] = new column('last_active','');
+    $columns[$i][] = new column('created','timestamp');
+    $columns[$i][] = new column('last_active','timestamp');
     $i++;
 
     $tables[] = 'event_packages';
@@ -125,8 +126,8 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('event_package_id','id');
     $columns[$i][] = new column('game_id','map');
     $columns[$i][] = new column('name','');
-    $columns[$i][] = new column('created','');
-    $columns[$i][] = new column('last_active','');
+    $columns[$i][] = new column('created','timestamp');
+    $columns[$i][] = new column('last_active','timestamp');
     $i++;
 
     $tables[] = 'events';
@@ -137,8 +138,8 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('event','');
     $columns[$i][] = new column('content_id','special');
     $columns[$i][] = new column('qty','');
-    $columns[$i][] = new column('created','');
-    $columns[$i][] = new column('last_active','');
+    $columns[$i][] = new column('created','timestamp');
+    $columns[$i][] = new column('last_active','timestamp');
     $i++;
 
     $tables[] = 'factories';
@@ -172,8 +173,8 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('trigger_show_title','');
     $columns[$i][] = new column('trigger_requirement_root_package_id','map');
     $columns[$i][] = new column('trigger_scene_id','map');
-    $columns[$i][] = new column('created','');
-    $columns[$i][] = new column('last_active','');
+    $columns[$i][] = new column('created','timestamp');
+    $columns[$i][] = new column('last_active','timestamp');
     $i++;
 
     $tables[] = 'instances';
@@ -186,8 +187,8 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('infinite_qty','');
     $columns[$i][] = new column('factory_id','map');
     $columns[$i][] = new column('owner_id','');
-    $columns[$i][] = new column('created','');
-    $columns[$i][] = new column('last_active','');
+    $columns[$i][] = new column('created','timestamp');
+    $columns[$i][] = new column('last_active','timestamp');
     $i++;
 
     $tables[] = 'items';
@@ -204,8 +205,8 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('weight','');
     $columns[$i][] = new column('url','');
     $columns[$i][] = new column('type','');
-    $columns[$i][] = new column('created','');
-    $columns[$i][] = new column('last_active','');
+    $columns[$i][] = new column('created','timestamp');
+    $columns[$i][] = new column('last_active','timestamp');
     $i++;
 
     $tables[] = 'media';
@@ -216,8 +217,8 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('name','');
     $columns[$i][] = new column('file_folder','special');
     $columns[$i][] = new column('file_name','');
-    $columns[$i][] = new column('created','');
-    $columns[$i][] = new column('last_active','');
+    $columns[$i][] = new column('created','timestamp');
+    $columns[$i][] = new column('last_active','timestamp');
     $i++;
 
     $tables[] = 'object_tags';
@@ -227,8 +228,8 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('object_type','');
     $columns[$i][] = new column('object_id','special');
     $columns[$i][] = new column('tag_id','map');
-    $columns[$i][] = new column('created','');
-    $columns[$i][] = new column('last_active','');
+    $columns[$i][] = new column('created','timestamp');
+    $columns[$i][] = new column('last_active','timestamp');
     $i++;
 
     $tables[] = 'overlays';
@@ -244,8 +245,8 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('bottom_left_latitude','');
     $columns[$i][] = new column('bottom_left_longitude','');
     $columns[$i][] = new column('requirement_root_package_id','map');
-    $columns[$i][] = new column('created','');
-    $columns[$i][] = new column('last_active','');
+    $columns[$i][] = new column('created','timestamp');
+    $columns[$i][] = new column('last_active','timestamp');
     $i++;
 
     $tables[] = 'plaques';
@@ -257,8 +258,8 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('icon_media_id','map');
     $columns[$i][] = new column('media_id','map');
     $columns[$i][] = new column('event_package_id','map');
-    $columns[$i][] = new column('created','');
-    $columns[$i][] = new column('last_active','');
+    $columns[$i][] = new column('created','timestamp');
+    $columns[$i][] = new column('last_active','timestamp');
     $i++;
 
     $tables[] = 'quests';
@@ -282,8 +283,8 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('complete_event_package_id','map');
     $columns[$i][] = new column('complete_requirement_root_package_id','map');
     $columns[$i][] = new column('sort_index','');
-    $columns[$i][] = new column('created','');
-    $columns[$i][] = new column('last_active','');
+    $columns[$i][] = new column('created','timestamp');
+    $columns[$i][] = new column('last_active','timestamp');
     $i++;
 
     $tables[] = 'requirement_and_packages';
@@ -292,8 +293,8 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('game_id','map');
     $columns[$i][] = new column('requirement_root_package_id','map');
     $columns[$i][] = new column('name','');
-    $columns[$i][] = new column('created','');
-    $columns[$i][] = new column('last_active','');
+    $columns[$i][] = new column('created','timestamp');
+    $columns[$i][] = new column('last_active','timestamp');
     $i++;
 
     $tables[] = 'requirement_atoms';
@@ -308,8 +309,8 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('qty','');
     $columns[$i][] = new column('latitude','');
     $columns[$i][] = new column('longitude','');
-    $columns[$i][] = new column('created','');
-    $columns[$i][] = new column('last_active','');
+    $columns[$i][] = new column('created','timestamp');
+    $columns[$i][] = new column('last_active','timestamp');
     $i++;
 
     $tables[] = 'requirement_root_packages';
@@ -317,8 +318,8 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('requirement_root_package_id','id');
     $columns[$i][] = new column('game_id','map');
     $columns[$i][] = new column('name','');
-    $columns[$i][] = new column('created','');
-    $columns[$i][] = new column('last_active','');
+    $columns[$i][] = new column('created','timestamp');
+    $columns[$i][] = new column('last_active','timestamp');
     $i++;
 
     $tables[] = 'scenes';
@@ -329,8 +330,8 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('description','');
     $columns[$i][] = new column('editor_x','');
     $columns[$i][] = new column('editor_y','');
-    $columns[$i][] = new column('created','');
-    $columns[$i][] = new column('last_active','');
+    $columns[$i][] = new column('created','timestamp');
+    $columns[$i][] = new column('last_active','timestamp');
     $i++;
 
     $tables[] = 'tabs';
@@ -345,8 +346,8 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('info','');
     $columns[$i][] = new column('requirement_root_package_id','map');
     $columns[$i][] = new column('sort_index','');
-    $columns[$i][] = new column('created','');
-    $columns[$i][] = new column('last_active','');
+    $columns[$i][] = new column('created','timestamp');
+    $columns[$i][] = new column('last_active','timestamp');
     $i++;
 
     $tables[] = 'tags';
@@ -358,8 +359,8 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('visible','');
     $columns[$i][] = new column('curated','');
     $columns[$i][] = new column('sort_index','');
-    $columns[$i][] = new column('created','');
-    $columns[$i][] = new column('last_active','');
+    $columns[$i][] = new column('created','timestamp');
+    $columns[$i][] = new column('last_active','timestamp');
     $i++;
 
     $tables[] = 'triggers';
@@ -381,8 +382,8 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('hidden','');
     $columns[$i][] = new column('trigger_on_enter','');
     $columns[$i][] = new column('qr_code','');
-    $columns[$i][] = new column('created','');
-    $columns[$i][] = new column('last_active','');
+    $columns[$i][] = new column('created','timestamp');
+    $columns[$i][] = new column('last_active','timestamp');
     $columns[$i][] = new column('infinite_distance','');
     $i++;
 
@@ -394,8 +395,8 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('url','');
     $columns[$i][] = new column('incoming','');
     $columns[$i][] = new column('requirement_root_package_id','map');
-    $columns[$i][] = new column('created','');
-    $columns[$i][] = new column('last_active','');
+    $columns[$i][] = new column('created','timestamp');
+    $columns[$i][] = new column('last_active','timestamp');
     $i++;
 
     $tables[] = 'web_pages';
@@ -405,8 +406,8 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('name','');
     $columns[$i][] = new column('icon_media_id','map');
     $columns[$i][] = new column('url','');
-    $columns[$i][] = new column('created','');
-    $columns[$i][] = new column('last_active','');
+    $columns[$i][] = new column('created','timestamp');
+    $columns[$i][] = new column('last_active','timestamp');
     $i++;
 
     //final layer of indirection
@@ -444,7 +445,6 @@ class duplicate extends dbconnection
     $coltablemap['parent_dialog_script_id'] = 'dialog_scripts';
 
     $maps = array();
-    $fake_auto_inc = 1;
 
     //first pass- insert with bogus mapped IDs to generate mappings
     for($i = 0; $i < count($tables); $i++)
@@ -472,6 +472,16 @@ class duplicate extends dbconnection
           {
             $old_id = $old_datum[$col->name];//just store old id
           }
+          else if($col->meta == 'timestamp')
+          {
+            if($col_query != "")
+            {
+              $col_query .= ', ';
+              $val_query .= ', ';
+            }
+            $col_query .= "{$col->name}";
+            $val_query .= "CURRENT_TIMESTAMP";
+          }
           else //just copy value- if meta == 'map' || 'special', will get overwritten in second pass anyways
           {
             if($col_query != "")
@@ -489,12 +499,9 @@ class duplicate extends dbconnection
             else $val_query .= "'{$old_datum[$col->name]}'";
           }
         }
-        if($pack->verbose)
-        {
-          echo("INSERT INTO {$table} ({$col_query}) VALUES ({$val_query});");
-          echo("\n");
-        }
+        if($pack->verbose) echo("INSERT INTO {$table} ({$col_query}) VALUES ({$val_query});");
         $maps[$table][$old_id] = dbconnection::queryInsert("INSERT INTO {$table} ({$col_query}) VALUES ({$val_query});");
+        if($pack->verbose) echo(" (id: {$maps[$table][$old_id]})\n");
       }
     }
 
@@ -728,12 +735,9 @@ class duplicate extends dbconnection
         }
         if($update_query != "")
         {
-          if($pack->verbose)
-          {
-            echo("UPDATE {$table} SET {$update_query} WHERE {$id_col} = '{$maps[$table][$old_id]}';");
-            echo("\n");
-          }
+          if($pack->verbose) echo("UPDATE {$table} SET {$update_query} WHERE {$id_col} = '{$maps[$table][$old_id]}';");
           dbconnection::query("UPDATE {$table} SET {$update_query} WHERE {$id_col} = '{$maps[$table][$old_id]}';");
+          if($pack->verbose) echo(" (id: {$maps[$table][$old_id]})\n");
         }
       }
     }

@@ -6,6 +6,7 @@ class test extends dbconnection
 {
     public static function doTest($pack)
     {
+    /*
       $games = dbconnection::queryArray("SELECT * FROM games;");
       for($i = 0; $i < count($games); $i++)
       {
@@ -21,6 +22,7 @@ class test extends dbconnection
         dbconnection::query("UPDATE games SET latitude = '{$lat}', longitude = '{$lon}' WHERE game_id = '{$games[$i]->game_id}';");
       }
       return 0;
+      */
     }
 }
 ?>
