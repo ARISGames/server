@@ -258,14 +258,14 @@ class notes extends dbconnection
             $auth_editor = editors::authenticateGameEditor($pack->auth);
         }
         else {
-            $auth_user   = null;
-            $auth_editor = null;
+            $auth_user   = false;
+            $auth_editor = false;
         }
 
         $game_id = intval($pack->game_id);
         $search_terms = isset($pack->search_terms) ? $pack->search_terms : array();
         $note_count = intval($pack->note_count);
-        $user_id = $auth_user ? intval($auth_user->user_id) : 0;
+        $user_id = $auth_user ? intval($pack->auth->user_id) : 0;
         $order_by = $pack->order_by;
         $filter_by = $pack->filter_by;
         $tag_ids = isset($pack->tag_ids) ? array_map('intval', $pack->tag_ids) : array();
@@ -320,7 +320,7 @@ class notes extends dbconnection
             $lines[] = "AND notes.note_id = '{$note_id}'";
         }
         if (!$auth_editor) {
-            if ($user_id) {
+            if ($auth_user) {
                 $lines[] = "AND (notes.published != 'PENDING' OR notes.user_id = '{$user_id}')";
             }
             else {
