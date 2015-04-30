@@ -1,6 +1,9 @@
 <html>
 <head>
-<script type="text/javascript" src="default_crud_data.js"></script>
+<script src="default_crud_data.js"></script>
+<script src="json.human.js"></script>
+<link rel="stylesheet" media="all" href="json.human.css" />
+
 <script type="text/javascript">
     function load()
     {
@@ -62,14 +65,26 @@
         document.getElementById('delete_request').value = CRUD_DEFAULTS[index].deleteData;
     }
 
+	function displayResult(response)
+	{
+        var resultDom = document.getElementById('result_text');
+		resultDom.innerHTML = "";
+
+		var jsonDom = JsonHuman.format(response, {});
+		resultDom.appendChild(jsonDom);
+
+		var rawDom = document.createElement("pre");
+		rawDom.appendChild(document.createTextNode(JSON.stringify(response)));
+        resultDom.appendChild(rawDom);
+	}
+
     var userId = 0;
     var rwkey = "";
     function submitAuth()
     {
         var package = {"user_name":document.getElementById('auth_request_user').value,"password":document.getElementById('auth_request_password').value,"permission":"read_write"};
         var response = sendRequest('users.logIn', JSON.stringify(package), "POST");
-        document.getElementById('result_text').innerHTML = JSON.stringify(response);
-        console.log(response);
+		displayResult(response);
         userId = response.data.user_id; document.getElementById('auth_response_user_id').innerHTML = response.data.user_id;
         rwkey = response.data.read_write_key; document.getElementById('auth_response_read_write_key').innerHTML = response.data.read_write_key;
     }
@@ -79,7 +94,7 @@
         var response = sendRequest('users.createUser', JSON.stringify(package), "POST");
         document.getElementById('auth_request_user').value = document.getElementById('new_user_request_user').value;
         document.getElementById('auth_request_password').value = document.getElementById('new_user_request_password').value;
-        document.getElementById('result_text').innerHTML = JSON.stringify(response);
+		displayResult(response);
         userId = response.data.user_id; document.getElementById('auth_response_user_id').innerHTML = response.data.user_id;
         rwkey = response.data.read_write_key; document.getElementById('auth_response_read_write_key').innerHTML = response.data.read_write_key;
     }
@@ -89,7 +104,7 @@
         var package = JSON.parse(document.getElementById('create_request').value);
         package.auth = {"user_id":userId,"key":rwkey};
         var response = sendRequest(document.getElementById('create_request_method').value, JSON.stringify(package), "POST");
-        document.getElementById('result_text').innerHTML = JSON.stringify(response);
+		displayResult(response);
     }
 
     function submitUpdate()
@@ -97,7 +112,7 @@
         var package = JSON.parse(document.getElementById('update_request').value);
         package.auth = {"user_id":userId,"key":rwkey};
         var response = sendRequest(document.getElementById('update_request_method').value, JSON.stringify(package), "POST");
-        document.getElementById('result_text').innerHTML = JSON.stringify(response);
+		displayResult(response);
     }
 
     function submitGet()
@@ -105,7 +120,7 @@
         var package = JSON.parse(document.getElementById('get_request').value);
         package.auth = {"user_id":userId,"key":rwkey};
         var response = sendRequest(document.getElementById('get_request_method').value, JSON.stringify(package), "POST");
-        document.getElementById('result_text').innerHTML = JSON.stringify(response);
+		displayResult(response);
     }
 
     function submitDelete()
@@ -113,7 +128,7 @@
         var package = JSON.parse(document.getElementById('delete_request').value);
         package.auth = {"user_id":userId,"key":rwkey};
         var response = sendRequest(document.getElementById('delete_request_method').value, JSON.stringify(package), "POST");
-        document.getElementById('result_text').innerHTML = JSON.stringify(response);
+		displayResult(response);
     }
 
     function submitCustom()
@@ -121,7 +136,7 @@
         var package = JSON.parse(document.getElementById('custom_request').value);
         package.auth = {"user_id":userId,"key":rwkey};
         var response = sendRequest(document.getElementById('custom_request_method').value, JSON.stringify(package), "POST");
-        document.getElementById('result_text').innerHTML = JSON.stringify(response);
+		displayResult(response);
     }
 
 </script>
