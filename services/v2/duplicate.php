@@ -13,16 +13,24 @@ class column
   }
 }
 
+class table_data
+{
+  public $table;
+  public $columns;
+  public $data;
+  public function table_data($table, $columns, $data)
+  {
+    $this->table = $table;
+    $this->columns = $columns;
+    $this->data = $data;
+    return $this;
+  }
+}
+
 class duplicate extends dbconnection
 {
-  public static function duplicateGame($pack)
+  private static function getSchema(&$tables, &$columns, &$coltablemap)
   {
-    $pack->auth->game_id = $pack->game_id;
-    $pack->auth->permission = "read_write";
-    if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
-
-    $tables = array();
-    $columns = array();
     $i = 0;
 
     //'id' = that tables identifier. gets changed (auto-inc) during migration, and must be recorded
@@ -424,7 +432,6 @@ class duplicate extends dbconnection
     $i++;
 
     //final layer of indirection
-    $coltablemap = array();
     $coltablemap['game_id'] = 'games';
     $coltablemap['media_id']                       = 'media';
     $coltablemap['icon_media_id']                  = 'media';
@@ -455,19 +462,71 @@ class duplicate extends dbconnection
     $coltablemap['dialog_character_id']     = 'dialog_characters';
     $coltablemap['intro_dialog_script_id']  = 'dialog_scripts';
     $coltablemap['parent_dialog_script_id'] = 'dialog_scripts';
+  }
 
-    $maps = array();
+  public static function duplicateGame($pack)
+  {
+    $pack->auth->game_id = $pack->game_id;
+    $pack->auth->permission = "read_write";
+    if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-    //first pass- insert with bogus mapped IDs to generate mappings
+    $pack->format = 'json';
+    $pack->datas = duplicate::exportGame($pack)->data;
+
+    return duplicate::importGame($pack);
+  }
+
+  public static function exportGame($pack)
+  {
+    $pack->auth->game_id = $pack->game_id;
+    $pack->auth->permission = "read_write";
+    if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+    $tables = array();
+    $columns = array();
+    $coltablemap = array();
+    duplicate::getSchema($tables,$columns,$coltablemap);
+
+    $datas = array();
+
     for($i = 0; $i < count($tables); $i++)
     {
       $table = $tables[$i];
       $cols = $columns[$i];
+      $old_data = dbconnection::queryArrayAssoc("SELECT * FROM {$table} WHERE game_id = '{$pack->game_id}';");
+      $datas[] = new table_data($table, $cols, $old_data);
+    }
+
+    switch($pack->format)
+    {
+      case 'json':
+        return new return_package(0, $datas);
+        break;
+    }
+  }
+
+  public static function importGame($pack)
+  {
+    $pack->auth->game_id = $pack->game_id;
+    $pack->auth->permission = "read_write";
+    if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+    $tables = array(); //not actually used
+    $columns = array(); //not actually used
+    $coltablemap = array();
+    duplicate::getSchema($tables,$columns,$coltablemap);
+
+    $maps = array();
+    $datas = $pack->datas;
+
+    for($i = 0; $i < count($datas); $i++)
+    {
+      $table = $datas[$i]->table;
+      $cols = $datas[$i]->columns;
+      $old_data = $datas[$i]->data;
 
       $maps[$table] = array();
       $maps[$table][0] = 0;
-
-      $old_data = dbconnection::queryArrayAssoc("SELECT * FROM {$table} WHERE game_id = '{$pack->game_id}';");
 
       for($j = 0; $j < count($old_data); $j++)
       {
@@ -522,12 +581,11 @@ class duplicate extends dbconnection
     mkdir(Config::v2_gamedata_folder."/{$maps['games'][$pack->game_id]}",0777);
 
     //second pass- fill in bogus mappings with known maps
-    for($i = 0; $i < count($tables); $i++)
+    for($i = 0; $i < count($datas); $i++)
     {
-      $table = $tables[$i];
-      $cols = $columns[$i];
-
-      $old_data = dbconnection::queryArrayAssoc("SELECT * FROM {$table} WHERE game_id = '{$pack->game_id}';");
+      $table = $datas[$i]->table;
+      $cols = $datas[$i]->columns;
+      $old_data = $datas[$i]->data;
 
       for($j = 0; $j < count($old_data); $j++)
       {
@@ -757,5 +815,6 @@ class duplicate extends dbconnection
     $pack->game_id = $maps['games'][$pack->game_id];
     return games::getGame($pack);
   }
+
 }
 ?>
