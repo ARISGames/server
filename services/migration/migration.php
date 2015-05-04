@@ -791,8 +791,8 @@ class migration extends migration_dbconnection
             if($locations[$i]->type == 'WebPage')    { $newType = "WEB_PAGE"; $objectId = $maps->webpages[$locations[$i]->type_id]; }
             if($locations[$i]->type == 'PlayerNote') { $newType = "NOTE";     $objectId = $maps->notes[$locations[$i]->type_id];    }
             if(!$objectId) {
-                $locTriggerMap[$locations[$i]->location_id] = "invalid obj";
-                $qrTriggerMap[$locations[$i]->location_id] = "invalid obj";
+                $locTriggerMap[$locations[$i]->location_id] = "invalid type:".$locations[$i]->type." id:".$locations[$i]->type_id;
+                $qrTriggerMap[$locations[$i]->location_id] = "invalid type:".$locations[$i]->type." id:".$locations[$i]->type_id;
                 continue; //either we've encountered something invalid in the DB, or we no longer support something
             }
 
@@ -844,7 +844,10 @@ class migration extends migration_dbconnection
         for($i = 0; $i < count($tabs); $i++)
         {
             $tabIdMap[$tabs[$i]->id] = 0; //set it to 0 in case of failure
-            if($tabs[$i]->tab_index < 1) continue; //in new model, disabled tabs are simply deleted
+            if($tabs[$i]->tab_index < 1) {
+                $tabIdMap[$tabs[$i]->id] = "disabled";
+                continue; //in new model, disabled tabs are simply deleted
+            }
 
             //old: 'GPS','NEARBY','QUESTS','INVENTORY','PLAYER','QR','NOTE','STARTOVER','PICKGAME','NPC','ITEM','NODE','WEBPAGE'
             //new: 'MAP','DECODER','SCANNER','QUESTS','INVENTORY','PLAYER','NOTE','DIALOG','ITEM','PLAQUE','WEBPAGE'
