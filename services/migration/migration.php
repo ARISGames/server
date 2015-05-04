@@ -358,7 +358,10 @@ class migration extends migration_dbconnection
         for($i = 0; $i < count($plaques); $i++)
         {
             $plaqueIdMap[$plaques[$i]->node_id] = 0; //set it to 0 in case of failure
-            if($invalidMap[$plaques[$i]->node_id]) continue; //this plaque actually an npc option- ignore
+            if($invalidMap[$plaques[$i]->node_id]) {
+                $plaqueIdMap[$plaques[$i]->node_id] = "npc skip";
+                continue; //this plaque actually an npc option- ignore
+            }
 
             $newPlaqueId = migration_dbconnection::queryInsert("INSERT INTO plaques (game_id, name, description, icon_media_id, media_id, created) VALUES ('{$v2GameId}','".addslashes($plaques[$i]->title)."','".addslashes($plaques[$i]->text)."','{$maps->media[$plaques[$i]->icon_media_id]}','{$maps->media[$plaques[$i]->media_id]}',CURRENT_TIMESTAMP)", "v2");
             $plaqueIdMap[$plaques[$i]->node_id] = $newPlaqueId;
@@ -772,14 +775,26 @@ class migration extends migration_dbconnection
 
             $newType = "";
             $objectId = 0;
-            if($locations[$i]->type == 'AugBubble')  continue; //doesn't exist anymore
-            if($locations[$i]->type == 'Event')      continue; //doesn't exist anymore (and never did?)
+            if($locations[$i]->type == 'AugBubble') {
+                $locTriggerMap[$locations[$i]->location_id] = "bubble";
+                $qrTriggerMap[$locations[$i]->location_id] = "bubble";
+                continue; //doesn't exist anymore
+            }
+            if($locations[$i]->type == 'Event') {
+                $locTriggerMap[$locations[$i]->location_id] = "event";
+                $qrTriggerMap[$locations[$i]->location_id] = "event";
+                continue; //doesn't exist anymore (and never did?)
+            }
             if($locations[$i]->type == 'Node')       { $newType = "PLAQUE";   $objectId = $maps->plaques[$locations[$i]->type_id];  }
             if($locations[$i]->type == 'Item')       { $newType = "ITEM";     $objectId = $maps->items[$locations[$i]->type_id];    }
             if($locations[$i]->type == 'Npc')        { $newType = "DIALOG";   $objectId = $maps->dialogs[$locations[$i]->type_id];  }
             if($locations[$i]->type == 'WebPage')    { $newType = "WEB_PAGE"; $objectId = $maps->webpages[$locations[$i]->type_id]; }
             if($locations[$i]->type == 'PlayerNote') { $newType = "NOTE";     $objectId = $maps->notes[$locations[$i]->type_id];    }
-            if(!$objectId) continue; //either we've encountered something invalid in the DB, or we no longer support something
+            if(!$objectId) {
+                $locTriggerMap[$locations[$i]->location_id] = "invalid obj";
+                $qrTriggerMap[$locations[$i]->location_id] = "invalid obj";
+                continue; //either we've encountered something invalid in the DB, or we no longer support something
+            }
 
             $newInstanceId = migration_dbconnection::queryInsert("INSERT INTO instances (game_id,object_id,object_type,qty,infinite_qty,created) VALUES ('{$v2GameId}','{$objectId}','{$newType}','{$locations[$i]->item_qty}','".(intval($locations[$i]->item_qty) < 0 ? 1 : 0)."',CURRENT_TIMESTAMP)","v2");
             $newTriggerId = migration_dbconnection::queryInsert("INSERT INTO triggers (game_id,instance_id,scene_id,type,name,title,latitude,longitude,distance,wiggle,show_title,hidden,trigger_on_enter,created) VALUES ('{$v2GameId}','{$newInstanceId}','{$sceneId}','LOCATION','".addslashes($locations[$i]->name)."','".addslashes($locations[$i]->name)."','{$locations[$i]->latitude}','{$locations[$i]->longitude}','".($locations[$i]->error)."','{$locations[$i]->wiggle}','{$locations[$i]->show_title}','{$locations[$i]->hidden}','{$locations[$i]->force_view}',CURRENT_TIMESTAMP)", "v2");
@@ -836,9 +851,18 @@ class migration extends migration_dbconnection
             $newType = $tabs[$i]->tab;
             $newName = "";
             $newDetail = 0;
-            if($tabs[$i]->tab == "NEARBY") continue;
-            if($tabs[$i]->tab == "STARTOVER") continue;
-            if($tabs[$i]->tab == "PICKGAME") continue;
+            if($tabs[$i]->tab == "NEARBY") {
+                $tabIdMap[$tabs[$i]->id] = "nearby";
+                continue;
+            }
+            if($tabs[$i]->tab == "STARTOVER") {
+                $tabIdMap[$tabs[$i]->id] = "startover";
+                continue;
+            }
+            if($tabs[$i]->tab == "PICKGAME") {
+                $tabIdMap[$tabs[$i]->id] = "pickgame";
+                continue;
+            }
             if($tabs[$i]->tab == "GPS")       { $newType = "MAP";       $newName = "Map";       $newDetail = $tabs[$i]->tab_detail_1; }
             if($tabs[$i]->tab == "QUESTS")    { $newType = "QUESTS";    $newName = "Quests";    $newDetail = $tabs[$i]->tab_detail_1; }
             if($tabs[$i]->tab == "INVENTORY") { $newType = "INVENTORY"; $newName = "Inventory"; $newDetail = $tabs[$i]->tab_detail_1; }
