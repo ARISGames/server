@@ -12,11 +12,11 @@ help:
 	@echo "Aris Server"
 	@echo ""
 	@echo "Targets:"
-	@echo "      deploy: push master branch to aris"
+	@echo "        prod: push master branch to aris"
 	@echo "         dev: push master branch to dev"
 	@echo " cache_clear: trigger apc cache clear"
 	@echo ""
-	@echo "make [all|deploy|cache_clear]"
+	@echo "make [all|deploy]"
 
 DEV_CACHE_COMMAND=curl --silent localhost:80/server/resetAPC.php
 DEV_CHECKOUT_COMMAND="cd /var/www/html/server/ && sudo git checkout master && sudo git pull && $(DEV_CACHE_COMMAND)"
@@ -32,10 +32,12 @@ dev:
 	@ssh -t aris-dev $(CHECKOUT_COMMAND)
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
 
-deploy:
+prod:
 	@echo "Pushing to Github."
 	@git push 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
+	@echo "Deploying to server 1."
+	@ssh -t aris-prod1 $(CHECKOUT_COMMAND) 1>/dev/null
 	@echo "Deploying to server 2."
 	@ssh -t aris-prod2 $(CHECKOUT_COMMAND) 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
@@ -44,11 +46,16 @@ deploy:
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
 
 cache_clear:
+	@echo "Clearing cache on server 1."
+	@ssh -t aris-prod1 $(CACHE_COMMAND) 1>/dev/null
+	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
 	@echo "Clearing cache on server 2."
 	@ssh -t aris-prod2 $(CACHE_COMMAND) 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
 	@echo "Clearing cache on server 3."
 	@ssh -t aris-prod3 $(CACHE_COMMAND) 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
+
+deploy: prod
 
 all: deploy cache_clear
