@@ -282,6 +282,8 @@ class migration extends migration_dbconnection
 
         migration_dbconnection::queryInsert("INSERT INTO game_migrations (v2_game_id, v1_game_id, v2_user_id) VALUES ('{$v2GameId}','{$v1GameId}','{$v2UserId}')");
 
+        $v2Game->migration_maps = $maps;
+
         return new migration_return_package(0,$v2Game);
     }
 
