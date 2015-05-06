@@ -439,8 +439,8 @@ class requirements extends dbconnection
             case 'PLAYER_VIEWED_WEB_PAGE':                return $atom->bool_operator == requirements::playerViewed($atom,"WEB_PAGE");
             case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM':        return $atom->bool_operator == requirements::playerUploaded($atom,"");
             case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE':  return $atom->bool_operator == requirements::playerUploaded($atom,"IMAGE");
-            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO':  return $atom->bool_operator == requirements::playerUplaoded($atom,"AUDIO");
-            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO':  return $atom->bool_operator == requirements::playerUplaoded($atom,"VIDEO");
+            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO':  return $atom->bool_operator == requirements::playerUploaded($atom,"AUDIO");
+            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO':  return $atom->bool_operator == requirements::playerUploaded($atom,"VIDEO");
             case 'PLAYER_HAS_COMPLETED_QUEST':            return $atom->bool_operator == requirements::playerCompletedQuest($atom);
             case 'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK': return $atom->bool_operator == requirements::playerReceivedWebHook($atom);
             case 'PLAYER_HAS_NOTE':                       return $atom->bool_operator == requirements::playerHasNote($atom);
