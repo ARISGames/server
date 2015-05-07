@@ -515,31 +515,22 @@ class requirements extends dbconnection
     // Use log instead
     private function playerHasNoteWithTag($pack)
     {
-        $notes = dbconnection::queryArray("SELECT * FROM notes WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}';");
-        $object_tags = dbconnection::queryArray("SELECT * FROM object_tags WHERE game_id = '{$pack->game_id}' AND object_type = 'NOTE' AND tag_id = '{$pack->content_id}';");
-        $entries = array();
+        $result = dbconnection::queryObject("SELECT count(*) as qty FROM user_log JOIN notes ON notes.note_id = user_log.content_id JOIN object_tags ON object_tags.object_id = notes.note_id WHERE user_log.game_id = '{$pack->game_id}' AND user_log.user_id = '{$pack->user_id}' AND user_log.event_type = 'CREATE_NOTE' AND user_log.deleted = '0' AND object_tags.tag_id = '{$pack->content_id}'");
 
-        for($i = 0; $i < count($notes); $i++)
-        {
-          for($j = 0; $j < count($object_tags); $j++)
-          {
-            if($notes[$i]->note_id == $object_tags[$j]->object_id)
-              $entries[] = $notes[$i];
-          }
-        }
-
-        return (count($entries) >= $pack->qty) ? true : false;
+        return $result->qty >= $pack->qty ? true : false;
     }
 
-    // There are no likes in v2
+    // FIXME There are no likes in v2
     private function playerHasNoteWithLikes($pack)
     {
         return false;
     }
+
     private function playerHasNoteWithComments($pack)
     {
         return false;
     }
+
     private function playerHasGivenNoteComments($pack)
     {
         return false;
