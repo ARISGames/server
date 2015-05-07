@@ -30,6 +30,7 @@ class media extends dbconnection
         $resizedfilename = 'aris'.$filename.'_resized.'.$filenameext;
         $newthumbfilename = 'aris'.$filename.'_128.'.$filenameext;
 
+        // Make sure playerUploaded requirements keep in sync with this list
         if(
                 //Images
                 $filenameext != "jpg" &&

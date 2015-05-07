@@ -437,10 +437,10 @@ class requirements extends dbconnection
             case 'PLAYER_VIEWED_DIALOG':                  return $atom->bool_operator == requirements::playerViewed($atom,"DIALOG");
             case 'PLAYER_VIEWED_DIALOG_SCRIPT':           return $atom->bool_operator == requirements::playerViewed($atom,"DIALOG_SCRIPT");
             case 'PLAYER_VIEWED_WEB_PAGE':                return $atom->bool_operator == requirements::playerViewed($atom,"WEB_PAGE");
-            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM':        return $atom->bool_operator == requirements::playerUploadedAny($atom);
-            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE':  return $atom->bool_operator == requirements::playerUploadedType($atom,"IMAGE");
-            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO':  return $atom->bool_operator == requirements::playerUploadedType($atom,"AUDIO");
-            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO':  return $atom->bool_operator == requirements::playerUploadedType($atom,"VIDEO");
+            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM':        return $atom->bool_operator == requirements::playerUploadedAnyNear($atom);
+            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE':  return $atom->bool_operator == requirements::playerUploadedTypeNear($atom,"IMAGE");
+            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO':  return $atom->bool_operator == requirements::playerUploadedTypeNear($atom,"AUDIO");
+            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO':  return $atom->bool_operator == requirements::playerUploadedTypeNear($atom,"VIDEO");
             case 'PLAYER_HAS_COMPLETED_QUEST':            return $atom->bool_operator == requirements::playerCompletedQuest($atom);
             case 'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK': return $atom->bool_operator == requirements::playerReceivedWebHook($atom);
             case 'PLAYER_HAS_NOTE':                       return $atom->bool_operator == requirements::playerHasNote($atom);
@@ -457,37 +457,54 @@ class requirements extends dbconnection
         $item = dbconnection::queryObject("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_id = '{$pack->user_id}' AND object_type = 'ITEM' AND object_id = '{$pack->content_id}' AND qty >= '{$pack->qty}'");
         return $item ? true : false;
     }
+
     private function playerHasTaggedItem($pack)
     {
         //NOT DONE!!
         $item = dbconnection::queryObject("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_id = '{$pack->user_id}' AND object_type = 'ITEM' AND object_id = '{$pack->content_id}' AND qty >= '{$pack->qty}'");
         return $item ? true : false;
     }
+
     private function playerViewed($pack,$type)
     {
         $entry = dbconnection::queryObject("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}' AND event_type = 'VIEW_{$type}' AND content_id = '{$pack->content_id}' AND deleted = 0");
         return $entry ? true : false;
     }
-    private function playerUploadedAny($pack)
+
+    private function playerUploadedAnyNear($pack)
     {
         $result = dbconnection::queryObject("SELECT count(*) as qty FROM user_log JOIN notes ON notes.note_id = user_log.content_id WHERE user_log.game_id = '{$pack->game_id}' AND user_log.user_id = '{$pack->user_id}' AND user_log.event_type = 'CREATE_NOTE' AND user_log.deleted = '0' AND notes.media_id != '0'");
 
         return $result->qty >= $pack->qty ? true : false;
     }
-    private function playerUploadedType($pack,$type)
+
+    private function playerUploadedTypeNear($pack,$type)
     {
-        $entry = false;
-        return $entry ? true : false;
+        // Compare with list of types in media.php
+        switch($type)
+        {
+            case 'IMAGE': $type_query = "media.file_name LIKE '%.jpg' OR media.file_name LIKE '%.png' OR media.file_name LIKE '%.gif'"; break;
+            case 'VIDEO': $type_query = "media.file_name LIKE '%.mp4' OR media.file_name LIKE '%.mov' OR media.file_name LIKE '%.m4v OR media.file_name LIKE '%.3gp'"; break;
+            case 'AUDIO': $type_query = "media.file_name LIKE '%.caf' OR media.file_name LIKE '%.mp3' OR media.file_name LIKE '%.aac OR media.file_name LIKE '%.m4a'"; break;
+        }
+
+        $query = "SELECT count(*) as qty FROM user_log JOIN notes ON notes.note_id = user_log.content_id JOIN media ON media.media_id = notes.media_id WHERE user_log.game_id = '{$pack->game_id}' AND user_log.user_id = '{$pack->user_id}' AND user_log.event_type = 'CREATE_NOTE' AND user_log.deleted = '0' AND notes.media_id != '0' AND ({$type_query})";
+        $result = dbconnection::queryObject($query);
+
+        return $result->qty >= $pack->qty ? true : false;
     }
+
     private function playerCompletedQuest($pack)
     {
         $entry = dbconnection::queryObject("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}' AND event_type = 'COMPLETE_QUEST' AND content_id = '{$pack->content_id}' AND deleted = 0");
         return $entry ? true : false;
     }
+
     private function playerReceivedWebHook($pack)
     {
         return false;
     }
+
     private function playerHasNote($pack)
     {
         $result = dbconnection::queryObject("SELECT count(*) as qty FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}' AND event_type = 'CREATE_NOTE' AND deleted = 0");
