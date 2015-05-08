@@ -471,6 +471,7 @@ class requirements extends dbconnection
         return $entry ? true : false;
     }
 
+    // FIXME use location boundary
     private function playerUploadedAnyNear($pack)
     {
         $result = dbconnection::queryObject("SELECT count(*) as qty FROM user_log JOIN notes ON notes.note_id = user_log.content_id WHERE user_log.game_id = '{$pack->game_id}' AND user_log.user_id = '{$pack->user_id}' AND user_log.event_type = 'CREATE_NOTE' AND user_log.deleted = '0' AND notes.media_id != '0'");
@@ -478,6 +479,7 @@ class requirements extends dbconnection
         return $result->qty >= $pack->qty ? true : false;
     }
 
+    // FIXME use location boundary
     private function playerUploadedTypeNear($pack,$type)
     {
         // Compare with list of types in media.php
@@ -512,7 +514,6 @@ class requirements extends dbconnection
         return $result->qty >= $pack->qty ? true : false;
     }
 
-    // Use log instead
     private function playerHasNoteWithTag($pack)
     {
         $result = dbconnection::queryObject("SELECT count(*) as qty FROM user_log JOIN notes ON notes.note_id = user_log.content_id JOIN object_tags ON object_tags.object_id = notes.note_id WHERE user_log.game_id = '{$pack->game_id}' AND user_log.user_id = '{$pack->user_id}' AND user_log.event_type = 'CREATE_NOTE' AND user_log.deleted = '0' AND object_tags.tag_id = '{$pack->content_id}'");
@@ -528,8 +529,10 @@ class requirements extends dbconnection
 
     private function playerHasNoteWithComments($pack)
     {
-        // With quantity comments on note.
-        return false;
+        $query = "SELECT count(note_comments.note_id) as qty FROM user_log JOIN notes ON notes.note_id = user_log.content_id JOIN note_comments ON note_comments.note_id = notes.note_id WHERE user_log.game_id = '{$pack->game_id}' AND user_log.user_id = '{$pack->user_id}' AND user_log.event_type = 'CREATE_NOTE' AND user_log.deleted = 0 GROUP BY note_comments.note_id ORDER BY qty DESC LIMIT 1";
+        $result = dbconnection::queryObject($query);
+
+        return $result->qty >= $pack->qty ? true : false;
     }
 
     private function playerHasGivenNoteComments($pack)
