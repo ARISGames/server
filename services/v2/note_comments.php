@@ -4,6 +4,8 @@ require_once("users.php");
 require_once("editors.php");
 require_once("return_package.php");
 
+require_once("client.php");
+
 class note_comments extends dbconnection
 {
     public static function createNoteComment($pack)
@@ -29,6 +31,7 @@ class note_comments extends dbconnection
             ")"
         );
 
+        client::logPlayerCreatedComment($pack);
         return note_comments::getNoteComment($pack);
     }
 

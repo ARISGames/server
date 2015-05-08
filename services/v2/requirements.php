@@ -528,12 +528,15 @@ class requirements extends dbconnection
 
     private function playerHasNoteWithComments($pack)
     {
+        // With quantity comments on note.
         return false;
     }
 
     private function playerHasGivenNoteComments($pack)
     {
-        return false;
+        $result = dbconnection::queryObject("SELECT count(*) as qty FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}' AND event_type = 'GIVE_NOTE_COMMENT' AND deleted = 0");
+
+        return $result->qty >= $pack->qty ? true : false;
     }
 }
 ?>
