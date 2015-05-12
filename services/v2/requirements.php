@@ -2,6 +2,7 @@
 require_once("dbconnection.php");
 require_once("editors.php");
 require_once("return_package.php");
+require_once("../../libraries/geolocation/GeoLocation.php");
 
 class requirements extends dbconnection
 {
@@ -458,6 +459,7 @@ class requirements extends dbconnection
         return $item ? true : false;
     }
 
+    // FIXME group with tag like the note query
     private function playerHasTaggedItem($pack)
     {
         //NOT DONE!!
@@ -471,26 +473,42 @@ class requirements extends dbconnection
         return $entry ? true : false;
     }
 
-    // FIXME use location boundary
+    // TODO second pass using radius ie http://www.movable-type.co.uk/scripts/latlong-db.html and http://janmatuschek.de/LatitudeLongitudeBoundingCoordinates
     private function playerUploadedAnyNear($pack)
     {
-        $result = dbconnection::queryObject("SELECT count(*) as qty FROM user_log JOIN notes ON notes.note_id = user_log.content_id WHERE user_log.game_id = '{$pack->game_id}' AND user_log.user_id = '{$pack->user_id}' AND user_log.event_type = 'CREATE_NOTE' AND user_log.deleted = '0' AND notes.media_id != '0'");
+        $geo = AnthonyMartin\GeoLocation\GeoLocation::fromDegrees($pack->latitude, $pack->longitude);
+        $bounds = $geo->boundingCoordinates($pack->distance * 0.001, 'km');
+
+        $location_conditions = "triggers.latitude BETWEEN {$bounds->min->getLatitudeInDegrees()} and {$bounds->max->getLatitudeInDegrees()} AND triggers.longitude BETWEEN {$bounds->min->getLongitudeInDegrees()} and {$bounds->max->getLongitudeInDegrees()}";
+
+        $joins = "JOIN notes ON notes.note_id = user_log.content_id JOIN instances ON instances.object_id = notes.note_id JOIN triggers ON triggers.instance_id = instances.instance_id";
+        $conditions = "WHERE user_log.game_id = '{$pack->game_id}' AND user_log.user_id = '{$pack->user_id}' AND user_log.event_type = 'CREATE_NOTE' AND user_log.deleted = '0' AND notes.media_id != '0' AND instances.object_type = 'NOTE' AND {$location_conditions}";
+        $query = "SELECT count(*) as qty FROM user_log {$joins} {$conditions}";
+
+        $result = dbconnection::queryObject($query);
 
         return $result->qty >= $pack->qty ? true : false;
     }
 
-    // FIXME use location boundary
     private function playerUploadedTypeNear($pack,$type)
     {
         // Compare with list of types in media.php
         switch($type)
         {
-            case 'IMAGE': $type_query = "media.file_name LIKE '%.jpg' OR media.file_name LIKE '%.png' OR media.file_name LIKE '%.gif'"; break;
-            case 'VIDEO': $type_query = "media.file_name LIKE '%.mp4' OR media.file_name LIKE '%.mov' OR media.file_name LIKE '%.m4v OR media.file_name LIKE '%.3gp'"; break;
-            case 'AUDIO': $type_query = "media.file_name LIKE '%.caf' OR media.file_name LIKE '%.mp3' OR media.file_name LIKE '%.aac OR media.file_name LIKE '%.m4a'"; break;
+            case 'IMAGE': $filetype_conditions = "media.file_name LIKE '%.jpg' OR media.file_name LIKE '%.png' OR media.file_name LIKE '%.gif'"; break;
+            case 'VIDEO': $filetype_conditions = "media.file_name LIKE '%.mp4' OR media.file_name LIKE '%.mov' OR media.file_name LIKE '%.m4v' OR media.file_name LIKE '%.3gp'"; break;
+            case 'AUDIO': $filetype_conditions = "media.file_name LIKE '%.caf' OR media.file_name LIKE '%.mp3' OR media.file_name LIKE '%.aac' OR media.file_name LIKE '%.m4a'"; break;
         }
 
-        $query = "SELECT count(*) as qty FROM user_log JOIN notes ON notes.note_id = user_log.content_id JOIN media ON media.media_id = notes.media_id WHERE user_log.game_id = '{$pack->game_id}' AND user_log.user_id = '{$pack->user_id}' AND user_log.event_type = 'CREATE_NOTE' AND user_log.deleted = '0' AND notes.media_id != '0' AND ({$type_query})";
+        $geo = AnthonyMartin\GeoLocation\GeoLocation::fromDegrees($pack->latitude, $pack->longitude);
+        $bounds = $geo->boundingCoordinates($pack->distance * 0.001, 'km');
+
+        $location_conditions = "triggers.latitude BETWEEN {$bounds->min->getLatitudeInDegrees()} and {$bounds->max->getLatitudeInDegrees()} AND triggers.longitude BETWEEN {$bounds->min->getLongitudeInDegrees()} and {$bounds->max->getLongitudeInDegrees()}";
+
+        $joins = "JOIN notes ON notes.note_id = user_log.content_id JOIN media ON media.media_id = notes.media_id JOIN instances ON instances.object_id = notes.note_id JOIN triggers ON triggers.instance_id = instances.instance_id";
+        $conditions = "WHERE user_log.game_id = '{$pack->game_id}' AND user_log.user_id = '{$pack->user_id}' AND user_log.event_type = 'CREATE_NOTE' AND user_log.deleted = '0' AND notes.media_id != '0' AND instances.object_type = 'NOTE' AND ({$filetype_conditions}) AND {$location_conditions}";
+        $query = "SELECT count(*) as qty FROM user_log {$joins} {$conditions}";
+
         $result = dbconnection::queryObject($query);
 
         return $result->qty >= $pack->qty ? true : false;
@@ -514,6 +532,7 @@ class requirements extends dbconnection
         return $result->qty >= $pack->qty ? true : false;
     }
 
+    // ignore same id tagged items?
     private function playerHasNoteWithTag($pack)
     {
         $result = dbconnection::queryObject("SELECT count(*) as qty FROM user_log JOIN notes ON notes.note_id = user_log.content_id JOIN object_tags ON object_tags.object_id = notes.note_id WHERE user_log.game_id = '{$pack->game_id}' AND user_log.user_id = '{$pack->user_id}' AND user_log.event_type = 'CREATE_NOTE' AND user_log.deleted = '0' AND object_tags.tag_id = '{$pack->content_id}'");
