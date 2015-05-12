@@ -413,7 +413,7 @@ class games extends dbconnection
 
       for($i = 0; $i < count($types); $i++)
       {
-        $arr = dbconnection::queryArray("SELECT * FROM instances LEFT JOIN {$tables[$i]} ON instances.object_id = {$tables[$i]}.{$ids[$i]} WHERE instances.object_type = '{$types[$i]}' AND {$tables[$i]}.{$ids[$i]} IS NULL;");
+        $arr = dbconnection::queryArray("SELECT instances.* FROM instances LEFT JOIN {$tables[$i]} ON instances.object_id = {$tables[$i]}.{$ids[$i]} WHERE instances.object_type = '{$types[$i]}' AND {$tables[$i]}.{$ids[$i]} IS NULL;");
         for($j = 0; $j < count($arr); $j++)
         {
           if($pack->execute)
@@ -424,7 +424,7 @@ class games extends dbconnection
       }
 
       //triggers
-      $arr = dbconnection::queryArray("SELECT * FROM triggers LEFT JOIN instances ON triggers.instance_id = instances.instance_id WHERE instances.instance_id IS NULL;");
+      $arr = dbconnection::queryArray("SELECT triggers.* FROM triggers LEFT JOIN instances ON triggers.instance_id = instances.instance_id WHERE instances.instance_id IS NULL;");
       for($j = 0; $j < count($arr); $j++) //use '$j' for consistency
       {
         if($pack->execute)
@@ -436,7 +436,7 @@ class games extends dbconnection
       //requirements
       // \/ query to manually see requirement tree in SQL. nice for debugging.
       //SELECT ratom.requirement_atom_id, rand.requirement_and_package_id, rroot.requirement_root_package_id FROM requirement_atoms as ratom LEFT JOIN requirement_and_packages as rand ON ratom.requirement_and_package_id = rand.requirement_and_package_id LEFT JOIN requirement_root_packages as rroot ON rand.requirement_root_package_id = rroot.requirement_root_package_id WHERE rand.game_id = 3259;
-      $arr = dbconnection::queryArray("SELECT * FROM requirement_and_packages LEFT JOIN requirement_root_packages ON requirement_and_packages.requirement_root_package_id = requirement_root_packages.requirement_root_package_id WHERE requirement_root_packages.requirement_root_package_id IS NULL;");
+      $arr = dbconnection::queryArray("SELECT requirement_and_packages.* FROM requirement_and_packages LEFT JOIN requirement_root_packages ON requirement_and_packages.requirement_root_package_id = requirement_root_packages.requirement_root_package_id WHERE requirement_root_packages.requirement_root_package_id IS NULL;");
       for($j = 0; $j < count($arr); $j++) //use '$j' for consistency
       {
         if($pack->execute)
@@ -444,7 +444,7 @@ class games extends dbconnection
         else //dry run
           echo "DELETE FROM requirement_and_packages WHERE requirement_and_package_id = '{$arr[$j]->requirement_and_package_id}'; (game_id = '{$arr[$j]->game_id}')\n";
       }
-      $arr = dbconnection::queryArray("SELECT * FROM requirement_atoms LEFT JOIN requirement_and_packages ON requirement_atoms.requirement_and_package_id = requirement_and_packages.requirement_and_package_id WHERE requirement_and_packages.requirement_and_package_id IS NULL;");
+      $arr = dbconnection::queryArray("SELECT requirement_atoms.* FROM requirement_atoms LEFT JOIN requirement_and_packages ON requirement_atoms.requirement_and_package_id = requirement_and_packages.requirement_and_package_id WHERE requirement_and_packages.requirement_and_package_id IS NULL;");
       for($j = 0; $j < count($arr); $j++) //use '$j' for consistency
       {
         if($pack->execute)
