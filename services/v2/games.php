@@ -396,7 +396,7 @@ class games extends dbconnection
           if($pack->execute)
             dbconnection::query("DELETE FROM {$tables[$i]} WHERE game_id = '{$arr[$j]->game_id}';");
           else //dry run
-            echo "DELETE FROM {$tables[$i]} WHERE game_id = '{$arr[$j]->game_id}';\n";
+            echo "DELETE FROM {$tables[$i]} WHERE game_id = '{$arr[$j]->game_id}'; (game_id = '{$arr[$j]->game_id}')\n";
         }
       }
 
@@ -419,7 +419,7 @@ class games extends dbconnection
           if($pack->execute)
             dbconnection::query("DELETE FROM instances WHERE instance_id = '{$arr[$j]->instance_id}';");
           else //dry run
-            echo "DELETE FROM instances WHERE instance_id = '{$arr[$j]->instance_id}';\n";
+            echo "DELETE FROM instances WHERE instance_id = '{$arr[$j]->instance_id}'; (game_id = '{$arr[$j]->game_id}')\n";
         }
       }
 
@@ -430,7 +430,7 @@ class games extends dbconnection
         if($pack->execute)
           dbconnection::query("DELETE FROM triggers WHERE trigger_id = '{$arr[$j]->trigger_id}';");
         else //dry run
-          echo "DELETE FROM triggers WHERE trigger_id = '{$arr[$j]->trigger_id}';\n";
+          echo "DELETE FROM triggers WHERE trigger_id = '{$arr[$j]->trigger_id}'; (game_id = '{$arr[$j]->game_id}')\n";
       }
 
       //requirements
@@ -442,7 +442,7 @@ class games extends dbconnection
         if($pack->execute)
           dbconnection::query("DELETE FROM requirement_and_packages WHERE requirement_and_package_id = '{$arr[$j]->requirement_and_package_id}';");
         else //dry run
-          echo "DELETE FROM requirement_and_packages WHERE requirement_and_package_id = '{$arr[$j]->requirement_and_package_id}';\n";
+          echo "DELETE FROM requirement_and_packages WHERE requirement_and_package_id = '{$arr[$j]->requirement_and_package_id}'; (game_id = '{$arr[$j]->game_id}')\n";
       }
       $arr = dbconnection::queryArray("SELECT * FROM requirement_atoms LEFT JOIN requirement_and_packages ON requirement_atoms.requirement_and_package_id = requirement_and_packages.requirement_and_package_id WHERE requirement_and_packages.requirement_and_package_id IS NULL;");
       for($j = 0; $j < count($arr); $j++) //use '$j' for consistency
@@ -450,7 +450,7 @@ class games extends dbconnection
         if($pack->execute)
           dbconnection::query("DELETE FROM requirement_atoms WHERE requirement_atom_id = '{$arr[$j]->requirement_atom_id}';");
         else //dry run
-          echo "DELETE FROM requirement_atoms WHERE requirement_atom_id = '{$arr[$j]->requirement_atom_id}';\n";
+          echo "DELETE FROM requirement_atoms WHERE requirement_atom_id = '{$arr[$j]->requirement_atom_id}'; (game_id = '{$arr[$j]->game_id}')\n";
       }
 
       return new return_package(0);
