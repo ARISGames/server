@@ -44,7 +44,7 @@ class notes extends dbconnection
             (isset($pack->name)        ? "'".addslashes($pack->name)."',"        : "").
             (isset($pack->description) ? "'".addslashes($pack->description)."'," : "").
             (isset($pack->media_id)    ? "'".addslashes($pack->media_id)."',"    : "").
-            ($game->moderated ? "'PENDING'" : "'AUTO'").",".
+            ($game->data->moderated ? "'PENDING'" : "'AUTO'").",".
             "CURRENT_TIMESTAMP".
             ")"
         );
