@@ -535,7 +535,7 @@ class requirements extends dbconnection
     // ignore same id tagged items?
     private function playerHasNoteWithTag($pack)
     {
-        $result = dbconnection::queryObject("SELECT count(*) as qty FROM user_log JOIN notes ON notes.note_id = user_log.content_id JOIN object_tags ON object_tags.object_id = notes.note_id WHERE user_log.game_id = '{$pack->game_id}' AND user_log.user_id = '{$pack->user_id}' AND user_log.event_type = 'CREATE_NOTE' AND user_log.deleted = '0' AND object_tags.tag_id = '{$pack->content_id}'");
+        $result = dbconnection::queryObject("SELECT count(*) as qty FROM user_log JOIN notes ON notes.note_id = user_log.content_id JOIN object_tags ON object_tags.object_id = notes.note_id WHERE user_log.game_id = '{$pack->game_id}' AND user_log.user_id = '{$pack->user_id}' AND user_log.event_type = 'CREATE_NOTE' AND user_log.deleted = '0' AND object_tags.tag_id = '{$pack->content_id}' AND object_tags.object_type = 'NOTE'");
 
         return $result->qty >= $pack->qty ? true : false;
     }
