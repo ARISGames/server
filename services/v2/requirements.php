@@ -459,11 +459,10 @@ class requirements extends dbconnection
         return $item ? true : false;
     }
 
-    // FIXME group with tag like the note query
     private function playerHasTaggedItem($pack)
     {
-        //NOT DONE!!
-        $item = dbconnection::queryObject("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_id = '{$pack->user_id}' AND object_type = 'ITEM' AND object_id = '{$pack->content_id}' AND qty >= '{$pack->qty}'");
+        $query = "SELECT * FROM instances JOIN object_tags ON object_tags.object_id = instances.object_id WHERE instances.game_id = '{$pack->game_id}' AND instances.owner_id = '{$pack->user_id}' AND instances.object_type = 'ITEM' AND instances.qty >= '{$pack->qty}' AND object_tags.object_Type = 'ITEM' AND object_tags.tag_id = '{$pack->content_id}'";
+        $item = dbconnection::queryObject($query);
         return $item ? true : false;
     }
 
@@ -520,6 +519,7 @@ class requirements extends dbconnection
         return $entry ? true : false;
     }
 
+    // There are no web hooks in v2
     private function playerReceivedWebHook($pack)
     {
         return false;
@@ -532,7 +532,6 @@ class requirements extends dbconnection
         return $result->qty >= $pack->qty ? true : false;
     }
 
-    // ignore same id tagged items?
     private function playerHasNoteWithTag($pack)
     {
         $result = dbconnection::queryObject("SELECT count(*) as qty FROM user_log JOIN notes ON notes.note_id = user_log.content_id JOIN object_tags ON object_tags.object_id = notes.note_id WHERE user_log.game_id = '{$pack->game_id}' AND user_log.user_id = '{$pack->user_id}' AND user_log.event_type = 'CREATE_NOTE' AND user_log.deleted = '0' AND object_tags.tag_id = '{$pack->content_id}' AND object_tags.object_type = 'NOTE'");
@@ -540,7 +539,7 @@ class requirements extends dbconnection
         return $result->qty >= $pack->qty ? true : false;
     }
 
-    // FIXME There are no likes in v2
+    // There are no likes in v2
     private function playerHasNoteWithLikes($pack)
     {
         return false;
