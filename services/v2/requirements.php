@@ -2,6 +2,7 @@
 require_once("dbconnection.php");
 require_once("editors.php");
 require_once("return_package.php");
+require_once("../../libraries/geolocation/GeoLocation.php");
 
 class requirements extends dbconnection
 {
@@ -437,10 +438,10 @@ class requirements extends dbconnection
             case 'PLAYER_VIEWED_DIALOG':                  return $atom->bool_operator == requirements::playerViewed($atom,"DIALOG");
             case 'PLAYER_VIEWED_DIALOG_SCRIPT':           return $atom->bool_operator == requirements::playerViewed($atom,"DIALOG_SCRIPT");
             case 'PLAYER_VIEWED_WEB_PAGE':                return $atom->bool_operator == requirements::playerViewed($atom,"WEB_PAGE");
-            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM':        return $atom->bool_operator == requirements::playerUploaded($atom,"");
-            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE':  return $atom->bool_operator == requirements::playerUploaded($atom,"IMAGE");
-            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO':  return $atom->bool_operator == requirements::playerUploaded($atom,"AUDIO");
-            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO':  return $atom->bool_operator == requirements::playerUploaded($atom,"VIDEO");
+            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM':        return $atom->bool_operator == requirements::playerUploadedAnyNear($atom);
+            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE':  return $atom->bool_operator == requirements::playerUploadedTypeNear($atom,"IMAGE");
+            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO':  return $atom->bool_operator == requirements::playerUploadedTypeNear($atom,"AUDIO");
+            case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO':  return $atom->bool_operator == requirements::playerUploadedTypeNear($atom,"VIDEO");
             case 'PLAYER_HAS_COMPLETED_QUEST':            return $atom->bool_operator == requirements::playerCompletedQuest($atom);
             case 'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK': return $atom->bool_operator == requirements::playerReceivedWebHook($atom);
             case 'PLAYER_HAS_NOTE':                       return $atom->bool_operator == requirements::playerHasNote($atom);
@@ -457,70 +458,106 @@ class requirements extends dbconnection
         $item = dbconnection::queryObject("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_id = '{$pack->user_id}' AND object_type = 'ITEM' AND object_id = '{$pack->content_id}' AND qty >= '{$pack->qty}'");
         return $item ? true : false;
     }
+
     private function playerHasTaggedItem($pack)
     {
-        //NOT DONE!!
-        $item = dbconnection::queryObject("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_id = '{$pack->user_id}' AND object_type = 'ITEM' AND object_id = '{$pack->content_id}' AND qty >= '{$pack->qty}'");
+        $query = "SELECT * FROM instances JOIN object_tags ON object_tags.object_id = instances.object_id WHERE instances.game_id = '{$pack->game_id}' AND instances.owner_id = '{$pack->user_id}' AND instances.object_type = 'ITEM' AND instances.qty >= '{$pack->qty}' AND object_tags.object_Type = 'ITEM' AND object_tags.tag_id = '{$pack->content_id}'";
+        $item = dbconnection::queryObject($query);
         return $item ? true : false;
     }
+
     private function playerViewed($pack,$type)
     {
         $entry = dbconnection::queryObject("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}' AND event_type = 'VIEW_{$type}' AND content_id = '{$pack->content_id}' AND deleted = 0");
         return $entry ? true : false;
     }
-    private function playerUploaded($pack,$type)
+
+    // TODO second pass using radius ie http://www.movable-type.co.uk/scripts/latlong-db.html and http://janmatuschek.de/LatitudeLongitudeBoundingCoordinates
+    private function playerUploadedAnyNear($pack)
     {
-        return false;
+        $geo = AnthonyMartin\GeoLocation\GeoLocation::fromDegrees($pack->latitude, $pack->longitude);
+        $bounds = $geo->boundingCoordinates($pack->distance * 0.001, 'km');
+
+        $location_conditions = "triggers.latitude BETWEEN {$bounds->min->getLatitudeInDegrees()} and {$bounds->max->getLatitudeInDegrees()} AND triggers.longitude BETWEEN {$bounds->min->getLongitudeInDegrees()} and {$bounds->max->getLongitudeInDegrees()}";
+
+        $joins = "JOIN notes ON notes.note_id = user_log.content_id JOIN instances ON instances.object_id = notes.note_id JOIN triggers ON triggers.instance_id = instances.instance_id";
+        $conditions = "WHERE user_log.game_id = '{$pack->game_id}' AND user_log.user_id = '{$pack->user_id}' AND user_log.event_type = 'CREATE_NOTE' AND user_log.deleted = '0' AND notes.media_id != '0' AND instances.object_type = 'NOTE' AND {$location_conditions}";
+        $query = "SELECT count(*) as qty FROM user_log {$joins} {$conditions}";
+
+        $result = dbconnection::queryObject($query);
+
+        return $result->qty >= $pack->qty ? true : false;
     }
+
+    private function playerUploadedTypeNear($pack,$type)
+    {
+        // Compare with list of types in media.php
+        switch($type)
+        {
+            case 'IMAGE': $filetype_conditions = "media.file_name LIKE '%.jpg' OR media.file_name LIKE '%.png' OR media.file_name LIKE '%.gif'"; break;
+            case 'VIDEO': $filetype_conditions = "media.file_name LIKE '%.mp4' OR media.file_name LIKE '%.mov' OR media.file_name LIKE '%.m4v' OR media.file_name LIKE '%.3gp'"; break;
+            case 'AUDIO': $filetype_conditions = "media.file_name LIKE '%.caf' OR media.file_name LIKE '%.mp3' OR media.file_name LIKE '%.aac' OR media.file_name LIKE '%.m4a'"; break;
+        }
+
+        $geo = AnthonyMartin\GeoLocation\GeoLocation::fromDegrees($pack->latitude, $pack->longitude);
+        $bounds = $geo->boundingCoordinates($pack->distance * 0.001, 'km');
+
+        $location_conditions = "triggers.latitude BETWEEN {$bounds->min->getLatitudeInDegrees()} and {$bounds->max->getLatitudeInDegrees()} AND triggers.longitude BETWEEN {$bounds->min->getLongitudeInDegrees()} and {$bounds->max->getLongitudeInDegrees()}";
+
+        $joins = "JOIN notes ON notes.note_id = user_log.content_id JOIN media ON media.media_id = notes.media_id JOIN instances ON instances.object_id = notes.note_id JOIN triggers ON triggers.instance_id = instances.instance_id";
+        $conditions = "WHERE user_log.game_id = '{$pack->game_id}' AND user_log.user_id = '{$pack->user_id}' AND user_log.event_type = 'CREATE_NOTE' AND user_log.deleted = '0' AND notes.media_id != '0' AND instances.object_type = 'NOTE' AND ({$filetype_conditions}) AND {$location_conditions}";
+        $query = "SELECT count(*) as qty FROM user_log {$joins} {$conditions}";
+
+        $result = dbconnection::queryObject($query);
+
+        return $result->qty >= $pack->qty ? true : false;
+    }
+
     private function playerCompletedQuest($pack)
     {
         $entry = dbconnection::queryObject("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}' AND event_type = 'COMPLETE_QUEST' AND content_id = '{$pack->content_id}' AND deleted = 0");
         return $entry ? true : false;
     }
+
+    // There are no web hooks in v2
     private function playerReceivedWebHook($pack)
     {
         return false;
     }
+
     private function playerHasNote($pack)
     {
-        //two options...
+        $result = dbconnection::queryObject("SELECT count(*) as qty FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}' AND event_type = 'CREATE_NOTE' AND deleted = 0");
 
-        //"has created n notes since last game reset" (checks the log, which clears itself on game reset)
-        $entries = dbconnection::queryArray("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}' AND event_type = 'CREATE_NOTE' AND deleted = 0");
-
-        //"has n notes in existence" (checks note list. can't create->delete->create->delete to get 2 note count)
-        //$entries = dbconnection::queryArray("SELECT * FROM notes WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}';");
-
-        return (count($entries) >= $pack->qty) ? true : false;
+        return $result->qty >= $pack->qty ? true : false;
     }
+
     private function playerHasNoteWithTag($pack)
     {
-        $notes = dbconnection::queryArray("SELECT * FROM notes WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}';");
-        $object_tags = dbconnection::queryArray("SELECT * FROM object_tags WHERE game_id = '{$pack->game_id}' AND object_type = 'NOTE' AND tag_id = '{$pack->content_id}';");
-        $entries = array();
+        $result = dbconnection::queryObject("SELECT count(*) as qty FROM user_log JOIN notes ON notes.note_id = user_log.content_id JOIN object_tags ON object_tags.object_id = notes.note_id WHERE user_log.game_id = '{$pack->game_id}' AND user_log.user_id = '{$pack->user_id}' AND user_log.event_type = 'CREATE_NOTE' AND user_log.deleted = '0' AND object_tags.tag_id = '{$pack->content_id}' AND object_tags.object_type = 'NOTE'");
 
-        for($i = 0; $i < count($notes); $i++)
-        {
-          for($j = 0; $j < count($object_tags); $j++)
-          {
-            if($notes[$i]->note_id == $object_tags[$j]->object_id)
-              $entries[] = $notes[$i];
-          }
-        }
-
-        return (count($entries) >= $pack->qty) ? true : false;
+        return $result->qty >= $pack->qty ? true : false;
     }
+
+    // There are no likes in v2
     private function playerHasNoteWithLikes($pack)
     {
         return false;
     }
+
     private function playerHasNoteWithComments($pack)
     {
-        return false;
+        $query = "SELECT count(note_comments.note_id) as qty FROM user_log JOIN notes ON notes.note_id = user_log.content_id JOIN note_comments ON note_comments.note_id = notes.note_id WHERE user_log.game_id = '{$pack->game_id}' AND user_log.user_id = '{$pack->user_id}' AND user_log.event_type = 'CREATE_NOTE' AND user_log.deleted = 0 GROUP BY note_comments.note_id ORDER BY qty DESC LIMIT 1";
+        $result = dbconnection::queryObject($query);
+
+        return $result->qty >= $pack->qty ? true : false;
     }
+
     private function playerHasGivenNoteComments($pack)
     {
-        return false;
+        $result = dbconnection::queryObject("SELECT count(*) as qty FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}' AND event_type = 'GIVE_NOTE_COMMENT' AND deleted = 0");
+
+        return $result->qty >= $pack->qty ? true : false;
     }
 }
 ?>
