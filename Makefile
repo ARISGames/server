@@ -16,7 +16,7 @@ help:
 	@echo "         dev: push master branch to dev"
 	@echo " cache_clear: trigger apc cache clear"
 	@echo ""
-	@echo "make [all|deploy]"
+	@echo "make [deploy]"
 
 DEV_CACHE_COMMAND=curl --silent localhost:80/server/resetAPC.php
 DEV_CHECKOUT_COMMAND="cd /var/www/html/server/ && sudo git checkout master && sudo git pull && $(DEV_CACHE_COMMAND)"
@@ -24,11 +24,14 @@ DEV_CHECKOUT_COMMAND="cd /var/www/html/server/ && sudo git checkout master && su
 CACHE_COMMAND=curl --silent localhost:81/server/resetAPC.php
 CHECKOUT_COMMAND="cd /var/www/html/server/ && git checkout master && git pull && $(CACHE_COMMAND)"
 
+DEV_MIGRATE_COMMAND=curl 'http://dev.arisgames.org/server/json.php/v2.db.upgrade' --silent --data '{}' | tr -d '\r\n'
+MIGRATE_COMMAND=curl 'http://arisgames.org/server/json.php/v2.db.upgrade' --silent --data '{}' | tr -d '\r\n'
+
 dev:
 	@echo "Pushing to Github."
 	@git push 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
-	@echo "Deploying to dev."
+	@echo "Deploying to Development."
 	@ssh -t aris-dev $(CHECKOUT_COMMAND)
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
 
@@ -36,26 +39,44 @@ prod:
 	@echo "Pushing to Github."
 	@git push 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
-	@echo "Deploying to server 1."
+	@echo "Deploying to Production 1."
 	@ssh -t aris-prod1 $(CHECKOUT_COMMAND) 1>/dev/null
-	@echo "Deploying to server 2."
+	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
+	@echo "Deploying to Production 2."
 	@ssh -t aris-prod2 $(CHECKOUT_COMMAND) 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
-	@echo "Deploying to server 3."
+	@echo "Deploying to Production 3."
 	@ssh -t aris-prod3 $(CHECKOUT_COMMAND) 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
 
-cache_clear:
-	@echo "Clearing cache on server 1."
+cache_clear_dev:
+	@echo "Clearing cache on Production 1."
+	@ssh -t aris-dev $(DEV_CACHE_COMMAND) 1>/dev/null
+	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
+
+cache_clear_prod:
+	@echo "Clearing cache on Production 1."
 	@ssh -t aris-prod1 $(CACHE_COMMAND) 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
-	@echo "Clearing cache on server 2."
+	@echo "Clearing cache on Production 2."
 	@ssh -t aris-prod2 $(CACHE_COMMAND) 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
-	@echo "Clearing cache on server 3."
+	@echo "Clearing cache on Production 3."
 	@ssh -t aris-prod3 $(CACHE_COMMAND) 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
 
-deploy: prod
+migrate_dev:
+	@echo "Migrating Development$(INFO_COLOR)"
+	@$(DEV_MIGRATE_COMMAND)
+	@echo "$(CLEAR)"
 
-all: deploy cache_clear
+migrate_prod:
+	@echo "Migrating Production$(INFO_COLOR)"
+	@$(MIGRATE_COMMAND)
+	@echo "$(CLEAR)"
+
+cache_clear: cache_clear_prod
+deploy: prod
+migrate: migrate_prod
+
+all: deploy migrate
