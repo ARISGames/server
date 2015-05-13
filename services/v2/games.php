@@ -26,6 +26,8 @@ class games extends dbconnection
             "INSERT INTO games (".
             (isset($pack->name)                                         ? "name,"                                         : "").
             (isset($pack->description)                                  ? "description,"                                  : "").
+            (isset($pack->tick_script)                                  ? "tick_script,"                                  : "").
+            (isset($pack->tick_delay)                                   ? "tick_delay,"                                   : "").
             (isset($pack->icon_media_id)                                ? "icon_media_id,"                                : "").
             (isset($pack->media_id)                                     ? "media_id,"                                     : "").
             (isset($pack->map_type)                                     ? "map_type,"                                     : "").
@@ -58,6 +60,8 @@ class games extends dbconnection
             ") VALUES (".
             (isset($pack->name)                                         ? "'".addslashes($pack->name)."',"                                         : "").
             (isset($pack->description)                                  ? "'".addslashes($pack->description)."',"                                  : "").
+            (isset($pack->tick_script)                                  ? "'".addslashes($pack->tick_script)."',"                                  : "").
+            (isset($pack->tick_delay)                                   ? "'".addslashes($pack->tick_delay)."',"                                   : "").
             (isset($pack->icon_media_id)                                ? "'".addslashes($pack->icon_media_id)."',"                                : "").
             (isset($pack->media_id)                                     ? "'".addslashes($pack->media_id)."',"                                     : "").
             (isset($pack->map_type)                                     ? "'".addslashes($pack->map_type)."',"                                     : "").
@@ -138,6 +142,8 @@ class games extends dbconnection
             "UPDATE games SET ".
             (isset($pack->name)                                         ? "name                                         = '".addslashes($pack->name)."', "                                         : "").
             (isset($pack->description)                                  ? "description                                  = '".addslashes($pack->description)."', "                                  : "").
+            (isset($pack->tick_script)                                  ? "tick_script                                  = '".addslashes($pack->tick_script)."', "                                  : "").
+            (isset($pack->tick_delay)                                   ? "tick_delay                                   = '".addslashes($pack->tick_delay)."', "                                   : "").
             (isset($pack->icon_media_id)                                ? "icon_media_id                                = '".addslashes($pack->icon_media_id)."', "                                : "").
             (isset($pack->media_id)                                     ? "media_id                                     = '".addslashes($pack->media_id)."', "                                     : "").
             (isset($pack->map_type)                                     ? "map_type                                     = '".addslashes($pack->map_type)."', "                                     : "").
@@ -181,6 +187,8 @@ class games extends dbconnection
         $game->game_id                                      = $sql_game->game_id;
         $game->name                                         = $sql_game->name;
         $game->description                                  = $sql_game->description;
+        $game->tick_script                                  = $sql_game->tick_script;
+        $game->tick_delay                                   = $sql_game->tick_delay;
         $game->icon_media_id                                = $sql_game->icon_media_id;
         $game->media_id                                     = $sql_game->media_id;
         $game->map_type                                     = $sql_game->map_type;
