@@ -42,6 +42,7 @@ class users extends dbconnection
             "read_write_key,".
             "display_name,".
             (isset($pack->group_name) ? "group_name," : "").
+            (isset($pack->transient)  ? "transient,"  : "").
             (isset($pack->email)      ? "email,"      : "").
             (isset($pack->media_id)   ? "media_id,"   : "").
             "created".
@@ -54,6 +55,7 @@ class users extends dbconnection
             "'".addslashes($read_write)."',".
             (isset($pack->display_name) ? "'".addslashes($pack->display_name)."'," : "'".addslashes($pack->user_name)."',").
             (isset($pack->group_name)   ? "'".addslashes($pack->group_name)."',"   : "").
+            (isset($pack->transient)    ? "'".addslashes($pack->transient)."',"    : "").
             (isset($pack->email)        ? "'".addslashes($pack->email)."',"        : "").
             (isset($pack->media_id)     ? "'".addslashes($pack->media_id)."',"     : "").
             "CURRENT_TIMESTAMP".
@@ -89,6 +91,7 @@ class users extends dbconnection
           $pack->password = util::rand_string(10); //this is legit probably never going to be recoverable...
         }
         if(!isset($pack->display_name)) $pack->display_name = ""; //explicitly set display_name so default doesn't get set to the gibberish user_name
+        $pack->transient = 1;
 
         return users::createUser($pack);
     }
