@@ -640,7 +640,7 @@ class duplicate extends dbconnection
 
     //read text
     $jsonfile = fopen($tmp_import_folder."/export.json", "r");
-    $assoc_data = json_decode(fread($jsonfile,filesize($tmp_import_folder."/export.json")),true); //TODO: shucks. need to encode by assoc for "data", but not for other stuff
+    $assoc_data = json_decode(fread($jsonfile,filesize($tmp_import_folder."/export.json")),true);
     fclose($jsonfile);
 
     //convert to non-assoc for non-data tables
@@ -670,7 +670,6 @@ class duplicate extends dbconnection
 
   private static function importGameData($pack)
   {
-    $pack->verbose = true;
     $tables = array(); //not actually used
     $columns = array(); //not actually used
     $coltablemap = array();
@@ -787,8 +786,6 @@ class duplicate extends dbconnection
             else if($col->name == 'file_folder')
             {
               //copy media to new folder
-
-              //TODO!
 
               $filenametitle = substr($old_datum['file_name'],0,strrpos($old_datum['file_name'],'.'));
               $filenameext = substr($old_datum['file_name'],strrpos($old_datum['file_name'],'.'));
