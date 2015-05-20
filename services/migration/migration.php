@@ -1009,7 +1009,7 @@ class migration extends migration_dbconnection
             $requirement = ""; $content_id = 0;
             if($requirementsList[$i]->requirement == "PLAYER_VIEWED_AUGBUBBLE") continue; //no longer valid
             if($requirementsList[$i]->requirement == "PLAYER_HAS_ITEM")                       { $requirement = "PLAYER_HAS_ITEM";                       $content_id = $maps->items[$requirementsList[$i]->requirement_detail_1]; }
-            if($requirementsList[$i]->requirement == "PLAYER_HAS_TAGGED_ITEM")                { $requirement = "PLAYER_HAS_TAGGED_ITEM";                $content_id = $maps->items[$requirementsList[$i]->requirement_detail_1]; }
+            if($requirementsList[$i]->requirement == "PLAYER_HAS_TAGGED_ITEM")                { $requirement = "PLAYER_HAS_TAGGED_ITEM";                $content_id = $maps->item_tags[$requirementsList[$i]->requirement_detail_1]; }
             if($requirementsList[$i]->requirement == "PLAYER_VIEWED_ITEM")                    { $requirement = "PLAYER_VIEWED_ITEM";                    $content_id = $maps->items[$requirementsList[$i]->requirement_detail_1];}
             if($requirementsList[$i]->requirement == "PLAYER_VIEWED_NODE")                    { if($maps->plaques[$requirementsList[$i]->requirement_detail_1]) { $requirement = "PLAYER_VIEWED_PLAQUE"; $content_id = $maps->plaques[$requirementsList[$i]->requirement_detail_1]; } else { $requirement = "PLAYER_VIEWED_DIALOG_SCRIPT"; $content_id = $maps->scripts[$requirementsList[$i]->requirement_detail_1]; } }
             if($requirementsList[$i]->requirement == "PLAYER_VIEWED_NPC")                     { $requirement = "PLAYER_VIEWED_DIALOG";                  $content_id = $maps->dialogs[$requirementsList[$i]->requirement_detail_1];}
@@ -1019,9 +1019,9 @@ class migration extends migration_dbconnection
             if($requirementsList[$i]->requirement == "PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO")  { $requirement = "PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO";  }
             if($requirementsList[$i]->requirement == "PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO")  { $requirement = "PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO";  }
             if($requirementsList[$i]->requirement == "PLAYER_HAS_COMPLETED_QUEST")            { $requirement = "PLAYER_HAS_COMPLETED_QUEST";            $content_id = $maps->quests[$requirementsList[$i]->requirement_detail_1];}
-            if($requirementsList[$i]->requirement == "PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK") { $requirement = "PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK"; }
+            if($requirementsList[$i]->requirement == "PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK") { $requirement = "PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK"; $content_id = $maps->webhooks[$requirementsList[$i]->requirement_detail_1]; }
             if($requirementsList[$i]->requirement == "PLAYER_HAS_NOTE")                       { $requirement = "PLAYER_HAS_NOTE";                       }
-            if($requirementsList[$i]->requirement == "PLAYER_HAS_NOTE_WITH_TAG")              { $requirement = "PLAYER_HAS_NOTE_WITH_TAG";              }
+            if($requirementsList[$i]->requirement == "PLAYER_HAS_NOTE_WITH_TAG")              { $requirement = "PLAYER_HAS_NOTE_WITH_TAG";              $content_id = $maps->note_tags[$requirementsList[$i]->requirement_detail_1];}
             if($requirementsList[$i]->requirement == "PLAYER_HAS_NOTE_WITH_LIKES")            { $requirement = "PLAYER_HAS_NOTE_WITH_LIKES";            }
             if($requirementsList[$i]->requirement == "PLAYER_HAS_NOTE_WITH_COMMENTS")         { $requirement = "PLAYER_HAS_NOTE_WITH_COMMENTS";         }
             if($requirementsList[$i]->requirement == "PLAYER_HAS_GIVEN_NOTE_COMMENTS")        { $requirement = "PLAYER_HAS_GIVEN_NOTE_COMMENTS";        }
