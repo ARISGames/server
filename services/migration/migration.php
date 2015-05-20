@@ -690,7 +690,7 @@ class migration extends migration_dbconnection
             }
             else
             {
-                $map->item_tag_joins[$itemtags[$j]->object_id] = "Skipped missing item ".$itemtags[$j]->object_id;
+                $maps->item_tag_joins[$itemtags[$j]->object_id] = "Skipped missing item ".$itemtags[$j]->object_id;
             }
         }
 
