@@ -258,7 +258,8 @@ class migration extends migration_dbconnection
         $maps->dialogs = $characterMaps->dialogsMap;
         $maps->scripts = $characterMaps->scriptsMap;
         $maps->options = $characterMaps->optionsMap;
-        $maps->tags = migration::migrateTags($v1GameId, $v2GameId, $maps);
+        $maps->item_tags = migration::migrateItemTags($v1GameId, $v2GameId, $maps);
+        $maps->note_tags = migration::migrateNoteTags($v1GameId, $v2GameId, $maps);
         $maps->webhooks = migration::migrateWebhooks($v1GameId, $v2GameId, $maps);
         $maps->quests = migration::migrateQuests($v1GameId, $v2GameId, $maps);
         $maps->events = migration::migrateEvents($v1GameId, $v2GameId, $maps);
@@ -647,7 +648,7 @@ class migration extends migration_dbconnection
         }
     }
 
-    public function migrateTags($v1GameId, $v2GameId, $maps)
+    public function migrateNoteTags($v1GameId, $v2GameId, $maps)
     {
         $tagIdMap = array();
         $tagIdMap[0] = 0;
@@ -657,6 +658,21 @@ class migration extends migration_dbconnection
         {
             $tagIdMap[$tags[$i]->tag_id] = 0; //set it to 0 in case of failure
             $newtagId = migration_dbconnection::queryInsert("INSERT INTO tags (game_id, tag, media_id, curated, visible, sort_index, created) VALUES ('{$v2GameId}','{$tags[$i]->tag}','{$maps->media[$tags[$i]->media_id]}','".(($tags[$i]->player_created == 1) ? 0 : 1)."','1','0',CURRENT_TIMESTAMP)", "v2");
+            $tagIdMap[$tags[$i]->tag_id] = $newtagId;
+        }
+        return $tagIdMap;
+    }
+
+    public function migrateItemTags($v1GameId, $v2GameId, $maps)
+    {
+        $tagIdMap = array();
+        $tagIdMap[0] = 0;
+
+        $tags = migration_dbconnection::queryArray("SELECT * FROM game_object_tags WHERE game_id = '{$v1GameId}'","v1");
+        for($i = 0; $i < count($tags); $i++)
+        {
+            $tagIdMap[$tags[$i]->tag_id] = 0; //set it to 0 in case of failure
+            $newtagId = migration_dbconnection::queryInsert("INSERT INTO tags (game_id, tag, media_id, curated, visible, sort_index, created) VALUES ('{$v2GameId}','{$tags[$i]->tag}','{$maps->media[$tags[$i]->media_id]}','0','1','0',CURRENT_TIMESTAMP)", "v2");
             $tagIdMap[$tags[$i]->tag_id] = $newtagId;
         }
         return $tagIdMap;
@@ -1058,7 +1074,7 @@ class migration extends migration_dbconnection
             $notetags = migration_dbconnection::queryArray("SELECT * FROM note_tags WHERE note_id = '{$properNotes[$i]->note_id}';","v1");
 
             for($j = 0; $j < count($notetags); $j++)
-                migration_dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$v2GameId}','NOTE','{$newNoteId}','{$maps->tags[$notetags[$j]->tag_id]}',CURRENT_TIMESTAMP);","v2");
+                migration_dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$v2GameId}','NOTE','{$newNoteId}','{$maps->note_tags[$notetags[$j]->tag_id]}',CURRENT_TIMESTAMP);","v2");
 
             $noteIdMap[$properNotes[$i]->note_id] = $newNoteId;
         }
