@@ -675,6 +675,14 @@ class migration extends migration_dbconnection
             $newtagId = migration_dbconnection::queryInsert("INSERT INTO tags (game_id, tag, media_id, curated, visible, sort_index, created) VALUES ('{$v2GameId}','{$tags[$i]->tag}','{$maps->media[$tags[$i]->media_id]}','0','1','0',CURRENT_TIMESTAMP)", "v2");
             $tagIdMap[$tags[$i]->tag_id] = $newtagId;
         }
+
+        $itemtags = migration_dbconnection::queryArray("SELECT object_tags.tag_id as tag_id, object_tags.object_id as object_id FROM object_tags JOIN game_object_tags ON object_tags.tag_id = game_object_tags.tag_id WHERE game_id = '{$v1GameId}'","v1");
+        for($j = 0; $j < count($itemtags); $j++)
+        {
+            $query = "INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$v2GameId}','ITEM','{$maps->items[$itemtags[$j]->object_id]}','{$tagIdMap[$itemtags[$j]->tag_id]}',CURRENT_TIMESTAMP);";
+            migration_dbconnection::queryInsert($query, "v2");
+        }
+
         return $tagIdMap;
     }
 
