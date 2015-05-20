@@ -33,6 +33,7 @@ class items extends dbconnection
             (isset($pack->weight)               ? "weight,"               : "").
             (isset($pack->url)                  ? "url,"                  : "").
             (isset($pack->type)                 ? "type,"                 : "").
+            (isset($pack->delta_notification)   ? "delta_notification,"   : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
@@ -46,6 +47,7 @@ class items extends dbconnection
             (isset($pack->weight)               ? "'".addslashes($pack->weight)."',"               : "").
             (isset($pack->url)                  ? "'".addslashes($pack->url)."',"                  : "").
             (isset($pack->type)                 ? "'".addslashes($pack->type)."',"                 : "").
+            (isset($pack->delta_notification)   ? "'".addslashes($pack->delta_notification)."',"   : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -72,6 +74,7 @@ class items extends dbconnection
             (isset($pack->weight)               ? "weight               = '".addslashes($pack->weight)."', "               : "").
             (isset($pack->url)                  ? "url                  = '".addslashes($pack->url)."', "                  : "").
             (isset($pack->type)                 ? "type                 = '".addslashes($pack->type)."', "                 : "").
+            (isset($pack->delta_notification)   ? "delta_notification   = '".addslashes($pack->delta_notification)."', "   : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE item_id = '{$pack->item_id}'"
         );
@@ -95,6 +98,7 @@ class items extends dbconnection
         $item->weight               = $sql_item->weight;
         $item->url                  = $sql_item->url;
         $item->type                 = $sql_item->type;
+        $item->delta_notification   = $sql_item->delta_notification;
 
         return $item;
     }

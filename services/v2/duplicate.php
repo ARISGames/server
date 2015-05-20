@@ -470,7 +470,7 @@ class duplicate extends dbconnection
     $pack->auth->permission = "read_write";
     if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-    $pack->package = duplicate::exportGameData($pack);
+    $pack->import = duplicate::exportGameData($pack);
     return duplicate::importGameData($pack);
   }
 
@@ -539,22 +539,56 @@ class duplicate extends dbconnection
     $pack->auth->permission = "read_write";
     if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-    $package = duplicate::exportGameData($pack);
+    $export = duplicate::exportGameData($pack);
 
-    $export_folder = $package->media."_export_".date("mdY_Gis");
-    if(file_exists($export_folder)) duplicate::rdel($export_folder);
-    mkdir($export_folder,0777);
-    $file = fopen($export_folder."/data.json","w");
-    fwrite($file,json_encode($package->data));
-    fclose($file);
+    $tmp_export_folder = $export->game_id."_export_".date("mdY_Gis");
+    $fs_tmp_export_folder = Config::v2_gamedata_folder."/".$tmp_export_folder;
+    if(file_exists($fs_tmp_export_folder)) duplicate::rdel($fs_tmp_export_folder);
+    mkdir($fs_tmp_export_folder,0777);
+    $jsonfile = fopen($fs_tmp_export_folder."/export.json","w");
+    fwrite($jsonfile,json_encode($export));
+    fclose($jsonfile);
 
-    duplicate::rcopy($package->media,$export_folder."/data");
-    duplicate::rzip($export_folder,$export_folder.".zip");
-    duplicate::rdel($export_folder);
+    duplicate::rcopy(Config::v2_gamedata_folder."/".$export->game_id,$fs_tmp_export_folder."/gamedata");
+    duplicate::rzip($fs_tmp_export_folder,$fs_tmp_export_folder.".zip");
+    duplicate::rdel($fs_tmp_export_folder);
 
-    return $export_folder.".zip";
+    return $tmp_export_folder.".zip";
   }
 
+  /*
+    {
+      game_id:123,
+      table_data:
+      [
+        {
+          table:"games",
+          columns:
+          [
+            {
+              name:"game_id",
+              meta:"id",
+            },
+            {
+              name:"name",
+              meta:"",
+            },
+            ...
+          ]
+          data:
+          [
+            {
+              game_id:123,
+              name:"my game",
+              ...
+            },
+            ...
+          ]
+        },
+        ...
+      ]
+    }
+  */
   private static function exportGameData($pack)
   {
     $tables = array();
@@ -562,20 +596,19 @@ class duplicate extends dbconnection
     $coltablemap = array();
     duplicate::getSchema($tables,$columns,$coltablemap);
 
-    $datas = array();
+    $table_data = array();
 
     for($i = 0; $i < count($tables); $i++)
     {
       $table = $tables[$i];
       $cols = $columns[$i];
       $old_data = dbconnection::queryArrayAssoc("SELECT * FROM {$table} WHERE game_id = '{$pack->game_id}';");
-      $datas[] = new table_data($table, $cols, $old_data);
+      $table_data[] = new table_data($table, $cols, $old_data);
     }
 
     $package = new stdClass();
     $package->game_id = $pack->game_id;
-    $package->data = $datas;
-    $package->media = Config::v2_gamedata_folder."/".$pack->game_id;
+    $package->table_data = $table_data;
     return $package;
   }
 
@@ -584,38 +617,54 @@ class duplicate extends dbconnection
     $pack->auth->permission = "read_write";
     if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-    $zipname = Config::v2_gamedata_folder."/".$pack->zip_name;
-    $ziptoname = substr($zipname,0,strrpos($zipname,".zip"));
-    if(file_exists($ziptoname)) return "no";
+    $zipbasename = substr($pack->zip_name,0,strrpos($pack->zip_name,".zip"));
+    $tmp_import_folder = Config::v2_gamedata_folder."/".$zipbasename."_import_".date("mdY_Gis");
+    $tmp_zip = $tmp_import_folder.".zip";
+    if(file_exists($tmp_import_folder)) return "no";
 
     //save data to zip
-    $file = fopen($zipname,"w");
-    fwrite($file,base64_decode($pack->zip_data));
-    fclose($file);
+    $zipfile = fopen($tmp_zip,"w");
+    fwrite($zipfile,base64_decode($pack->zip_data));
+    fclose($zipfile);
 
     //unzip to folder
     $zip = new ZipArchive;
-    $res = $zip->open($zipname);
-    if($res === TRUE)
+    if($zip->open($tmp_zip) === TRUE)
     {
-      $zip->extractTo($ziptoname);
+      $zip->extractTo($tmp_import_folder);
       $zip->close();
     }
-    unlink($zipname); //get rid of zip
+    unlink($tmp_zip); //get rid of zip
 
     unset($pack->zip_data); //for readability in debug
-    $package = new stdClass();
 
     //read text
-    $file = fopen($ziptoname."/data.json", "r");
-    $package->data = json_decode(fread($file,filesize($ziptoname."/data.json"))); //TODO: shucks. need to encode by assoc for "data", but not for other stuff
-    fclose($file);
+    $jsonfile = fopen($tmp_import_folder."/export.json", "r");
+    $assoc_data = json_decode(fread($jsonfile,filesize($tmp_import_folder."/export.json")),true);
+    fclose($jsonfile);
 
-    $package->media = $ziptoname."/data";
+    //convert to non-assoc for non-data tables
+    $import = new stdClass();
+    $import->game_id = $assoc_data["game_id"];
+    $import->table_data = array();
 
-    $pack->package = $package;
+    for($i = 0; $i < count($assoc_data["table_data"]); $i++)
+    {
+      $import->table_data[$i] = new stdClass();
+      $import->table_data[$i]->table = $assoc_data["table_data"][$i]["table"];
+      $import->table_data[$i]->columns = array();
+      for($j = 0; $j < count($assoc_data["table_data"][$i]["columns"]); $j++)
+      {
+        $import->table_data[$i]->columns[$j] = new stdClass();
+        $import->table_data[$i]->columns[$j]->name = $assoc_data["table_data"][$i]["columns"][$j]["name"];
+        $import->table_data[$i]->columns[$j]->meta = $assoc_data["table_data"][$i]["columns"][$j]["meta"];
+      }
+      $import->table_data[$i]->data = $assoc_data["table_data"][$i]["data"];
+    }
+
+    $pack->import = $import;
     $ret = duplicate::importGameData($pack);
-    duplicate::rdel($ziptoname); //get rid of zipto
+    duplicate::rdel($tmp_import_folder); //get rid of zipto
     return $ret;
   }
 
@@ -627,16 +676,15 @@ class duplicate extends dbconnection
     duplicate::getSchema($tables,$columns,$coltablemap);
 
     $maps = array();
-    $package = $pack->package;
-    $game_id = $package->game_id;
-    $datas = $package->data;
-    $media = $package->media;
+    $import = $pack->import;
+    $game_id = $import->game_id;
+    $table_data = $import->table_data;
 
-    for($i = 0; $i < count($datas); $i++)
+    for($i = 0; $i < count($table_data); $i++)
     {
-      $table = $datas[$i]->table;
-      $cols = $datas[$i]->columns;
-      $old_data = $datas[$i]->data;
+      $table = $table_data[$i]->table;
+      $cols = $table_data[$i]->columns;
+      $old_data = $table_data[$i]->data;
 
       $maps[$table] = array();
       $maps[$table][0] = 0;
@@ -694,11 +742,11 @@ class duplicate extends dbconnection
     mkdir(Config::v2_gamedata_folder."/{$maps['games'][$game_id]}",0777);
 
     //second pass- fill in bogus mappings with known maps
-    for($i = 0; $i < count($datas); $i++)
+    for($i = 0; $i < count($table_data); $i++)
     {
-      $table = $datas[$i]->table;
-      $cols = $datas[$i]->columns;
-      $old_data = $datas[$i]->data;
+      $table = $table_data[$i]->table;
+      $cols = $table_data[$i]->columns;
+      $old_data = $table_data[$i]->data;
 
       for($j = 0; $j < count($old_data); $j++)
       {
