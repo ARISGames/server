@@ -952,12 +952,12 @@ class migration extends migration_dbconnection
         foreach($rGroupings->webhooks as $webhookId => $requirementsList)
         {
             $req_package_id = migration::migrateRequirementListIntoPackage($v2GameId, $requirementsList, $maps);
-            migration_dbconnection::query("UPDATE web_hooks SET requirement_root_package_id = '{$req_package_id}' WHERE overlay_id = '{$maps->webhooks[$webhookId]}'","v2");
+            migration_dbconnection::query("UPDATE web_hooks SET requirement_root_package_id = '{$req_package_id}' WHERE web_hook_id = '{$maps->webhooks[$webhookId]}'","v2");
         }
         foreach($rGroupings->factories as $factoryId => $requirementsList)
         {
             $req_package_id = migration::migrateRequirementListIntoPackage($v2GameId, $requirementsList, $maps);
-            migration_dbconnection::query("UPDATE factories SET requirement_root_package_id = '{$req_package_id}' WHERE overlay_id = '{$maps->factories[$factoryId]}'","v2");
+            migration_dbconnection::query("UPDATE factories SET trigger_requirement_root_package_id = '{$req_package_id}' WHERE factory_id = '{$maps->factories[$factoryId]}'","v2");
         }
         foreach($rGroupings->overlays as $overlayId => $requirementsList)
         {
@@ -1002,9 +1002,15 @@ class migration extends migration_dbconnection
 
             $parent_and = $and_group_req_id;
             if($requirementsList[$i]->boolean_operator == "OR")
+            {
                 $parent_and = migration_dbconnection::queryInsert("INSERT INTO requirement_and_packages (game_id, requirement_root_package_id, created) VALUES ('{$gameId}', '{$root_req_id}', CURRENT_TIMESTAMP)","v2");
+            }
 
-            migration_dbconnection::queryInsert("INSERT INTO requirement_atoms (game_id, requirement_and_package_id, bool_operator, requirement, content_id, distance, qty, latitude, longitude, created) VALUES ('{$gameId}', '{$parent_and}', '".($requirementsList[$i]->not_operator == "DO")."','{$requirement}','{$content_id}','{$requirementsList[$i]->requirement_detail_1}','{$requirementsList[$i]->requirement_detail_2}','{$requirementsList[$i]->requirement_detail_3}','{$requirementsList[$i]->requirement_detail_4}',CURRENT_TIMESTAMP)","v2");
+            // Skip requirement types not in V2
+            if($requirement != "")
+            {
+                migration_dbconnection::queryInsert("INSERT INTO requirement_atoms (game_id, requirement_and_package_id, bool_operator, requirement, content_id, distance, qty, latitude, longitude, created) VALUES ('{$gameId}', '{$parent_and}', '".($requirementsList[$i]->not_operator == "DO")."','{$requirement}','{$content_id}','{$requirementsList[$i]->requirement_detail_1}','{$requirementsList[$i]->requirement_detail_2}','{$requirementsList[$i]->requirement_detail_3}','{$requirementsList[$i]->requirement_detail_4}',CURRENT_TIMESTAMP)","v2");
+            }
         }
 
         return $root_req_id;
