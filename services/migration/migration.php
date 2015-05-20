@@ -678,10 +678,20 @@ class migration extends migration_dbconnection
         }
 
         $itemtags = migration_dbconnection::queryArray("SELECT object_tags.tag_id as tag_id, object_tags.object_id as object_id FROM object_tags JOIN game_object_tags ON object_tags.tag_id = game_object_tags.tag_id WHERE game_id = '{$v1GameId}'","v1");
+
+        $maps->item_tag_joins = array();
+
         for($j = 0; $j < count($itemtags); $j++)
         {
-            $query = "INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$v2GameId}','ITEM','{$maps->items[$itemtags[$j]->object_id]}','{$tagIdMap[$itemtags[$j]->tag_id]}',CURRENT_TIMESTAMP);";
-            migration_dbconnection::queryInsert($query, "v2");
+            if($maps->items[$itemtags[$j]->object_id] != 0)
+            {
+                $query = "INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$v2GameId}','ITEM','{$maps->items[$itemtags[$j]->object_id]}','{$tagIdMap[$itemtags[$j]->tag_id]}',CURRENT_TIMESTAMP);";
+                migration_dbconnection::queryInsert($query, "v2");
+            }
+            else
+            {
+                $map->item_tag_joins[$itemtags[$j]->object_id] = "Skipped missing item ".$itemtags[$j]->object_id;
+            }
         }
 
         return $tagIdMap;
