@@ -27,7 +27,7 @@ CHECKOUT_COMMAND="cd /var/www/html/server/ && git checkout master && git pull &&
 DEV_MIGRATE_COMMAND=curl 'http://dev.arisgames.org/server/json.php/v2.db.upgrade' --silent --data '{}' | tr -d '\r\n'
 MIGRATE_COMMAND=curl 'http://arisgames.org/server/json.php/v2.db.upgrade' --silent --data '{}' | tr -d '\r\n'
 
-STATUS_COMMAND="cd /var/www/html/server/ && git log -1 --date=short --pretty=format:'%Cred%h%Creset %Cgreen%cd%Creset %C(bold blue)%an%Creset%C(yellow)%d%Creset %s%Creset'"
+STATUS_COMMAND="cd /var/www/html/server/ && git fetch && git log -1 --date=short --pretty=format:'%Cred%h%Creset %Cgreen%cd%Creset %C(bold blue)%an%Creset%C(yellow)%d%Creset %s%Creset'"
 
 dev:
 	@echo "Pushing to Github."
