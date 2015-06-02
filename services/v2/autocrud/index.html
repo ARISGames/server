@@ -65,17 +65,25 @@
         document.getElementById('delete_request').value = CRUD_DEFAULTS[index].deleteData;
     }
 
-	function displayResult(response)
+	function displayResult(responses)
 	{
+		if(!Array.isArray(responses))
+		{
+			responses = [responses];
+		}
+
         var resultDom = document.getElementById('result_text');
 		resultDom.innerHTML = "";
 
-		var jsonDom = JsonHuman.format(response, {});
-		resultDom.appendChild(jsonDom);
+		responses.forEach(function(response)
+		{
+			var jsonDom = JsonHuman.format(response, {});
+			resultDom.appendChild(jsonDom);
 
-		var rawDom = document.createElement("pre");
-		rawDom.appendChild(document.createTextNode(JSON.stringify(response)));
-        resultDom.appendChild(rawDom);
+			var rawDom = document.createElement("pre");
+			rawDom.appendChild(document.createTextNode(JSON.stringify(response)));
+			resultDom.appendChild(rawDom);
+		});
 	}
 
     var userId = 0;
@@ -109,10 +117,22 @@
 
     function submitUpdate()
     {
-        var package = JSON.parse(document.getElementById('update_request').value);
-        package.auth = {"user_id":userId,"key":rwkey};
-        var response = sendRequest(document.getElementById('update_request_method').value, JSON.stringify(package), "POST");
-		displayResult(response);
+        var packages = JSON.parse(document.getElementById('update_request').value);
+		var responses = [];
+
+		if(!Array.isArray(packages))
+		{
+			packages = [packages];
+		}
+
+		packages.forEach(function(package)
+		{
+			package.auth = {"user_id":userId,"key":rwkey};
+			var response = sendRequest(document.getElementById('update_request_method').value, JSON.stringify(package), "POST");
+			responses.push(response);
+		});
+
+		displayResult(responses);
     }
 
     function submitGet()
