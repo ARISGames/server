@@ -27,6 +27,8 @@ CHECKOUT_COMMAND="cd /var/www/html/server/ && git checkout master && git pull &&
 DEV_MIGRATE_COMMAND=curl 'http://dev.arisgames.org/server/json.php/v2.db.upgrade' --silent --data '{}' | tr -d '\r\n'
 MIGRATE_COMMAND=curl 'http://arisgames.org/server/json.php/v2.db.upgrade' --silent --data '{}' | tr -d '\r\n'
 
+STATUS_COMMAND="cd /var/www/html/server/ && git fetch && git log -1 --date=short --pretty=format:'%Cred%h%Creset %Cgreen%cd%Creset %C(bold blue)%an%Creset%C(yellow)%d%Creset %s%Creset'"
+
 dev:
 	@echo "Pushing to Github."
 	@git push 1>/dev/null
@@ -73,6 +75,17 @@ migrate_dev:
 migrate_prod:
 	@echo "Migrating Production$(INFO_COLOR)"
 	@$(MIGRATE_COMMAND)
+	@echo "$(CLEAR)"
+
+status:
+	@echo "Commit on Production 1$(INFO_COLOR)"
+	@ssh aris-prod1 $(STATUS_COMMAND)
+	@echo "$(CLEAR)"
+	@echo "Commit on Production 2$(INFO_COLOR)"
+	@ssh aris-prod2 $(STATUS_COMMAND)
+	@echo "$(CLEAR)"
+	@echo "Commit on Production 3$(INFO_COLOR)"
+	@ssh aris-prod3 $(STATUS_COMMAND)
 	@echo "$(CLEAR)"
 
 cache_clear: cache_clear_prod

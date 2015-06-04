@@ -278,7 +278,8 @@ class migration extends migration_dbconnection
         $maps->tabs = migration::migrateTabs($v1GameId, $v2GameId, $maps);
         migration::updateDialogOptionLinks($v1GameId, $v2GameId, $maps); //now that tabs/objects (link targets) are updated with ids, we can make sense of them
 
-        //no maps generated from migrateRequirements
+        //maps generated from migrateRequirementPackage inserted directly.
+        $maps->requirement_atoms = array();
         migration::migrateRequirements($v1GameId, $v2GameId, $maps);
 
         migration_dbconnection::queryInsert("INSERT INTO game_migrations (v2_game_id, v1_game_id, v2_user_id) VALUES ('{$v2GameId}','{$v1GameId}','{$v2UserId}')");
@@ -677,10 +678,20 @@ class migration extends migration_dbconnection
         }
 
         $itemtags = migration_dbconnection::queryArray("SELECT object_tags.tag_id as tag_id, object_tags.object_id as object_id FROM object_tags JOIN game_object_tags ON object_tags.tag_id = game_object_tags.tag_id WHERE game_id = '{$v1GameId}'","v1");
+
+        $maps->item_tag_joins = array();
+
         for($j = 0; $j < count($itemtags); $j++)
         {
-            $query = "INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$v2GameId}','ITEM','{$maps->items[$itemtags[$j]->object_id]}','{$tagIdMap[$itemtags[$j]->tag_id]}',CURRENT_TIMESTAMP);";
-            migration_dbconnection::queryInsert($query, "v2");
+            if($maps->items[$itemtags[$j]->object_id] != 0)
+            {
+                $query = "INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$v2GameId}','ITEM','{$maps->items[$itemtags[$j]->object_id]}','{$tagIdMap[$itemtags[$j]->tag_id]}',CURRENT_TIMESTAMP);";
+                migration_dbconnection::queryInsert($query, "v2");
+            }
+            else
+            {
+                $maps->item_tag_joins[$itemtags[$j]->object_id] = "Skipped missing item ".$itemtags[$j]->object_id;
+            }
         }
 
         return $tagIdMap;
@@ -1027,10 +1038,10 @@ class migration extends migration_dbconnection
             if($requirementsList[$i]->requirement == "PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO")  { $requirement = "PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO";  }
             if($requirementsList[$i]->requirement == "PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO")  { $requirement = "PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO";  }
             if($requirementsList[$i]->requirement == "PLAYER_HAS_COMPLETED_QUEST")            { $requirement = "PLAYER_HAS_COMPLETED_QUEST";            $content_id = $maps->quests[$requirementsList[$i]->requirement_detail_1];}
-            if($requirementsList[$i]->requirement == "PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK") { $requirement = "PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK"; $content_id = $maps->webhooks[$requirementsList[$i]->requirement_detail_1]; }
+            if($requirementsList[$i]->requirement == "PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK") { $maps->requirement_atoms[$requirementsList[$i]->requirement_id] = "Skip Webhook Received"; }
             if($requirementsList[$i]->requirement == "PLAYER_HAS_NOTE")                       { $requirement = "PLAYER_HAS_NOTE";                       }
             if($requirementsList[$i]->requirement == "PLAYER_HAS_NOTE_WITH_TAG")              { $requirement = "PLAYER_HAS_NOTE_WITH_TAG";              $content_id = $maps->note_tags[$requirementsList[$i]->requirement_detail_1];}
-            if($requirementsList[$i]->requirement == "PLAYER_HAS_NOTE_WITH_LIKES")            { $requirement = "PLAYER_HAS_NOTE_WITH_LIKES";            }
+            if($requirementsList[$i]->requirement == "PLAYER_HAS_NOTE_WITH_LIKES")            { $maps->requirement_atoms[$requirementsList[$i]->requirement_id] = "Skip Note Like";     }
             if($requirementsList[$i]->requirement == "PLAYER_HAS_NOTE_WITH_COMMENTS")         { $requirement = "PLAYER_HAS_NOTE_WITH_COMMENTS";         }
             if($requirementsList[$i]->requirement == "PLAYER_HAS_GIVEN_NOTE_COMMENTS")        { $requirement = "PLAYER_HAS_GIVEN_NOTE_COMMENTS";        }
 

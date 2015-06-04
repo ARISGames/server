@@ -82,6 +82,25 @@ class instances extends dbconnection
         return new return_package(0,instances::instanceObjectFromSQL($sql_instance));
     }
 
+    // Added for MHS role distribution. Would be nice as 'takeQtyFromGame' these succeed even if would not give amount required.
+    public static function takeQtyFromInstance($pack)
+    {
+        $query = "UPDATE instances set qty = if(CAST(qty AS SIGNED) - '{$pack->qty}' < 0, 0, qty - '{$pack->qty}') where instance_id = '{$pack->instance_id}'";
+        dbconnection::query($query);
+
+        $sql_instance = dbconnection::queryObject("SELECT * FROM instances WHERE instance_id = '{$pack->instance_id}' LIMIT 1");
+        return new return_package(0,instances::instanceObjectFromSQL($sql_instance));
+    }
+
+    public static function giveQtyToInstance($pack)
+    {
+        $query = "UPDATE instances set qty = qty + '{$pack->qty}' where instance_id = '{$pack->instance_id}'";
+        dbconnection::query($query);
+
+        $sql_instance = dbconnection::queryObject("SELECT * FROM instances WHERE instance_id = '{$pack->instance_id}' LIMIT 1");
+        return new return_package(0,instances::instanceObjectFromSQL($sql_instance));
+    }
+
     public static function getInstancesForGame($pack)
     {
         // Return game owned, or game owned + specific player.
