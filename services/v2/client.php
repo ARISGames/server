@@ -570,6 +570,22 @@ class client extends dbconnection
         return new return_package(0);
     }
 
+    public static function logGameReceivedItem($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, qty, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'GAME_RECEIVE_ITEM', '{$pack->item_id}', '{$pack->qty}', CURRENT_TIMESTAMP);");
+        return new return_package(0);
+    }
+
+    public static function logGameLostItem($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, qty, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'GAME_LOSE_ITEM', '{$pack->item_id}', '{$pack->qty}', CURRENT_TIMESTAMP);");
+        return new return_package(0);
+    }
+
     public static function logPlayerSetScene($pack)
     {
         $pack->auth->permission = "read_write";
