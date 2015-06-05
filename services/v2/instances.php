@@ -22,6 +22,7 @@ class instances extends dbconnection
             (isset($pack->qty)          ? "qty,"          : "").
             (isset($pack->infinite_qty) ? "infinite_qty," : "").
             (isset($pack->factory_id)   ? "factory_id,"   : "").
+            (isset($pack->owner_type)   ? "owner_type,"     : "").
             (isset($pack->owner_id)     ? "owner_id,"     : "").
             "created".
             ") VALUES (".
@@ -31,6 +32,7 @@ class instances extends dbconnection
             (isset($pack->qty)          ? "'".addslashes($pack->qty)."',"          : "").
             (isset($pack->infinite_qty) ? "'".addslashes($pack->infinite_qty)."'," : "").
             (isset($pack->factory_id)   ? "'".addslashes($pack->factory_id)."',"   : "").
+            (isset($pack->owner_type)   ? "'".addslashes($pack->owner_type)."',"   : "").
             (isset($pack->owner_id)     ? "'".addslashes($pack->owner_id)."',"     : "").
             "CURRENT_TIMESTAMP".
             ")"
@@ -53,6 +55,7 @@ class instances extends dbconnection
             (isset($pack->qty)          ? "qty          = '".addslashes($pack->qty)."', "          : "").
             (isset($pack->infinite_qty) ? "infinite_qty = '".addslashes($pack->infinite_qty)."', " : "").
             (isset($pack->factory_id)   ? "factory_id   = '".addslashes($pack->factory_id)."', "   : "").
+            (isset($pack->owner_type)   ? "owner_type   = '".addslashes($pack->owner_type)."', "   : "").
             (isset($pack->owner_id)     ? "owner_id     = '".addslashes($pack->owner_id)."', "     : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE instance_id = '{$pack->instance_id}'"
@@ -72,6 +75,7 @@ class instances extends dbconnection
         $instance->qty          = $sql_instance->qty;
         $instance->infinite_qty = $sql_instance->infinite_qty;
         $instance->factory_id   = $sql_instance->factory_id;
+        $instance->owner_type   = $sql_instance->owner_type;
         $instance->owner_id     = $sql_instance->owner_id;
         return $instance;
     }
@@ -103,7 +107,7 @@ class instances extends dbconnection
 
     public static function getInstancesForGame($pack)
     {
-        // Return game owned, or game owned + specific player.
+        // Return game owned, game_content owned, or specific player owned.
         $sql_instances = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND (owner_id = '".(isset($pack->owner_id) ? $pack->owner_id : 0)."' OR owner_id = '0')");
         $instances = array();
         for($i = 0; $i < count($sql_instances); $i++)
