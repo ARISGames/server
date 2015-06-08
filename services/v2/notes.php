@@ -283,6 +283,9 @@ class notes extends dbconnection
             "COUNT(my_likes.note_like_id) > 0 AS player_liked",
             "triggers.latitude",
             "triggers.longitude",
+            "media.name AS media_name",
+            "media.file_name AS media_file_name",
+            "media.file_folder AS media_file_folder",
         );
         $lines[] = "SELECT " . implode(", ", $selects);
 
@@ -297,6 +300,7 @@ class notes extends dbconnection
         $lines[] = "LEFT JOIN note_likes AS my_likes ON notes.note_id = my_likes.note_id AND my_likes.user_id = '{$user_id}'";
         $lines[] = "LEFT JOIN instances ON instances.object_type = 'NOTE' AND notes.note_id = instances.object_id";
         $lines[] = "LEFT JOIN triggers ON triggers.instance_id = instances.instance_id AND triggers.type = 'LOCATION'";
+        $lines[] = "LEFT JOIN media ON media.media_id = notes.media_id";
 
         $lines[] = "WHERE 1=1";
         $lines[] = "AND notes.game_id = '{$game_id}'";
@@ -349,7 +353,13 @@ class notes extends dbconnection
             foreach (array('tag_id', 'note_likes', 'tag', 'latitude', 'longitude', 'user_name', 'display_name', 'player_liked') as $field) {
                 $ob->$field = $sql_notes[$i]->$field;
             }
-            $ob->media = media::getMedia((object) array('media_id' => $ob->media_id));
+
+            $sql_media = $sql_notes[$i];
+            $sql_media->name        = $sql_media->media_name;
+            $sql_media->file_name   = $sql_media->media_file_name;
+            $sql_media->file_folder = $sql_media->media_file_folder;
+            $ob->media = new return_package(0, media::mediaObjectFromSQL($sql_media));
+
             $ob->comments = note_comments::getNoteCommentsForNote((object) array('game_id' => $ob->game_id, 'note_id' => $ob->note_id));
             $notes[] = $ob;
         }
