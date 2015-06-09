@@ -361,7 +361,6 @@ class migration extends migration_dbconnection
         {
             $plaqueIdMap[$plaques[$i]->node_id] = 0; //set it to 0 in case of failure
             if($invalidMap[$plaques[$i]->node_id]) {
-                $plaqueIdMap[$plaques[$i]->node_id] = "npc skip";
                 continue; //this plaque actually an npc option- ignore
             }
 
@@ -1030,7 +1029,10 @@ class migration extends migration_dbconnection
             if($requirementsList[$i]->requirement == "PLAYER_HAS_ITEM")                       { $requirement = "PLAYER_HAS_ITEM";                       $content_id = $maps->items[$requirementsList[$i]->requirement_detail_1]; }
             if($requirementsList[$i]->requirement == "PLAYER_HAS_TAGGED_ITEM")                { $requirement = "PLAYER_HAS_TAGGED_ITEM";                $content_id = $maps->item_tags[$requirementsList[$i]->requirement_detail_1]; }
             if($requirementsList[$i]->requirement == "PLAYER_VIEWED_ITEM")                    { $requirement = "PLAYER_VIEWED_ITEM";                    $content_id = $maps->items[$requirementsList[$i]->requirement_detail_1];}
-            if($requirementsList[$i]->requirement == "PLAYER_VIEWED_NODE")                    { if($maps->plaques[$requirementsList[$i]->requirement_detail_1]) { $requirement = "PLAYER_VIEWED_PLAQUE"; $content_id = $maps->plaques[$requirementsList[$i]->requirement_detail_1]; } else { $requirement = "PLAYER_VIEWED_DIALOG_SCRIPT"; $content_id = $maps->scripts[$requirementsList[$i]->requirement_detail_1]; } }
+            if($requirementsList[$i]->requirement == "PLAYER_VIEWED_NODE")                    {
+                if($maps->plaques[$requirementsList[$i]->requirement_detail_1]) { $requirement = "PLAYER_VIEWED_PLAQUE";        $content_id = $maps->plaques[$requirementsList[$i]->requirement_detail_1]; }
+                else {                                                            $requirement = "PLAYER_VIEWED_DIALOG_SCRIPT"; $content_id = $maps->scripts[$requirementsList[$i]->requirement_detail_1]; }
+            }
             if($requirementsList[$i]->requirement == "PLAYER_VIEWED_NPC")                     { $requirement = "PLAYER_VIEWED_DIALOG";                  $content_id = $maps->dialogs[$requirementsList[$i]->requirement_detail_1];}
             if($requirementsList[$i]->requirement == "PLAYER_VIEWED_WEBPAGE")                 { $requirement = "PLAYER_VIEWED_WEB_PAGE";                $content_id = $maps->webpages[$requirementsList[$i]->requirement_detail_1];}
             if($requirementsList[$i]->requirement == "PLAYER_HAS_UPLOADED_MEDIA_ITEM")        { $requirement = "PLAYER_HAS_UPLOADED_MEDIA_ITEM";        }
