@@ -1049,7 +1049,7 @@ class migration extends migration_dbconnection
 
             if($has_content && $content_id == 0)
             {
-                $maps->skipped_requirement_atoms[$requirementsList[$i]->requirement_id] = "Missing requirement_detail_1(".$requirementsList[$i]->requirement_detail_1.") mapping for ".$requirementList[$i]->content_type." : ".$requirement;
+                $maps->skipped_requirement_atoms[$requirementsList[$i]->requirement_id] = "Missing requirement_detail_1(".$requirementsList[$i]->requirement_detail_1.") mapping for ".$requirementsList[$i]->content_type." : ".$requirement;
             }
 
             $parent_and = $and_group_req_id;
