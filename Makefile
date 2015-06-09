@@ -16,7 +16,7 @@ help:
 	@echo "         dev: push master branch to dev"
 	@echo " cache_clear: trigger apc cache clear"
 	@echo ""
-	@echo "make [deploy]"
+	@echo "make [deploy|migrate]"
 
 DEV_CACHE_COMMAND=curl --silent localhost:80/server/resetAPC.php
 DEV_CHECKOUT_COMMAND="cd /var/www/html/server/ && sudo git checkout master && sudo git pull && $(DEV_CACHE_COMMAND)"
