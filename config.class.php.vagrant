@@ -1,0 +1,51 @@
+<?php
+
+class Config
+{
+    // LEGACY SECTION ///////////////////////////
+    //
+    //
+
+    // old v1 conf
+    const dbUser     = 'user';
+    const dbPass     = 'pass';
+    const dbSchema   = 'dbname';
+    const dbHost     = 'host';
+    const adminEmail = 'admin@email.com'; //This email address, if specified, will be notified of server errors
+
+    //v1 data dirs
+    const serverWWWPath   = 'http://aris/server';
+    const WWWPath         = 'http://ariswebsite';
+    const gamedataWWWPath = 'http://aris/server/gamedata';
+    const gamedataFSPath  = '/path/to/server/gamedata'; //Make Sure this directory is writable
+    const migrationsDir   = '/path/to/server/migrations';
+    const serverErrorLog  = '/var/log/aris_error_log.txt'; //Make sure this file is writable
+
+    // VERSION TWO ///////////////////////////////
+    //
+    //
+
+    const errorLog  = '/var/log/aris_error_log.txt'; //Make sure this file is writable
+    const mysqlBinPath = '/usr/bin';
+
+    //pusher.com service
+    const pusher_key    = '####################';
+    const pusher_secret = '####################';
+    const pusher_app_id = '#####';
+
+    //PHP accelerator and cache
+    const isAPCLoaded = FALSE; //Change to TRUE if the APC server extension has been configured
+
+    //v2 conf
+    const v2_host     = '127.0.0.1';
+    const v2_db_user  = 'root';
+    const v2_db_pass  = 'root';
+    const v2_db       = 'arisv2';
+
+    const v2_gamedata_folder   = '/var/www/server/gamedata';
+    const v2_gamedata_www_path = 'http://localhost/server/gamedata';
+    const v2_error_log         = '/path/to/server/gamedata/v2/aris_error_log.txt';
+
+    const bridge_api_path = "localhost/server";
+}
+?>
