@@ -168,7 +168,7 @@ class media extends dbconnection
         return media::getMedia($pack);
     }
 
-    private static function mediaObjectFromSQL($sql_media)
+    public static function mediaObjectFromSQL($sql_media)
     {
         if(!$sql_media) return $sql_media;
         $media = new stdClass();

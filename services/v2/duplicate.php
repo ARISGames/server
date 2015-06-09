@@ -194,6 +194,7 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('qty','');
     $columns[$i][] = new column('infinite_qty','');
     $columns[$i][] = new column('factory_id','map');
+    $columns[$i][] = new column('owner_type','');
     $columns[$i][] = new column('owner_id','');
     $columns[$i][] = new column('created','timestamp');
     $columns[$i][] = new column('last_active','timestamp');
@@ -835,6 +836,8 @@ class duplicate extends dbconnection
                 {
                   case 'PLAYER_HAS_ITEM':
                   case 'PLAYER_HAS_TAGGED_ITEM':
+                  case 'GAME_HAS_ITEM':
+                  case 'GAME_HAS_TAGGED_ITEM':
                   case 'PLAYER_VIEWED_ITEM':
                     $update_query .= "content_id = '{$maps['items'][$old_datum['content_id']]}'";
                     break;

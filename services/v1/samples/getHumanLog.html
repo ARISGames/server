@@ -25,29 +25,40 @@ function parseURLParams(url)
   return params;
 }
 
-function sendRequest(fn, params, method)
+function sendRequest(fn, params, method, callback)
 {
   var xmlhttp;
   xmlhttp=new XMLHttpRequest();
-  xmlhttp.open(method,"../../../json.php/v1."+fn,false);
+  xmlhttp.open(method,"../../../json.php/v1."+fn,true);
   xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-  xmlhttp.send(params); //Synchronous call
-
-  return JSON.parse(xmlhttp.responseText);
+  xmlhttp.send(params);
+  xmlhttp.onreadystatechange = function()
+  {
+    if(xmlhttp.readyState == 4) callback(JSON.parse(xmlhttp.responseText));
+  }
 }
 
-function makeRequest()
+function makeRequest0()
 {
   if(document.getElementById("username").value != "" && document.getElementById("password").value != "")
   {
-    var editor = sendRequest("editors.getToken/"+document.getElementById("username").value+"/"+document.getElementById("password").value+"/read_write",null,"GET");
-    if(editor.returnCode > 0) { document.getElementById('logs').innerHTML = JSON.stringify(editor); return; }
-
-    document.getElementById("editor_id").value = editor.data.editor_id;
-    document.getElementById("editor_token").value = editor.data.read_write_token;
+    sendRequest("editors.getToken/"+document.getElementById("username").value+"/"+document.getElementById("password").value+"/read_write",null,"GET",makeRequest1);
   }
+  else makeRequest2();
+}
 
-  var logRequest = 
+function makeRequest1(editor)
+{
+  if(editor.returnCode > 0) { document.getElementById('logs').innerHTML = JSON.stringify(editor); return; }
+
+  document.getElementById("editor_id").value = editor.data.editor_id;
+  document.getElementById("editor_token").value = editor.data.read_write_token;
+  makeRequest2();
+}
+
+function makeRequest2()
+{
+  var logRequest =
   {
     "game_id":document.getElementById("game_id").value,
     "editor_id":document.getElementById("editor_id").value,
@@ -64,7 +75,11 @@ function makeRequest()
   }
   if(document.getElementById("group_id").value != "") logRequest.groupname = document.getElementById("group_id").value;
 
-  var response = sendRequest("playerlog.getPlayerLogs", JSON.stringify(logRequest), "POST");
+  sendRequest("playerlog.getPlayerLogs", JSON.stringify(logRequest), "POST",makeRequest3);
+}
+
+function makeRequest3(response)
+{
   if(response.returnCode > 0) { document.getElementById('logs').innerHTML = JSON.stringify(response); return; }
 
   if(getSelectedFormat() == "json" || getSelectedFormat() == "csv")
@@ -115,7 +130,7 @@ End Date:<input type="text" id="end_date" value="2014-03-19 00:00:00" /> <br />
 <input type="radio" name="format" id="json_radio" />JSON <br />
 <input type="radio" name="format" id="csv_radio" />CSV <br />
 
-<input type="button" value="go" onclick="makeRequest()"/>
+<input type="button" value="go" onclick="makeRequest0()"/>
 </div>
 <div id='logs'> 
 </div>

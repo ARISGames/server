@@ -30,7 +30,11 @@ class PlayerLog extends Module
     $reqVerbose    = $glob->verbose;
 
     $iknowwhatimdoing = $glob->i_know_what_im_doing == "yes"; //minimal level of "security" to prevent massive data requests
-    if($iknowwhatimdoing) set_time_limit(0);
+    if($iknowwhatimdoing)
+    {
+      set_time_limit(0);
+      ignore_user_abort(1);
+    }
 
     //validation
     $expectsNotice = 'Expects JSON argument of minimal form: {"output_format":"json","game_id":1,"editor_id":1,"editor_token":"abc123"}';

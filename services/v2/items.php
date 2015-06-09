@@ -163,7 +163,7 @@ class items extends dbconnection
             factories::deleteFactory($pack);
         }
 
-        $events = dbconnection::queryArray("SELECT * FROM events WHERE (event = 'GIVE_ITEM' OR event = 'TAKE_ITEM') AND content_id = '{$pack->item_id}'");
+        $events = dbconnection::queryArray("SELECT * FROM events WHERE (event = 'GIVE_ITEM_PLAYER' OR event = 'TAKE_ITEM_PLAYER' OR event = 'GIVE_ITEM_GAME' OR event = 'TAKE_ITEM_GAME') AND content_id = '{$pack->item_id}'");
         for($i = 0; $i < count($events); $i++)
         {
             $pack->event_id = $events[$i]->event_id;
@@ -182,7 +182,7 @@ class items extends dbconnection
             $pack->requirement_atom_id = $reqAtoms[$i]->requirement_atom_id;
             requirements::deleteRequirementAtom($pack);
         }
-        $reqAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement = 'PLAYER_HAS_TAGGED_ITEM' AND content_id = '{$pack->item_id}'");
+        $reqAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement = 'GAME_HAS_ITEM' AND content_id = '{$pack->item_id}'");
         for($i = 0; $i < count($reqAtoms); $i++)
         {
             $pack->requirement_atom_id = $reqAtoms[$i]->requirement_atom_id;

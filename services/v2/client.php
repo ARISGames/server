@@ -181,18 +181,43 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
         $items = dbconnection::queryArray("SELECT * FROM items WHERE game_id = '{$pack->game_id}'");
-        $instances = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_id = '{$pack->auth->user_id}'");
+        $instances = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_type = 'USER' AND owner_id = '{$pack->auth->user_id}'");
 
         for($i = 0; $i < count($items); $i++)
         {
             $exists = false;
             for($j = 0; $j < count($instances); $j++)
             {
-                if($items[$i]->item_id == $instances[$j]->object_id)
+                if($instances[$j]->object_type == 'ITEM' && $items[$i]->item_id == $instances[$j]->object_id)
                     $exists = true;
             }
             if(!$exists)
-                dbconnection::queryInsert("INSERT INTO instances (game_id, object_type, object_id, qty, owner_id, created) VALUES ('{$pack->game_id}', 'ITEM', '{$items[$i]->item_id}', 0, '{$pack->auth->user_id}', CURRENT_TIMESTAMP)");
+                dbconnection::queryInsert("INSERT INTO instances (game_id, object_type, object_id, qty, owner_type, owner_id, created) VALUES ('{$pack->game_id}', 'ITEM', '{$items[$i]->item_id}', 0, 'USER', '{$pack->auth->user_id}', CURRENT_TIMESTAMP)");
+        }
+
+        return new return_package(0);
+    }
+
+    //an odd request...
+    //Creates game-owned (global) instances for every item not already instantiated, with qty = 0. Makes qty transactions a million times easier.
+    //will get called redundantly a ton (every time player begins game)- that's ok
+    public static function touchItemsForGame($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        $items = dbconnection::queryArray("SELECT * FROM items WHERE game_id = '{$pack->game_id}'");
+        $instances = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_type = 'GAME';");
+
+        for($i = 0; $i < count($items); $i++)
+        {
+            $exists = false;
+            for($j = 0; $j < count($instances); $j++)
+            {
+                if($instances[$j]->object_type == 'ITEM' && $items[$i]->item_id == $instances[$j]->object_id)
+                    $exists = true;
+            }
+            if(!$exists)
+                dbconnection::queryInsert("INSERT INTO instances (game_id, object_type, object_id, qty, owner_type, created) VALUES ('{$pack->game_id}', 'ITEM', '{$items[$i]->item_id}', 0, 'GAME', CURRENT_TIMESTAMP)");
         }
 
         return new return_package(0);
@@ -452,7 +477,7 @@ class client extends dbconnection
         dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'RESET_GAME', CURRENT_TIMESTAMP);");
         dbconnection::query("UPDATE user_log SET deleted = 1 WHERE user_id = '{$pack->auth->user_id}' AND game_id = '{$pack->game_id}'");
         //ok technically does more than just 'logs' //so should be separated into own func
-        dbconnection::query("DELETE FROM instances WHERE game_id = '{$pack->game_id}' AND owner_id = '{$pack->auth->user_id}' AND owner_id != 0"); //extra '!= 0' to prevent accidentally deleting all non player instances
+        dbconnection::query("DELETE FROM instances WHERE game_id = '{$pack->game_id}' AND owner_type = 'USER' AND owner_id = '{$pack->auth->user_id}' AND owner_id != 0"); //extra '!= 0' to prevent accidentally deleting all non player instances
         dbconnection::query("DELETE FROM user_game_scenes WHERE user_id = '{$pack->auth->user_id}' AND game_id = '{$pack->game_id}'");
         return new return_package(0);
     }
@@ -542,6 +567,22 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
         dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, qty, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'LOSE_ITEM', '{$pack->item_id}', '{$pack->qty}', CURRENT_TIMESTAMP);");
+        return new return_package(0);
+    }
+
+    public static function logGameReceivedItem($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, qty, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'GAME_RECEIVE_ITEM', '{$pack->item_id}', '{$pack->qty}', CURRENT_TIMESTAMP);");
+        return new return_package(0);
+    }
+
+    public static function logGameLostItem($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, qty, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'GAME_LOSE_ITEM', '{$pack->item_id}', '{$pack->qty}', CURRENT_TIMESTAMP);");
         return new return_package(0);
     }
 

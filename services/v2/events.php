@@ -41,6 +41,9 @@ class events extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
+        if(isset($pack->event) && $pack->event == 'GIVE_ITEM') $pack->event = 'GIVE_ITEM_PLAYER';
+        if(isset($pack->event) && $pack->event == 'TAKE_ITEM') $pack->event = 'TAKE_ITEM_PLAYER';
+
         $pack->event_id = dbconnection::queryInsert(
             "INSERT INTO events (".
             "game_id,".
@@ -147,6 +150,8 @@ class events extends dbconnection
         $event->event            = $sql_event->event;
         $event->qty              = $sql_event->qty;
         $event->content_id       = $sql_event->content_id;
+        if($event->event == 'GIVE_ITEM_PLAYER') $event->event = 'GIVE_ITEM';
+        if($event->event == 'TAKE_ITEM_PLAYER') $event->event = 'TAKE_ITEM';
 
         return $event;
     }
