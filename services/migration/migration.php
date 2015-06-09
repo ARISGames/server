@@ -1047,10 +1047,6 @@ class migration extends migration_dbconnection
             if($requirementsList[$i]->requirement == "PLAYER_HAS_NOTE_WITH_COMMENTS")         { $requirement = "PLAYER_HAS_NOTE_WITH_COMMENTS";         }
             if($requirementsList[$i]->requirement == "PLAYER_HAS_GIVEN_NOTE_COMMENTS")        { $requirement = "PLAYER_HAS_GIVEN_NOTE_COMMENTS";        }
 
-            if($has_content && $content_id == 0)
-            {
-                $maps->skipped_requirement_atoms[$requirementsList[$i]->requirement_id] = "Missing requirement_detail_1(".$requirementsList[$i]->requirement_detail_1.") mapping for ".$requirementsList[$i]->content_type." : ".$requirement;
-            }
 
             $parent_and = $and_group_req_id;
             if($requirementsList[$i]->boolean_operator == "OR")
@@ -1061,7 +1057,12 @@ class migration extends migration_dbconnection
             // Skip requirement types not in V2
             if($requirement != "")
             {
-                migration_dbconnection::queryInsert("INSERT INTO requirement_atoms (game_id, requirement_and_package_id, bool_operator, requirement, content_id, distance, qty, latitude, longitude, created) VALUES ('{$gameId}', '{$parent_and}', '".($requirementsList[$i]->not_operator == "DO")."','{$requirement}','{$content_id}','{$requirementsList[$i]->requirement_detail_1}','{$requirementsList[$i]->requirement_detail_2}','{$requirementsList[$i]->requirement_detail_3}','{$requirementsList[$i]->requirement_detail_4}',CURRENT_TIMESTAMP)","v2");
+                $atom_id = migration_dbconnection::queryInsert("INSERT INTO requirement_atoms (game_id, requirement_and_package_id, bool_operator, requirement, content_id, distance, qty, latitude, longitude, created) VALUES ('{$gameId}', '{$parent_and}', '".($requirementsList[$i]->not_operator == "DO")."','{$requirement}','{$content_id}','{$requirementsList[$i]->requirement_detail_1}','{$requirementsList[$i]->requirement_detail_2}','{$requirementsList[$i]->requirement_detail_3}','{$requirementsList[$i]->requirement_detail_4}',CURRENT_TIMESTAMP)","v2");
+            }
+
+            if($has_content && $content_id == 0)
+            {
+                $maps->skipped_requirement_atoms[$requirementsList[$i]->requirement_id] = $atom_id." Missing requirement_detail_1(".$requirementsList[$i]->requirement_detail_1.") mapping for ".$requirementsList[$i]->content_type." : ".$requirement;
             }
         }
 
