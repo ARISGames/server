@@ -185,6 +185,13 @@ class tags extends dbconnection
             requirements::deleteRequirementAtom($pack);
         }
 
+        $reqAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement = 'GAME_HAS_TAGGED_ITEM' AND content_id = '{$pack->tag_id}'");
+        for($i = 0; $i < count($reqAtoms); $i++)
+        {
+            $pack->requirement_atom_id = $reqAtoms[$i]->requirement_atom_id;
+            requirements::deleteRequirementAtom($pack);
+        }
+
         $reqAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement = 'PLAYER_HAS_NOTE_WITH_TAG' AND content_id = '{$pack->tag_id}'");
         for($i = 0; $i < count($reqAtoms); $i++)
         {
