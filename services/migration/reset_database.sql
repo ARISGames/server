@@ -1,6 +1,8 @@
 /*
 CREATE THE DATABASE
 */
+/* next 2 lines are a DROP USER IF EXISTS */
+GRANT USAGE ON *.* TO 'migration_user'@'127.0.0.1' IDENTIFIED BY 'migration_pass';
 DROP USER 'migration_user'@'127.0.0.1';
 CREATE USER 'migration_user'@'127.0.0.1' IDENTIFIED BY 'migration_pass';
 DROP DATABASE IF EXISTS migration_db;

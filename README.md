@@ -33,6 +33,8 @@ You can also use [Vagrant](https://www.vagrantup.com/) to run the server inside 
 
 * Run `vagrant up` from the repo root to create and set up the machine.
 
+* The repo is shared inside the machine at both `/vagrant` and `/var/www/server`.
+
 * Port 10080 on the host machine is forwarded to 80 on the guest, so for example
   you can access the autocrud page at <http://localhost:10080/server/services/v2/autocrud/>
 
