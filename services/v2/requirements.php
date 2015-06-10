@@ -294,6 +294,80 @@ class requirements extends dbconnection
         return new return_package(0,$atom);
     }
 
+    private static function requirementRootPackageObjectFromSQL($sql_rrp)
+    {
+        if(!$sql_rrp) return $sql_rrp;
+        $rrp = new stdClass();
+        $rrp->requirement_root_package_id = $sql_rrp->requirement_root_package_id;
+        $rrp->game_id                     = $sql_rrp->game_id;
+        $rrp->name                        = $sql_rrp->name;
+
+        return $rrp;
+    }
+
+    private static function requirementAndPackageObjectFromSQL($sql_rap)
+    {
+        if(!$sql_rap) return $sql_rap;
+        $rap = new stdClass();
+        $rap->requirement_and_package_id  = $sql_rap->requirement_and_package_id;
+        $rap->requirement_root_package_id = $sql_rap->requirement_root_package_id;
+        $rap->game_id                     = $sql_rap->game_id;
+        $rap->name                        = $sql_rap->name;
+
+        return $rap;
+    }
+
+    private static function requirementAtomObjectFromSQL($sql_atom)
+    {
+        if(!$sql_atom) return $sql_atom;
+        $atom = new stdClass();
+        $atom->requirement_atom_id        = $sql_atom->requirement_atom_id;
+        $atom->requirement_and_package_id = $sql_atom->requirement_and_package_id;
+        $atom->game_id                    = $sql_atom->game_id;
+        $atom->bool_operator              = $sql_atom->bool_operator;
+        $atom->requirement                = $sql_atom->requirement;
+        $atom->content_id                 = $sql_atom->content_id;
+        $atom->distance                   = $sql_atom->distance;
+        $atom->qty                        = $sql_atom->qty;
+        $atom->latitude                   = $sql_atom->latitude;
+        $atom->longitude                  = $sql_atom->longitude;
+        $atom->name                       = $sql_atom->name;
+
+        return $atom;
+    }
+
+
+    public function getRequirementRootPackagesForGame($pack)
+    {
+      $sql_rrps = dbconnection::queryArray("SELECT * FROM requirement_root_packages WHERE game_id = '{$pack->game_id}'");
+      $rrps = array();
+      for($i = 0; $i < count($sql_rrps); $i++)
+        if($ob = requirements::requirementRootPackageObjectFromSQL($sql_rrps[$i])) $rrps[] = $ob;
+
+      return new return_package(0,$rrps);
+    }
+
+    public function getRequirementAndPackagesForGame($pack)
+    {
+      $sql_raps = dbconnection::queryArray("SELECT * FROM requirement_and_packages WHERE game_id = '{$pack->game_id}'");
+      $raps = array();
+      for($i = 0; $i < count($sql_raps); $i++)
+        if($ob = requirements::requirementAndPackageObjectFromSQL($sql_raps[$i])) $raps[] = $ob;
+
+      return new return_package(0,$raps);
+    }
+
+    public function getRequirementAtomsForGame($pack)
+    {
+      $sql_as = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE game_id = '{$pack->game_id}'");
+      $as = array();
+      for($i = 0; $i < count($sql_as); $i++)
+        if($ob = requirements::requirementAtomObjectFromSQL($sql_as[$i])) $as[] = $ob;
+
+      return new return_package(0,$as);
+    }
+
+
     public function deleteRequirementPackage($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT game_id FROM requirement_root_packages WHERE requirement_root_package_id = '{$pack->requirement_root_package_id}'")->game_id;
