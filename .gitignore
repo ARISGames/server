@@ -10,3 +10,4 @@ services/v1/samples/yoimap
 services/v1/samples/yoimapC
 .AppleDouble
 .DS_Store
+.vagrant/

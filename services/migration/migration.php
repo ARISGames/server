@@ -279,7 +279,7 @@ class migration extends migration_dbconnection
         migration::updateDialogOptionLinks($v1GameId, $v2GameId, $maps); //now that tabs/objects (link targets) are updated with ids, we can make sense of them
 
         //maps generated from migrateRequirementPackage inserted directly.
-        $maps->requirement_atoms = array();
+        $maps->skipped_requirement_atoms = array();
         migration::migrateRequirements($v1GameId, $v2GameId, $maps);
 
         migration_dbconnection::queryInsert("INSERT INTO game_migrations (v2_game_id, v1_game_id, v2_user_id) VALUES ('{$v2GameId}','{$v1GameId}','{$v2UserId}')");
@@ -361,7 +361,6 @@ class migration extends migration_dbconnection
         {
             $plaqueIdMap[$plaques[$i]->node_id] = 0; //set it to 0 in case of failure
             if($invalidMap[$plaques[$i]->node_id]) {
-                $plaqueIdMap[$plaques[$i]->node_id] = "npc skip";
                 continue; //this plaque actually an npc option- ignore
             }
 
@@ -1025,25 +1024,29 @@ class migration extends migration_dbconnection
 
         for($i = 0; $i < count($requirementsList); $i++)
         {
-            $requirement = ""; $content_id = 0;
+            $requirement = ""; $content_id = 0; $has_content = false;
             if($requirementsList[$i]->requirement == "PLAYER_VIEWED_AUGBUBBLE") continue; //no longer valid
-            if($requirementsList[$i]->requirement == "PLAYER_HAS_ITEM")                       { $requirement = "PLAYER_HAS_ITEM";                       $content_id = $maps->items[$requirementsList[$i]->requirement_detail_1]; }
-            if($requirementsList[$i]->requirement == "PLAYER_HAS_TAGGED_ITEM")                { $requirement = "PLAYER_HAS_TAGGED_ITEM";                $content_id = $maps->item_tags[$requirementsList[$i]->requirement_detail_1]; }
-            if($requirementsList[$i]->requirement == "PLAYER_VIEWED_ITEM")                    { $requirement = "PLAYER_VIEWED_ITEM";                    $content_id = $maps->items[$requirementsList[$i]->requirement_detail_1];}
-            if($requirementsList[$i]->requirement == "PLAYER_VIEWED_NODE")                    { if($maps->plaques[$requirementsList[$i]->requirement_detail_1]) { $requirement = "PLAYER_VIEWED_PLAQUE"; $content_id = $maps->plaques[$requirementsList[$i]->requirement_detail_1]; } else { $requirement = "PLAYER_VIEWED_DIALOG_SCRIPT"; $content_id = $maps->scripts[$requirementsList[$i]->requirement_detail_1]; } }
-            if($requirementsList[$i]->requirement == "PLAYER_VIEWED_NPC")                     { $requirement = "PLAYER_VIEWED_DIALOG";                  $content_id = $maps->dialogs[$requirementsList[$i]->requirement_detail_1];}
-            if($requirementsList[$i]->requirement == "PLAYER_VIEWED_WEBPAGE")                 { $requirement = "PLAYER_VIEWED_WEB_PAGE";                $content_id = $maps->webpages[$requirementsList[$i]->requirement_detail_1];}
+            if($requirementsList[$i]->requirement == "PLAYER_HAS_ITEM")                       { $requirement = "PLAYER_HAS_ITEM";                       $has_content = true; $content_id = $maps->items[$requirementsList[$i]->requirement_detail_1]; }
+            if($requirementsList[$i]->requirement == "PLAYER_HAS_TAGGED_ITEM")                { $requirement = "PLAYER_HAS_TAGGED_ITEM";                $has_content = true; $content_id = $maps->item_tags[$requirementsList[$i]->requirement_detail_1]; }
+            if($requirementsList[$i]->requirement == "PLAYER_VIEWED_ITEM")                    { $requirement = "PLAYER_VIEWED_ITEM";                    $has_content = true; $content_id = $maps->items[$requirementsList[$i]->requirement_detail_1];}
+            if($requirementsList[$i]->requirement == "PLAYER_VIEWED_NODE")                    {
+                if($maps->plaques[$requirementsList[$i]->requirement_detail_1]) { $requirement = "PLAYER_VIEWED_PLAQUE";        $has_content = true; $content_id = $maps->plaques[$requirementsList[$i]->requirement_detail_1]; }
+                else {                                                            $requirement = "PLAYER_VIEWED_DIALOG_SCRIPT"; $has_content = true; $content_id = $maps->scripts[$requirementsList[$i]->requirement_detail_1]; }
+            }
+            if($requirementsList[$i]->requirement == "PLAYER_VIEWED_NPC")                     { $requirement = "PLAYER_VIEWED_DIALOG";                  $has_content = true; $content_id = $maps->dialogs[$requirementsList[$i]->requirement_detail_1];}
+            if($requirementsList[$i]->requirement == "PLAYER_VIEWED_WEBPAGE")                 { $requirement = "PLAYER_VIEWED_WEB_PAGE";                $has_content = true; $content_id = $maps->webpages[$requirementsList[$i]->requirement_detail_1];}
             if($requirementsList[$i]->requirement == "PLAYER_HAS_UPLOADED_MEDIA_ITEM")        { $requirement = "PLAYER_HAS_UPLOADED_MEDIA_ITEM";        }
             if($requirementsList[$i]->requirement == "PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE")  { $requirement = "PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE";  }
             if($requirementsList[$i]->requirement == "PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO")  { $requirement = "PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO";  }
             if($requirementsList[$i]->requirement == "PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO")  { $requirement = "PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO";  }
-            if($requirementsList[$i]->requirement == "PLAYER_HAS_COMPLETED_QUEST")            { $requirement = "PLAYER_HAS_COMPLETED_QUEST";            $content_id = $maps->quests[$requirementsList[$i]->requirement_detail_1];}
-            if($requirementsList[$i]->requirement == "PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK") { $maps->requirement_atoms[$requirementsList[$i]->requirement_id] = "Skip Webhook Received"; }
+            if($requirementsList[$i]->requirement == "PLAYER_HAS_COMPLETED_QUEST")            { $requirement = "PLAYER_HAS_COMPLETED_QUEST";            $has_content = true; $content_id = $maps->quests[$requirementsList[$i]->requirement_detail_1];}
+            if($requirementsList[$i]->requirement == "PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK") { $maps->skipped_requirement_atoms[$requirementsList[$i]->requirement_id] = "Skip Webhook Received"; }
             if($requirementsList[$i]->requirement == "PLAYER_HAS_NOTE")                       { $requirement = "PLAYER_HAS_NOTE";                       }
-            if($requirementsList[$i]->requirement == "PLAYER_HAS_NOTE_WITH_TAG")              { $requirement = "PLAYER_HAS_NOTE_WITH_TAG";              $content_id = $maps->note_tags[$requirementsList[$i]->requirement_detail_1];}
-            if($requirementsList[$i]->requirement == "PLAYER_HAS_NOTE_WITH_LIKES")            { $maps->requirement_atoms[$requirementsList[$i]->requirement_id] = "Skip Note Like";     }
+            if($requirementsList[$i]->requirement == "PLAYER_HAS_NOTE_WITH_TAG")              { $requirement = "PLAYER_HAS_NOTE_WITH_TAG";              $has_content = true; $content_id = $maps->note_tags[$requirementsList[$i]->requirement_detail_1];}
+            if($requirementsList[$i]->requirement == "PLAYER_HAS_NOTE_WITH_LIKES")            { $maps->skipped_requirement_atoms[$requirementsList[$i]->requirement_id] = "Skip Note Like";     }
             if($requirementsList[$i]->requirement == "PLAYER_HAS_NOTE_WITH_COMMENTS")         { $requirement = "PLAYER_HAS_NOTE_WITH_COMMENTS";         }
             if($requirementsList[$i]->requirement == "PLAYER_HAS_GIVEN_NOTE_COMMENTS")        { $requirement = "PLAYER_HAS_GIVEN_NOTE_COMMENTS";        }
+
 
             $parent_and = $and_group_req_id;
             if($requirementsList[$i]->boolean_operator == "OR")
@@ -1054,7 +1057,12 @@ class migration extends migration_dbconnection
             // Skip requirement types not in V2
             if($requirement != "")
             {
-                migration_dbconnection::queryInsert("INSERT INTO requirement_atoms (game_id, requirement_and_package_id, bool_operator, requirement, content_id, distance, qty, latitude, longitude, created) VALUES ('{$gameId}', '{$parent_and}', '".($requirementsList[$i]->not_operator == "DO")."','{$requirement}','{$content_id}','{$requirementsList[$i]->requirement_detail_1}','{$requirementsList[$i]->requirement_detail_2}','{$requirementsList[$i]->requirement_detail_3}','{$requirementsList[$i]->requirement_detail_4}',CURRENT_TIMESTAMP)","v2");
+                $atom_id = migration_dbconnection::queryInsert("INSERT INTO requirement_atoms (game_id, requirement_and_package_id, bool_operator, requirement, content_id, distance, qty, latitude, longitude, created) VALUES ('{$gameId}', '{$parent_and}', '".($requirementsList[$i]->not_operator == "DO")."','{$requirement}','{$content_id}','{$requirementsList[$i]->requirement_detail_1}','{$requirementsList[$i]->requirement_detail_2}','{$requirementsList[$i]->requirement_detail_3}','{$requirementsList[$i]->requirement_detail_4}',CURRENT_TIMESTAMP)","v2");
+            }
+
+            if($has_content && $content_id == 0)
+            {
+                $maps->skipped_requirement_atoms[$requirementsList[$i]->requirement_id] = $atom_id." Missing requirement_detail_1(".$requirementsList[$i]->requirement_detail_1.") mapping for ".$requirementsList[$i]->content_type." : ".$requirement;
             }
         }
 
