@@ -236,7 +236,9 @@ class client extends dbconnection
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
-        return new return_package(0, array()); //return nothing, because we don't have offline mode implemented in client yet
+        $logs = dbconnection::queryArray("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->auth->user_id}' AND deleted = 0;");
+
+        return new return_package(0, $logs);
     }
 
     public static function getInstancesForPlayer($pack)
