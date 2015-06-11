@@ -509,6 +509,8 @@ class requirements extends dbconnection
             case 'PLAYER_HAS_TAGGED_ITEM':                return $atom->bool_operator == requirements::playerHasTaggedItem($atom);
             case 'GAME_HAS_ITEM':                         return $atom->bool_operator == requirements::gameHasItem($atom);
             case 'GAME_HAS_TAGGED_ITEM':                  return $atom->bool_operator == requirements::gameHasTaggedItem($atom);
+            case 'GROUP_HAS_ITEM':                        return $atom->bool_operator == requirements::groupHasItem($atom);
+            case 'GROUP_HAS_TAGGED_ITEM':                 return $atom->bool_operator == requirements::groupHasTaggedItem($atom);
             case 'PLAYER_VIEWED_ITEM':                    return $atom->bool_operator == requirements::playerViewed($atom,"ITEM");
             case 'PLAYER_VIEWED_PLAQUE':                  return $atom->bool_operator == requirements::playerViewed($atom,"PLAQUE");
             case 'PLAYER_VIEWED_DIALOG':                  return $atom->bool_operator == requirements::playerViewed($atom,"DIALOG");
@@ -544,13 +546,26 @@ class requirements extends dbconnection
 
     private function gameHasItem($pack)
     {
-        $item = dbconnection::queryObject("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_type = 'GAME' AND owner_id = '{$pack->user_id}' AND object_type = 'ITEM' AND object_id = '{$pack->content_id}' AND qty >= '{$pack->qty}'");
+        $item = dbconnection::queryObject("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_type = 'GAME' AND object_type = 'ITEM' AND object_id = '{$pack->content_id}' AND qty >= '{$pack->qty}'");
         return $item ? true : false;
     }
 
     private function gameHasTaggedItem($pack)
     {
-        $query = "SELECT * FROM instances JOIN object_tags ON object_tags.object_id = instances.object_id WHERE instances.game_id = '{$pack->game_id}' AND instances.owner_type = 'GAME' AND instances.owner_id = '{$pack->user_id}' AND instances.object_type = 'ITEM' AND instances.qty >= '{$pack->qty}' AND object_tags.object_Type = 'ITEM' AND object_tags.tag_id = '{$pack->content_id}'";
+        $query = "SELECT * FROM instances JOIN object_tags ON object_tags.object_id = instances.object_id WHERE instances.game_id = '{$pack->game_id}' AND instances.owner_type = 'GAME' AND instances.object_type = 'ITEM' AND instances.qty >= '{$pack->qty}' AND object_tags.object_Type = 'ITEM' AND object_tags.tag_id = '{$pack->content_id}'";
+        $item = dbconnection::queryObject($query);
+        return $item ? true : false;
+    }
+
+    private function groupHasItem($pack)
+    {
+        $item = dbconnection::queryObject("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_type = 'GROUP' AND owner_id = '{$pack->group_id}' AND object_type = 'ITEM' AND object_id = '{$pack->content_id}' AND qty >= '{$pack->qty}'");
+        return $item ? true : false;
+    }
+
+    private function groupHasTaggedItem($pack)
+    {
+        $query = "SELECT * FROM instances JOIN object_tags ON object_tags.object_id = instances.object_id WHERE instances.game_id = '{$pack->game_id}' AND instances.owner_type = 'GROUP' AND instances.owner_id = '{$pack->group_id}' AND instances.object_type = 'ITEM' AND instances.qty >= '{$pack->qty}' AND object_tags.object_Type = 'ITEM' AND object_tags.tag_id = '{$pack->content_id}'";
         $item = dbconnection::queryObject($query);
         return $item ? true : false;
     }

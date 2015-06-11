@@ -223,6 +223,31 @@ class client extends dbconnection
         return new return_package(0);
     }
 
+    //an odd request...
+    //Creates game-owned (global) instances for every item not already instantiated, with qty = 0. Makes qty transactions a million times easier.
+    //not yet sure how often it will get called... needs design
+    public static function touchItemsForGroup($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        $items = dbconnection::queryArray("SELECT * FROM items WHERE game_id = '{$pack->game_id}'");
+        $instances = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_type = 'GROUP' AND owner_id = '{$pack->group_id}';");
+
+        for($i = 0; $i < count($items); $i++)
+        {
+            $exists = false;
+            for($j = 0; $j < count($instances); $j++)
+            {
+                if($instances[$j]->object_type == 'ITEM' && $items[$i]->item_id == $instances[$j]->object_id)
+                    $exists = true;
+            }
+            if(!$exists)
+                dbconnection::queryInsert("INSERT INTO instances (game_id, object_type, object_id, qty, owner_type, owner_id, created) VALUES ('{$pack->game_id}', 'ITEM', '{$items[$i]->item_id}', 0, 'GROUP', '{$pack->group_id}', CURRENT_TIMESTAMP)");
+        }
+
+        return new return_package(0);
+    }
+
     public static function getSceneForPlayer($pack)
     {
         $pack->auth->permission = "read_write";
@@ -585,6 +610,22 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
         dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, qty, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'GAME_LOSE_ITEM', '{$pack->item_id}', '{$pack->qty}', CURRENT_TIMESTAMP);");
+        return new return_package(0);
+    }
+
+    public static function logGroupReceivedItem($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, group_id, game_id, event_type, content_id, qty, created) VALUES ('{$pack->auth->user_id}', '{$pack->group_id}', '{$pack->game_id}', 'GROUP_RECEIVE_ITEM', '{$pack->item_id}', '{$pack->qty}', CURRENT_TIMESTAMP);");
+        return new return_package(0);
+    }
+
+    public static function logGroupLostItem($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, group_id, game_id, event_type, content_id, qty, created) VALUES ('{$pack->auth->user_id}', '{$pack->group_id}', '{$pack->game_id}', 'GROUP_LOSE_ITEM', '{$pack->item_id}', '{$pack->qty}', CURRENT_TIMESTAMP);");
         return new return_package(0);
     }
 
