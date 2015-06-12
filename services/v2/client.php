@@ -377,11 +377,11 @@ class client extends dbconnection
             for($j = 0; $j < count($facinsts) && !$in_valid_scene; $j++)
             {
                 $facinsttrigs = dbconnection::queryArray("SELECT * FROM triggers WHERE game_id = '{$pack->game_id}' AND instance_id = '{$facinsts[$j]->instance_id}'");
-                for($j = 0; $j < count($facinsttrigs); $j++)
+                for($k = 0; $k < count($facinsttrigs); $k++)
                 {
-                    if($facinsttrigs[$j]->scene_id == $user_scene_id)
+                    if($facinsttrigs[$k]->scene_id == $user_scene_id)
                     {
-                        $reqQueryPack->requirement_root_package_id = $facinsttrigs[$j]->requirement_root_package_id;
+                        $reqQueryPack->requirement_root_package_id = $facinsttrigs[$k]->requirement_root_package_id;
                         if(requirements::evaluateRequirementPackage($reqQueryPack)) $in_valid_scene = true;
                     }
                 }
