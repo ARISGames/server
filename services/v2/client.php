@@ -180,6 +180,7 @@ class client extends dbconnection
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
         $items = dbconnection::queryArray("SELECT * FROM items WHERE game_id = '{$pack->game_id}'");
         $instances = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_type = 'USER' AND owner_id = '{$pack->auth->user_id}'");
 
@@ -205,6 +206,7 @@ class client extends dbconnection
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
         $items = dbconnection::queryArray("SELECT * FROM items WHERE game_id = '{$pack->game_id}'");
         $instances = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_type = 'GAME';");
 
@@ -230,6 +232,9 @@ class client extends dbconnection
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        if(!$pack->group_id) return new return_package(0);
+
         $items = dbconnection::queryArray("SELECT * FROM items WHERE game_id = '{$pack->game_id}'");
         $instances = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_type = 'GROUP' AND owner_id = '{$pack->group_id}';");
 
@@ -252,6 +257,7 @@ class client extends dbconnection
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
         $scene = dbconnection::queryObject("SELECT * FROM user_game_scenes WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->auth->user_id}'");
         $sceneId = $scene ? $scene->scene_id : 0;
         return new return_package(0, dbconnection::queryObject("SELECT * FROM scenes WHERE scene_id = '{$sceneId}'"));
