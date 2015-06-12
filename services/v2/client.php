@@ -358,7 +358,7 @@ class client extends dbconnection
             {
                 $inst = $insts[$j];
                 $created = strtotime($inst->created);
-                if(($now-$created) > $fac->produce_expiration_time)
+                if(($now-$created)/1000 > $fac->produce_expiration_time)
                   instances::noauth_deleteInstance($inst);
             }
 
@@ -389,7 +389,7 @@ class client extends dbconnection
 
             if(
                $in_valid_scene &&                                             //in valid scene
-               ($now-$updated)/1000 >= seconds_per_production &&              //hasn't generated recently
+               ($now-$updated)/1000 >= $fac->seconds_per_production &&        //hasn't generated recently
                count($insts) < $fac->max_production)                          //hasn't reached max production
             {
                 if(rand(0,99) < ($fac->production_probability*100))           //roll the dice
