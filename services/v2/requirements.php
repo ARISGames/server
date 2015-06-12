@@ -116,7 +116,7 @@ class requirements extends dbconnection
         dbconnection::query(
             "UPDATE requirement_root_packages SET ".
             (isset($pack->name) ? "name = '".addslashes($pack->name)."', " : "").
-            "last_updated = CURRENT_TIMESTAMP ".
+            "last_active = CURRENT_TIMESTAMP ".
             "WHERE requirement_root_package_id = '".addslashes($pack->requirement_root_package_id)."'"
         );
 

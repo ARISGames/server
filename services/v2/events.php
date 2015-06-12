@@ -76,7 +76,7 @@ class events extends dbconnection
         dbconnection::query(
             "UPDATE event_packages SET ".
             (isset($pack->name) ? "name = '".addslashes($pack->name)."', " : "").
-            "last_updated = CURRENT_TIMESTAMP ".
+            "last_active = CURRENT_TIMESTAMP ".
             "WHERE event_package_id = '".addslashes($pack->event_package_id)."'"
         );
 
