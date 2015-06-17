@@ -11,3 +11,6 @@ services/v1/samples/yoimapC
 .AppleDouble
 .DS_Store
 .vagrant/
+
+# caused by https://bugs.php.net/bug.php?id=61935
+after_thumbnail.png

@@ -14,9 +14,9 @@ class Config
     const adminEmail = 'admin@email.com'; //This email address, if specified, will be notified of server errors
 
     //v1 data dirs
-    const serverWWWPath   = 'http://localhost/server';
-    const WWWPath         = 'http://localhost';
-    const gamedataWWWPath = 'http://localhost/server/gamedata';
+    const serverWWWPath   = 'http://localhost:10080/server';
+    const WWWPath         = 'http://localhost:10080';
+    const gamedataWWWPath = 'http://localhost:10080/server/gamedata';
     const gamedataFSPath  = '/var/www/server/gamedata'; //Make Sure this directory is writable
     const serverErrorLog  = '/var/log/aris_error_log.txt'; //Make sure this file is writable
 
@@ -54,7 +54,7 @@ class Config
     const v2_db       = 'arisv2';
 
     const v2_gamedata_folder   = '/var/www/server/gamedata/v2';
-    const v2_gamedata_www_path = 'http://localhost/server/gamedata/v2';
+    const v2_gamedata_www_path = 'http://localhost:10080/server/gamedata/v2';
     const v2_error_log         = '/var/log/aris_error_log.txt';
 
     const bridge_api_path = "localhost/server";

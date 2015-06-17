@@ -115,7 +115,7 @@ class media extends dbconnection
                 $did_resize = true;
             }
 
-            $image = new Imagick($fspath);
+            $image = new Imagick(isset($pack->resize) ? $resizedpath : $fspath);
             //aspect fill to 128x128
             $w = $image->getImageWidth();
             $h = $image->getImageHeight();
