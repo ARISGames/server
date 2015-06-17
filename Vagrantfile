@@ -16,7 +16,7 @@ Vagrant.configure(2) do |config|
     apt-get update
     echo "mysql-server-5.5 mysql-server/root_password password root" | sudo debconf-set-selections
     echo "mysql-server-5.5 mysql-server/root_password_again password root" | sudo debconf-set-selections
-    apt-get install -y lamp-server^ php5-imagick
+    apt-get install -y lamp-server^ php5-imagick php5-curl
     ln -fs /vagrant /var/www/server
     touch /var/log/aris_error_log.txt
     chmod 777 /var/log/aris_error_log.txt
@@ -32,5 +32,6 @@ Vagrant.configure(2) do |config|
     mysql --user=root --password=root arisv2 < services/v2/db/upgrades_table.sql
     cp config.class.php.vagrant config.class.php
     wget --no-cache --spider "http://localhost/server/json.php/v2.db.upgrade" --post-data="{}"
+    echo "Your ARIS server is ready! See README.md for instructions."
   SHELL
 end
