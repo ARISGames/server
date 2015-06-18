@@ -193,7 +193,7 @@ class users extends dbconnection
         $user = users::logIn($pack)->data;
         if(!$user->read_write_key) return new return_package(1, NULL, "Incorrect username/password");
 
-        //if changing password, invalidate all keys
+        //if changing password, invalidate hash, salt, and all keys
         $salt       = util::rand_string(64);
         $hash       = hash("sha256",$salt.$newPass);
         $read       = util::rand_string(64);
@@ -212,6 +212,24 @@ class users extends dbconnection
         $pack->password = $pack->new_password;
         $pack->permission = "read_write";
         return users::logIn($pack);
+    }
+
+    public static function invalidateKeys($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $read       = util::rand_string(64);
+        $write      = util::rand_string(64);
+        $read_write = util::rand_string(64);
+        dbconnection::query("UPDATE users SET ".
+            "read_key = '{$read}', ".
+            "write_key = '{$write}', ".
+            "read_write_key = '{$read_write}' ".
+            "WHERE user_id = '{$pack->auth->user_id}'"
+        );
+
+        return new return_package(0);
     }
 
     private static function breakPassword($userId)
