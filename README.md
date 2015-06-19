@@ -46,5 +46,9 @@ You can also use [Vagrant](https://www.vagrantup.com/) to run the server inside 
   * Database: `arisv2`
   * SSH host: `127.0.0.1`
   * SSH user: `vagrant`
-  * SSH password: `vagrant`
+  * SSH password: (doesn't matter)
   * SSH port: `2222`
+
+  The SSH password isn't used because private key authentication is used instead.
+  [Run `vagrant ssh-config`](http://thediscoblog.com/blog/2013/10/16/ssh-and-vagrant/)
+  if you need to see where the private key is located.
