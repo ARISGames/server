@@ -135,7 +135,7 @@ class quests extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        $sql_quests = dbconnection::queryArray("SELECT * FROM quests WHERE game_id = '{$pack->game_id}'");
+        $sql_quests = dbconnection::queryArray("SELECT * FROM quests WHERE game_id = '{$pack->game_id}' ORDER BY sort_index");
         $quests = array();
         for($i = 0; $i < count($sql_quests); $i++)
             if($ob = quests::questObjectFromSQL($sql_quests[$i])) $quests[] = $ob;
