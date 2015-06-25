@@ -516,6 +516,7 @@ class requirements extends dbconnection
             case 'PLAYER_VIEWED_DIALOG':                  return $atom->bool_operator == requirements::playerViewed($atom,"DIALOG");
             case 'PLAYER_VIEWED_DIALOG_SCRIPT':           return $atom->bool_operator == requirements::playerViewed($atom,"DIALOG_SCRIPT");
             case 'PLAYER_VIEWED_WEB_PAGE':                return $atom->bool_operator == requirements::playerViewed($atom,"WEB_PAGE");
+            case 'PLAYER_RAN_EVENT_PACKAGE':              return $atom->bool_operator == requirements::playerRanEvent($atom);
             case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM':        return $atom->bool_operator == requirements::playerUploadedAnyNear($atom);
             case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_IMAGE':  return $atom->bool_operator == requirements::playerUploadedTypeNear($atom,"IMAGE");
             case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO':  return $atom->bool_operator == requirements::playerUploadedTypeNear($atom,"AUDIO");
@@ -573,6 +574,12 @@ class requirements extends dbconnection
     private function playerViewed($pack,$type)
     {
         $entry = dbconnection::queryObject("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}' AND event_type = 'VIEW_{$type}' AND content_id = '{$pack->content_id}' AND deleted = 0");
+        return $entry ? true : false;
+    }
+
+    private function playerRanEvent($pack)
+    {
+        $entry = dbconnection::queryObject("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}' AND event_type = 'RUN_EVENT_PACKAGE' AND content_id = '{$pack->content_id}' AND deleted = 0");
         return $entry ? true : false;
     }
 
