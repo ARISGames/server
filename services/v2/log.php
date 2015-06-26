@@ -72,7 +72,7 @@ class log extends dbconnection
       for($i = 0; $i < count($logs); $i++)
       {
         $l = $logs[$i];
-        switch($l->event)
+        switch($l->event_type)
         {
           case 'NONE':
             $l->human = "Null Log";
