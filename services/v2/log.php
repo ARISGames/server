@@ -90,73 +90,73 @@ class log extends dbconnection
             $l->human = "User Moved";
             break;
           case 'RECEIVE_ITEM':
-            $l->human = "User Received {$l->qty} {$item_map[$l->content_id]->name}";
+            $l->human = "User Received {$l->qty} {$item_map[$l->content_id]->name} (Item)";
             break;
           case 'LOSE_ITEM':
-            $l->human = "User Lost {$l->qty} {$item_map[$l->content_id]->name}";
+            $l->human = "User Lost {$l->qty} {$item_map[$l->content_id]->name} (Item)";
             break;
           case 'GAME_RECEIVE_ITEM':
-            $l->human = "Game Received {$l->qty} {$item_map[$l->content_id]->name}";
+            $l->human = "Game Received {$l->qty} {$item_map[$l->content_id]->name} (Item)";
             break;
           case 'GAME_LOSE_ITEM':
-            $l->human = "Game Lost {$l->qty} {$item_map[$l->content_id]->name}";
+            $l->human = "Game Lost {$l->qty} {$item_map[$l->content_id]->name} (Item)";
             break;
           case 'GROUP_RECEIVE_ITEM':
-            $l->human = "Group Received {$l->qty} {$item_map[$l->content_id]->name}";
+            $l->human = "Group Received {$l->qty} {$item_map[$l->content_id]->name} (Item)";
             break;
           case 'GROUP_LOSE_ITEM':
-            $l->human = "Group Lost {$l->qty} {$item_map[$l->content_id]->name}";
+            $l->human = "Group Lost {$l->qty} {$item_map[$l->content_id]->name} (Item)";
             break;
           case 'VIEW_TAB':
-            $l->human = "User Viewed {$tab_map[$l->content_id]->name}";
+            $l->human = "User Viewed {$tab_map[$l->content_id]->name} (Tab)";
             break;
           case 'VIEW_INSTANCE':
-            $l->human = "User Viewed {$instance_map[$l->content_id]->name}";
+            $l->human = "User Viewed {$instance_map[$l->content_id]->name} (Instance)";
             break;
           case 'VIEW_PLAQUE':
-            $l->human = "User Viewed {$plaque_map[$l->content_id]->name}";
+            $l->human = "User Viewed {$plaque_map[$l->content_id]->name} (Plaque)";
             break;
           case 'VIEW_ITEM':
-            $l->human = "User Viewed {$item_map[$l->content_id]->name}";
+            $l->human = "User Viewed {$item_map[$l->content_id]->name} (Item)";
             break;
           case 'VIEW_DIALOG':
-            $l->human = "User Viewed {$dialog_map[$l->content_id]->name}";
+            $l->human = "User Viewed {$dialog_map[$l->content_id]->name} (Dialog)";
             break;
           case 'VIEW_DIALOG_SCRIPT':
-            $l->human = "User Viewed {$dialog_script_map[$l->content_id]->name}";
+            $l->human = "User Viewed {$dialog_script_map[$l->content_id]->text} (Dialog Script)";
             break;
           case 'VIEW_WEB_PAGE':
-            $l->human = "User Viewed {$web_page_map[$l->content_id]->name}";
+            $l->human = "User Viewed {$web_page_map[$l->content_id]->name} (Web Page)";
             break;
           case 'VIEW_NOTE':
-            $l->human = "User Viewed {$note_map[$l->content_id]->name}";
+            $l->human = "User Viewed {$note_map[$l->content_id]->name} (Note)";
             break;
           case 'TRIGGER_TRIGGER':
-            $l->human = "User Triggered {$trigger_map[$l->content_id]->name}";
+            $l->human = "User Triggered {$trigger_map[$l->content_id]->name} (Trigger)";
             break;
           case 'CHANGE_SCENE':
-            $l->human = "User Changed {$scene_map[$l->content_id]->name}";
+            $l->human = "User Changed {$scene_map[$l->content_id]->name} (Scene)";
             break;
           case 'RUN_EVENT_PACKAGE':
-            $l->human = "User Ran {$event_package_map[$l->content_id]->name}";
+            $l->human = "User Ran {$event_package_map[$l->content_id]->name} (Event Package)";
             break;
           case 'COMPLETE_QUEST':
-            $l->human = "User Completed {$quest_map[$l->content_id]->name}";
+            $l->human = "User Completed {$quest_map[$l->content_id]->name} (Quest)";
             break;
           case 'CREATE_NOTE':
-            $l->human = "User Created {$note_map[$l->content_id]->name}";
+            $l->human = "User Created {$note_map[$l->content_id]->name} (Note)";
             break;
           case 'GIVE_NOTE_LIKE':
-            $l->human = "User Liked {$note_map[$l->content_id]->name}";
+            $l->human = "User Liked {$note_map[$l->content_id]->name} (Note)";
             break;
           case 'GET_NOTE_LIKE':
-            $l->human = "User Got Liked {$note_map[$l->content_id]->name}";
+            $l->human = "User Got Liked {$note_map[$l->content_id]->name} (Note)";
             break;
           case 'GIVE_NOTE_COMMENT':
-            $l->human = "User Commented {$note_map[$l->content_id]->name}";
+            $l->human = "User Commented {$note_map[$l->content_id]->name} (Note)";
             break;
           case 'GET_NOTE_COMMENT':
-            $l->human = "User Got Commented {$note_map[$l->content_id]->name}";
+            $l->human = "User Got Commented {$note_map[$l->content_id]->name} (Note)";
             break;
           case 'UPLOAD_MEDIA_ITEM':
             $l->human = "User Uploaded Media";
