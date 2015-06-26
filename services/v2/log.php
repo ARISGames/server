@@ -27,7 +27,7 @@ class log extends dbconnection
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
-        $logs = dbconnection::queryArray("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->auth->user_id}' AND deleted = 0;");
+        $logs = dbconnection::queryArray("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}' AND deleted = 0;");
 
         if($pack->human) $logs = log::humanizeLogs($logs);
 
@@ -45,29 +45,29 @@ class log extends dbconnection
         $gid = $logs[$i]->game_id;
 
       $item_list = dbconnection::queryArray("SELECT * FROM items WHERE game_id = '{$gid}';");
-      $item_map = new stdClass(); for($i = 0; $i < count($item_list); $i++) $item_map[$item_list[$i]->item_id] = $item_list[$i];
+      $item_map = array(); for($i = 0; $i < count($item_list); $i++) $item_map[$item_list[$i]->item_id] = $item_list[$i];
       $plaque_list = dbconnection::queryArray("SELECT * FROM plaques WHERE game_id = '{$gid}';");
-      $plaque_map = new stdClass(); for($i = 0; $i < count($plaque_list); $i++) $plaque_map[$plaque_list[$i]->plaque_id] = $plaque_list[$i];
+      $plaque_map = array(); for($i = 0; $i < count($plaque_list); $i++) $plaque_map[$plaque_list[$i]->plaque_id] = $plaque_list[$i];
       $dialog_list = dbconnection::queryArray("SELECT * FROM dialogs WHERE game_id = '{$gid}';");
-      $dialog_map = new stdClass(); for($i = 0; $i < count($dialog_list); $i++) $dialog_map[$dialog_list[$i]->dialog_id] = $dialog_list[$i];
+      $dialog_map = array(); for($i = 0; $i < count($dialog_list); $i++) $dialog_map[$dialog_list[$i]->dialog_id] = $dialog_list[$i];
       $dialog_script_list = dbconnection::queryArray("SELECT * FROM dialog_scripts WHERE game_id = '{$gid}';");
-      $dialog_script_map = new stdClass(); for($i = 0; $i < count($dialog_script_list); $i++) $dialog_script_map[$dialog_script_list[$i]->dialog_script_id] = $dialog_script_list[$i];
+      $dialog_script_map = array(); for($i = 0; $i < count($dialog_script_list); $i++) $dialog_script_map[$dialog_script_list[$i]->dialog_script_id] = $dialog_script_list[$i];
       $web_page_list = dbconnection::queryArray("SELECT * FROM web_pages WHERE game_id = '{$gid}';");
-      $web_page_map = new stdClass(); for($i = 0; $i < count($web_page_list); $i++) $web_page_map[$web_page_list[$i]->web_page_id] = $web_page_list[$i];
+      $web_page_map = array(); for($i = 0; $i < count($web_page_list); $i++) $web_page_map[$web_page_list[$i]->web_page_id] = $web_page_list[$i];
       $note_list = dbconnection::queryArray("SELECT * FROM notes WHERE game_id = '{$gid}';");
-      $note_map = new stdClass(); for($i = 0; $i < count($note_list); $i++) $note_map[$note_list[$i]->note_id] = $note_list[$i];
+      $note_map = array(); for($i = 0; $i < count($note_list); $i++) $note_map[$note_list[$i]->note_id] = $note_list[$i];
       $trigger_list = dbconnection::queryArray("SELECT * FROM triggers WHERE game_id = '{$gid}';");
-      $trigger_map = new stdClass(); for($i = 0; $i < count($trigger_list); $i++) $trigger_map[$trigger_list[$i]->trigger_id] = $trigger_list[$i];
+      $trigger_map = array(); for($i = 0; $i < count($trigger_list); $i++) $trigger_map[$trigger_list[$i]->trigger_id] = $trigger_list[$i];
       $instance_list = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$gid}';");
-      $instance_map = new stdClass(); for($i = 0; $i < count($instance_list); $i++) $instance_map[$instance_list[$i]->instance_id] = $instance_list[$i];
+      $instance_map = array(); for($i = 0; $i < count($instance_list); $i++) $instance_map[$instance_list[$i]->instance_id] = $instance_list[$i];
       $event_package_list = dbconnection::queryArray("SELECT * FROM event_packages WHERE game_id = '{$gid}';");
-      $event_package_map = new stdClass(); for($i = 0; $i < count($event_package_list); $i++) $event_package_map[$event_package_list[$i]->event_package_id] = $event_package_list[$i];
+      $event_package_map = array(); for($i = 0; $i < count($event_package_list); $i++) $event_package_map[$event_package_list[$i]->event_package_id] = $event_package_list[$i];
       $scene_list = dbconnection::queryArray("SELECT * FROM scenes WHERE game_id = '{$gid}';");
-      $scene_map = new stdClass(); for($i = 0; $i < count($scene_list); $i++) $scene_map[$scene_list[$i]->scene_id] = $scene_list[$i];
+      $scene_map = array(); for($i = 0; $i < count($scene_list); $i++) $scene_map[$scene_list[$i]->scene_id] = $scene_list[$i];
       $quest_list = dbconnection::queryArray("SELECT * FROM quests WHERE game_id = '{$gid}';");
-      $quest_map = new stdClass(); for($i = 0; $i < count($quest_list); $i++) $quest_map[$quest_list[$i]->quest_id] = $quest_list[$i];
+      $quest_map = array(); for($i = 0; $i < count($quest_list); $i++) $quest_map[$quest_list[$i]->quest_id] = $quest_list[$i];
       $tab_list = dbconnection::queryArray("SELECT * FROM tabs WHERE game_id = '{$gid}';");
-      $tab_map = new stdClass(); for($i = 0; $i < count($tab_list); $i++) $tab_map[$tab_list[$i]->tab_id] = $tab_list[$i];
+      $tab_map = array(); for($i = 0; $i < count($tab_list); $i++) $tab_map[$tab_list[$i]->tab_id] = $tab_list[$i];
 
       for($i = 0; $i < count($logs); $i++)
       {
