@@ -276,6 +276,16 @@ class client extends dbconnection
         return new return_package(0, dbconnection::queryObject("SELECT * FROM scenes WHERE scene_id = '{$sceneId}'"));
     }
 
+    public static function getGroupForPlayer($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $group = dbconnection::queryObject("SELECT * FROM user_game_groups WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->auth->user_id}'");
+        $groupId = $group ? $group->group_id : 0;
+        return new return_package(0, dbconnection::queryObject("SELECT * FROM groups WHERE group_id = '{$groupId}'"));
+    }
+
     public static function getLogsForPlayer($pack)
     {
         $pack->auth->permission = "read_write";
