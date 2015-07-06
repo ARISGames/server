@@ -241,26 +241,30 @@ class client extends dbconnection
     //an odd request...
     //Creates game-owned (global) instances for every item not already instantiated, with qty = 0. Makes qty transactions a million times easier.
     //not yet sure how often it will get called... needs design
-    public static function touchItemsForGroup($pack)
+    public static function touchItemsForGroups($pack)
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         if(!$pack->group_id) return new return_package(0);
 
+        $groups = dbconnection::queryArray("SELECT * FROM groups WHERE game_id = '{$pack->game_id}'");
         $items = dbconnection::queryArray("SELECT * FROM items WHERE game_id = '{$pack->game_id}'");
-        $instances = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_type = 'GROUP' AND owner_id = '{$pack->group_id}';");
 
-        for($i = 0; $i < count($items); $i++)
+        for($i = 0; $i < count($groups); $i++)
         {
-            $exists = false;
-            for($j = 0; $j < count($instances); $j++)
-            {
-                if($instances[$j]->object_type == 'ITEM' && $items[$i]->item_id == $instances[$j]->object_id)
-                    $exists = true;
-            }
-            if(!$exists)
-                dbconnection::queryInsert("INSERT INTO instances (game_id, object_type, object_id, qty, owner_type, owner_id, created) VALUES ('{$pack->game_id}', 'ITEM', '{$items[$i]->item_id}', 0, 'GROUP', '{$pack->group_id}', CURRENT_TIMESTAMP)");
+          $instances = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_type = 'GROUP' AND owner_id = '{$groups[$i]->group_id}';");
+          for($j = 0; $j < count($items); $j++)
+          {
+              $exists = false;
+              for($k = 0; $k < count($instances); $k++)
+              {
+                  if($instances[$k]->object_type == 'ITEM' && $items[$j]->item_id == $instances[$k]->object_id)
+                      $exists = true;
+              }
+              if(!$exists)
+                  dbconnection::queryInsert("INSERT INTO instances (game_id, object_type, object_id, qty, owner_type, owner_id, created) VALUES ('{$pack->game_id}', 'ITEM', '{$items[$i]->item_id}', 0, 'GROUP', '{$groups[$i]->group_id}', CURRENT_TIMESTAMP)");
+          }
         }
 
         return new return_package(0);
