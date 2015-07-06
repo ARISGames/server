@@ -246,8 +246,6 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        if(!$pack->group_id) return new return_package(0);
-
         $groups = dbconnection::queryArray("SELECT * FROM groups WHERE game_id = '{$pack->game_id}'");
         $items = dbconnection::queryArray("SELECT * FROM items WHERE game_id = '{$pack->game_id}'");
 
