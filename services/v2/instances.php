@@ -108,7 +108,7 @@ class instances extends dbconnection
     public static function getInstancesForGame($pack)
     {
         // Return game owned, game_content owned, or specific player owned.
-        $sql_instances = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND (owner_id = '".(isset($pack->owner_id) ? $pack->owner_id : 0)."' OR owner_id = '0')");
+        $sql_instances = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND ((owner_type = 'USER' AND owner_id = '".(isset($pack->owner_id) ? $pack->owner_id : 0)."') OR owner_type != 'USER')");
         $instances = array();
         for($i = 0; $i < count($sql_instances); $i++)
             if($ob = instances::instanceObjectFromSQL($sql_instances[$i])) $instances[] = $ob;
