@@ -263,7 +263,7 @@ class client extends dbconnection
                       $exists = true;
               }
               if(!$exists)
-                  dbconnection::queryInsert("INSERT INTO instances (game_id, object_type, object_id, qty, owner_type, owner_id, created) VALUES ('{$pack->game_id}', 'ITEM', '{$items[$i]->item_id}', 0, 'GROUP', '{$groups[$i]->group_id}', CURRENT_TIMESTAMP)");
+                  dbconnection::queryInsert("INSERT INTO instances (game_id, object_type, object_id, qty, owner_type, owner_id, created) VALUES ('{$pack->game_id}', 'ITEM', '{$items[$j]->item_id}', 0, 'GROUP', '{$groups[$i]->group_id}', CURRENT_TIMESTAMP)");
           }
         }
 
