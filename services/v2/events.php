@@ -51,6 +51,7 @@ class events extends dbconnection
             (isset($pack->event)      ? "event,"      : "").
             (isset($pack->qty)        ? "qty,"        : "").
             (isset($pack->content_id) ? "content_id," : "").
+            (isset($pack->script)     ? "script,"     : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
@@ -58,6 +59,7 @@ class events extends dbconnection
             (isset($pack->event)      ? "'".addslashes($pack->event)."',"      : "").
             (isset($pack->qty)        ? "'".addslashes($pack->qty)."',"        : "").
             (isset($pack->content_id) ? "'".addslashes($pack->content_id)."'," : "").
+            (isset($pack->script)     ? "'".addslashes($pack->script)."',"     : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -133,6 +135,7 @@ class events extends dbconnection
             (isset($pack->event)      ? "event      = '".addslashes($pack->event)."', "      : "").
             (isset($pack->qty)        ? "qty        = '".addslashes($pack->qty)."', "        : "").
             (isset($pack->content_id) ? "content_id = '".addslashes($pack->content_id)."', " : "").
+            (isset($pack->script)     ? "script     = '".addslashes($pack->script)."', "     : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE event_id = '{$pack->event_id}'"
         );
@@ -150,6 +153,7 @@ class events extends dbconnection
         $event->event            = $sql_event->event;
         $event->qty              = $sql_event->qty;
         $event->content_id       = $sql_event->content_id;
+        $event->script           = $sql_event->script;
         if($event->event == 'GIVE_ITEM_PLAYER') $event->event = 'GIVE_ITEM';
         if($event->event == 'TAKE_ITEM_PLAYER') $event->event = 'TAKE_ITEM';
 
