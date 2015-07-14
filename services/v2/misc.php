@@ -13,16 +13,16 @@ public static function getLeaderboard($pack)
 
   for($i = 0; $i < count($insts); $i++)
   {
-    $inst = $isnts[$i];
-    $player = dbconnection::queryObject("SELECT * FROM users WHERE user_id = '{$inst->owner_id}';");
+    $inst = $insts[$i];
+    $user = dbconnection::queryObject("SELECT * FROM users WHERE user_id = '{$inst->owner_id}';");
 
     $entries[$i] = new stdClass();
     $entries[$i]->qty = $inst->qty;
-    if($player)
+    if($user)
     {
-      $entries[$i]->user_id = $player->user_id;
-      $entries[$i]->user_name = $player->user_name;
-      $entries[$i]->display_name = $player->display_name;
+      $entries[$i]->user_id = $user->user_id;
+      $entries[$i]->user_name = $user->user_name;
+      $entries[$i]->display_name = $user->display_name;
     }
     else
     {
