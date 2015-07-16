@@ -8,6 +8,10 @@ OK_COLOR=\033[0;32m
 INFO_COLOR=\033[1;36m
 CLEAR=\033[m\017
 
+arisprod1="root@neo.arisgames.org"
+arisprod2="root@trinity.arisgames.org"
+arisprod3="root@morpheus.arisgames.org"
+
 help:
 	@echo "Aris Server"
 	@echo ""
@@ -42,13 +46,13 @@ prod:
 	@git push 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
 	@echo "Deploying to Production 1."
-	@ssh -t aris-prod1 $(CHECKOUT_COMMAND) 1>/dev/null
+	@ssh -t $(arisprod1) $(CHECKOUT_COMMAND) 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
 	@echo "Deploying to Production 2."
-	@ssh -t aris-prod2 $(CHECKOUT_COMMAND) 1>/dev/null
+	@ssh -t $(arisprod2) $(CHECKOUT_COMMAND) 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
 	@echo "Deploying to Production 3."
-	@ssh -t aris-prod3 $(CHECKOUT_COMMAND) 1>/dev/null
+	@ssh -t $(arisprod3) $(CHECKOUT_COMMAND) 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
 
 cache_clear_dev:
@@ -58,13 +62,13 @@ cache_clear_dev:
 
 cache_clear_prod:
 	@echo "Clearing cache on Production 1."
-	@ssh -t aris-prod1 $(CACHE_COMMAND) 1>/dev/null
+	@ssh -t $(arisprod1) $(CACHE_COMMAND) 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
 	@echo "Clearing cache on Production 2."
-	@ssh -t aris-prod2 $(CACHE_COMMAND) 1>/dev/null
+	@ssh -t $(arisprod2) $(CACHE_COMMAND) 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
 	@echo "Clearing cache on Production 3."
-	@ssh -t aris-prod3 $(CACHE_COMMAND) 1>/dev/null
+	@ssh -t $(arisprod3) $(CACHE_COMMAND) 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
 
 migrate_dev:
@@ -79,13 +83,13 @@ migrate_prod:
 
 status:
 	@echo "Commit on Production 1$(INFO_COLOR)"
-	@ssh aris-prod1 $(STATUS_COMMAND)
+	@ssh $(arisprod1) $(STATUS_COMMAND)
 	@echo "$(CLEAR)"
 	@echo "Commit on Production 2$(INFO_COLOR)"
-	@ssh aris-prod2 $(STATUS_COMMAND)
+	@ssh $(arisprod2) $(STATUS_COMMAND)
 	@echo "$(CLEAR)"
 	@echo "Commit on Production 3$(INFO_COLOR)"
-	@ssh aris-prod3 $(STATUS_COMMAND)
+	@ssh $(arisprod3) $(STATUS_COMMAND)
 	@echo "$(CLEAR)"
 
 cache_clear: cache_clear_prod
