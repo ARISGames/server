@@ -23,6 +23,17 @@ class log extends dbconnection
     return new return_package(0);
   }
 
+  public static function getLogsForGame($pack)
+  {
+    $pack->auth->permission = "read_write";
+    if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+    $logs = dbconnection::queryArray("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND deleted = 0;");
+
+    if($pack->human) $logs = log::humanizeLogs($logs);
+
+    return new return_package(0, $logs);
+  }
+
   public static function getLogsForPlayer($pack)
   {
     $pack->auth->permission = "read_write";
