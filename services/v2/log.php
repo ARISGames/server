@@ -29,6 +29,7 @@ class log extends dbconnection
     if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
     $logs = dbconnection::queryArray("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND deleted = 0;");
 
+    if($pack->identify) $logs = log::identifyLogs($logs);
     if($pack->human) $logs = log::humanizeLogs($logs);
 
     return new return_package(0, $logs);
@@ -43,6 +44,25 @@ class log extends dbconnection
     if($pack->human) $logs = log::humanizeLogs($logs);
 
     return new return_package(0, $logs);
+  }
+
+  private static function identifyLogs($logs)
+  {
+    if(count($logs) == 0) return $logs;
+
+    $users = array();
+
+    for($i = 0; $i < $logs; $i++)
+    {
+      $user_id = $logs[$i]->user_id;
+      if(!$users[$user_id])
+        $users[$user_id] = dbconnection::queryObject("SELECT * FROM users WHERE user_id = '{$user_id}';");
+
+      $logs[$i]->user_name = $users[$user_id]->user_name;
+      $logs[$i]->display_name = $users[$user_id]->display_name;
+    }
+
+    return $logs;
   }
 
   //NOTE- only works if not multiple game's entries in given list
