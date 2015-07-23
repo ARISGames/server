@@ -1,8 +1,10 @@
 <html>
 <body>
 
-<input type="file" id="uploadfile" name="uploadfile" />
-<input type="button" value="upload" onclick="upload()" />
+<input type="text" id="user_id" /> User Id <br />
+<input type="text" id="auth_key" /> Auth Key <br />
+<input type="file" id="uploadfile" name="uploadfile" /> <br />
+<input type="button" value="upload" onclick="upload()" /> <br />
 
 <script>
 
@@ -19,8 +21,8 @@ function upload(evt)
     zip_data = zip_data.substr(zip_data.indexOf(",")+1);
 
     data.auth = {};
-    data.auth.user_id = 2;
-    data.auth.key = "jNYFCHUciQ2Mu0M9Z7JANbZF7kECTBu2eixHQhJYXCBhtdhiaRIOSykQJPisgDkl";
+    data.auth.user_id = document.getElementById("user_id").value;
+    data.auth.key = document.getElementById("auth_key").value;
 
     data.zip_data = zip_data;
     data.zip_name = file.name;
