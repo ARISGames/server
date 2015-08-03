@@ -540,9 +540,9 @@ class requirements extends dbconnection
 
     private function playerHasTaggedItem($pack)
     {
-        $query = "SELECT * FROM instances JOIN object_tags ON object_tags.object_id = instances.object_id WHERE instances.game_id = '{$pack->game_id}' AND instances.owner_type = 'USER' AND instances.owner_id = '{$pack->user_id}' AND instances.object_type = 'ITEM' AND instances.qty >= '{$pack->qty}' AND object_tags.object_Type = 'ITEM' AND object_tags.tag_id = '{$pack->content_id}'";
+        $query = "SELECT SUM(instances.qty) AS qty FROM instances JOIN object_tags ON object_tags.object_id = instances.object_id WHERE instances.game_id = '{$pack->game_id}' AND instances.owner_type = 'USER' AND instances.owner_id = '{$pack->user_id}' AND instances.object_type = 'ITEM' AND object_tags.object_Type = 'ITEM' AND object_tags.tag_id = '{$pack->content_id}'";
         $item = dbconnection::queryObject($query);
-        return $item ? true : false;
+        return intval($item->qty) >= intval($pack->qty);
     }
 
     private function gameHasItem($pack)
@@ -553,9 +553,9 @@ class requirements extends dbconnection
 
     private function gameHasTaggedItem($pack)
     {
-        $query = "SELECT * FROM instances JOIN object_tags ON object_tags.object_id = instances.object_id WHERE instances.game_id = '{$pack->game_id}' AND instances.owner_type = 'GAME' AND instances.object_type = 'ITEM' AND instances.qty >= '{$pack->qty}' AND object_tags.object_Type = 'ITEM' AND object_tags.tag_id = '{$pack->content_id}'";
+        $query = "SELECT SUM(instances.qty) AS qty FROM instances JOIN object_tags ON object_tags.object_id = instances.object_id WHERE instances.game_id = '{$pack->game_id}' AND instances.owner_type = 'GAME' AND instances.object_type = 'ITEM' AND object_tags.object_Type = 'ITEM' AND object_tags.tag_id = '{$pack->content_id}'";
         $item = dbconnection::queryObject($query);
-        return $item ? true : false;
+        return intval($item->qty) >= intval($pack->qty);
     }
 
     private function groupHasItem($pack)
@@ -568,9 +568,9 @@ class requirements extends dbconnection
 
     private function groupHasTaggedItem($pack)
     {
-        $query = "SELECT * FROM instances JOIN object_tags ON object_tags.object_id = instances.object_id WHERE instances.game_id = '{$pack->game_id}' AND instances.owner_type = 'GROUP' AND instances.owner_id = '{$pack->group_id}' AND instances.object_type = 'ITEM' AND instances.qty >= '{$pack->qty}' AND object_tags.object_Type = 'ITEM' AND object_tags.tag_id = '{$pack->content_id}'";
+        $query = "SELECT SUM(instances.qty) AS qty FROM instances JOIN object_tags ON object_tags.object_id = instances.object_id WHERE instances.game_id = '{$pack->game_id}' AND instances.owner_type = 'GROUP' AND instances.owner_id = '{$pack->group_id}' AND instances.object_type = 'ITEM' AND object_tags.object_Type = 'ITEM' AND object_tags.tag_id = '{$pack->content_id}'";
         $item = dbconnection::queryObject($query);
-        return $item ? true : false;
+        return intval($item->qty) >= intval($pack->qty);
     }
 
     private function playerViewed($pack,$type)
