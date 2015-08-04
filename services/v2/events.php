@@ -14,11 +14,13 @@ class events extends dbconnection
         $pack->event_package_id = dbconnection::queryInsert(
             "INSERT INTO event_packages (".
             "game_id,".
-            (isset($pack->name) ? "name," : "").
+            (isset($pack->name)          ? "name,"          : "").
+            (isset($pack->icon_media_id) ? "icon_media_id," : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
-            (isset($pack->name) ? "'".addslashes($pack->name)."'," : "").
+            (isset($pack->name)          ? "'".addslashes($pack->name)."',"          : "").
+            (isset($pack->icon_media_id) ? "'".addslashes($pack->icon_media_id)."'," : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -77,7 +79,8 @@ class events extends dbconnection
 
         dbconnection::query(
             "UPDATE event_packages SET ".
-            (isset($pack->name) ? "name = '".addslashes($pack->name)."', " : "").
+            (isset($pack->name)          ? "name          = '".addslashes($pack->name)."', "          : "").
+            (isset($pack->icon_media_id) ? "icon_media_id = '".addslashes($pack->icon_media_id)."', " : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE event_package_id = '".addslashes($pack->event_package_id)."'"
         );
@@ -162,21 +165,12 @@ class events extends dbconnection
 
     public function getEventPackage($pack)
     {
-        $sql_root = dbconnection::queryObject("SELECT * FROM event_packages WHERE event_package_id = '{$pack->event_package_id}'");
-        $pack->event_package_id = $sql_root->event_package_id;
-        $pack->game_id = $sql_root->game_id;
-        $pack->name = $sql_root->name;
+        $event_package = dbconnection::queryObject("SELECT * FROM event_packages WHERE event_package_id = '{$pack->event_package_id}'");
+        $event_package->events = dbconnection::queryArray("SELECT * FROM events WHERE event_package_id = '{$pack->event_package_id}'");
 
-        $sql_events = dbconnection::queryArray("SELECT * FROM events WHERE event_package_id = '{$pack->event_package_id}'");
-        $pack->events = array();
+        for($i = 0; $i < count($event_package->events); $i++)
+          $event_package->events[$i] = events::eventObjectFromSQL($event_package->events[$i]);
 
-        for($i = 0; $i < count($sql_events); $i++)
-        {
-            $pack->events[$i] = events::getEvent($sql_events[$i])->data;
-            unset($pack->events[$i]->event_package_id);
-        }
-
-        unset($pack->auth);
         return new return_package(0,$pack);
     }
 
