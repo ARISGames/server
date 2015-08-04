@@ -180,6 +180,12 @@ class events extends dbconnection
         return new return_package(0,$pack);
     }
 
+    public function getEventPackagesForGame($pack)
+    {
+      $event_packages = dbconnection::queryArray("SELECT * FROM event_packages WHERE game_id = '{$pack->game_id}'");
+      return new return_package(0,$event_packages);
+    }
+
     public static function getEvent($pack)
     {
         $sql_event = dbconnection::queryObject("SELECT * FROM events WHERE event_id = '{$pack->event_id}' LIMIT 1");
