@@ -196,6 +196,27 @@ class events extends dbconnection
       return new return_package(0,$event_packages);
     }
 
+    public function getNonInternalEventPackagesForGame($pack) //returns all event packages NOT part of a different object (plaque, quest, etc...)
+    {
+      $event_packages = dbconnection::queryArray("SELECT * FROM event_packages WHERE game_id = '{$pack->game_id}'");
+      $dialog_scripts = dbconnection::queryArray("SELECT * FROM dialog_scripts WHERE game_id = '{$pack->game_id}'");
+      $plaques        = dbconnection::queryArray("SELECT * FROM plaques        WHERE game_id = '{$pack->game_id}'");
+      $quests         = dbconnection::queryArray("SELECT * FROM quests         WHERE game_id = '{$pack->game_id}'");
+
+      $non_internal_event_packages = array();
+      for($i = 0; $i < count($event_packages); $i++)
+      {
+        $found = false;
+        for($j = 0; $j < count($dialog_scripts); $j++) if($event_packages[$i]->event_package_id == $dialog_scripts[$j]->event_package_id ) $found = true;
+        for($j = 0; $j < count($plaques)       ; $j++) if($event_packages[$i]->event_package_id == $plaques[$j]->event_package_id        ) $found = true;
+        for($j = 0; $j < count($quests)        ; $j++) if($event_packages[$i]->event_package_id == $quests[$j]->active_event_package_id  ) $found = true;
+        for($j = 0; $j < count($quests)        ; $j++) if($event_packages[$i]->event_package_id == $quests[$j]->complete_event_package_id) $found = true;
+        if(!$found) $non_internal_event_packages[] = $event_packages[$i];
+      }
+
+      return new return_package(0,$event_packages);
+    }
+
     public static function getEvent($pack)
     {
         $sql_event = dbconnection::queryObject("SELECT * FROM events WHERE event_id = '{$pack->event_id}' LIMIT 1");

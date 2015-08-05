@@ -339,12 +339,14 @@ class dialogs extends dbconnection
         //cleanup
         dbconnection::query("UPDATE dialogs SET intro_dialog_script_id = 0 WHERE dialog_id = '{$script->dialog_id}' AND intro_dialog_script_id = '{$script->dialog_script_id}'");
 
+        /* Comment out until we've decided on desired behavior...
         $eventpack = dbconnection::queryObject("SELECT * FROM event_packages WHERE event_package_id = '{$script->event_package_id}'");
         if($eventpack)
         {
             $pack->event_package_id = $eventpack->event_package_id;
             events::deleteEventPackage($pack);
         }
+        */
 
         $options = dbconnection::queryArray("SELECT * FROM dialog_options WHERE parent_dialog_script_id = '{$script->dialog_script_id}'");
         for($i = 0; $i < count($options); $i++)

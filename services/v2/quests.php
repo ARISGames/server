@@ -160,6 +160,7 @@ class quests extends dbconnection
             requirements::deleteRequirementAtom($pack);
         }
 
+        /* Comment out until we've decided on desired behavior...
         $eventpack = dbconnection::queryObject("SELECT * FROM event_packages WHERE event_package_id = '{$quest->active_event_package_id}'");
         if($eventpack)
         {
@@ -172,6 +173,7 @@ class quests extends dbconnection
             $pack->event_package_id = $eventpack->event_package_id;
             events::deleteEventPackage($pack);
         }
+        */
 
         $reqPack = dbconnection::queryObject("SELECT * FROM requirement_root_packages WHERE requirement_root_package_id = '{$quest->active_requirement_root_package_id}'");
         if($reqPack)

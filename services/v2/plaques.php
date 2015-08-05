@@ -105,12 +105,14 @@ class plaques extends dbconnection
         dbconnection::query("DELETE FROM plaques WHERE plaque_id = '{$pack->plaque_id}' LIMIT 1");
 
         //cleanup
+        /* Comment out until we've decided on desired behavior...
         $eventpack = dbconnection::queryObject("SELECT * FROM event_packages WHERE event_package_id = '{$plaque->event_package_id}'");
         if($eventpack)
         {
             $pack->event_package_id = $eventpack->event_package_id;
             events::deleteEventPackage($pack);
         }
+        */
 
         $options = dbconnection::queryArray("SELECT * FROM dialog_options WHERE link_type = 'EXIT_TO_PLAQUE' AND link_id = '{$pack->plaque_id}'");
         for($i = 0; $i < count($options); $i++)
