@@ -103,6 +103,7 @@ class plaques extends dbconnection
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM plaques WHERE plaque_id = '{$pack->plaque_id}' LIMIT 1");
+
         //cleanup
         $eventpack = dbconnection::queryObject("SELECT * FROM event_packages WHERE event_package_id = '{$plaque->event_package_id}'");
         if($eventpack)
