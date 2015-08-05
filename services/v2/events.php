@@ -74,6 +74,7 @@ class events extends dbconnection
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM event_packages WHERE event_package_id = '{$pack->event_package_id}'")->game_id;
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        $auth = $pack->auth; //save for later (getEventPackagePack unsets it)
 
         if(!$pack->event_package_id) return;
 
@@ -85,13 +86,25 @@ class events extends dbconnection
             "WHERE event_package_id = '".addslashes($pack->event_package_id)."'"
         );
 
-        $auth = $pack->auth; //save for later (getEventPackagePack unsets it)
         $reqEvents = $pack->events;
         $curEvents = events::getEventPackage($pack)->data->events;
+        for($i = 0; $i < count($reqEvents); $i++)
+        {
+          $reqEvents[$i]->game_id = $pack->auth->game_id;
+          $reqEvents[$i]->event_package_id = $pack->event_package_id;
+          $reqEvents[$i]->auth = $auth;
+        }
+        for($i = 0; $i < count($curEvents); $i++)
+        {
+          $curEvents[$i]->game_id = $pack->auth->game_id;
+          $curEvents[$i]->event_package_id = $pack->event_package_id;
+          $curEvents[$i]->auth = $auth;
+        }
 
         $eventsToDelete = array();
         $eventsToAdd = array();
         $eventsToUpdate = array();
+        //find to-update and to-delete
         for($i = 0; $i < count($curEvents); $i++)
         {
             $found = false;
@@ -105,6 +118,7 @@ class events extends dbconnection
             }
             if(!$found) $eventsToDelete[] = $curEvents[$i];
         }
+        //find to-add
         for($i = 0; $i < count($reqEvents); $i++)
         {
             $found = false;
@@ -116,12 +130,9 @@ class events extends dbconnection
             if(!$found) $eventsToAdd[] = $reqEvents[$i];
         }
 
-        for($i = 0; $i < count($eventsToDelete); $i++)
-        { $eventsToDelete[$i]->auth = $auth; events::deleteEvent($eventsToDelete[$i]); }
-        for($i = 0; $i < count($eventsToUpdate); $i++)
-        { $eventsToUpdate[$i]->auth = $auth; events::updateEvent($eventsToUpdate[$i]); }
-        for($i = 0; $i < count($eventsToAdd); $i++)
-        { $eventsToAdd[$i]->event_package_id = $pack->event_package_id; $eventsToAdd[$i]->auth = $auth; events::createEvent($eventsToAdd[$i]); }
+        for($i = 0; $i < count($eventsToDelete); $i++) { events::deleteEvent($eventsToDelete[$i]); }
+        for($i = 0; $i < count($eventsToUpdate); $i++) { events::updateEvent($eventsToUpdate[$i]); }
+        for($i = 0; $i < count($eventsToAdd);    $i++) { events::createEvent($eventsToAdd[$i]);    }
 
         return events::getEventPackage($pack);
     }
