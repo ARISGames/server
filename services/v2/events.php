@@ -181,8 +181,9 @@ class events extends dbconnection
     public function getEventPackage($pack)
     {
         $event_package = dbconnection::queryObject("SELECT * FROM event_packages WHERE event_package_id = '{$pack->event_package_id}'");
-        $event_package->events = dbconnection::queryArray("SELECT * FROM events WHERE event_package_id = '{$pack->event_package_id}'");
+        if(!$event_package) return new return_package(0,$event_package);
 
+        $event_package->events = dbconnection::queryArray("SELECT * FROM events WHERE event_package_id = '{$pack->event_package_id}'");
         for($i = 0; $i < count($event_package->events); $i++)
           $event_package->events[$i] = events::eventObjectFromSQL($event_package->events[$i]);
 
