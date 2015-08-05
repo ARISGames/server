@@ -392,7 +392,7 @@ class requirements extends dbconnection
             requirements::noauth_deleteRequirementAndPackage($sql_andPacks[$i]);
         }
         dbconnection::query("UPDATE quests SET complete_requirement_root_package_id = 0 WHERE game_id = '{$gameId}' AND complete_requirement_root_package_id = '{$requirementPackageId}'");
-        dbconnection::query("UPDATE quests SET display_requirement_root_package_id = 0 WHERE game_id = '{$gameId}' AND display_requirement_root_package_id = '{$requirementPackageId}'");
+        dbconnection::query("UPDATE quests SET active_requirement_root_package_id = 0 WHERE game_id = '{$gameId}' AND active_requirement_root_package_id = '{$requirementPackageId}'");
         dbconnection::query("UPDATE locations SET requirement_root_package_id = 0 WHERE game_id = '{$gameId}' AND requirement_root_package_id = '{$requirementPackageId}'");
         dbconnection::query("UPDATE web_hooks SET requirement_root_package_id = 0 WHERE game_id = '{$gameId}' AND requirement_root_package_id = '{$requirementPackageId}'");
         dbconnection::query("UPDATE overlays SET requirement_root_package_id = 0 WHERE game_id = '{$gameId}' AND requirement_root_package_id = '{$requirementPackageId}'");
