@@ -233,7 +233,7 @@ class events extends dbconnection
 
     public static function deleteEventPackage($pack)
     {
-        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM events WHERE event_package_id = '{$pack->event_package_id}'")->game_id;
+        $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM event_packages WHERE event_package_id = '{$pack->event_package_id}'")->game_id;
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
