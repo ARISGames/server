@@ -122,17 +122,20 @@ class events extends dbconnection
         for($i = 0; $i < count($reqEvents); $i++)
         {
             $found = false;
-            for($j = 0; $j < count($curEvents); $j++)
+            if($reqEvents[$i]->event_id)
             {
-                if($reqEvents[$i]->event_id == $curEvents[$j]->event_id)
-                    $found = true;
+              for($j = 0; $j < count($curEvents); $j++)
+              {
+                  if($reqEvents[$i]->event_id == $curEvents[$j]->event_id)
+                      $found = true;
+              }
             }
             if(!$found) $eventsToAdd[] = $reqEvents[$i];
         }
 
-        for($i = 0; $i < count($eventsToDelete); $i++) { events::deleteEvent($eventsToDelete[$i]); }
-        for($i = 0; $i < count($eventsToUpdate); $i++) { events::updateEvent($eventsToUpdate[$i]); }
-        for($i = 0; $i < count($eventsToAdd);    $i++) { events::createEvent($eventsToAdd[$i]);    }
+        for($i = 0; $i < count($eventsToDelete); $i++) events::deleteEvent($eventsToDelete[$i]);
+        for($i = 0; $i < count($eventsToUpdate); $i++) events::updateEvent($eventsToUpdate[$i]);
+        for($i = 0; $i < count($eventsToAdd);    $i++) events::createEvent($eventsToAdd[$i]);
 
         return events::getEventPackage($pack);
     }
