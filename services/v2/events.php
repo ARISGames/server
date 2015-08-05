@@ -185,7 +185,7 @@ class events extends dbconnection
         for($i = 0; $i < count($event_package->events); $i++)
           $event_package->events[$i] = events::eventObjectFromSQL($event_package->events[$i]);
 
-        return new return_package(0,$pack);
+        return new return_package(0,$event_package);
     }
 
     public function getEventPackagesForGame($pack)
