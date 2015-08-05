@@ -237,7 +237,7 @@ class events extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        dbconnection::query("DELETE FROM events_packages WHERE event_package_id = '{$pack->event_package_id}' LIMIT 1");
+        dbconnection::query("DELETE FROM event_packages WHERE event_package_id = '{$pack->event_package_id}' LIMIT 1");
 
         //cleanup
         $events = dbconnection::queryArray("SELECT * FROM events WHERE event_package_id = '{$pack->event_package_id}'");
