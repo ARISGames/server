@@ -25,7 +25,7 @@ class dialogs extends dbconnection
             (isset($pack->description)            ? "description,"            : "").
             (isset($pack->icon_media_id)          ? "icon_media_id,"          : "").
             (isset($pack->intro_dialog_script_id) ? "intro_dialog_script_id," : "").
-            (isset($pack->back_buton_enabled)     ? "back_buton_enabled,"     : "").
+            (isset($pack->back_button_enabled)    ? "back_button_enabled,"    : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
