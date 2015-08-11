@@ -25,6 +25,7 @@ class dialogs extends dbconnection
             (isset($pack->description)            ? "description,"            : "").
             (isset($pack->icon_media_id)          ? "icon_media_id,"          : "").
             (isset($pack->intro_dialog_script_id) ? "intro_dialog_script_id," : "").
+            (isset($pack->back_buton_enabled)     ? "back_buton_enabled,"     : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
@@ -32,6 +33,7 @@ class dialogs extends dbconnection
             (isset($pack->description)            ? "'".addslashes($pack->description)."',"            : "").
             (isset($pack->icon_media_id)          ? "'".addslashes($pack->icon_media_id)."',"          : "").
             (isset($pack->intro_dialog_script_id) ? "'".addslashes($pack->intro_dialog_script_id)."'," : "").
+            (isset($pack->back_button_enabled)    ? "'".addslashes($pack->back_button_enabled)."',"    : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -52,6 +54,7 @@ class dialogs extends dbconnection
             (isset($pack->description)            ? "description            = '".addslashes($pack->description)."', "            : "").
             (isset($pack->icon_media_id)          ? "icon_media_id          = '".addslashes($pack->icon_media_id)."', "          : "").
             (isset($pack->intro_dialog_script_id) ? "intro_dialog_script_id = '".addslashes($pack->intro_dialog_script_id)."', " : "").
+            (isset($pack->back_button_enabled)    ? "back_button_enabled    = '".addslashes($pack->back_button_enabled)."', "    : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE dialog_id = '{$pack->dialog_id}'"
         );
@@ -69,6 +72,7 @@ class dialogs extends dbconnection
         $dialog->description            = $sql_dialog->description;
         $dialog->icon_media_id          = $sql_dialog->icon_media_id;
         $dialog->intro_dialog_script_id = $sql_dialog->intro_dialog_script_id;
+        $dialog->back_button_enabled    = $sql_dialog->back_button_enabled;
 
         return $dialog;
     }

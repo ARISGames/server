@@ -22,15 +22,17 @@ class web_pages extends dbconnection
         $pack->web_page_id = dbconnection::queryInsert(
             "INSERT INTO web_pages (".
             "game_id,".
-            (isset($pack->name)          ? "name,"          : "").
-            (isset($pack->url)           ? "url,"           : "").
-            (isset($pack->icon_media_id) ? "icon_media_id," : "").
+            (isset($pack->name)                ? "name,"                : "").
+            (isset($pack->url)                 ? "url,"                 : "").
+            (isset($pack->icon_media_id)       ? "icon_media_id,"       : "").
+            (isset($pack->back_button_enabled) ? "back_button_enabled," : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
-            (isset($pack->name)          ? "'".addslashes($pack->name)."',"          : "").
-            (isset($pack->url)           ? "'".addslashes($pack->url)."',"           : "").
-            (isset($pack->icon_media_id) ? "'".addslashes($pack->icon_media_id)."'," : "").
+            (isset($pack->name)                ? "'".addslashes($pack->name)."',"                : "").
+            (isset($pack->url)                 ? "'".addslashes($pack->url)."',"                 : "").
+            (isset($pack->icon_media_id)       ? "'".addslashes($pack->icon_media_id)."',"       : "").
+            (isset($pack->back_button_enabled) ? "'".addslashes($pack->back_button_enabled)."'," : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -47,9 +49,10 @@ class web_pages extends dbconnection
 
         dbconnection::query(
             "UPDATE web_pages SET ".
-            (isset($pack->name)                 ? "name                 = '".addslashes($pack->name)."', "          : "").
-            (isset($pack->url)                  ? "url                  = '".addslashes($pack->url)."', "           : "").
-            (isset($pack->icon_media_id)        ? "icon_media_id        = '".addslashes($pack->icon_media_id)."', " : "").
+            (isset($pack->name)                ? "name                = '".addslashes($pack->name)."', "                : "").
+            (isset($pack->url)                 ? "url                 = '".addslashes($pack->url)."', "                 : "").
+            (isset($pack->icon_media_id)       ? "icon_media_id       = '".addslashes($pack->icon_media_id)."', "       : "").
+            (isset($pack->back_button_enabled) ? "back_button_enabled = '".addslashes($pack->back_button_enabled)."', " : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE web_page_id = '{$pack->web_page_id}'"
         );
@@ -61,11 +64,12 @@ class web_pages extends dbconnection
     {
         if(!$sql_webPage) return $sql_webPage;
         $webPage = new stdClass();
-        $webPage->web_page_id              = $sql_webPage->web_page_id;
-        $webPage->game_id              = $sql_webPage->game_id;
-        $webPage->name                 = $sql_webPage->name;
-        $webPage->url                  = $sql_webPage->url;
-        $webPage->icon_media_id        = $sql_webPage->icon_media_id;
+        $webPage->web_page_id         = $sql_webPage->web_page_id;
+        $webPage->game_id             = $sql_webPage->game_id;
+        $webPage->name                = $sql_webPage->name;
+        $webPage->url                 = $sql_webPage->url;
+        $webPage->icon_media_id       = $sql_webPage->icon_media_id;
+        $webPage->back_button_enabled = $sql_webPage->back_button_enabled;
 
         return $webPage;
     }

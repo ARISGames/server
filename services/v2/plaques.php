@@ -23,19 +23,21 @@ class plaques extends dbconnection
         $pack->plaque_id = dbconnection::queryInsert(
             "INSERT INTO plaques (".
             "game_id,".
-            (isset($pack->name)             ? "name,"             : "").
-            (isset($pack->description)      ? "description,"      : "").
-            (isset($pack->icon_media_id)    ? "icon_media_id,"    : "").
-            (isset($pack->media_id)         ? "media_id,"         : "").
-            (isset($pack->event_package_id) ? "event_package_id," : "").
+            (isset($pack->name)                ? "name,"                : "").
+            (isset($pack->description)         ? "description,"         : "").
+            (isset($pack->icon_media_id)       ? "icon_media_id,"       : "").
+            (isset($pack->media_id)            ? "media_id,"            : "").
+            (isset($pack->event_package_id)    ? "event_package_id,"    : "").
+            (isset($pack->back_button_enabled) ? "back_button_enabled," : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
-            (isset($pack->name)             ? "'".addslashes($pack->name)."',"             : "").
-            (isset($pack->description)      ? "'".addslashes($pack->description)."',"      : "").
-            (isset($pack->icon_media_id)    ? "'".addslashes($pack->icon_media_id)."',"    : "").
-            (isset($pack->media_id)         ? "'".addslashes($pack->media_id)."',"         : "").
-            (isset($pack->event_package_id) ? "'".addslashes($pack->event_package_id)."'," : "").
+            (isset($pack->name)                ? "'".addslashes($pack->name)."',"                : "").
+            (isset($pack->description)         ? "'".addslashes($pack->description)."',"         : "").
+            (isset($pack->icon_media_id)       ? "'".addslashes($pack->icon_media_id)."',"       : "").
+            (isset($pack->media_id)            ? "'".addslashes($pack->media_id)."',"            : "").
+            (isset($pack->event_package_id)    ? "'".addslashes($pack->event_package_id)."',"    : "").
+            (isset($pack->back_button_enabled) ? "'".addslashes($pack->back_button_enabled)."'," : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -52,11 +54,12 @@ class plaques extends dbconnection
 
         dbconnection::query(
             "UPDATE plaques SET ".
-            (isset($pack->name)             ? "name             = '".addslashes($pack->name)."', "             : "").
-            (isset($pack->description)      ? "description      = '".addslashes($pack->description)."', "      : "").
-            (isset($pack->icon_media_id)    ? "icon_media_id    = '".addslashes($pack->icon_media_id)."', "    : "").
-            (isset($pack->media_id)         ? "media_id         = '".addslashes($pack->media_id)."', "         : "").
-            (isset($pack->event_package_id) ? "event_package_id = '".addslashes($pack->event_package_id)."', " : "").
+            (isset($pack->name)                ? "name                = '".addslashes($pack->name)."', "                : "").
+            (isset($pack->description)         ? "description         = '".addslashes($pack->description)."', "         : "").
+            (isset($pack->icon_media_id)       ? "icon_media_id       = '".addslashes($pack->icon_media_id)."', "       : "").
+            (isset($pack->media_id)            ? "media_id            = '".addslashes($pack->media_id)."', "            : "").
+            (isset($pack->event_package_id)    ? "event_package_id    = '".addslashes($pack->event_package_id)."', "    : "").
+            (isset($pack->back_button_enabled) ? "back_button_enabled = '".addslashes($pack->back_button_enabled)."', " : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE plaque_id = '{$pack->plaque_id}'"
         );
@@ -68,13 +71,14 @@ class plaques extends dbconnection
     {
         if(!$sql_plaque) return $sql_plaque;
         $plaque = new stdClass();
-        $plaque->plaque_id        = $sql_plaque->plaque_id;
-        $plaque->game_id          = $sql_plaque->game_id;
-        $plaque->name             = $sql_plaque->name;
-        $plaque->description      = $sql_plaque->description;
-        $plaque->icon_media_id    = $sql_plaque->icon_media_id;
-        $plaque->media_id         = $sql_plaque->media_id;
-        $plaque->event_package_id = $sql_plaque->event_package_id;
+        $plaque->plaque_id           = $sql_plaque->plaque_id;
+        $plaque->game_id             = $sql_plaque->game_id;
+        $plaque->name                = $sql_plaque->name;
+        $plaque->description         = $sql_plaque->description;
+        $plaque->icon_media_id       = $sql_plaque->icon_media_id;
+        $plaque->media_id            = $sql_plaque->media_id;
+        $plaque->event_package_id    = $sql_plaque->event_package_id;
+        $plaque->back_button_enabled = $sql_plaque->back_button_enabled;
 
         return $plaque;
     }
