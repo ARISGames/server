@@ -20,7 +20,7 @@ help:
 	@echo "         dev: push master branch to dev"
 	@echo " cache_clear: trigger apc cache clear"
 	@echo ""
-	@echo "make [deploy|migrate]"
+	@echo "make [deploy|upgrade]"
 
 DEV_CACHE_COMMAND=curl --silent localhost:80/server/resetAPC.php
 DEV_CHECKOUT_COMMAND="cd /var/www/html/server/ && sudo git checkout master && sudo git pull && $(DEV_CACHE_COMMAND)"
@@ -28,8 +28,8 @@ DEV_CHECKOUT_COMMAND="cd /var/www/html/server/ && sudo git checkout master && su
 CACHE_COMMAND=curl --silent localhost:81/server/resetAPC.php
 CHECKOUT_COMMAND="cd /var/www/html/server/ && git checkout master && git pull && $(CACHE_COMMAND)"
 
-DEV_MIGRATE_COMMAND=curl 'http://dev.arisgames.org/server/json.php/v2.db.upgrade' --silent --data '{}' | tr -d '\r\n'
-MIGRATE_COMMAND=curl 'http://arisgames.org/server/json.php/v2.db.upgrade' --silent --data '{}' | tr -d '\r\n'
+DEV_UPGRADE_COMMAND=curl 'http://dev.arisgames.org/server/json.php/v2.db.upgrade' --silent --data '{}' | tr -d '\r\n'
+UPGRADE_COMMAND=curl 'http://arisgames.org/server/json.php/v2.db.upgrade' --silent --data '{}' | tr -d '\r\n'
 
 STATUS_COMMAND="cd /var/www/html/server/ && git fetch && git log -1 --date=short --pretty=format:'%Cred%h%Creset %Cgreen%cd%Creset %C(bold blue)%an%Creset%C(yellow)%d%Creset %s%Creset'"
 
@@ -71,14 +71,14 @@ cache_clear_prod:
 	@ssh -t $(arisprod3) $(CACHE_COMMAND) 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
 
-migrate_dev:
-	@echo "Migrating Development$(INFO_COLOR)"
-	@$(DEV_MIGRATE_COMMAND)
+upgrade_dev:
+	@echo "Upgrading Development$(INFO_COLOR)"
+	@$(DEV_UPGRADE_COMMAND)
 	@echo "$(CLEAR)"
 
-migrate_prod:
-	@echo "Migrating Production$(INFO_COLOR)"
-	@$(MIGRATE_COMMAND)
+upgrade_prod:
+	@echo "Upgrading Production$(INFO_COLOR)"
+	@$(UPGRADE_COMMAND)
 	@echo "$(CLEAR)"
 
 status:
@@ -94,6 +94,6 @@ status:
 
 cache_clear: cache_clear_prod
 deploy: prod
-migrate: migrate_prod
+upgrade: upgrade_prod
 
-all: deploy migrate
+all: deploy upgrade
