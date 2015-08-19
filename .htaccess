@@ -3,3 +3,6 @@ AddType video/mp4 mp4 MP4
 
 php_value post_max_size 10M
 php_value upload_max_filesize 10M
+
+Header set Access-Control-Allow-Origin "*"
+Header set Access-Control-Allow-Headers "Origin, Authorization, X-Requested-With, Content-Type, Accept"
