@@ -1,0 +1,1 @@
+ALTER TABLE `web_pages` CHANGE `url` `url` TEXT CHARACTER SET utf8 NOT NULL;
