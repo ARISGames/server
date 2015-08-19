@@ -34,7 +34,7 @@ function upload(evt)
       xmlhttp.responseText;
     }
     xmlhttp.open("POST","./json.php/v2.duplicate.importGame");
-    xmlhttp.setRequestHeader("Content-type","application/x-www-form-urlencoded");
+    xmlhttp.setRequestHeader("Content-type","application/json");
     xmlhttp.send(JSON.stringify(data));
   }
   reader.readAsDataURL(file);

@@ -43,7 +43,7 @@
         var xmlhttp;
         xmlhttp=new XMLHttpRequest();
         xmlhttp.open(method,"../../../json.php/migration."+fn,false);
-        xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xmlhttp.setRequestHeader("Content-type", "application/json");
         xmlhttp.send(params); //Synchronous call
 
         return JSON.parse(xmlhttp.responseText);
