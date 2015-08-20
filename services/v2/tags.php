@@ -212,6 +212,15 @@ class tags extends dbconnection
         return new return_package(0);
     }
 
+    public static function deleteObjectTagsForObject($pack)
+    {
+      $pack->auth->game_id = $pack->game_id;
+      $pack->auth->permission = "read_write";
+      if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+      dbconnection::query("DELETE FROM object_tags WHERE game_id = '{$pack->game_id}' AND object_type = '{$pack->object_type}' AND object_id = '{$pack->object_id}';");
+    }
+
     public static function countObjectsWithTag($pack)
     {
         $object_type = addslashes($pack->object_type);
