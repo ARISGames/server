@@ -138,7 +138,7 @@ class users extends dbconnection
           if(!$user && !$pack->no_auto_migrate)
           {
             //miguser api for reference
-                //public function migrateUser($playerName, $playerPass, $editorName, $editorPass, $newName, $newPass, $newDisplay, $newEmail)
+                //public static function migrateUser($playerName, $playerPass, $editorName, $editorPass, $newName, $newPass, $newDisplay, $newEmail)
 
             //first try to migrate full editor & player
             $migArgs = $pack->user_name."/".$pack->password."/".$pack->user_name."/".$pack->password."/".$pack->user_name."/".$pack->password."/0/0";

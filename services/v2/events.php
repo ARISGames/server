@@ -6,7 +6,7 @@ require_once("instances.php");
 
 class events extends dbconnection
 {
-    public function createEventPackage($pack)
+    public static function createEventPackage($pack)
     {
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
@@ -70,7 +70,7 @@ class events extends dbconnection
         return events::getEvent($pack);
     }
 
-    public function updateEventPackage($pack)
+    public static function updateEventPackage($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM event_packages WHERE event_package_id = '{$pack->event_package_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -178,7 +178,7 @@ class events extends dbconnection
         return $event;
     }
 
-    public function getEventPackage($pack)
+    public static function getEventPackage($pack)
     {
         $event_package = dbconnection::queryObject("SELECT * FROM event_packages WHERE event_package_id = '{$pack->event_package_id}'");
         if(!$event_package) return new return_package(0,$event_package);
@@ -190,13 +190,13 @@ class events extends dbconnection
         return new return_package(0,$event_package);
     }
 
-    public function getEventPackagesForGame($pack)
+    public static function getEventPackagesForGame($pack)
     {
       $event_packages = dbconnection::queryArray("SELECT * FROM event_packages WHERE game_id = '{$pack->game_id}'");
       return new return_package(0,$event_packages);
     }
 
-    public function getNonInternalEventPackagesForGame($pack) //returns all event packages NOT part of a different object (plaque, quest, etc...)
+    public static function getNonInternalEventPackagesForGame($pack) //returns all event packages NOT part of a different object (plaque, quest, etc...)
     {
       $event_packages = dbconnection::queryArray("SELECT * FROM event_packages WHERE game_id = '{$pack->game_id}'");
       $dialog_scripts = dbconnection::queryArray("SELECT * FROM dialog_scripts WHERE game_id = '{$pack->game_id}'");

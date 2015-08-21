@@ -6,7 +6,7 @@ require_once("return_package.php");
 class editors extends dbconnection
 {
     //Used by other services
-    public function authenticateGameEditor($pack)
+    public static function authenticateGameEditor($pack)
     {
         if(!users::authenticateUser($pack)) return false;
         if(dbconnection::queryObject("SELECT * FROM user_games WHERE user_id = '{$pack->user_id}' AND game_id = '{$pack->game_id}'")) return true;

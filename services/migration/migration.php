@@ -15,7 +15,7 @@ require_once("migration_return_package.php");
 class migration extends migration_dbconnection
 {
     //Would be better if it used tokens rather than name/pass combos, but v1 player has no token
-    public function migrateUser($playerName, $playerPass, $editorName, $editorPass, $newName, $newPass, $newDisplay, $newEmail)
+    public static function migrateUser($playerName, $playerPass, $editorName, $editorPass, $newName, $newPass, $newDisplay, $newEmail)
     {
         $Players = new Players;
         $Editors = new Editors;
@@ -62,7 +62,7 @@ class migration extends migration_dbconnection
         return new migration_return_package(0,true);
     }
 
-    public function linkV1EditorToV2User($editorName, $editorPass = false, $v2UserId = false, $v2Key = false)
+    public static function linkV1EditorToV2User($editorName, $editorPass = false, $v2UserId = false, $v2Key = false)
     {
         /*Huge hack to allow for either v1 style access or v2 access*/
         if(!$editorPass)
@@ -115,7 +115,7 @@ class migration extends migration_dbconnection
         return new migration_return_package(0,true);
     }
 
-    public function v1GamesForV2User($v2UserId, $v2Key = false)
+    public static function v1GamesForV2User($v2UserId, $v2Key = false)
     {
         /*Huge hack to allow for either v1 style access or v2 access*/
         if(!$v2Key)
@@ -178,7 +178,7 @@ class migration extends migration_dbconnection
             $str .= $chars[rand(0, $size-1)];
         return $str;
     }
-    public function populateMissingKeys()
+    public static function populateMissingKeys()
     {
       $users = migration_dbconnection::queryArray("SELECT * FROM users WHERE read_write_key = ''","v2");
 
@@ -197,7 +197,7 @@ class migration extends migration_dbconnection
       return new migration_return_package(0);
     }
 
-    public function migrateGame($v2UserId, $v2Key = false, $v1GameId = false, $sift = false)
+    public static function migrateGame($v2UserId, $v2Key = false, $v1GameId = false, $sift = false)
     {
         set_time_limit(0);
         /*Huge hack to allow for either v1 style access or v2 access*/
@@ -289,7 +289,7 @@ class migration extends migration_dbconnection
         return new migration_return_package(0,$v2Game);
     }
 
-    public function migrateMedia($v1GameId, $v2GameId)
+    public static function migrateMedia($v1GameId, $v2GameId)
     {
         $mediaIdMap = array();
         $mediaIdMap[0] = 0; //preserve default/no media
@@ -344,7 +344,7 @@ class migration extends migration_dbconnection
         return $mediaIdMap;
     }
 
-    public function migratePlaques($v1GameId, $v2GameId, $maps)
+    public static function migratePlaques($v1GameId, $v2GameId, $maps)
     {
         $plaqueIdMap = array();
         $plaqueIdMap[0] = 0;
@@ -370,7 +370,7 @@ class migration extends migration_dbconnection
         return $plaqueIdMap;
     }
 
-    public function migrateItems($v1GameId, $v2GameId, $maps)
+    public static function migrateItems($v1GameId, $v2GameId, $maps)
     {
         $itemIdMap = array();
         $itemIdMap[0] = 0;
@@ -385,7 +385,7 @@ class migration extends migration_dbconnection
         return $itemIdMap;
     }
 
-    public function migrateWebpages($v1GameId, $v2GameId, $maps)
+    public static function migrateWebpages($v1GameId, $v2GameId, $maps)
     {
         $webpageIdMap = array();
         $webpageIdMap[0] = 0;
@@ -400,7 +400,7 @@ class migration extends migration_dbconnection
         return $webpageIdMap;
     }
 
-    public function migrateDialogs($v1GameId, $v2GameId, $maps)
+    public static function migrateDialogs($v1GameId, $v2GameId, $maps)
     {
         //returns two maps- one mapping npc ids to dialogs, one mapping nodes to scripts
         //note- although 'characters' get created in this function, they are NOT needed for further migration, and no map is kept of their IDs
@@ -475,7 +475,7 @@ class migration extends migration_dbconnection
 
     //helper for migrateDialogs
     //returns id of existing character with same name/image, or creates new one
-    public function characterIdForGameNameMedia($gameId, $name, $mediaId, &$characters)
+    public static function characterIdForGameNameMedia($gameId, $name, $mediaId, &$characters)
     {
         for($i = 0; $i < count($characters); $i++)
         {
@@ -495,7 +495,7 @@ class migration extends migration_dbconnection
     //returns package w/id of the first option, and first and last of the newly created chain of scripts.
     //(aka the option that inherits the node's requirements, the script to start it off, and the to-be-parent of any more scripts)
     //disclaimer: you should probably read up on regular expressions before messing around with this...
-    public function textToScript($option, $optionIndex, $text, $gameId, $dialogId, $rootCharacterId, $rootCharacterTitle, $rootCharacterMediaId, $parentScriptId, &$characters, $maps)
+    public static function textToScript($option, $optionIndex, $text, $gameId, $dialogId, $rootCharacterId, $rootCharacterTitle, $rootCharacterMediaId, $parentScriptId, &$characters, $maps)
     {
         //testing scripts
         //$text = "<dialog banana=\"testing\" butNot=\"12\" America='555'><npc mediaId = \"59\">\nHere is the first thing I will say</npc><npc mediaId = \"60\">Second Thing!!!</npc></dialog>";
@@ -617,7 +617,7 @@ class migration extends migration_dbconnection
         return $newIds;
     }
 
-    public function updateDialogOptionLinks($v1GameId, $v2GameId, $maps)
+    public static function updateDialogOptionLinks($v1GameId, $v2GameId, $maps)
     {
         $options = migration_dbconnection::queryArray("SELECT * FROM dialog_options WHERE game_id = '{$v2GameId}'","v2");
         $tabs = migration_dbconnection::queryArray("SELECT * FROM tabs WHERE game_id = '{$v2GameId}'","v2");
@@ -648,7 +648,7 @@ class migration extends migration_dbconnection
         }
     }
 
-    public function migrateNoteTags($v1GameId, $v2GameId, $maps)
+    public static function migrateNoteTags($v1GameId, $v2GameId, $maps)
     {
         $tagIdMap = array();
         $tagIdMap[0] = 0;
@@ -663,7 +663,7 @@ class migration extends migration_dbconnection
         return $tagIdMap;
     }
 
-    public function migrateItemTags($v1GameId, $v2GameId, $maps)
+    public static function migrateItemTags($v1GameId, $v2GameId, $maps)
     {
         $tagIdMap = array();
         $tagIdMap[0] = 0;
@@ -696,7 +696,7 @@ class migration extends migration_dbconnection
         return $tagIdMap;
     }
 
-    public function migrateWebhooks($v1GameId, $v2GameId, $maps)
+    public static function migrateWebhooks($v1GameId, $v2GameId, $maps)
     {
         $webhookIdMap = array();
         $webhookIdMap[0] = 0;
@@ -711,7 +711,7 @@ class migration extends migration_dbconnection
         return $webhookIdMap;
     }
 
-    public function migrateQuests($v1GameId, $v2GameId, $maps)
+    public static function migrateQuests($v1GameId, $v2GameId, $maps)
     {
         $questIdMap = array();
         $questIdMap[0] = 0;
@@ -726,7 +726,7 @@ class migration extends migration_dbconnection
         return $questIdMap;
     }
 
-    public function migrateEvents($v1GameId, $v2GameId, $maps)
+    public static function migrateEvents($v1GameId, $v2GameId, $maps)
     {
         //round up all v1 events into groups by type and by object
         $eGroupings = new stdClass;
@@ -755,7 +755,7 @@ class migration extends migration_dbconnection
         }
     }
     //helper for migrateEvents
-    public function migrateEventsListIntoPackage($gameId, $eventsList, $maps)
+    public static function migrateEventsListIntoPackage($gameId, $eventsList, $maps)
     {
         $event_package_id = migration_dbconnection::queryInsert("INSERT INTO event_packages (game_id, created) VALUES ('{$gameId}',CURRENT_TIMESTAMP)","v2");
 
@@ -769,7 +769,7 @@ class migration extends migration_dbconnection
         return $event_package_id;
     }
 
-    public function migrateFactories($v1GameId, $v2GameId, $maps)
+    public static function migrateFactories($v1GameId, $v2GameId, $maps)
     {
         $factoryIdMap = array();
         $factoryIdMap[0] = 0;
@@ -801,7 +801,7 @@ class migration extends migration_dbconnection
         return $factoryIdMap;
     }
 
-    public function migrateTriggers($v1GameId, $v2GameId, $sceneId, $maps)
+    public static function migrateTriggers($v1GameId, $v2GameId, $sceneId, $maps)
     {
         //returns two trigger maps- one mapping location ids to triggers, one mapping qr codes to triggers
         //note- although 'instances' get created in this function, they are NOT needed for further migration, and no map is kept of their IDs
@@ -882,7 +882,7 @@ class migration extends migration_dbconnection
         return $returnMaps;
     }
 
-    public function migrateTabs($v1GameId, $v2GameId, $maps)
+    public static function migrateTabs($v1GameId, $v2GameId, $maps)
     {
         $tabIdMap = array();
         $tabIdMap[0] = 0; //preserve default/no tab
@@ -944,7 +944,7 @@ class migration extends migration_dbconnection
         return $tabIdMap;
     }
 
-    public function migrateRequirements($v1GameId, $v2GameId, $maps)
+    public static function migrateRequirements($v1GameId, $v2GameId, $maps)
     {
         //no need to return map of any kind- nothing references v1 requirements
 
@@ -1021,7 +1021,7 @@ class migration extends migration_dbconnection
         }
     }
     //helper for migraterequirements
-    public function migrateRequirementListIntoPackage($gameId, $requirementsList, $maps)
+    public static function migrateRequirementListIntoPackage($gameId, $requirementsList, $maps)
     {
         $root_req_id = migration_dbconnection::queryInsert("INSERT INTO requirement_root_packages (game_id, created) VALUES ('{$gameId}',CURRENT_TIMESTAMP)","v2");
 
@@ -1076,7 +1076,7 @@ class migration extends migration_dbconnection
     }
 
     //assumes siftr-like structure
-    public function migrateNotes($v1GameId, $v2GameId, $maps)
+    public static function migrateNotes($v1GameId, $v2GameId, $maps)
     {
         $noteIdMap = array();
         $noteIdMap[0] = 0;

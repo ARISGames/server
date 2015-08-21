@@ -8,7 +8,7 @@ class requirements extends dbconnection
 {
     //Takes in requirementPackage JSON, all fields optional except game_id.
     //all individual ids (requirement_root_package_id, etc...) ignored if present ( = easy duplication)
-    public function createRequirementPackage($pack)
+    public static function createRequirementPackage($pack)
     {
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
@@ -38,7 +38,7 @@ class requirements extends dbconnection
     }
 
     //requires game_id and requirement_root_package_id
-    public function createRequirementAndPackage($pack)
+    public static function createRequirementAndPackage($pack)
     {
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
@@ -70,7 +70,7 @@ class requirements extends dbconnection
     }
 
     //requires game_id and requirement_and_package_id
-    public function createRequirementAtom($pack)
+    public static function createRequirementAtom($pack)
     {
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
@@ -105,7 +105,7 @@ class requirements extends dbconnection
         );
     }
 
-    public function updateRequirementPackage($pack)
+    public static function updateRequirementPackage($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM requirement_root_packages WHERE requirement_root_package_id = '{$pack->requirement_root_package_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -158,7 +158,7 @@ class requirements extends dbconnection
         return requirements::getRequirementPackage($pack);
     }
 
-    public function updateRequirementAndPackage($pack)
+    public static function updateRequirementAndPackage($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM requirement_and_packages WHERE requirement_and_package_id = '{$pack->requirement_and_package_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -209,7 +209,7 @@ class requirements extends dbconnection
         }
     }
 
-    public function updateRequirementAtom($pack)
+    public static function updateRequirementAtom($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM requirement_atoms WHERE requirement_atom_id = '{$pack->requirement_atom_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -232,7 +232,7 @@ class requirements extends dbconnection
     }
 
 
-    public function getRequirementPackage($pack)
+    public static function getRequirementPackage($pack)
     {
         $sql_root = dbconnection::queryObject("SELECT * FROM requirement_root_packages WHERE requirement_root_package_id = '{$pack->requirement_root_package_id}'");
         $pack->requirement_root_package_id = $sql_root->requirement_root_package_id;
@@ -253,7 +253,7 @@ class requirements extends dbconnection
         unset($pack->auth);
         return new return_package(0,$pack);
     }
-    public function getRequirementAndPackage($pack)
+    public static function getRequirementAndPackage($pack)
     {
         $sql_andPack = dbconnection::queryObject("SELECT * FROM requirement_and_packages WHERE requirement_and_package_id = '{$pack->requirement_and_package_id}'");
         $andPack = new stdClass();
@@ -275,7 +275,7 @@ class requirements extends dbconnection
         unset($pack->auth);
         return new return_package(0,$andPack);
     }
-    public function getRequirementAtom($pack)
+    public static function getRequirementAtom($pack)
     {
         $sql_atom = dbconnection::queryObject("SELECT * FROM requirement_atoms WHERE requirement_atom_id = '{$pack->requirement_atom_id}'");
         $atom = new stdClass();
@@ -337,7 +337,7 @@ class requirements extends dbconnection
     }
 
 
-    public function getRequirementRootPackagesForGame($pack)
+    public static function getRequirementRootPackagesForGame($pack)
     {
       $sql_rrps = dbconnection::queryArray("SELECT * FROM requirement_root_packages WHERE game_id = '{$pack->game_id}'");
       $rrps = array();
@@ -347,7 +347,7 @@ class requirements extends dbconnection
       return new return_package(0,$rrps);
     }
 
-    public function getRequirementAndPackagesForGame($pack)
+    public static function getRequirementAndPackagesForGame($pack)
     {
       $sql_raps = dbconnection::queryArray("SELECT * FROM requirement_and_packages WHERE game_id = '{$pack->game_id}'");
       $raps = array();
@@ -357,7 +357,7 @@ class requirements extends dbconnection
       return new return_package(0,$raps);
     }
 
-    public function getRequirementAtomsForGame($pack)
+    public static function getRequirementAtomsForGame($pack)
     {
       $sql_as = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE game_id = '{$pack->game_id}'");
       $as = array();
@@ -368,7 +368,7 @@ class requirements extends dbconnection
     }
 
 
-    public function deleteRequirementPackage($pack)
+    public static function deleteRequirementPackage($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT game_id FROM requirement_root_packages WHERE requirement_root_package_id = '{$pack->requirement_root_package_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -378,7 +378,7 @@ class requirements extends dbconnection
     }
 
     //this is a security risk...
-    public function noauth_deleteRequirementPackage($pack)
+    public static function noauth_deleteRequirementPackage($pack)
     {
         //and this "fixes" the security risk...
         if(strpos($_server['request_uri'],'noauth') !== false) return new return_package(6, null, "attempt to bypass authentication externally.");
@@ -399,7 +399,7 @@ class requirements extends dbconnection
         return new return_package(0);
     }
 
-    public function deleteRequirementAndPackage($pack)
+    public static function deleteRequirementAndPackage($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT game_id FROM requirement_and_packages WHERE requirement_and_package_id = '{$pack->requirement_and_package_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -409,7 +409,7 @@ class requirements extends dbconnection
     }
 
     //this is a security risk...
-    public function noauth_deleteRequirementAndPackage($pack)
+    public static function noauth_deleteRequirementAndPackage($pack)
     {
         //and this "fixes" the security risk...
         if(strpos($_server['request_uri'],'noauth') !== false) return new return_package(6, null, "attempt to bypass authentication externally.");
@@ -425,7 +425,7 @@ class requirements extends dbconnection
         return new return_package(0);
     }
 
-    public function deleteRequirementAtom($pack)
+    public static function deleteRequirementAtom($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT game_id FROM requirement_atoms WHERE requirement_atom_id = '{$pack->requirement_atom_id}'")->game_id;
         $pack->auth->permission = "read_write";
@@ -435,7 +435,7 @@ class requirements extends dbconnection
     }
 
     //this is a security risk...
-    public function noauth_deleteRequirementAtom($pack)
+    public static function noauth_deleteRequirementAtom($pack)
     {
         //and this "fixes" the security risk...
         if(strpos($_server['request_uri'],'noauth') !== false) return new return_package(6, null, "attempt to bypass authentication externally.");
@@ -444,7 +444,7 @@ class requirements extends dbconnection
         return new return_package(0);
     }
 
-    public function getRequirementAndPackagesForRootPackage($pack)
+    public static function getRequirementAndPackagesForRootPackage($pack)
     {
         $sql_andPacks = dbconnection::queryObject("SELECT * FROM requirement_and_packages WHERE requirement_root_package_id = '{$pack->requirement_root_package_id}'");
         $andPackages = array();
@@ -454,7 +454,7 @@ class requirements extends dbconnection
         return new return_package(0,$andPackages);
     }
 
-    public function getRequirementAtomsForAndPackage($pack)
+    public static function getRequirementAtomsForAndPackage($pack)
     {
         $sql_atoms = dbconnection::queryObject("SELECT * FROM requirement_atoms WHERE requirement_and_package_id = '{$pack->requirement_and_package_id}'");
         $atoms = array();
@@ -464,7 +464,7 @@ class requirements extends dbconnection
         return new return_package(0,$atoms);
     }
 
-    public function evaluateRequirementPackage($pack)
+    public static function evaluateRequirementPackage($pack)
     {
         if($pack->requirement_root_package_id == 0) return true;
 
@@ -479,7 +479,7 @@ class requirements extends dbconnection
         return false;
     }
 
-    public function evaluateRequirementAndPackage($pack)
+    public static function evaluateRequirementAndPackage($pack)
     {
         $atoms = dbconnection::queryArray("SELECT requirement_atom_id FROM requirement_atoms WHERE requirement_and_package_id= '{$pack->requirement_and_package_id}'");
 
@@ -492,7 +492,7 @@ class requirements extends dbconnection
         return true;
     }
 
-    public function evaluateRequirementAtom($pack)
+    public static function evaluateRequirementAtom($pack)
     {
         $atom = dbconnection::queryObject("SELECT * FROM requirement_atoms WHERE requirement_atom_id = '{$pack->requirement_atom_id}'");
         if(!$atom) return false;
@@ -532,33 +532,33 @@ class requirements extends dbconnection
         return false;
     }
 
-    private function playerHasItem($pack)
+    private static function playerHasItem($pack)
     {
         $item = dbconnection::queryObject("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_type = 'USER' AND owner_id = '{$pack->user_id}' AND object_type = 'ITEM' AND object_id = '{$pack->content_id}' AND qty >= '{$pack->qty}'");
         return $item ? true : false;
     }
 
-    private function playerHasTaggedItem($pack)
+    private static function playerHasTaggedItem($pack)
     {
         $query = "SELECT SUM(instances.qty) AS qty FROM instances JOIN object_tags ON object_tags.object_id = instances.object_id WHERE instances.game_id = '{$pack->game_id}' AND instances.owner_type = 'USER' AND instances.owner_id = '{$pack->user_id}' AND instances.object_type = 'ITEM' AND object_tags.object_Type = 'ITEM' AND object_tags.tag_id = '{$pack->content_id}'";
         $item = dbconnection::queryObject($query);
         return intval($item->qty) >= intval($pack->qty);
     }
 
-    private function gameHasItem($pack)
+    private static function gameHasItem($pack)
     {
         $item = dbconnection::queryObject("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND owner_type = 'GAME' AND object_type = 'ITEM' AND object_id = '{$pack->content_id}' AND qty >= '{$pack->qty}'");
         return $item ? true : false;
     }
 
-    private function gameHasTaggedItem($pack)
+    private static function gameHasTaggedItem($pack)
     {
         $query = "SELECT SUM(instances.qty) AS qty FROM instances JOIN object_tags ON object_tags.object_id = instances.object_id WHERE instances.game_id = '{$pack->game_id}' AND instances.owner_type = 'GAME' AND instances.object_type = 'ITEM' AND object_tags.object_Type = 'ITEM' AND object_tags.tag_id = '{$pack->content_id}'";
         $item = dbconnection::queryObject($query);
         return intval($item->qty) >= intval($pack->qty);
     }
 
-    private function groupHasItem($pack)
+    private static function groupHasItem($pack)
     {
         $group = dbconnection::queryObject("SELECT * FROM user_game_groups WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}';");
         if(!$group) return false;
@@ -566,27 +566,27 @@ class requirements extends dbconnection
         return $item ? true : false;
     }
 
-    private function groupHasTaggedItem($pack)
+    private static function groupHasTaggedItem($pack)
     {
         $query = "SELECT SUM(instances.qty) AS qty FROM instances JOIN object_tags ON object_tags.object_id = instances.object_id WHERE instances.game_id = '{$pack->game_id}' AND instances.owner_type = 'GROUP' AND instances.owner_id = '{$pack->group_id}' AND instances.object_type = 'ITEM' AND object_tags.object_Type = 'ITEM' AND object_tags.tag_id = '{$pack->content_id}'";
         $item = dbconnection::queryObject($query);
         return intval($item->qty) >= intval($pack->qty);
     }
 
-    private function playerViewed($pack,$type)
+    private static function playerViewed($pack,$type)
     {
         $entry = dbconnection::queryObject("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}' AND event_type = 'VIEW_{$type}' AND content_id = '{$pack->content_id}' AND deleted = 0");
         return $entry ? true : false;
     }
 
-    private function playerRanEvent($pack)
+    private static function playerRanEvent($pack)
     {
         $entry = dbconnection::queryObject("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}' AND event_type = 'RUN_EVENT_PACKAGE' AND content_id = '{$pack->content_id}' AND deleted = 0");
         return $entry ? true : false;
     }
 
     // TODO second pass using radius ie http://www.movable-type.co.uk/scripts/latlong-db.html and http://janmatuschek.de/LatitudeLongitudeBoundingCoordinates
-    private function playerUploadedAnyNear($pack)
+    private static function playerUploadedAnyNear($pack)
     {
         $geo = AnthonyMartin\GeoLocation\GeoLocation::fromDegrees($pack->latitude, $pack->longitude);
         $bounds = $geo->boundingCoordinates($pack->distance * 0.001, 'km');
@@ -602,7 +602,7 @@ class requirements extends dbconnection
         return $result->qty >= $pack->qty ? true : false;
     }
 
-    private function playerUploadedTypeNear($pack,$type)
+    private static function playerUploadedTypeNear($pack,$type)
     {
         // Compare with list of types in media.php
         switch($type)
@@ -626,26 +626,26 @@ class requirements extends dbconnection
         return $result->qty >= $pack->qty ? true : false;
     }
 
-    private function playerCompletedQuest($pack)
+    private static function playerCompletedQuest($pack)
     {
         $entry = dbconnection::queryObject("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}' AND event_type = 'COMPLETE_QUEST' AND content_id = '{$pack->content_id}' AND deleted = 0");
         return $entry ? true : false;
     }
 
     // There are no web hooks in v2
-    private function playerReceivedWebHook($pack)
+    private static function playerReceivedWebHook($pack)
     {
         return false;
     }
 
-    private function playerHasNote($pack)
+    private static function playerHasNote($pack)
     {
         $result = dbconnection::queryObject("SELECT count(*) as qty FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}' AND event_type = 'CREATE_NOTE' AND deleted = 0");
 
         return $result->qty >= $pack->qty ? true : false;
     }
 
-    private function playerHasNoteWithTag($pack)
+    private static function playerHasNoteWithTag($pack)
     {
         $result = dbconnection::queryObject("SELECT count(*) as qty FROM user_log JOIN notes ON notes.note_id = user_log.content_id JOIN object_tags ON object_tags.object_id = notes.note_id WHERE user_log.game_id = '{$pack->game_id}' AND user_log.user_id = '{$pack->user_id}' AND user_log.event_type = 'CREATE_NOTE' AND user_log.deleted = '0' AND object_tags.tag_id = '{$pack->content_id}' AND object_tags.object_type = 'NOTE'");
 
@@ -653,12 +653,12 @@ class requirements extends dbconnection
     }
 
     // There are no likes in v2
-    private function playerHasNoteWithLikes($pack)
+    private static function playerHasNoteWithLikes($pack)
     {
         return false;
     }
 
-    private function playerHasNoteWithComments($pack)
+    private static function playerHasNoteWithComments($pack)
     {
         $query = "SELECT count(note_comments.note_id) as qty FROM user_log JOIN notes ON notes.note_id = user_log.content_id JOIN note_comments ON note_comments.note_id = notes.note_id WHERE user_log.game_id = '{$pack->game_id}' AND user_log.user_id = '{$pack->user_id}' AND user_log.event_type = 'CREATE_NOTE' AND user_log.deleted = 0 GROUP BY note_comments.note_id ORDER BY qty DESC LIMIT 1";
         $result = dbconnection::queryObject($query);
@@ -666,7 +666,7 @@ class requirements extends dbconnection
         return $result->qty >= $pack->qty ? true : false;
     }
 
-    private function playerHasGivenNoteComments($pack)
+    private static function playerHasGivenNoteComments($pack)
     {
         $result = dbconnection::queryObject("SELECT count(*) as qty FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}' AND event_type = 'GIVE_NOTE_COMMENT' AND deleted = 0");
 
