@@ -38,7 +38,7 @@ class NetDebug
 		NetDebug::getTraceStack($result);
 	}
 		
-	function getTraceStack($val=NULL)
+	static function getTraceStack($val=NULL)
 	{
 		static $traceStack = array();
 		if($val !== NULL)

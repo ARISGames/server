@@ -52,7 +52,7 @@ class Executive {
 	 * @param array $a Arguments to pass to the method
 	 * @return mixed The results from the method operation
 	 */
-	function doMethodCall(&$bodyObj, &$object, $method, $args) 
+	static function doMethodCall(&$bodyObj, &$object, $method, $args) 
 	{
 		try
 		{
@@ -83,7 +83,7 @@ class Executive {
 	 * Builds a class using a class name
 	 * If there is a failure, catch the error and return to caller
 	 */
-	function buildClass(&$bodyObj, $className)
+	static function buildClass(&$bodyObj, $className)
 	{
 		global $amfphp;
 		if(isset($amfphp['classInstances'][$className]))
@@ -114,7 +114,7 @@ class Executive {
 	 * an error handler which seems to break the convential rule for working with exceptions
 	 * Nesting function calls seems to solve the problem, but not nesting try...catch
 	 */
-	function deferredMethodCall(&$bodyObj, &$object, $method, $args)
+	static function deferredMethodCall(&$bodyObj, &$object, $method, $args)
 	{
 		try
 		{
@@ -154,7 +154,7 @@ class Executive {
 	 * Include a class
 	 * If there is an error, catch and return to caller
 	 */
-	function includeClass(&$bodyObj, $location)
+	static function includeClass(&$bodyObj, $location)
 	{
 		$included = false;
 		try

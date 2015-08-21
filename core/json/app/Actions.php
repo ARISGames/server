@@ -76,7 +76,7 @@ function executionAction(& $body)
 	$methodName = $body->methodName;
 	$args = $body->getValue();
 	
-	$output = Executive::doMethodCall($body, &$classConstruct, $methodName, $args);
+	$output = Executive::doMethodCall($body, $classConstruct, $methodName, $args);
 	
 	if($output !== "__amfphp_error")
 	{

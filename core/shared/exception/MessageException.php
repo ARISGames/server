@@ -54,7 +54,7 @@ class MessageException {
 	 * @param AMFException @exception The exception object to throw
 	 * @see AMFBody
 	 */ 
-	function throwException (&$body, $exception) {
+	static function throwException (&$body, $exception) {
 		$body->responseURI = $body->responseIndex . "/onStatus";
 		$results = &$body->getResults();
 
