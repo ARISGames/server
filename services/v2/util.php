@@ -1,6 +1,10 @@
 <?php
 require_once('../../config.class.php');
 
+//mailgun
+require 'vendor/autoload.php';
+use Mailgun\Mailgun;
+
 class util
 {
     public static function errorLog($message)
@@ -17,28 +21,19 @@ class util
         fclose($errorLogFile);
     }
 
-
     public static function sendEmail($to, $subject, $body)
     {
-        include_once('../../libraries/phpmailer/class.phpmailer.php');
+      if(empty($to)) return false;
 
-        if(empty($to)) return false;
+      $mg = new Mailgun(Config::mailgun_key);
+      $mg->sendMessage("arisgames.org",
+        array('from'    => 'noreply@arisgames.org', 
+              'to'      => $to, 
+              'subject' => $subject, 
+              'text'    => $body)
+      );
 
-        $mail = new phpmailer;
-        $mail->PluginDir = '../../libraries/phpmailer';
-
-        $mail->CharSet = 'UTF-8';
-        $mail->Subject = substr(stripslashes($subject), 0, 900);
-        $mail->From = 'noreply@arisgames.org';
-        $mail->FromName = 'ARIS Mailer';
-
-        $mail->AddAddress($to, 'ARIS Author');
-        $mail->MsgHTML($body);
-
-        $mail->WordWrap = 79;
-
-        if($mail->Send()) return true;
-        else return false;
+      return true;
     }
 
     public static function mToDeg($meters) // lat/lon ^ -> meters
