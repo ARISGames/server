@@ -1,10 +1,6 @@
 <?php
 require_once('../../config.class.php');
 
-//mailgun
-require 'vendor/autoload.php';
-use Mailgun\Mailgun;
-
 class util
 {
     public static function errorLog($message)
@@ -25,13 +21,21 @@ class util
     {
       if(empty($to)) return false;
 
-      $mg = new Mailgun(Config::mailgun_key);
-      $mg->sendMessage("arisgames.org",
+      $c = curl_init(); 
+      curl_setopt($c, CURLOPT_USERPWD, 'api:'.Config::mailgun_key); 
+      curl_setopt($c, CURLOPT_URL, "https://api.mailgun.net/v3/arisgames.org/messages"); 
+      curl_setopt($c, CURLOPT_RETURNTRANSFER, 1); 
+
+      curl_setopt($c, CURLOPT_POST, 1);
+      curl_setopt($c, CURLOPT_POSTFIELDS,
         array('from'    => 'noreply@arisgames.org', 
               'to'      => $to, 
               'subject' => $subject, 
               'text'    => $body)
       );
+
+      $output = curl_exec($c); 
+      curl_close($c);      
 
       return true;
     }

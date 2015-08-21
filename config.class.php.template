@@ -36,6 +36,9 @@ class Config
     const pusher_secret = '####################';
     const pusher_app_id = '#####';
 
+    //mailgun service
+    const mailgun_key = 'key-################################';
+
     //PHP accelerator and cache
     const isAPCLoaded = FALSE; //Change to TRUE if the APC server extension has been configured
 
