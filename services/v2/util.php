@@ -21,21 +21,22 @@ class util
     {
       if(empty($to)) return false;
 
-      $c = curl_init(); 
-      curl_setopt($c, CURLOPT_USERPWD, 'api:'.Config::mailgun_key); 
-      curl_setopt($c, CURLOPT_URL, "https://api.mailgun.net/v3/arisgames.org/messages"); 
-      curl_setopt($c, CURLOPT_RETURNTRANSFER, 1); 
+      $c = curl_init();
+      curl_setopt($c, CURLOPT_USERPWD, 'api:'.Config::mailgun_key);
+      curl_setopt($c, CURLOPT_URL, "https://api.mailgun.net/v3/arisgames.org/messages");
+      curl_setopt($c, CURLOPT_RETURNTRANSFER, 1);
 
       curl_setopt($c, CURLOPT_POST, 1);
       curl_setopt($c, CURLOPT_POSTFIELDS,
-        array('from'    => 'noreply@arisgames.org', 
-              'to'      => $to, 
-              'subject' => $subject, 
-              'text'    => $body)
+        array('from'    => 'noreply@arisgames.org',
+              'to'      => $to,
+              'subject' => $subject,
+              'text'    => $body,
+              'html'    => $body)
       );
 
-      $output = curl_exec($c); 
-      curl_close($c);      
+      $output = curl_exec($c);
+      curl_close($c);
 
       return true;
     }
