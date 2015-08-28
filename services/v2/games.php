@@ -57,6 +57,7 @@ class games extends dbconnection
             (isset($pack->latitude)                                     ? "latitude,"                                     : "").
             (isset($pack->longitude)                                    ? "longitude,"                                    : "").
             (isset($pack->network_level)                                ? "network_level,"                                : "").
+            (isset($pack->preload_media)                                ? "preload_media,"                                : "").
             "created".
             ") VALUES (".
             (isset($pack->name)                                         ? "'".addslashes($pack->name)."',"                                         : "").
@@ -92,6 +93,7 @@ class games extends dbconnection
             (isset($pack->latitude)                                     ? "'".addslashes($pack->latitude)."',"                                     : "").
             (isset($pack->longitude)                                    ? "'".addslashes($pack->longitude)."',"                                    : "").
             (isset($pack->network_level)                                ? "'".addslashes($pack->network_level)."',"                                : "").
+            (isset($pack->preload_media)                                ? "'".addslashes($pack->preload_media)."',"                                : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -173,9 +175,10 @@ class games extends dbconnection
             (isset($pack->moderated)                                    ? "moderated                                    = '".addslashes($pack->moderated)."', "                                    : "").
             (isset($pack->type)                                         ? "type                                         = '".addslashes($pack->type)."', "                                         : "").
             (isset($pack->intro_scene_id)                               ? "intro_scene_id                               = '".addslashes($pack->intro_scene_id)."', "                               : "").
-            (isset($pack->latitude)                                     ? "latitude                                     = '".addslashes($pack->latitude)."', "                               : "").
-            (isset($pack->longitude)                                    ? "longitude                                    = '".addslashes($pack->longitude)."', "                               : "").
-            (isset($pack->network_level)                                ? "network_level                                = '".addslashes($pack->network_level)."', "                               : "").
+            (isset($pack->latitude)                                     ? "latitude                                     = '".addslashes($pack->latitude)."', "                                     : "").
+            (isset($pack->longitude)                                    ? "longitude                                    = '".addslashes($pack->longitude)."', "                                    : "").
+            (isset($pack->network_level)                                ? "network_level                                = '".addslashes($pack->network_level)."', "                                : "").
+            (isset($pack->preload_media)                                ? "preload_media                                = '".addslashes($pack->preload_media)."', "                                : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE game_id = '{$pack->game_id}'"
         );
@@ -220,6 +223,7 @@ class games extends dbconnection
         $game->latitude                                     = $sql_game->latitude;
         $game->longitude                                    = $sql_game->longitude;
         $game->network_level                                = $sql_game->network_level;
+        $game->preload_media                                = $sql_game->preload_media;
         $game->moderated                                    = $sql_game->moderated;
 
         return $game;
