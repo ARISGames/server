@@ -35,6 +35,7 @@ class triggers extends dbconnection
             (isset($pack->hidden)                      ? "hidden,"                      : "").
             (isset($pack->trigger_on_enter)            ? "trigger_on_enter,"            : "").
             (isset($pack->qr_code)                     ? "qr_code,"                     : "").
+            (isset($pack->seconds)                     ? "seconds,"                     : "").
             "created".
             ") VALUES (".
             "'".$pack->game_id."',".
@@ -54,6 +55,7 @@ class triggers extends dbconnection
             (isset($pack->hidden)                      ? "'".addslashes($pack->hidden)."',"                      : "").
             (isset($pack->trigger_on_enter)            ? "'".addslashes($pack->trigger_on_enter)."',"            : "").
             (isset($pack->qr_code)                     ? "'".addslashes($pack->qr_code)."',"                     : "").
+            (isset($pack->seconds)                     ? "'".addslashes($pack->seconds)."',"                     : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -86,6 +88,7 @@ class triggers extends dbconnection
             (isset($pack->hidden)                      ? "hidden                      = '".addslashes($pack->hidden)."', "                      : "").
             (isset($pack->trigger_on_enter)            ? "trigger_on_enter            = '".addslashes($pack->trigger_on_enter)."', "            : "").
             (isset($pack->qr_code)                     ? "qr_code                     = '".addslashes($pack->qr_code)."', "                     : "").
+            (isset($pack->seconds)                     ? "seconds                     = '".addslashes($pack->seconds)."', "                     : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE trigger_id = '{$pack->trigger_id}'"
         );
@@ -115,6 +118,7 @@ class triggers extends dbconnection
         $trigger->hidden                      = $sql_trigger->hidden;
         $trigger->trigger_on_enter            = $sql_trigger->trigger_on_enter;
         $trigger->qr_code                     = $sql_trigger->qr_code;
+        $trigger->seconds                     = $sql_trigger->seconds;
 
         return $trigger;
     }
