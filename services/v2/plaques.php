@@ -29,6 +29,7 @@ class plaques extends dbconnection
             (isset($pack->media_id)            ? "media_id,"            : "").
             (isset($pack->event_package_id)    ? "event_package_id,"    : "").
             (isset($pack->back_button_enabled) ? "back_button_enabled," : "").
+            (isset($pack->continue_function)   ? "continue_function,"   : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
@@ -38,6 +39,7 @@ class plaques extends dbconnection
             (isset($pack->media_id)            ? "'".addslashes($pack->media_id)."',"            : "").
             (isset($pack->event_package_id)    ? "'".addslashes($pack->event_package_id)."',"    : "").
             (isset($pack->back_button_enabled) ? "'".addslashes($pack->back_button_enabled)."'," : "").
+            (isset($pack->continue_function)   ? "'".addslashes($pack->continue_function)."',"   : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -60,6 +62,7 @@ class plaques extends dbconnection
             (isset($pack->media_id)            ? "media_id            = '".addslashes($pack->media_id)."', "            : "").
             (isset($pack->event_package_id)    ? "event_package_id    = '".addslashes($pack->event_package_id)."', "    : "").
             (isset($pack->back_button_enabled) ? "back_button_enabled = '".addslashes($pack->back_button_enabled)."', " : "").
+            (isset($pack->continue_function)   ? "continue_function   = '".addslashes($pack->continue_function)."', "   : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE plaque_id = '{$pack->plaque_id}'"
         );
@@ -79,6 +82,7 @@ class plaques extends dbconnection
         $plaque->media_id            = $sql_plaque->media_id;
         $plaque->event_package_id    = $sql_plaque->event_package_id;
         $plaque->back_button_enabled = $sql_plaque->back_button_enabled;
+        $plaque->continue_function   = $sql_plaque->continue_function;
 
         return $plaque;
     }
