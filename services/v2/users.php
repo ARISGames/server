@@ -143,14 +143,14 @@ class users extends dbconnection
             //first try to migrate full editor & player
             $migArgs = $pack->user_name."/".$pack->password."/".$pack->user_name."/".$pack->password."/".$pack->user_name."/".$pack->password."/0/0";
             $mig = bridgeService("migration", "migration", "migrateUser", $migArgs, false);
-            if($mig->returnCode != 0)
+            if($mig->returnCode !== 0)
             {
               //if that doesn't work, just try editor
               $migArgs = "0/0/".$pack->user_name."/".$pack->password."/".$pack->user_name."/".$pack->password."/0/0";
               $mig = bridgeService("migration", "migration", "migrateUser", $migArgs, false);
             }
             //if THAT doesn't work, bad login
-            if($mig->returnCode != 0)
+            if($mig->returnCode !== 0)
               return new return_package(1, NULL, "Incorrect username/password");
             else //it worked!
             {

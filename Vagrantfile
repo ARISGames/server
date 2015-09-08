@@ -16,7 +16,8 @@ Vagrant.configure(2) do |config|
     apt-get update
     echo "mysql-server-5.5 mysql-server/root_password password root" | sudo debconf-set-selections
     echo "mysql-server-5.5 mysql-server/root_password_again password root" | sudo debconf-set-selections
-    apt-get install -y lamp-server^ php5-imagick php5-curl
+    apt-get install -y lamp-server^ php5-imagick php5-curl php5-gd
+    # GD above is required for WideImage, only in use in v1
     ln -fs /vagrant /var/www/server
     touch /var/log/aris_error_log.txt
     chmod 777 /var/log/aris_error_log.txt
