@@ -29,6 +29,7 @@ class games extends dbconnection
             (isset($pack->icon_media_id)                                ? "icon_media_id,"                                : "").
             (isset($pack->media_id)                                     ? "media_id,"                                     : "").
             (isset($pack->map_type)                                     ? "map_type,"                                     : "").
+            (isset($pack->map_focus)                                    ? "map_focus,"                                    : "").
             (isset($pack->map_latitude)                                 ? "map_latitude,"                                 : "").
             (isset($pack->map_longitude)                                ? "map_longitude,"                                : "").
             (isset($pack->map_zoom_level)                               ? "map_zoom_level,"                               : "").
@@ -65,6 +66,7 @@ class games extends dbconnection
             (isset($pack->icon_media_id)                                ? "'".addslashes($pack->icon_media_id)."',"                                : "").
             (isset($pack->media_id)                                     ? "'".addslashes($pack->media_id)."',"                                     : "").
             (isset($pack->map_type)                                     ? "'".addslashes($pack->map_type)."',"                                     : "").
+            (isset($pack->map_focus)                                    ? "'".addslashes($pack->map_focus)."',"                                    : "").
             (isset($pack->map_latitude)                                 ? "'".addslashes($pack->map_latitude)."',"                                 : "").
             (isset($pack->map_longitude)                                ? "'".addslashes($pack->map_longitude)."',"                                : "").
             (isset($pack->map_zoom_level)                               ? "'".addslashes($pack->map_zoom_level)."',"                               : "").
@@ -149,6 +151,7 @@ class games extends dbconnection
             (isset($pack->icon_media_id)                                ? "icon_media_id                                = '".addslashes($pack->icon_media_id)."', "                                : "").
             (isset($pack->media_id)                                     ? "media_id                                     = '".addslashes($pack->media_id)."', "                                     : "").
             (isset($pack->map_type)                                     ? "map_type                                     = '".addslashes($pack->map_type)."', "                                     : "").
+            (isset($pack->map_focus)                                    ? "map_focus                                    = '".addslashes($pack->map_focus)."', "                                    : "").
             (isset($pack->map_latitude)                                 ? "map_latitude                                 = '".addslashes($pack->map_latitude)."', "                                 : "").
             (isset($pack->map_longitude)                                ? "map_longitude                                = '".addslashes($pack->map_longitude)."', "                                : "").
             (isset($pack->map_zoom_level)                               ? "map_zoom_level                               = '".addslashes($pack->map_zoom_level)."', "                               : "").
@@ -196,6 +199,7 @@ class games extends dbconnection
         $game->icon_media_id                                = $sql_game->icon_media_id;
         $game->media_id                                     = $sql_game->media_id;
         $game->map_type                                     = $sql_game->map_type;
+        $game->map_focus                                    = $sql_game->map_focus;
         $game->map_latitude                                 = $sql_game->map_latitude;
         $game->map_longitude                                = $sql_game->map_longitude;
         $game->map_zoom_level                               = $sql_game->map_zoom_level;
