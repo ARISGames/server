@@ -610,6 +610,12 @@ class duplicate extends dbconnection
     $package = new stdClass();
     $package->game_id = $pack->game_id;
     $package->table_data = $table_data;
+    $db_upgrade = dbconnection::queryObject("SELECT * FROM db_upgrades ORDER BY version_major DESC, version_minor DESC LIMIT 1");
+    if(!$db_upgrade) {
+        $package->db_upgrade = null;
+    } else {
+        $package->db_upgrade = $db_upgrade->version_major . "." . $db_upgrade->version_minor;
+    }
     return $package;
   }
 
