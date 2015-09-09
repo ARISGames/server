@@ -554,7 +554,7 @@ class duplicate extends dbconnection
     duplicate::rzip($fs_tmp_export_folder,$fs_tmp_export_folder.".zip");
     duplicate::rdel($fs_tmp_export_folder);
 
-    return new return_package(0, Config::v2_gamedata_www_path."/".tmp_export_folder.".zip");
+    return new return_package(0, Config::v2_gamedata_www_path."/".$tmp_export_folder.".zip");
   }
 
   /*
