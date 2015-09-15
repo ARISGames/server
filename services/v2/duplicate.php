@@ -751,7 +751,6 @@ class duplicate extends dbconnection
     }
 
     //NOTE- must do setup normally handled by games::createGame
-    dbconnection::query("INSERT INTO user_games (game_id, user_id, created) VALUES ('{$maps['games'][$game_id]}','{$pack->auth->user_id}',CURRENT_TIMESTAMP);");
     mkdir(Config::v2_gamedata_folder."/{$maps['games'][$game_id]}",0777);
 
     //second pass- fill in bogus mappings with known maps
@@ -988,6 +987,8 @@ class duplicate extends dbconnection
       }
     }
 
+    // Now make the game visible to the user, so they don't see a half-imported game
+    dbconnection::query("INSERT INTO user_games (game_id, user_id, created) VALUES ('{$maps['games'][$game_id]}','{$pack->auth->user_id}',CURRENT_TIMESTAMP);");
     $pack->game_id = $maps['games'][$game_id];
     return games::getGame($pack);
   }
