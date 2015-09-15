@@ -626,13 +626,19 @@ class duplicate extends dbconnection
 
     $zipbasename = substr($pack->zip_name,0,strrpos($pack->zip_name,".zip"));
     $tmp_import_folder = Config::v2_gamedata_folder."/".$zipbasename."_import_".date("mdY_Gis");
-    $tmp_zip = $tmp_import_folder.".zip";
     if(file_exists($tmp_import_folder)) return "no";
 
-    //save data to zip
-    $zipfile = fopen($tmp_zip,"w");
-    fwrite($zipfile,base64_decode($pack->zip_data));
-    fclose($zipfile);
+    if ( isset($pack->raw_upload_id) ) {
+      $tmp_zip = Config::raw_uploads_folder . '/' . $pack->raw_upload_id;
+    } else if ( isset($pack->zip_data) ) {
+      $tmp_zip = $tmp_import_folder.".zip";
+      //save data to zip
+      $zipfile = fopen($tmp_zip,"w");
+      fwrite($zipfile,base64_decode($pack->zip_data));
+      fclose($zipfile);
+    } else {
+      return new return_package(1, NULL, "No ZIP data given to import a game from");
+    }
 
     //unzip to folder
     $zip = new ZipArchive;
