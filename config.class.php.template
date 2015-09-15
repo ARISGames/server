@@ -66,5 +66,7 @@ class Config
     const v2_error_log         = '/path/to/server/gamedata/v2/aris_error_log.txt';
 
     const bridge_api_path = "localhost/server";
+
+    const raw_uploads_folder = '/var/www/server/gamedata/rawuploads';
 }
 ?>

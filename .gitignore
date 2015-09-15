@@ -1,7 +1,8 @@
 config.class.php
-gamedata
+gamedata/*
 !gamedata/0
 !gamedata/player
+!gamedata/rawuploads
 gamedata/0/aris*
 gamedata/player
 browser

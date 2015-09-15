@@ -21,6 +21,9 @@ Vagrant.configure(2) do |config|
     ln -fs /vagrant /var/www/server
     touch /var/log/aris_error_log.txt
     chmod 777 /var/log/aris_error_log.txt
+    sed -i 's/AllowOverride None/AllowOverride All/g' /etc/apache2/sites-available/default
+    a2enmod headers
+    service apache2 restart
   SHELL
 
   config.vm.provision 'shell', privileged: false, inline: <<-SHELL
