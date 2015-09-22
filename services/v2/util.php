@@ -67,6 +67,74 @@ class util
         $output = str_replace("”", "\"", $output);
         return $output;
     }
+
+    public static function rcopy($src,$dst)
+    {
+      //hack to "fix" security issue of this becoming open API via our terrible framework
+      if(strpos($_SERVER['REQUEST_URI'],'rcopy') !== false) return new return_package(6, NULL, "Attempt to bypass authentication externally.");
+
+      $dir = opendir($src);
+      @mkdir($dst);
+      while(false !== ($file = readdir($dir)))
+      {
+        if(($file != '.') && ($file != '..'))
+        {
+          if(is_dir($src.'/'.$file))
+            util::rcopy($src.'/'.$file,$dst.'/'.$file);
+          else
+            copy($src.'/'.$file,$dst.'/'.$file);
+        }
+      }
+      closedir($dir);
+    }
+
+    public static function rdel($dirPath)
+    {
+      //hack to "fix" security issue of this becoming open API via our terrible framework
+      if(strpos($_SERVER['REQUEST_URI'],'rdel') !== false) return new return_package(6, NULL, "Attempt to bypass authentication externally.");
+
+      if(!is_dir($dirPath))
+        throw new InvalidArgumentException("$dirPath must be a directory");
+      if(substr($dirPath, strlen($dirPath) - 1, 1) != '/')
+        $dirPath .= '/';
+
+      $files = glob($dirPath . '*', GLOB_MARK);
+      foreach($files as $file)
+      {
+        if(is_dir($file))
+          util::rdel($file);
+        else
+          unlink($file);
+      }
+      rmdir($dirPath);
+    }
+
+
+    public static function rzip($srcfolder, $destzip)
+    {
+      //hack to "fix" security issue of this becoming open API via our terrible framework
+      if(strpos($_SERVER['REQUEST_URI'],'rzip') !== false) return new return_package(6, NULL, "Attempt to bypass authentication externally.");
+
+      $rootPath = realpath($srcfolder);
+
+      $zip = new ZipArchive();
+      $zip->open($destzip, ZipArchive::CREATE | ZipArchive::OVERWRITE);
+
+      $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($rootPath), RecursiveIteratorIterator::LEAVES_ONLY);
+
+      foreach($files as $name => $file)
+      {
+        if(!$file->isDir())
+        {
+          $filePath = $file->getRealPath();
+          $relativePath = substr($filePath, strlen($rootPath) + 1);
+
+          $zip->addFile($filePath, $relativePath);
+        }
+      }
+
+      $zip->close();
+    }
 }
 
 ?>

@@ -490,5 +490,29 @@ class notes extends dbconnection
 
         return new return_package(0);
     }
+
+    public static function exportNotes($pack)
+    {
+      $pack->auth->game_id = $pack->game_id;
+      $pack->auth->permission = "read_write";
+      if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+      $export = notes::getNotesForGame($pack);
+
+      $tmp_export_folder = $export->game_id."_notebook_export_".date("mdY_Gis");
+      $fs_tmp_export_folder = Config::v2_gamedata_folder."/".$tmp_export_folder;
+      if(file_exists($fs_tmp_export_folder)) util::rdel($fs_tmp_export_folder);
+      mkdir($fs_tmp_export_folder,0777);
+      $jsonfile = fopen($fs_tmp_export_folder."/export.json","w");
+      fwrite($jsonfile,json_encode($export));
+      fclose($jsonfile);
+
+      util::rcopy(Config::v2_gamedata_folder."/".$export->game_id,$fs_tmp_export_folder."/gamedata");
+      util::rzip($fs_tmp_export_folder,$fs_tmp_export_folder.".zip");
+      util::rdel($fs_tmp_export_folder);
+
+      return new return_package(0, Config::v2_gamedata_www_path."/".$tmp_export_folder.".zip");
+    }
+
 }
 ?>

@@ -475,65 +475,6 @@ class duplicate extends dbconnection
     return duplicate::importGameData($pack);
   }
 
-  private static function rcopy($src,$dst)
-  {
-    $dir = opendir($src);
-    @mkdir($dst);
-    while(false !== ($file = readdir($dir)))
-    {
-      if(($file != '.') && ($file != '..'))
-      {
-        if(is_dir($src.'/'.$file))
-          duplicate::rcopy($src.'/'.$file,$dst.'/'.$file);
-        else
-          copy($src.'/'.$file,$dst.'/'.$file);
-      }
-    }
-    closedir($dir);
-  }
-
-  private static function rdel($dirPath)
-  {
-    if(!is_dir($dirPath))
-      throw new InvalidArgumentException("$dirPath must be a directory");
-    if(substr($dirPath, strlen($dirPath) - 1, 1) != '/')
-      $dirPath .= '/';
-
-    $files = glob($dirPath . '*', GLOB_MARK);
-    foreach($files as $file)
-    {
-      if(is_dir($file))
-        duplicate::rdel($file);
-      else
-        unlink($file);
-    }
-    rmdir($dirPath);
-  }
-
-
-  private static function rzip($srcfolder, $destzip)
-  {
-    $rootPath = realpath($srcfolder);
-
-    $zip = new ZipArchive();
-    $zip->open($destzip, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-
-    $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($rootPath), RecursiveIteratorIterator::LEAVES_ONLY);
-
-    foreach($files as $name => $file)
-    {
-      if(!$file->isDir())
-      {
-        $filePath = $file->getRealPath();
-        $relativePath = substr($filePath, strlen($rootPath) + 1);
-
-        $zip->addFile($filePath, $relativePath);
-      }
-    }
-
-    $zip->close();
-  }
-
   public static function exportGame($pack)
   {
     $pack->auth->game_id = $pack->game_id;
@@ -544,15 +485,15 @@ class duplicate extends dbconnection
 
     $tmp_export_folder = $export->game_id."_export_".date("mdY_Gis");
     $fs_tmp_export_folder = Config::v2_gamedata_folder."/".$tmp_export_folder;
-    if(file_exists($fs_tmp_export_folder)) duplicate::rdel($fs_tmp_export_folder);
+    if(file_exists($fs_tmp_export_folder)) util::rdel($fs_tmp_export_folder);
     mkdir($fs_tmp_export_folder,0777);
     $jsonfile = fopen($fs_tmp_export_folder."/export.json","w");
     fwrite($jsonfile,json_encode($export));
     fclose($jsonfile);
 
-    duplicate::rcopy(Config::v2_gamedata_folder."/".$export->game_id,$fs_tmp_export_folder."/gamedata");
-    duplicate::rzip($fs_tmp_export_folder,$fs_tmp_export_folder.".zip");
-    duplicate::rdel($fs_tmp_export_folder);
+    util::rcopy(Config::v2_gamedata_folder."/".$export->game_id,$fs_tmp_export_folder."/gamedata");
+    util::rzip($fs_tmp_export_folder,$fs_tmp_export_folder.".zip");
+    util::rdel($fs_tmp_export_folder);
 
     return new return_package(0, Config::v2_gamedata_www_path."/".$tmp_export_folder.".zip");
   }
@@ -677,7 +618,7 @@ class duplicate extends dbconnection
 
     $pack->import = $import;
     $ret = duplicate::importGameData($pack);
-    duplicate::rdel($tmp_import_folder); //get rid of zipto
+    util::rdel($tmp_import_folder); //get rid of zipto
     return $ret;
   }
 
