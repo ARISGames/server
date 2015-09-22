@@ -499,7 +499,7 @@ class notes extends dbconnection
 
       $export = notes::getNotesForGame($pack);
 
-      $tmp_export_folder = $export->game_id."_notebook_export_".date("mdY_Gis");
+      $tmp_export_folder = $pack->game_id."_notebook_export_".date("mdY_Gis");
       $fs_tmp_export_folder = Config::v2_gamedata_folder."/".$tmp_export_folder;
       if(file_exists($fs_tmp_export_folder)) util::rdel($fs_tmp_export_folder);
       mkdir($fs_tmp_export_folder,0777);
@@ -507,7 +507,7 @@ class notes extends dbconnection
       fwrite($jsonfile,json_encode($export));
       fclose($jsonfile);
 
-      util::rcopy(Config::v2_gamedata_folder."/".$export->game_id,$fs_tmp_export_folder."/gamedata");
+      util::rcopy(Config::v2_gamedata_folder."/".$pack->game_id,$fs_tmp_export_folder."/gamedata");
       util::rzip($fs_tmp_export_folder,$fs_tmp_export_folder.".zip");
       util::rdel($fs_tmp_export_folder);
 
