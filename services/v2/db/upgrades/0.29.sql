@@ -1,0 +1,1 @@
+ALTER TABLE games ADD allow_download TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER network_level;

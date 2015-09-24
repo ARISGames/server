@@ -58,6 +58,7 @@ class games extends dbconnection
             (isset($pack->latitude)                                     ? "latitude,"                                     : "").
             (isset($pack->longitude)                                    ? "longitude,"                                    : "").
             (isset($pack->network_level)                                ? "network_level,"                                : "").
+            (isset($pack->allow_download)                               ? "allow_download,"                               : "").
             (isset($pack->preload_media)                                ? "preload_media,"                                : "").
             "created".
             ") VALUES (".
@@ -95,6 +96,7 @@ class games extends dbconnection
             (isset($pack->latitude)                                     ? "'".addslashes($pack->latitude)."',"                                     : "").
             (isset($pack->longitude)                                    ? "'".addslashes($pack->longitude)."',"                                    : "").
             (isset($pack->network_level)                                ? "'".addslashes($pack->network_level)."',"                                : "").
+            (isset($pack->allow_download)                               ? "'".addslashes($pack->allow_download)."',"                               : "").
             (isset($pack->preload_media)                                ? "'".addslashes($pack->preload_media)."',"                                : "").
             "CURRENT_TIMESTAMP".
             ")"
@@ -181,6 +183,7 @@ class games extends dbconnection
             (isset($pack->latitude)                                     ? "latitude                                     = '".addslashes($pack->latitude)."', "                                     : "").
             (isset($pack->longitude)                                    ? "longitude                                    = '".addslashes($pack->longitude)."', "                                    : "").
             (isset($pack->network_level)                                ? "network_level                                = '".addslashes($pack->network_level)."', "                                : "").
+            (isset($pack->allow_download)                               ? "allow_download                               = '".addslashes($pack->allow_download)."', "                               : "").
             (isset($pack->preload_media)                                ? "preload_media                                = '".addslashes($pack->preload_media)."', "                                : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE game_id = '{$pack->game_id}'"
@@ -227,6 +230,7 @@ class games extends dbconnection
         $game->latitude                                     = $sql_game->latitude;
         $game->longitude                                    = $sql_game->longitude;
         $game->network_level                                = $sql_game->network_level;
+        $game->allow_download                               = $sql_game->allow_download;
         $game->preload_media                                = $sql_game->preload_media;
         $game->moderated                                    = $sql_game->moderated;
 
