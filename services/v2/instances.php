@@ -77,6 +77,7 @@ class instances extends dbconnection
         $instance->factory_id   = $sql_instance->factory_id;
         $instance->owner_type   = $sql_instance->owner_type;
         $instance->owner_id     = $sql_instance->owner_id;
+        $instance->created      = $sql_instance->created; //needed for local factory invalidation
         return $instance;
     }
 
