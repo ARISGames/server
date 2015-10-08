@@ -52,7 +52,6 @@ class games extends dbconnection
             (isset($pack->is_siftr)                                     ? "is_siftr,"                                     : "").
             (isset($pack->siftr_url)                                    ? "siftr_url,"                                    : "").
             (isset($pack->published)                                    ? "published,"                                    : "").
-            (isset($pack->moderated)                                    ? "moderated,"                                    : "").
             (isset($pack->type)                                         ? "type,"                                         : "").
             (isset($pack->intro_scene_id)                               ? "intro_scene_id,"                               : "").
             (isset($pack->latitude)                                     ? "latitude,"                                     : "").
@@ -60,6 +59,8 @@ class games extends dbconnection
             (isset($pack->network_level)                                ? "network_level,"                                : "").
             (isset($pack->allow_download)                               ? "allow_download,"                               : "").
             (isset($pack->preload_media)                                ? "preload_media,"                                : "").
+            (isset($pack->moderated)                                    ? "moderated,"                                    : "").
+            (isset($pack->version)                                      ? "version,"                                      : "").
             "created".
             ") VALUES (".
             (isset($pack->name)                                         ? "'".addslashes($pack->name)."',"                                         : "").
@@ -90,7 +91,6 @@ class games extends dbconnection
             (isset($pack->is_siftr)                                     ? "'".addslashes($pack->is_siftr)."',"                                     : "").
             (isset($pack->siftr_url)                                    ? "'".addslashes($pack->siftr_url)."',"                                    : "").
             (isset($pack->published)                                    ? "'".addslashes($pack->published)."',"                                    : "").
-            (isset($pack->moderated)                                    ? "'".addslashes($pack->moderated)."',"                                    : "").
             (isset($pack->type)                                         ? "'".addslashes($pack->type)."',"                                         : "").
             (isset($pack->intro_scene_id)                               ? "'".addslashes($pack->intro_scene_id)."',"                               : "").
             (isset($pack->latitude)                                     ? "'".addslashes($pack->latitude)."',"                                     : "").
@@ -98,6 +98,8 @@ class games extends dbconnection
             (isset($pack->network_level)                                ? "'".addslashes($pack->network_level)."',"                                : "").
             (isset($pack->allow_download)                               ? "'".addslashes($pack->allow_download)."',"                               : "").
             (isset($pack->preload_media)                                ? "'".addslashes($pack->preload_media)."',"                                : "").
+            (isset($pack->moderated)                                    ? "'".addslashes($pack->moderated)."',"                                    : "").
+            (isset($pack->version)                                      ? "'".addslashes($pack->version)."',"                                      : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -177,7 +179,6 @@ class games extends dbconnection
             (isset($pack->siftr_url)                                    ? "siftr_url                                    = '".addslashes($pack->siftr_url)."', "                                    : "").
             ($unset_url                                                 ? "siftr_url                                    = NULL, "                                                                  : "").
             (isset($pack->published)                                    ? "published                                    = '".addslashes($pack->published)."', "                                    : "").
-            (isset($pack->moderated)                                    ? "moderated                                    = '".addslashes($pack->moderated)."', "                                    : "").
             (isset($pack->type)                                         ? "type                                         = '".addslashes($pack->type)."', "                                         : "").
             (isset($pack->intro_scene_id)                               ? "intro_scene_id                               = '".addslashes($pack->intro_scene_id)."', "                               : "").
             (isset($pack->latitude)                                     ? "latitude                                     = '".addslashes($pack->latitude)."', "                                     : "").
@@ -185,6 +186,8 @@ class games extends dbconnection
             (isset($pack->network_level)                                ? "network_level                                = '".addslashes($pack->network_level)."', "                                : "").
             (isset($pack->allow_download)                               ? "allow_download                               = '".addslashes($pack->allow_download)."', "                               : "").
             (isset($pack->preload_media)                                ? "preload_media                                = '".addslashes($pack->preload_media)."', "                                : "").
+            (isset($pack->moderated)                                    ? "moderated                                    = '".addslashes($pack->moderated)."', "                                    : "").
+            (isset($pack->version)                                      ? "version                                      = '".addslashes($pack->version)."', "                                      : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE game_id = '{$pack->game_id}'"
         );
@@ -233,6 +236,7 @@ class games extends dbconnection
         $game->allow_download                               = $sql_game->allow_download;
         $game->preload_media                                = $sql_game->preload_media;
         $game->moderated                                    = $sql_game->moderated;
+        $game->version                                      = $sql_game->version;
 
         return $game;
     }

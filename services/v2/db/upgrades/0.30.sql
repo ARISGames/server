@@ -1,0 +1,1 @@
+ALTER TABLE games ADD version INT(32) UNSIGNED NOT NULL DEFAULT 0 AFTER moderated;
