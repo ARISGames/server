@@ -126,6 +126,12 @@ class games extends dbconnection
         return games::getGame($pack);
     }
 
+    //no need for security- just invalidates local game downloads
+    public static function bumpGameVersion($pack)
+    {
+      dbconnection::query("UPDATE games SET version = version+1 WHERE game_id = '{$pack->game_id}';");
+    }
+
     //Takes in game JSON, all fields optional except user_id + key
     public static function updateGame($pack)
     {
@@ -192,6 +198,7 @@ class games extends dbconnection
             "WHERE game_id = '{$pack->game_id}'"
         );
 
+        games::bumpGameVersion($pack);
         return games::getGame($pack);
     }
 
