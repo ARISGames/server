@@ -1,6 +1,7 @@
 <?php
 require_once("dbconnection.php");
 require_once("editors.php");
+require_once("games.php");
 require_once("return_package.php");
 
 require_once("tabs.php");
@@ -38,6 +39,7 @@ class dialogs extends dbconnection
             ")"
         );
 
+        games::bumpGameVersion($pack);
         return dialogs::getDialog($pack);
     }
 
@@ -59,6 +61,7 @@ class dialogs extends dbconnection
             "WHERE dialog_id = '{$pack->dialog_id}'"
         );
 
+        games::bumpGameVersion($pack);
         return dialogs::getDialog($pack);
     }
 
@@ -156,6 +159,7 @@ class dialogs extends dbconnection
             requirements::deleteRequirementAtom($pack);
         }
 
+        games::bumpGameVersion($pack);
         return new return_package(0);
     }
 
@@ -182,6 +186,7 @@ class dialogs extends dbconnection
             ")"
         );
 
+        games::bumpGameVersion($pack);
         return dialogs::getDialogCharacter($pack);
     }
 
@@ -201,6 +206,7 @@ class dialogs extends dbconnection
             "WHERE dialog_character_id = '{$pack->dialog_character_id}'"
         );
 
+        games::bumpGameVersion($pack);
         return dialogs::getDialogCharacter($pack);
     }
 
@@ -242,6 +248,7 @@ class dialogs extends dbconnection
         dbconnection::query("DELETE FROM dialog_characters WHERE dialog_character_id = '{$pack->dialog_character_id}' LIMIT 1");
         //cleanup
         dbconnection::query("UPDATE dialog_scripts SET dialog_character_id = 0 WHERE dialog_character_id = '{$pack->dialog_character_id}'");
+        games::bumpGameVersion($pack);
         return new return_package(0);
     }
 
@@ -270,6 +277,7 @@ class dialogs extends dbconnection
             ")"
         );
 
+        games::bumpGameVersion($pack);
         return dialogs::getDialogScript($pack);
     }
 
@@ -289,6 +297,7 @@ class dialogs extends dbconnection
             "WHERE dialog_script_id = '{$pack->dialog_script_id}'"
         );
 
+        games::bumpGameVersion($pack);
         return dialogs::getDialogScript($pack);
     }
 
@@ -372,6 +381,7 @@ class dialogs extends dbconnection
             requirements::deleteRequirementAtom($pack);
         }
 
+        games::bumpGameVersion($pack);
         return new return_package(0);
     }
 
@@ -408,6 +418,7 @@ class dialogs extends dbconnection
             ")"
         );
 
+        games::bumpGameVersion($pack);
         return dialogs::getDialogOption($pack);
     }
 
@@ -431,6 +442,7 @@ class dialogs extends dbconnection
             "WHERE dialog_option_id = '{$pack->dialog_option_id}'"
         );
 
+        games::bumpGameVersion($pack);
         return dialogs::getDialogOption($pack);
     }
 
@@ -504,6 +516,7 @@ class dialogs extends dbconnection
             requirements::deleteRequirementPackage($pack);
         }
 
+        games::bumpGameVersion($pack);
         return new return_package(0);
     }
 

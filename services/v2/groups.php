@@ -1,6 +1,7 @@
 <?php
 require_once("dbconnection.php");
 require_once("editors.php");
+require_once("games.php");
 require_once("return_package.php");
 
 class groups extends dbconnection
@@ -26,6 +27,7 @@ class groups extends dbconnection
             ")"
         );
 
+        games::bumpGameVersion($pack);
         return groups::getGroup($pack);
     }
 
@@ -44,6 +46,7 @@ class groups extends dbconnection
             "WHERE group_id = '{$pack->group_id}'"
         );
 
+        games::bumpGameVersion($pack);
         return groups::getGroup($pack);
     }
 
@@ -87,6 +90,7 @@ class groups extends dbconnection
         //cleanup
         dbconnection::query("UPDATE game_user_groups SET group_id = 0 WHERE game_id = '{$group->game_id}' AND group_id = '{$group->group_id}';");
 
+        games::bumpGameVersion($pack);
         return new return_package(0);
     }
 }

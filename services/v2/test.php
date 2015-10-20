@@ -6,8 +6,8 @@ class test extends dbconnection
 {
     public static function doTest($pack)
     {
-      $inst_id = dbconnection::queryInsert("INSERT INTO instances (game_id,object_type,object_id,qty,infinite_qty,factory_id,owner_type,owner_id,created) VALUES (7045,'EVENT_PACKAGE','{$pack->event_pack_id}',0,0,0,'GAME_CONTENT',0,CURRENT_TIMESTAMP);");
-      $trig_id = dbconnection::queryInsert("INSERT INTO triggers (game_id,instance_id,scene_id,requirement_root_package_id,type,name,title,icon_media_id,latitude,longitude,distance,infinite_distance,wiggle,show_title,hidden,trigger_on_enter,qr_code,created) VALUES (7054, '{$inst_id}', 15292,0,'LOCATION','EVENT TRIGGER','',0,43.070,-89.4015,0,1,0,1,0,0,'',CURRENT_TIMESTAMP);");
+      //$inst_id = dbconnection::queryInsert("INSERT INTO instances (game_id,object_type,object_id,qty,infinite_qty,factory_id,owner_type,owner_id,created) VALUES (7045,'EVENT_PACKAGE','{$pack->event_pack_id}',0,0,0,'GAME_CONTENT',0,CURRENT_TIMESTAMP);");
+      //$trig_id = dbconnection::queryInsert("INSERT INTO triggers (game_id,instance_id,scene_id,requirement_root_package_id,type,name,title,icon_media_id,latitude,longitude,distance,infinite_distance,wiggle,show_title,hidden,trigger_on_enter,qr_code,created) VALUES (7054, '{$inst_id}', 15292,0,'LOCATION','EVENT TRIGGER','',0,43.070,-89.4015,0,1,0,1,0,0,'',CURRENT_TIMESTAMP);");
 
     /*
       $games = dbconnection::queryArray("SELECT * FROM games;");

@@ -1,6 +1,7 @@
 <?php
 require_once("dbconnection.php");
 require_once("editors.php");
+require_once("games.php");
 require_once("return_package.php");
 
 require_once("instances.php");
@@ -38,6 +39,7 @@ class scenes extends dbconnection
         if(!dbconnection::queryObject("SELECT * FROM scenes WHERE scene_id = '{$game->intro_scene_id}' AND game_id = '{$game->game_id}'"))
             dbconnection::query("UPDATE games SET intro_scene_id = '{$pack->scene_id}' WHERE game_id = '{$pack->game_id}'");
 
+        games::bumpGameVersion($pack);
         return scenes::getScene($pack);
     }
 
@@ -58,6 +60,7 @@ class scenes extends dbconnection
             "WHERE scene_id = '{$pack->scene_id}'"
         );
 
+        games::bumpGameVersion($pack);
         return scenes::getScene($pack);
     }
 
@@ -116,6 +119,7 @@ class scenes extends dbconnection
             instances::deleteInstance($pack);
         }
 
+        games::bumpGameVersion($pack);
         return new return_package(0);
     }
 }

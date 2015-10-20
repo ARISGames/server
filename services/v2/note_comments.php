@@ -2,6 +2,7 @@
 require_once("dbconnection.php");
 require_once("users.php");
 require_once("editors.php");
+require_once("games.php");
 require_once("return_package.php");
 
 require_once("client.php");
@@ -32,6 +33,7 @@ class note_comments extends dbconnection
         );
 
         client::logPlayerCreatedComment($pack);
+        games::bumpGameVersion($pack);
         return note_comments::getNoteComment($pack);
     }
 
@@ -50,6 +52,7 @@ class note_comments extends dbconnection
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE note_comment_id = '{$pack->note_comment_id}'"
         );
+        games::bumpGameVersion($pack);
         return note_comments::getNoteComment($pack);
     }
 
@@ -127,6 +130,7 @@ class note_comments extends dbconnection
 
         dbconnection::query("DELETE FROM note_comments WHERE note_comment_id = '{$pack->note_comment_id}' LIMIT 1");
 
+        games::bumpGameVersion($pack);
         return new return_package(0);
     }
 }

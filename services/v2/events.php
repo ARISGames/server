@@ -1,6 +1,7 @@
 <?php
 require_once("dbconnection.php");
 require_once("editors.php");
+require_once("games.php");
 require_once("return_package.php");
 require_once("instances.php");
 
@@ -34,6 +35,7 @@ class events extends dbconnection
             events::createEvent($pack->events[$i]);
         }
 
+        games::bumpGameVersion($pack);
         return events::getEventPackage($pack);
     }
 
@@ -67,6 +69,7 @@ class events extends dbconnection
             ")"
         );
 
+        games::bumpGameVersion($pack);
         return events::getEvent($pack);
     }
 
@@ -138,6 +141,7 @@ class events extends dbconnection
         for($i = 0; $i < count($eventsToUpdate); $i++) events::updateEvent($eventsToUpdate[$i]);
         for($i = 0; $i < count($eventsToAdd);    $i++) events::createEvent($eventsToAdd[$i]);
 
+        games::bumpGameVersion($pack);
         return events::getEventPackage($pack);
     }
 
@@ -158,6 +162,7 @@ class events extends dbconnection
             "WHERE event_id = '{$pack->event_id}'"
         );
 
+        games::bumpGameVersion($pack);
         return events::getEvent($pack);
     }
 
@@ -281,6 +286,7 @@ class events extends dbconnection
             instances::deleteInstance($pack);
         }
 
+        games::bumpGameVersion($pack);
         return new return_package(0);
     }
 
@@ -291,6 +297,7 @@ class events extends dbconnection
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM events WHERE event_id = '{$pack->event_id}' LIMIT 1");
+        games::bumpGameVersion($pack);
         return new return_package(0);
     }
 }

@@ -1,6 +1,7 @@
 <?php
 require_once("dbconnection.php");
 require_once("users.php");
+require_once("games.php");
 require_once("return_package.php");
 
 class editors extends dbconnection
@@ -21,6 +22,7 @@ class editors extends dbconnection
 
         //note $pack->user_id is DIFFERENT than $pack->auth->user_id
         dbconnection::queryInsert("INSERT INTO user_games (game_id, user_id, created) VALUES ('{$pack->game_id}','{$pack->user_id}',CURRENT_TIMESTAMP)");
+        games::bumpGameVersion($pack);
         return new return_package(0);
     }
 
@@ -32,6 +34,7 @@ class editors extends dbconnection
 
         //note $pack->user_id is DIFFERENT than $pack->auth->user_id
         dbconnection::query("DELETE FROM user_games WHERE user_id = '{$pack->user_id}' AND game_id = '{$pack->game_id}'");
+        games::bumpGameVersion($pack);
         return new return_package(0);
     }
 

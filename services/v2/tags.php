@@ -2,6 +2,7 @@
 require_once("dbconnection.php");
 require_once("users.php");
 require_once("editors.php");
+require_once("games.php");
 require_once("return_package.php");
 
 require_once("tags.php");
@@ -37,6 +38,7 @@ class tags extends dbconnection
             ")"
         );
 
+        games::bumpGameVersion($pack);
         return tags::getTag($pack);
     }
 
@@ -63,6 +65,7 @@ class tags extends dbconnection
             ")"
         );
 
+        games::bumpGameVersion($pack);
         return tags::getObjectTag($pack);
     }
 
@@ -83,6 +86,7 @@ class tags extends dbconnection
             "WHERE tag_id = '{$pack->tag_id}'"
         );
 
+        games::bumpGameVersion($pack);
         return tags::getTag($pack);
     }
 
@@ -199,6 +203,7 @@ class tags extends dbconnection
             requirements::deleteRequirementAtom($pack);
         }
 
+        games::bumpGameVersion($pack);
         return new return_package(0);
     }
 
@@ -209,6 +214,7 @@ class tags extends dbconnection
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::query("DELETE FROM object_tags WHERE object_tag_id = '{$pack->object_tag_id}' LIMIT 1");
+        games::bumpGameVersion($pack);
         return new return_package(0);
     }
 
@@ -219,6 +225,7 @@ class tags extends dbconnection
       if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
       dbconnection::query("DELETE FROM object_tags WHERE game_id = '{$pack->game_id}' AND object_type = '{$pack->object_type}' AND object_id = '{$pack->object_id}';");
+      games::bumpGameVersion($pack);
     }
 
     public static function countObjectsWithTag($pack)

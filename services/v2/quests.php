@@ -2,6 +2,7 @@
 require_once("dbconnection.php");
 require_once("users.php");
 require_once("editors.php");
+require_once("games.php");
 require_once("return_package.php");
 
 require_once("events.php");
@@ -61,6 +62,7 @@ class quests extends dbconnection
             ")"
         );
 
+        games::bumpGameVersion($pack);
         return quests::getQuest($pack);
     }
 
@@ -93,6 +95,7 @@ class quests extends dbconnection
             "WHERE quest_id = '{$pack->quest_id}'"
         );
 
+        games::bumpGameVersion($pack);
         return quests::getQuest($pack);
     }
 
@@ -188,6 +191,7 @@ class quests extends dbconnection
             requirements::deleteRequirementPackage($pack);
         }
 
+        games::bumpGameVersion($pack);
         return new return_package(0);
     }
 }

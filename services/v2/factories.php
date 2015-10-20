@@ -1,6 +1,7 @@
 <?php
 require_once("dbconnection.php");
 require_once("editors.php");
+require_once("games.php");
 require_once("return_package.php");
 
 require_once("instances.php");
@@ -75,6 +76,7 @@ class factories extends dbconnection
             ")"
         );
 
+        games::bumpGameVersion($pack);
         return factories::getFactory($pack);
     }
 
@@ -116,6 +118,7 @@ class factories extends dbconnection
             "WHERE factory_id = '{$pack->factory_id}'"
         );
 
+        games::bumpGameVersion($pack);
         return factories::getFactory($pack);
     }
 
@@ -207,6 +210,7 @@ class factories extends dbconnection
             requirements::deleteRequirementPackage($pack);
         }
 
+        games::bumpGameVersion($pack);
         return new return_package(0);
     }
 }

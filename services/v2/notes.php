@@ -2,6 +2,7 @@
 require_once("dbconnection.php");
 require_once("users.php");
 require_once("editors.php");
+require_once("games.php");
 require_once("return_package.php");
 
 require_once("media.php");
@@ -9,7 +10,6 @@ require_once("note_comments.php");
 require_once("instances.php");
 require_once("triggers.php");
 require_once("tags.php");
-require_once("games.php");
 
 require_once("client.php");
 
@@ -65,6 +65,7 @@ class notes extends dbconnection
         }
 
         client::logPlayerCreatedNote($pack);
+        games::bumpGameVersion($pack);
         return notes::getNote($pack);
     }
 
@@ -116,6 +117,7 @@ class notes extends dbconnection
             }
         }
 
+        games::bumpGameVersion($pack);
         return notes::getNote($pack);
     }
 
@@ -442,6 +444,7 @@ class notes extends dbconnection
         // After everything is cleaned up.
         dbconnection::query("DELETE FROM notes WHERE note_id = '{$pack->note_id}' LIMIT 1");
 
+        games::bumpGameVersion($pack);
         return new return_package(0);
     }
 

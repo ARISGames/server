@@ -1,6 +1,7 @@
 <?php
 require_once("dbconnection.php");
 require_once("editors.php");
+require_once("games.php");
 require_once("return_package.php");
 require_once("../../libraries/geolocation/GeoLocation.php");
 
@@ -34,6 +35,7 @@ class requirements extends dbconnection
             requirements::createRequirementAndPackage($pack->and_packages[$i]);
         }
 
+        games::bumpGameVersion($pack);
         return requirements::getRequirementPackage($pack);
     }
 
@@ -67,6 +69,7 @@ class requirements extends dbconnection
             $pack->atoms[$i]->auth = $pack->auth;
             requirements::createRequirementAtom($pack->atoms[$i]);
         }
+        games::bumpGameVersion($pack);
     }
 
     //requires game_id and requirement_and_package_id
@@ -103,6 +106,7 @@ class requirements extends dbconnection
             "CURRENT_TIMESTAMP".
             ")"
         );
+        games::bumpGameVersion($pack);
     }
 
     public static function updateRequirementPackage($pack)
@@ -155,6 +159,7 @@ class requirements extends dbconnection
             requirements::createRequirementAndPackage($pack->and_packages[$i]);
         }
 
+        games::bumpGameVersion($pack);
         return requirements::getRequirementPackage($pack);
     }
 
@@ -207,6 +212,7 @@ class requirements extends dbconnection
             $pack->atoms[$i]->auth                       = $pack->auth;
             requirements::createRequirementAtom($pack->atoms[$i]);
         }
+        games::bumpGameVersion($pack);
     }
 
     public static function updateRequirementAtom($pack)
@@ -229,6 +235,7 @@ class requirements extends dbconnection
             (isset($pack->longitude)     ? ", longitude     = '".addslashes($pack->longitude    )."'" : "").
             " WHERE requirement_atom_id = '".addslashes($pack->requirement_atom_id)."'"
         );
+        games::bumpGameVersion($pack);
     }
 
 
@@ -374,6 +381,7 @@ class requirements extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
+        games::bumpGameVersion($pack);
         return requirements::noauth_deleteRequirementPackage($pack);
     }
 
@@ -396,6 +404,7 @@ class requirements extends dbconnection
         dbconnection::query("UPDATE locations SET requirement_root_package_id = 0 WHERE game_id = '{$gameId}' AND requirement_root_package_id = '{$requirementPackageId}'");
         dbconnection::query("UPDATE web_hooks SET requirement_root_package_id = 0 WHERE game_id = '{$gameId}' AND requirement_root_package_id = '{$requirementPackageId}'");
         dbconnection::query("UPDATE overlays SET requirement_root_package_id = 0 WHERE game_id = '{$gameId}' AND requirement_root_package_id = '{$requirementPackageId}'");
+        games::bumpGameVersion($pack);
         return new return_package(0);
     }
 
@@ -405,6 +414,7 @@ class requirements extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
+        games::bumpGameVersion($pack);
         return requirements::noauth_deleteRequirementAndPackage($pack);
     }
 
@@ -422,6 +432,7 @@ class requirements extends dbconnection
             $sql_packAtoms[$i]->auth = $pack->auth;
             requirements::deleteRequirementAtom($sql_packAtoms[$i]);
         }
+        games::bumpGameVersion($pack);
         return new return_package(0);
     }
 
@@ -431,6 +442,7 @@ class requirements extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
+        games::bumpGameVersion($pack);
         return requirements::noauth_deleteRequirementAtom($pack);
     }
 
@@ -441,6 +453,7 @@ class requirements extends dbconnection
         if(strpos($_server['request_uri'],'noauth') !== false) return new return_package(6, null, "attempt to bypass authentication externally.");
 
         dbconnection::query("DELETE FROM requirement_atoms WHERE requirement_atom_id = '{$pack->requirement_atom_id}'");
+        games::bumpGameVersion($pack);
         return new return_package(0);
     }
 

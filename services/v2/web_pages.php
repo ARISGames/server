@@ -1,6 +1,7 @@
 <?php
 require_once("dbconnection.php");
 require_once("editors.php");
+require_once("games.php");
 require_once("return_package.php");
 
 require_once("dialogs.php");
@@ -37,6 +38,7 @@ class web_pages extends dbconnection
             ")"
         );
 
+        games::bumpGameVersion($pack);
         return web_pages::getWebPage($pack);
     }
 
@@ -57,6 +59,7 @@ class web_pages extends dbconnection
             "WHERE web_page_id = '{$pack->web_page_id}'"
         );
 
+        games::bumpGameVersion($pack);
         return web_pages::getWebPage($pack);
     }
 
@@ -141,6 +144,7 @@ class web_pages extends dbconnection
             requirements::deleteRequirementAtom($pack);
         }
 
+        games::bumpGameVersion($pack);
         return new return_package(0);
     }
 }

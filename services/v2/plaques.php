@@ -1,6 +1,7 @@
 <?php
 require_once("dbconnection.php");
 require_once("editors.php");
+require_once("games.php");
 require_once("return_package.php");
 
 require_once("events.php");
@@ -44,6 +45,7 @@ class plaques extends dbconnection
             ")"
         );
 
+        games::bumpGameVersion($pack);
         return plaques::getPlaque($pack);
     }
 
@@ -67,6 +69,7 @@ class plaques extends dbconnection
             "WHERE plaque_id = '{$pack->plaque_id}'"
         );
 
+        games::bumpGameVersion($pack);
         return plaques::getPlaque($pack);
     }
 
@@ -164,6 +167,7 @@ class plaques extends dbconnection
             requirements::deleteRequirementAtom($pack);
         }
 
+        games::bumpGameVersion($pack);
         return new return_package(0);
     }
 }

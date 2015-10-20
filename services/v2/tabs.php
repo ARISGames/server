@@ -2,6 +2,7 @@
 require_once("dbconnection.php");
 require_once("users.php");
 require_once("editors.php");
+require_once("games.php");
 require_once("return_package.php");
 
 require_once("dialogs.php");
@@ -40,6 +41,7 @@ class tabs extends dbconnection
             ")"
         );
 
+        games::bumpGameVersion($pack);
         return tabs::getTab($pack);
     }
 
@@ -62,6 +64,7 @@ class tabs extends dbconnection
             "WHERE tab_id = '{$pack->tab_id}'"
         );
 
+        games::bumpGameVersion($pack);
         return tabs::getTab($pack);
     }
 
@@ -126,6 +129,7 @@ class tabs extends dbconnection
             requirements::deleteRequirementPackage($pack);
         }
 
+        games::bumpGameVersion($pack);
         return new return_package(0);
     }
 }

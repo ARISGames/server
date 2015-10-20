@@ -1,6 +1,7 @@
 <?php
 require_once("dbconnection.php");
 require_once("editors.php");
+require_once("games.php");
 require_once("return_package.php");
 
 require_once("triggers.php");
@@ -38,6 +39,7 @@ class instances extends dbconnection
             ")"
         );
 
+        games::bumpGameVersion($pack);
         return instances::getInstance($pack);
     }
 
@@ -61,6 +63,7 @@ class instances extends dbconnection
             "WHERE instance_id = '{$pack->instance_id}'"
         );
 
+        games::bumpGameVersion($pack);
         return instances::getInstance($pack);
     }
 
@@ -94,6 +97,7 @@ class instances extends dbconnection
         dbconnection::query($query);
 
         $sql_instance = dbconnection::queryObject("SELECT * FROM instances WHERE instance_id = '{$pack->instance_id}' LIMIT 1");
+        games::bumpGameVersion($pack);
         return new return_package(0,instances::instanceObjectFromSQL($sql_instance));
     }
 
@@ -103,6 +107,7 @@ class instances extends dbconnection
         dbconnection::query($query);
 
         $sql_instance = dbconnection::queryObject("SELECT * FROM instances WHERE instance_id = '{$pack->instance_id}' LIMIT 1");
+        games::bumpGameVersion($pack);
         return new return_package(0,instances::instanceObjectFromSQL($sql_instance));
     }
 
@@ -133,6 +138,7 @@ class instances extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
+        games::bumpGameVersion($pack);
         return instances::noauth_deleteInstance($pack);
     }
 

@@ -1,6 +1,7 @@
 <?php
 require_once("dbconnection.php");
 require_once("editors.php");
+require_once("games.php");
 require_once("return_package.php");
 
 require_once("requirements.php");
@@ -32,6 +33,7 @@ class web_hooks extends dbconnection
             ")"
         );
 
+        games::bumpGameVersion($pack);
         return web_hooks::getWebHook($pack);
     }
 
@@ -52,6 +54,7 @@ class web_hooks extends dbconnection
             "WHERE web_hook_id = '{$pack->web_hook_id}'"
         );
 
+        games::bumpGameVersion($pack);
         return web_hooks::getWebHook($pack);
     }
 
@@ -108,6 +111,7 @@ class web_hooks extends dbconnection
             requirements::deleteRequirementAtom($pack);
         }
 
+        games::bumpGameVersion($pack);
         return new return_package(0);
     }
 }

@@ -2,6 +2,7 @@
 require_once("dbconnection.php");
 require_once("users.php");
 require_once("editors.php");
+require_once("games.php");
 require_once("return_package.php");
 
 class media extends dbconnection
@@ -148,6 +149,7 @@ class media extends dbconnection
             ")"
         );
 
+        games::bumpGameVersion($pack);
         return media::getMedia($pack);
     }
 
@@ -165,6 +167,7 @@ class media extends dbconnection
             "WHERE media_id = '{$pack->media_id}'"
         );
 
+        games::bumpGameVersion($pack);
         return media::getMedia($pack);
     }
 
@@ -241,6 +244,7 @@ class media extends dbconnection
         dbconnection::query("UPDATE triggers SET icon_media_id = 0 WHERE icon_media_id = '{$pack->media_id}'");
         dbconnection::query("UPDATE factories SET trigger_icon_media_id = 0 WHERE trigger_icon_media_id = '{$pack->media_id}'");
         dbconnection::query("UPDATE users SET media_id = 0 WHERE media_id = '{$pack->media_id}'");
+        games::bumpGameVersion($pack);
         return new return_package(0);
     }
 }

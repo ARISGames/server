@@ -1,6 +1,7 @@
 <?php
 require_once("dbconnection.php");
 require_once("editors.php");
+require_once("games.php");
 require_once("return_package.php");
 
 require_once("requirements.php");
@@ -44,6 +45,7 @@ class overlays extends dbconnection
             ")"
         );
 
+        games::bumpGameVersion($pack);
         return overlays::getOverlay($pack);
     }
 
@@ -70,6 +72,7 @@ class overlays extends dbconnection
             "WHERE overlay_id = '{$pack->overlay_id}'"
         );
 
+        games::bumpGameVersion($pack);
         return overlays::getOverlay($pack);
     }
 
@@ -125,6 +128,7 @@ class overlays extends dbconnection
             requirements::deleteRequirementPackage($pack);
         }
 
+        games::bumpGameVersion($pack);
         return new return_package(0);
     }
 }
