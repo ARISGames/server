@@ -16,6 +16,7 @@ class colors extends dbconnection
         if(!$sql_colors) return $sql_colors;
         $colors = new stdClass();
         $colors->colors_id = $sql_colors->colors_id;
+        $colors->name      = $sql_colors->name     ;
         $colors->tag_1     = $sql_colors->tag_1    ;
         $colors->tag_2     = $sql_colors->tag_2    ;
         $colors->tag_3     = $sql_colors->tag_3    ;
