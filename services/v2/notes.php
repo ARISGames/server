@@ -254,6 +254,69 @@ class notes extends dbconnection
         return new return_package(0,$notes);
     }
 
+    // The following functions performing clustering come from
+    // http://www.appelsiini.net/2008/introduction-to-marker-clustering-with-google-maps
+
+    // define('OFFSET', 268435456);
+    // define('RADIUS', 85445659.4471); /* $offset / pi() */
+
+    private static function lonToX($lon) {
+        return round(268435456 + 85445659.4471 * $lon * pi() / 180);
+    }
+
+    private static function latToY($lat) {
+        return round(268435456 - 85445659.4471 *
+                    log((1 + sin($lat * pi() / 180)) /
+                    (1 - sin($lat * pi() / 180))) / 2);
+    }
+
+    private static function pixelDistance($lat1, $lon1, $lat2, $lon2, $zoom) {
+        // MT TODO: handle international date line properly
+
+        $x1 = notes::lonToX($lon1);
+        $y1 = notes::latToY($lat1);
+
+        $x2 = notes::lonToX($lon2);
+        $y2 = notes::latToY($lat2);
+
+        return sqrt(pow(($x1-$x2),2) + pow(($y1-$y2),2)) >> (21 - $zoom);
+    }
+
+    private static function cluster($markers, $distance, $zoom) {
+        $clustered = array();
+        /* Loop until all markers have been compared. */
+        while (count($markers)) {
+            $marker  = array_pop($markers);
+            $cluster = array();
+            /* Compare against all markers which are left. */
+            foreach ($markers as $key => $target) {
+                $pixels = notes::pixelDistance($marker->latitude, $marker->longitude,
+                                        $target->latitude, $target->longitude,
+                                        $zoom);
+                /* If two markers are closer than given distance remove */
+                /* target marker from array and add it to cluster.      */
+                if ($distance > $pixels) {
+                    // printf("Distance between %s,%s and %s,%s is %d pixels.\n",
+                    //     $marker->latitude, $marker->longitude,
+                    //     $target->latitude, $target->longitude,
+                    //     $pixels);
+                    unset($markers[$key]);
+                    $cluster[] = $target;
+                }
+            }
+
+            /* If a marker has been added to cluster, add also the one  */
+            /* we were comparing to and remove the original from array. */
+            if (count($cluster) > 0) {
+                $cluster[] = $marker;
+                $clustered[] = $cluster;
+            } else {
+                $clustered[] = $marker;
+            }
+        }
+        return $clustered;
+    }
+
     public static function searchNotes($pack)
     {
         if (isset($pack->auth)) {
