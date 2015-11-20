@@ -317,6 +317,108 @@ class notes extends dbconnection
         return $clustered;
     }
 
+    public static function siftrSearch($pack)
+    {
+        if (isset($pack->auth)) {
+            $pack->auth->game_id    = $pack->game_id;
+            $pack->auth->permission = "read_write"  ;
+            $auth_user   =   users::authenticateUser      ($pack->auth);
+            $auth_editor = editors::authenticateGameEditor($pack->auth);
+        }
+        else {
+            $auth_user   = false;
+            $auth_editor = false;
+        }
+
+        $game_id       = isset($pack->game_id)                             ? intval($pack->game_id)              : 0;
+        $search        = isset($pack->search) && is_string($pack->search)  ? $pack->search                       : '';
+        $offset        = isset($pack->offset)                              ? intval($pack->offset)               : null;
+        $limit         = isset($pack->limit)                               ? intval($pack->limit)                : null;
+        $user_id       = $auth_user                                        ? intval($pack->auth->user_id)        : null;
+        $order         = isset($pack->order) && is_string($pack->order)    ? $pack->order                        : '';
+        $filter        = isset($pack->filter) && is_string($pack->filter)  ? $pack->filter                       : '';
+        $tag_ids       = isset($pack->tag_ids) && is_array($pack->tag_ids) ? array_map('intval', $pack->tag_ids) : array();
+        $min_latitude  = isset($pack->min_latitude)                        ? floatval($pack->min_latitude)       : null;
+        $max_latitude  = isset($pack->max_latitude)                        ? floatval($pack->max_latitude)       : null;
+        $min_longitude = isset($pack->min_longitude)                       ? floatval($pack->min_longitude)      : null;
+        $max_longitude = isset($pack->max_longitude)                       ? floatval($pack->max_longitude)      : null;
+        $zoom          = isset($pack->zoom)                                ? intval($pack->zoom)                 : 0;
+
+        $q = "SELECT notes.*
+        , users.user_name
+        , users.display_name
+        , object_tags.tag_id
+        , triggers.latitude
+        , triggers.longitude
+        , media.file_name as media_file_name
+        , media.file_folder as media_file_folder
+        FROM notes
+        LEFT JOIN users ON users.user_id = notes.user_id
+        LEFT JOIN instances ON instances.object_type = 'NOTE' AND notes.note_id = instances.object_id
+        LEFT JOIN triggers ON triggers.instance_id = instances.instance_id AND triggers.type = 'LOCATION'
+        LEFT JOIN media ON media.media_id = notes.media_id
+        LEFT JOIN object_tags ON object_tags.object_type = 'NOTE' AND notes.note_id = object_tags.object_id
+        LEFT JOIN note_likes ON notes.note_id = note_likes.note_id
+        LEFT JOIN note_comments ON notes.note_id = note_comments.note_id
+        WHERE 1=1";
+
+        if (!is_null($min_latitude) && !is_null($max_latitude)) {
+            $q .= " AND $min_latitude <= triggers.latitude AND triggers.latitude <= $max_latitude";
+        }
+        if (!is_null($min_longitude) && !is_null($max_longitude)) {
+            $q .= " AND $min_longitude <= triggers.longitude AND triggers.longitude <= $max_longitude";
+        }
+
+        if ($filter === 'mine') {
+            $q .= " AND notes.user_id = $user_id";
+        }
+
+        $q .= " GROUP BY notes.note_id";
+        if ($order === 'recent') {
+            $q .= " ORDER BY notes.note_id DESC";
+        } else if ($order === 'popular') {
+            $q .= " ORDER BY (COUNT(note_likes.note_id) + COUNT(note_comments.note_id)) DESC";
+        }
+
+        $notes = dbconnection::queryArray($q);
+        if (!is_array($notes)) {
+            return new return_package(1, NULL, "Error when running SQL query");
+        }
+
+        $map_objects = notes::cluster($notes, 50, $zoom);
+        $map_notes = array();
+        $map_clusters = array();
+        foreach ($map_objects as $map_object) {
+            if (is_array($map_object)) {
+                $low_latitude = $high_latitude = $low_longitude = $high_longitude = null;
+                foreach ($map_object as $clustered_note) {
+                    $lat = $clustered_note->latitude;
+                    $lon = $clustered_note->longitude;
+                    if (is_null($low_latitude  ) || $lat < $low_latitude  ) $low_latitude   = $lat;
+                    if (is_null($high_latitude ) || $lat > $high_latitude ) $high_latitude  = $lat;
+                    if (is_null($low_longitude ) || $lon < $low_longitude ) $low_longitude  = $lon;
+                    if (is_null($high_longitude) || $lon > $high_longitude) $high_longitude = $lon;
+                }
+                $cluster = new stdClass();
+                $cluster->min_latitude = $low_latitude;
+                $cluster->max_latitude = $high_latitude;
+                $cluster->min_longitude = $low_longitude;
+                $cluster->max_longitude = $high_longitude;
+                $cluster->note_count = count($map_object);
+                // TODO: tag composition
+                $map_clusters[] = $cluster;
+            } else {
+                $map_notes[] = $map_object;
+            }
+        }
+
+        $ret_obj = new stdClass();
+        $ret_obj->notes = array_slice($notes, $offset, $limit);
+        $ret_obj->map_notes = $map_notes;
+        $ret_obj->map_clusters = $map_clusters;
+        return new return_package(0, $ret_obj);
+    }
+
     public static function searchNotes($pack)
     {
         if (isset($pack->auth)) {
