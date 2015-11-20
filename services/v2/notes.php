@@ -360,7 +360,7 @@ class notes extends dbconnection
         LEFT JOIN object_tags ON object_tags.object_type = 'NOTE' AND notes.note_id = object_tags.object_id
         LEFT JOIN note_likes ON notes.note_id = note_likes.note_id
         LEFT JOIN note_comments ON notes.note_id = note_comments.note_id
-        WHERE 1=1";
+        WHERE notes.game_id = $game_id";
 
         if (!is_null($min_latitude) && !is_null($max_latitude)) {
             $q .= " AND $min_latitude <= triggers.latitude AND triggers.latitude <= $max_latitude";
@@ -392,8 +392,8 @@ class notes extends dbconnection
             if (is_array($map_object)) {
                 $low_latitude = $high_latitude = $low_longitude = $high_longitude = null;
                 foreach ($map_object as $clustered_note) {
-                    $lat = $clustered_note->latitude;
-                    $lon = $clustered_note->longitude;
+                    $lat = floatval($clustered_note->latitude);
+                    $lon = floatval($clustered_note->longitude);
                     if (is_null($low_latitude  ) || $lat < $low_latitude  ) $low_latitude   = $lat;
                     if (is_null($high_latitude ) || $lat > $high_latitude ) $high_latitude  = $lat;
                     if (is_null($low_longitude ) || $lon < $low_longitude ) $low_longitude  = $lon;
