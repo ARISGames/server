@@ -373,7 +373,7 @@ class notes extends dbconnection
 
         // Tag search
         if (count($tag_ids)) {
-            $q .= ' AND notes.tag_id IN (' . implode($tag_ids, ',') . ')';
+            $q .= ' AND object_tags.tag_id IN (' . implode($tag_ids, ',') . ')';
         }
 
         // Map boundaries
