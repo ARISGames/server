@@ -352,8 +352,8 @@ class notes extends dbconnection
         , object_tags.tag_id
         , triggers.latitude
         , triggers.longitude
-        , media.file_name as media_file_name
-        , media.file_folder as media_file_folder
+        , media.file_name
+        , media.file_folder
         FROM notes
         LEFT JOIN users ON users.user_id = notes.user_id
         LEFT JOIN instances ON instances.object_type = 'NOTE' AND notes.note_id = instances.object_id
@@ -447,6 +447,15 @@ class notes extends dbconnection
 
         $ret_obj = new stdClass();
         $ret_obj->notes = array_slice($notes, $offset, $limit);
+        foreach ($ret_obj->notes as $note) {
+            $note->media = media::mediaObjectFromSQL($note);
+            unset($note->file_name);
+            unset($note->file_folder);
+            unset($note->media->file_name);
+            unset($note->media->name);
+            unset($note->media->media_id);
+            unset($note->media->game_id);
+        }
         $ret_obj->map_notes = $map_notes;
         $ret_obj->map_clusters = $map_clusters;
         return new return_package(0, $ret_obj);
