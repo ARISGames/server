@@ -381,7 +381,12 @@ class notes extends dbconnection
             $q .= " AND {$min_latitude} <= triggers.latitude AND triggers.latitude <= {$max_latitude}";
         }
         if (!is_null($min_longitude) && !is_null($max_longitude)) {
-            $q .= " AND {$min_longitude} <= triggers.longitude AND triggers.longitude <= {$max_longitude}";
+            if ($min_longitude <= $max_longitude) {
+                $q .= " AND {$min_longitude} <= triggers.longitude AND triggers.longitude <= {$max_longitude}";
+            } else {
+                // the international date line is inside the 2 longitudes
+                $q .= " AND ({$min_longitude} <= triggers.longitude OR triggers.longitude <= {$max_longitude})";
+            }
         }
 
         // Filter
