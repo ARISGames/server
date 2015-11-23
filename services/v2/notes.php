@@ -413,6 +413,9 @@ class notes extends dbconnection
         }
 
         $notes = dbconnection::queryArray($q);
+        if ($notes === false) {
+            $notes = array(); // ugh
+        }
         if (!is_array($notes)) {
             return new return_package(1, NULL, "Error when running SQL query");
         }
