@@ -342,7 +342,9 @@ class notes extends dbconnection
         $max_latitude  = isset($pack->max_latitude)                        ? floatval($pack->max_latitude)       : null;
         $min_longitude = isset($pack->min_longitude)                       ? floatval($pack->min_longitude)      : null;
         $max_longitude = isset($pack->max_longitude)                       ? floatval($pack->max_longitude)      : null;
-        $zoom          = isset($pack->zoom)                                ? intval($pack->zoom)                 : 0;
+        $zoom          = isset($pack->zoom)                                ? intval($pack->zoom)                 : null;
+        $min_time      = isset($pack->min_time)                            ? intval($pack->min_time)             : null;
+        $max_time      = isset($pack->max_time)                            ? intval($pack->max_time)             : null;
 
         $q = "SELECT notes.*
         , users.user_name
@@ -360,19 +362,44 @@ class notes extends dbconnection
         LEFT JOIN object_tags ON object_tags.object_type = 'NOTE' AND notes.note_id = object_tags.object_id
         LEFT JOIN note_likes ON notes.note_id = note_likes.note_id
         LEFT JOIN note_comments ON notes.note_id = note_comments.note_id
-        WHERE notes.game_id = $game_id";
+        WHERE notes.game_id = {$game_id}";
 
+        // Search text
+        foreach (preg_split("/\\s+/", $search) as $term) {
+            if (strlen($term) === 0) continue;
+            $pat = '"%' . addslashes($term) . '%"';
+            $q .= " AND (notes.description LIKE {$pat} OR users.user_name LIKE {$pat} OR users.display_name LIKE {$pat} OR note_comments.description LIKE {$pat})";
+        }
+
+        // Tag search
+        if (count($tag_ids)) {
+            $q .= ' AND (notes.tag_id IN (' . implode($tag_ids, ',') . ')';
+        }
+
+        // Map boundaries
         if (!is_null($min_latitude) && !is_null($max_latitude)) {
-            $q .= " AND $min_latitude <= triggers.latitude AND triggers.latitude <= $max_latitude";
+            $q .= " AND {$min_latitude} <= triggers.latitude AND triggers.latitude <= {$max_latitude}";
         }
         if (!is_null($min_longitude) && !is_null($max_longitude)) {
-            $q .= " AND $min_longitude <= triggers.longitude AND triggers.longitude <= $max_longitude";
+            $q .= " AND {$min_longitude} <= triggers.longitude AND triggers.longitude <= {$max_longitude}";
         }
 
+        // Filter
         if ($filter === 'mine') {
-            $q .= " AND notes.user_id = $user_id";
+            $q .= " AND notes.user_id = {$user_id}";
         }
 
+        // Authentication
+        if (!$auth_editor) {
+            if ($auth_user) {
+                $q .= " AND (notes.published != 'PENDING' OR notes.user_id = '{$user_id}')";
+            }
+            else {
+                $q .= " AND notes.published != 'PENDING'";
+            }
+        }
+
+        // Order
         $q .= " GROUP BY notes.note_id";
         if ($order === 'recent') {
             $q .= " ORDER BY notes.note_id DESC";
@@ -385,30 +412,31 @@ class notes extends dbconnection
             return new return_package(1, NULL, "Error when running SQL query");
         }
 
-        $map_objects = notes::cluster($notes, 50, $zoom);
         $map_notes = array();
         $map_clusters = array();
-        foreach ($map_objects as $map_object) {
-            if (is_array($map_object)) {
-                $low_latitude = $high_latitude = $low_longitude = $high_longitude = null;
-                foreach ($map_object as $clustered_note) {
-                    $lat = floatval($clustered_note->latitude);
-                    $lon = floatval($clustered_note->longitude);
-                    if (is_null($low_latitude  ) || $lat < $low_latitude  ) $low_latitude   = $lat;
-                    if (is_null($high_latitude ) || $lat > $high_latitude ) $high_latitude  = $lat;
-                    if (is_null($low_longitude ) || $lon < $low_longitude ) $low_longitude  = $lon;
-                    if (is_null($high_longitude) || $lon > $high_longitude) $high_longitude = $lon;
+        if (!is_null($zoom)) {
+            foreach (notes::cluster($notes, 50, $zoom) as $map_object) {
+                if (is_array($map_object)) {
+                    $low_latitude = $high_latitude = $low_longitude = $high_longitude = null;
+                    foreach ($map_object as $clustered_note) {
+                        $lat = floatval($clustered_note->latitude);
+                        $lon = floatval($clustered_note->longitude);
+                        if (is_null($low_latitude  ) || $lat < $low_latitude  ) $low_latitude   = $lat;
+                        if (is_null($high_latitude ) || $lat > $high_latitude ) $high_latitude  = $lat;
+                        if (is_null($low_longitude ) || $lon < $low_longitude ) $low_longitude  = $lon;
+                        if (is_null($high_longitude) || $lon > $high_longitude) $high_longitude = $lon;
+                    }
+                    $cluster = new stdClass();
+                    $cluster->min_latitude = $low_latitude;
+                    $cluster->max_latitude = $high_latitude;
+                    $cluster->min_longitude = $low_longitude;
+                    $cluster->max_longitude = $high_longitude;
+                    $cluster->note_count = count($map_object);
+                    // TODO: tag composition
+                    $map_clusters[] = $cluster;
+                } else {
+                    $map_notes[] = $map_object;
                 }
-                $cluster = new stdClass();
-                $cluster->min_latitude = $low_latitude;
-                $cluster->max_latitude = $high_latitude;
-                $cluster->min_longitude = $low_longitude;
-                $cluster->max_longitude = $high_longitude;
-                $cluster->note_count = count($map_object);
-                // TODO: tag composition
-                $map_clusters[] = $cluster;
-            } else {
-                $map_notes[] = $map_object;
             }
         }
 
