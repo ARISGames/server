@@ -359,7 +359,7 @@ class notes extends dbconnection
         LEFT JOIN instances ON instances.object_type = 'NOTE' AND notes.note_id = instances.object_id
         LEFT JOIN triggers ON triggers.instance_id = instances.instance_id AND triggers.type = 'LOCATION'
         LEFT JOIN media ON media.media_id = notes.media_id
-        LEFT JOIN object_tags ON object_tags.object_type = 'NOTE' AND notes.note_id = object_tags.object_id
+        LEFT JOIN object_tags ON object_tags.game_id = notes.game_id AND object_tags.object_type = 'NOTE' AND notes.note_id = object_tags.object_id
         LEFT JOIN note_likes ON notes.note_id = note_likes.note_id
         LEFT JOIN note_comments ON notes.note_id = note_comments.note_id
         WHERE notes.game_id = {$game_id}";
@@ -509,7 +509,7 @@ class notes extends dbconnection
         if ($order_by === 'popular' || !empty($search_terms)) {
             $lines[] = "LEFT JOIN note_comments ON notes.note_id = note_comments.note_id";
         }
-        $lines[] = "LEFT JOIN object_tags ON object_tags.object_type = 'NOTE' AND notes.note_id = object_tags.object_id";
+        $lines[] = "LEFT JOIN object_tags ON object_tags.game_id = notes.game_id AND object_tags.object_type = 'NOTE' AND notes.note_id = object_tags.object_id";
         $lines[] = "LEFT JOIN tags ON object_tags.tag_id = tags.tag_id";
         $lines[] = "LEFT JOIN note_likes AS all_likes ON notes.note_id = all_likes.note_id";
         $lines[] = "LEFT JOIN note_likes AS my_likes ON notes.note_id = my_likes.note_id AND my_likes.user_id = '{$user_id}'";
