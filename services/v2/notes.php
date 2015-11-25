@@ -342,9 +342,10 @@ class notes extends dbconnection
         $max_latitude  = isset($pack->max_latitude)                        ? floatval($pack->max_latitude)       : null;
         $min_longitude = isset($pack->min_longitude)                       ? floatval($pack->min_longitude)      : null;
         $max_longitude = isset($pack->max_longitude)                       ? floatval($pack->max_longitude)      : null;
-        $zoom          = isset($pack->zoom)                                ? intval($pack->zoom)                 : null;
+        $zoom          = isset($pack->zoom)                                ? intval($pack->zoom)                 : 1;
         $min_time      = isset($pack->min_time)                            ? intval($pack->min_time)             : null;
         $max_time      = isset($pack->max_time)                            ? intval($pack->max_time)             : null;
+        $map_data      = isset($pack->map_data)                            ? !!($pack->map_data)                 : true;
 
         $q = "SELECT notes.*
         , users.user_name
@@ -412,6 +413,16 @@ class notes extends dbconnection
             $q .= " ORDER BY (COUNT(note_likes.note_id) + COUNT(note_comments.note_id)) DESC";
         }
 
+        // Limit/offset if we're not compiling map data
+        if (!$map_data) {
+            if ($limit) {
+                $q .= " LIMIT {$limit}";
+                if ($offset) {
+                    $q .= " OFFSET {$offset}";
+                }
+            }
+        }
+
         $notes = dbconnection::queryArray($q);
         if ($notes === false) {
             $notes = array(); // ugh
@@ -422,7 +433,7 @@ class notes extends dbconnection
 
         $map_notes = array();
         $map_clusters = array();
-        if (!is_null($zoom)) {
+        if ($map_data) {
             foreach (notes::cluster($notes, 50, $zoom) as $map_object) {
                 if (is_array($map_object)) {
                     $low_latitude = $high_latitude = $low_longitude = $high_longitude = null;
@@ -449,7 +460,13 @@ class notes extends dbconnection
         }
 
         $ret_obj = new stdClass();
-        $ret_obj->notes = array_slice($notes, $offset, $limit);
+        // Limit/offset if we *did* compile map data
+        if ($map_data) {
+            $ret_obj->notes = array_slice($notes, $offset, $limit);
+            // this works fine even if $offset and/or $limit are null
+        } else {
+            $ret_obj->notes = $notes;
+        }
         foreach ($ret_obj->notes as $note) {
             $note->media = media::mediaObjectFromSQL($note);
             unset($note->file_name);
