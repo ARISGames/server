@@ -478,13 +478,15 @@ class notes extends dbconnection
         }
         $ret_obj->map_notes = $map_notes;
         foreach ($ret_obj->map_notes as $note) {
-            $note->media = media::mediaObjectFromSQL($note);
-            unset($note->file_name);
-            unset($note->file_folder);
-            unset($note->media->file_name);
-            unset($note->media->name);
-            unset($note->media->media_id);
-            unset($note->media->game_id);
+            if (!isset($note->media)) {
+                $note->media = media::mediaObjectFromSQL($note);
+                unset($note->file_name);
+                unset($note->file_folder);
+                unset($note->media->file_name);
+                unset($note->media->name);
+                unset($note->media->media_id);
+                unset($note->media->game_id);
+            }
         }
         $ret_obj->map_clusters = $map_clusters;
         return new return_package(0, $ret_obj);
