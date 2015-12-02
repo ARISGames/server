@@ -18,6 +18,12 @@ class media extends dbconnection
         return media::mediaObjectFromSQL($fake_sql_media);
     }
 
+    public static function createMediaFromRawUpload($pack)
+    {
+        $pack->data = base64_encode(file_get_contents(Config::raw_uploads_folder . '/' . $pack->raw_upload_id));
+        return media::createMedia($pack);
+    }
+
     //Takes in media JSON, all fields optional except user_id + key
     public static function createMedia($pack)
     {

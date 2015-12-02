@@ -28,6 +28,7 @@ Vagrant.configure(2) do |config|
 
   config.vm.provision 'shell', privileged: false, inline: <<-SHELL
     cd /vagrant
+    mkdir -p gamedata/v2/players/
     mysql --user=root --password=root -e "CREATE DATABASE arisv1"
     mysql --user=root --password=root arisv1 < migrations/0.sql
     mysql --user=root --password=root -e "CREATE DATABASE migration_db"
