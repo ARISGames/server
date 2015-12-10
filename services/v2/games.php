@@ -247,6 +247,7 @@ class games extends dbconnection
         $game->moderated                                    = $sql_game->moderated;
         $game->version                                      = $sql_game->version;
         $game->colors_id                                    = $sql_game->colors_id;
+        $game->created                                      = $sql_game->created;
 
         return $game;
     }
