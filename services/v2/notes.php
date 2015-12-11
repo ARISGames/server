@@ -330,22 +330,22 @@ class notes extends dbconnection
             $auth_editor = false;
         }
 
-        $game_id       = isset($pack->game_id)                             ? intval($pack->game_id)              : 0;
-        $search        = isset($pack->search) && is_string($pack->search)  ? $pack->search                       : '';
-        $offset        = isset($pack->offset)                              ? intval($pack->offset)               : null;
-        $limit         = isset($pack->limit)                               ? intval($pack->limit)                : null;
-        $user_id       = $auth_user                                        ? intval($pack->auth->user_id)        : null;
-        $order         = isset($pack->order) && is_string($pack->order)    ? $pack->order                        : '';
-        $filter        = isset($pack->filter) && is_string($pack->filter)  ? $pack->filter                       : '';
-        $tag_ids       = isset($pack->tag_ids) && is_array($pack->tag_ids) ? array_map('intval', $pack->tag_ids) : array();
-        $min_latitude  = isset($pack->min_latitude)                        ? floatval($pack->min_latitude)       : null;
-        $max_latitude  = isset($pack->max_latitude)                        ? floatval($pack->max_latitude)       : null;
-        $min_longitude = isset($pack->min_longitude)                       ? floatval($pack->min_longitude)      : null;
-        $max_longitude = isset($pack->max_longitude)                       ? floatval($pack->max_longitude)      : null;
-        $zoom          = isset($pack->zoom)                                ? intval($pack->zoom)                 : 1;
-        $min_time      = isset($pack->min_time)                            ? intval($pack->min_time)             : null;
-        $max_time      = isset($pack->max_time)                            ? intval($pack->max_time)             : null;
-        $map_data      = isset($pack->map_data)                            ? !!($pack->map_data)                 : true;
+        $game_id       = isset($pack->game_id)                                ? intval($pack->game_id)              : 0;
+        $search        = isset($pack->search) && is_string($pack->search)     ? $pack->search                       : '';
+        $offset        = isset($pack->offset)                                 ? intval($pack->offset)               : null;
+        $limit         = isset($pack->limit)                                  ? intval($pack->limit)                : null;
+        $user_id       = $auth_user                                           ? intval($pack->auth->user_id)        : null;
+        $order         = isset($pack->order) && is_string($pack->order)       ? $pack->order                        : '';
+        $filter        = isset($pack->filter) && is_string($pack->filter)     ? $pack->filter                       : '';
+        $tag_ids       = isset($pack->tag_ids) && is_array($pack->tag_ids)    ? array_map('intval', $pack->tag_ids) : array();
+        $min_latitude  = isset($pack->min_latitude)                           ? floatval($pack->min_latitude)       : null;
+        $max_latitude  = isset($pack->max_latitude)                           ? floatval($pack->max_latitude)       : null;
+        $min_longitude = isset($pack->min_longitude)                          ? floatval($pack->min_longitude)      : null;
+        $max_longitude = isset($pack->max_longitude)                          ? floatval($pack->max_longitude)      : null;
+        $zoom          = isset($pack->zoom)                                   ? intval($pack->zoom)                 : 1;
+        $min_time      = isset($pack->min_time) && is_string($pack->min_time) ? $pack->min_time                     : null;
+        $max_time      = isset($pack->max_time) && is_string($pack->max_time) ? $pack->max_time                     : null;
+        $map_data      = isset($pack->map_data)                               ? !!($pack->map_data)                 : true;
 
         $q = "SELECT notes.*
         , users.user_name
@@ -390,7 +390,17 @@ class notes extends dbconnection
             }
         }
 
-        // Filter
+        // Filter by date
+        if (!is_null($min_time)) {
+            $str = '"' . addslashes($min_time) . '"';
+            $q .= " AND {$str} <= notes.created";
+        }
+        if (!is_null($max_time)) {
+            $str = '"' . addslashes($max_time) . '"';
+            $q .= " AND notes.created <= {$str}";
+        }
+
+        // Only the user's notes
         if ($filter === 'mine') {
             $q .= " AND notes.user_id = {$user_id}";
         }
