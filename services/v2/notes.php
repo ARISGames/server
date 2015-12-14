@@ -357,10 +357,10 @@ class notes extends dbconnection
         , media.file_folder
         FROM notes
         LEFT JOIN users ON users.user_id = notes.user_id
-        LEFT JOIN instances ON instances.object_type = 'NOTE' AND notes.note_id = instances.object_id
-        LEFT JOIN triggers ON triggers.instance_id = instances.instance_id AND triggers.type = 'LOCATION'
+        JOIN instances ON instances.object_type = 'NOTE' AND notes.note_id = instances.object_id
+        JOIN triggers ON triggers.instance_id = instances.instance_id AND triggers.type = 'LOCATION'
         LEFT JOIN media ON media.media_id = notes.media_id
-        LEFT JOIN object_tags ON object_tags.game_id = notes.game_id AND object_tags.object_type = 'NOTE' AND notes.note_id = object_tags.object_id
+        JOIN object_tags ON object_tags.game_id = notes.game_id AND object_tags.object_type = 'NOTE' AND notes.note_id = object_tags.object_id
         LEFT JOIN note_likes ON notes.note_id = note_likes.note_id
         LEFT JOIN note_comments ON notes.note_id = note_comments.note_id
         WHERE notes.game_id = {$game_id}";
