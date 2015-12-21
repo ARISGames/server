@@ -331,6 +331,7 @@ class notes extends dbconnection
         }
 
         $game_id       = isset($pack->game_id)                                ? intval($pack->game_id)              : 0;
+        $note_id       = isset($pack->note_id)                                ? intval($pack->note_id)              : 0;
         $search        = isset($pack->search) && is_string($pack->search)     ? $pack->search                       : '';
         $offset        = isset($pack->offset)                                 ? intval($pack->offset)               : null;
         $limit         = isset($pack->limit)                                  ? intval($pack->limit)                : null;
@@ -364,6 +365,11 @@ class notes extends dbconnection
         LEFT JOIN note_likes ON notes.note_id = note_likes.note_id
         LEFT JOIN note_comments ON notes.note_id = note_comments.note_id
         WHERE notes.game_id = {$game_id}";
+
+        // Search for specific note
+        if ($note_id) {
+            $q .= " AND notes.note_id = {$note_id}";
+        }
 
         // Search text
         foreach (preg_split("/\\s+/", $search) as $term) {
