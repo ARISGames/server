@@ -77,7 +77,7 @@ class backpack extends dbconnection
         foreach ($games as $game) {
             $game_id = $game->game_id;
 
-            $q = "SELECT *
+            $q = "SELECT object_id, qty
                 FROM instances
                 WHERE game_id = {$game_id}
                 AND object_type = 'ITEM'
@@ -88,7 +88,7 @@ class backpack extends dbconnection
             $inventory = dbconnection::queryArray($q);
             if ($inventory === false) $inventory = array();
 
-            $q = "SELECT *
+            $q = "SELECT content_id
                 FROM user_log
                 WHERE user_id = {$pack->auth->user_id}
                 AND game_id = {$game_id}
