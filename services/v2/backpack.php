@@ -88,14 +88,18 @@ class backpack extends dbconnection
             $inventory = dbconnection::queryArray($q);
             if ($inventory === false) $inventory = array();
 
-            $q = "SELECT content_id
+            $q = "SELECT DISTINCT content_id
                 FROM user_log
                 WHERE user_id = {$pack->auth->user_id}
                 AND game_id = {$game_id}
                 AND event_type = 'COMPLETE_QUEST'
                 ";
-            $quests = dbconnection::queryArray($q);
-            if ($quests === false) $quests = array();
+            $sql_quests = dbconnection::queryArray($q);
+            if ($sql_quests === false) $sql_quests = array();
+            $quests = array();
+            foreach ($sql_quests as $quest) {
+                $quests[] = $quest->content_id;
+            }
 
             // TODO: notes
 
