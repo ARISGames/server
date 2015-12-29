@@ -93,6 +93,7 @@ class backpack extends dbconnection
                 WHERE user_id = {$pack->auth->user_id}
                 AND game_id = {$game_id}
                 AND event_type = 'COMPLETE_QUEST'
+                AND NOT deleted
                 ";
             $sql_quests = dbconnection::queryArray($q);
             if ($sql_quests === false) $sql_quests = array();
