@@ -26,7 +26,7 @@ class backpack extends dbconnection
         $new_users = array();
         foreach ($users as $user) {
             $new_user = new stdClass();
-            $new_user->player_id = $user->user_id;
+            $new_user->player_id = intval($user->user_id);
             if ($user->media_id) {
                 $media = media::mediaObjectFromSQL($user);
                 $new_user->player_pic = $media->url; // what about thumb_url ?
@@ -62,7 +62,7 @@ class backpack extends dbconnection
         $sql_user = dbconnection::queryObject($q);
         if ($sql_user === false) return new return_package(6, NULL, "User not found");
         $backpack = new stdClass();
-        $backpack->player_id = $sql_user->user_id;
+        $backpack->player_id = intval($sql_user->user_id);
         if ($sql_user->media_id) {
             $media = media::mediaObjectFromSQL($sql_user);
             $backpack->player_pic = $media->url; // what about thumb_url ?
@@ -90,6 +90,10 @@ class backpack extends dbconnection
                 ";
             $inventory = dbconnection::queryArray($q);
             if ($inventory === false) $inventory = array();
+            foreach ($inventory as $item) {
+                $item->object_id = intval($item->object_id);
+                $item->qty = intval($item->qty);
+            }
 
             $q = "SELECT DISTINCT content_id
                 FROM user_log
@@ -102,7 +106,7 @@ class backpack extends dbconnection
             if ($sql_quests === false) $sql_quests = array();
             $quests = array();
             foreach ($sql_quests as $quest) {
-                $quests[] = $quest->content_id;
+                $quests[] = intval($quest->content_id);
             }
 
             $q = "SELECT notes.*, media.file_name, media.file_folder
@@ -120,6 +124,7 @@ class backpack extends dbconnection
                 unset($note->file_name);
                 unset($note->file_folder);
                 unset($note->media_id);
+                $note->note_id = intval($note->note_id);
             }
 
             $result = new stdClass();

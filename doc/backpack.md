@@ -1,0 +1,76 @@
+Make a POST request to the following URLs:
+
+    http://arisgames.org/server/json.php/v2.backpack.getGroupUsers
+    http://arisgames.org/server/json.php/v2.backpack.getUserBackpack
+
+The POST body should be a JSON object, MIME type application/json.
+
+## `v2.backpack.getGroupUsers`
+
+Takes:
+
+    {"group_id": <number>}
+
+Returns:
+
+    {"returnCode": 0, "returnCodeDescription": null, "data": [
+      <for each player in the group>
+      "player_id": <number>,
+      "player_pic": <string, a URL>,
+      "in_game_name": <string>
+    ]}
+
+## `v2.backpack.getUserBackpack`
+
+Takes:
+
+    {"auth": {"user_id": <number>, "key": <string>}, "user_id": <number>}
+
+Returns:
+
+    {"returnCode": 0, "returnCodeDescription": null, "data": {
+      "player_id": <number>,
+      "player_pic": <string, a URL>,
+      "in_game_name": <string>,
+      "games": {
+        <for each game's game_id>
+        <game_id>: {
+          "inventory": [
+            <for each item/attribute the player has at least one of>
+            {"object_id": <number>, "qty": <number>}
+          ],
+          "quests": [
+            <for each quest the player has completed>
+            <number, a quest ID>
+          ],
+          "notes": [
+            <for each note the player has posted> {
+              "note_id": <number>,
+              "name": <string>,
+              "description": <string>,
+              "created": <string, a date like YYYY-MM-DD hh:mm:ss>,
+              <only if the note has media>
+              "media": {
+                "url": <string, a URL>,
+                "thumb_url": <string, a URL>
+              }
+            }
+          ]
+        }
+      }
+    }}
+
+## `v2.users.logIn`
+
+This is how you get the `auth` information for authenticated API requests.
+
+Takes:
+
+    {"user_name": <string>, "password": <string>, "permission": "read_write"}
+
+Returns:
+
+    {"returnCode": 0, "returnCodeDescription": null, "data": {
+      "user_id": <number>,
+      "read_wrte_key": <string>
+    }}
