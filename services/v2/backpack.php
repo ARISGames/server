@@ -51,11 +51,13 @@ class backpack extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
+        $user_id = intval($pack->user_id);
+
         $q = "SELECT users.user_id, users.display_name, users.media_id
             , media.file_name, media.file_folder
             FROM users
             LEFT JOIN media ON users.media_id = media.media_id
-            WHERE users.user_id = {$pack->user_id}
+            WHERE users.user_id = {$user_id}
             ";
         $sql_user = dbconnection::queryObject($q);
         if ($sql_user === false) return new return_package(6, NULL, "User not found");
@@ -75,14 +77,14 @@ class backpack extends dbconnection
 
         $backpack->games = array();
         foreach ($games as $game) {
-            $game_id = $game->game_id;
+            $game_id = intval($game->game_id);
 
             $q = "SELECT object_id, qty
                 FROM instances
                 WHERE game_id = {$game_id}
                 AND object_type = 'ITEM'
                 AND owner_type = 'USER'
-                AND owner_id = {$pack->auth->user_id}
+                AND owner_id = {$user_id}
                 AND qty > 0
                 ";
             $inventory = dbconnection::queryArray($q);
@@ -90,7 +92,7 @@ class backpack extends dbconnection
 
             $q = "SELECT DISTINCT content_id
                 FROM user_log
-                WHERE user_id = {$pack->auth->user_id}
+                WHERE user_id = {$user_id}
                 AND game_id = {$game_id}
                 AND event_type = 'COMPLETE_QUEST'
                 AND NOT deleted
@@ -102,11 +104,27 @@ class backpack extends dbconnection
                 $quests[] = $quest->content_id;
             }
 
-            // TODO: notes
+            $q = "SELECT notes.*, media.file_name, media.file_folder
+                FROM notes
+                LEFT JOIN media ON notes.media_id = media.media_id
+                WHERE user_id = {$user_id}
+                AND game_id = {$game_id}
+                ";
+            $notes = dbconnection::queryArray($q);
+            if ($notes === false) $notes = array();
+            foreach ($notes as $note) {
+                if ($note->media_id) {
+                    $note->media = media::mediaObjectFromSQL($note);
+                }
+                unset($note->file_name);
+                unset($note->file_folder);
+                unset($note->media_id);
+            }
 
             $result = new stdClass();
             $result->inventory = $inventory;
             $result->quests = $quests;
+            $result->notes = $notes;
             $backpack->games[$game_id] = $result;
         }
 
