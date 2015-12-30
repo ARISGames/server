@@ -71,7 +71,8 @@ class backpack extends dbconnection
         }
         $backpack->in_game_name = $sql_user->display_name;
 
-        $q = "SELECT game_id FROM user_games WHERE user_id = {$pack->auth->user_id}";
+        $owner_id = intval($pack->auth->user_id);
+        $q = "SELECT game_id FROM user_games WHERE user_id = {$owner_id}";
         $games = dbconnection::queryArray($q);
         if ($games === false) $games = array();
 
@@ -107,8 +108,8 @@ class backpack extends dbconnection
             $q = "SELECT notes.*, media.file_name, media.file_folder
                 FROM notes
                 LEFT JOIN media ON notes.media_id = media.media_id
-                WHERE user_id = {$user_id}
-                AND game_id = {$game_id}
+                WHERE notes.user_id = {$user_id}
+                AND notes.game_id = {$game_id}
                 ";
             $notes = dbconnection::queryArray($q);
             if ($notes === false) $notes = array();
