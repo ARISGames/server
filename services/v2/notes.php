@@ -454,6 +454,7 @@ class notes extends dbconnection
                 if (is_array($map_object)) {
                     $low_latitude = $high_latitude = $low_longitude = $high_longitude = null;
                     $tags = new stdClass();
+                    $note_ids = array();
                     foreach ($map_object as $clustered_note) {
                         $lat = floatval($clustered_note->latitude);
                         $lon = floatval($clustered_note->longitude);
@@ -467,6 +468,7 @@ class notes extends dbconnection
                         } else {
                             $tags->$tag_id = 1;
                         }
+                        $note_ids[] = $clustered_note->note_id;
                     }
                     $cluster = new stdClass();
                     $cluster->min_latitude = $low_latitude;
@@ -475,6 +477,7 @@ class notes extends dbconnection
                     $cluster->max_longitude = $high_longitude;
                     $cluster->note_count = count($map_object);
                     $cluster->tags = $tags;
+                    $cluster->note_ids = $note_ids;
                     $map_clusters[] = $cluster;
                 } else {
                     $map_notes[] = $map_object;
