@@ -33,9 +33,10 @@ class media extends dbconnection
         $filenameext = strtolower(substr($pack->file_name,strrpos($pack->file_name,'.')+1));
         if($filenameext == "jpeg") $filenameext = "jpg"; //sanity
         $filename = md5((string)microtime().$pack->file_name);
-        $newfilename = 'aris'.$filename.'.'.$filenameext;
-        $resizedfilename = 'aris'.$filename.'_resized.'.$filenameext;
-        $newthumbfilename = 'aris'.$filename.'_128.'.$filenameext;
+        $newfilename         = 'aris'.$filename.'.'.$filenameext;
+        $newresizedfilename  = 'aris'.$filename.'_resized.'.$filenameext;
+        $newbigthumbfilename = 'aris'.$filename.'_256.'.$filenameext;
+        $newthumbfilename    = 'aris'.$filename.'_128.'.$filenameext;
 
         // Make sure playerUploaded requirements keep in sync with this list
         if(
@@ -59,9 +60,10 @@ class media extends dbconnection
         $filefolder = "";
         if($pack->game_id) $filefolder = $pack->game_id;
         else               $filefolder = "players";
-        $fspath      = Config::v2_gamedata_folder."/".$filefolder."/".$newfilename;
-        $resizedpath = Config::v2_gamedata_folder."/".$filefolder."/".$resizedfilename;
-        $fsthumbpath = Config::v2_gamedata_folder."/".$filefolder."/".$newthumbfilename;
+        $fspath         = Config::v2_gamedata_folder."/".$filefolder."/".$newfilename;
+        $fsresizedpath  = Config::v2_gamedata_folder."/".$filefolder."/".$newresizedfilename;
+        $fsbigthumbpath = Config::v2_gamedata_folder."/".$filefolder."/".$newbigthumbfilename;
+        $fsthumbpath    = Config::v2_gamedata_folder."/".$filefolder."/".$newthumbfilename;
 
         $fp = fopen($fspath, 'w');
         if(!$fp) return new return_package(1,NULL,"Couldn't open file:$fspath");
@@ -118,12 +120,24 @@ class media extends dbconnection
 
                 $image->setImageCompression(Imagick::COMPRESSION_JPEG);
                 $image->setImageCompressionQuality(40);
-                $image->writeImage($resizedpath);
+                $image->writeImage($fsresizedpath);
                 $did_resize = true;
             }
 
-            $image = new Imagick(isset($pack->resize) ? $resizedpath : $fspath);
+            //aspect fill to 256x256
+            $image = new Imagick(isset($pack->resize) ? $fsresizedpath : $fspath);
+            $w = $image->getImageWidth();
+            $h = $image->getImageHeight();
+            if($w < $h) $image->thumbnailImage(256, (256/$w)*$h, 1, 1);
+            else        $image->thumbnailImage((256/$h)*$w, 256, 1, 1);
+            //crop around center
+            $w = $image->getImageWidth();
+            $h = $image->getImageHeight();
+            $image->cropImage(256, 256, ($w-256)/2, ($h-256)/2);
+            $image->writeImage($fsbigthumbpath);
+
             //aspect fill to 128x128
+            $image = new Imagick(isset($pack->resize) ? $fsresizedpath : $fspath);
             $w = $image->getImageWidth();
             $h = $image->getImageHeight();
             if($w < $h) $image->thumbnailImage(128, (128/$w)*$h, 1, 1);
@@ -147,7 +161,7 @@ class media extends dbconnection
             "created".
             ") VALUES (".
             "'".$filefolder."',".
-            "'".($did_resize ? $resizedfilename : $newfilename)."',".
+            "'".($did_resize ? $newresizedfilename : $newfilename)."',".
             (isset($pack->game_id)       ? "'".addslashes($pack->game_id)."',"       : "").
             (isset($pack->auth->user_id) ? "'".addslashes($pack->auth->user_id)."'," : "").
             (isset($pack->name)          ? "'".addslashes($pack->name)."',"          : "").
@@ -194,8 +208,9 @@ class media extends dbconnection
             $filenametitle = substr($filenametitle, 0, -8);
         }
 
-        $media->url       = Config::v2_gamedata_www_path."/".$sql_media->file_folder."/".$sql_media->file_name;
-        $media->thumb_url = Config::v2_gamedata_www_path."/".$sql_media->file_folder."/".$filenametitle."_128".$filenameext;
+        $media->url           = Config::v2_gamedata_www_path."/".$sql_media->file_folder."/".$sql_media->file_name;
+        $media->big_thumb_url = Config::v2_gamedata_www_path."/".$sql_media->file_folder."/".$filenametitle."_256".$filenameext;
+        $media->thumb_url     = Config::v2_gamedata_www_path."/".$sql_media->file_folder."/".$filenametitle."_128".$filenameext;
 
         return $media;
     }
