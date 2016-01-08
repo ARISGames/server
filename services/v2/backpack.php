@@ -13,6 +13,9 @@ class backpack extends dbconnection
         - Returns an array of (player_id, player_pic, player_thumb, in_game_name)
         */
         $group_name = addslashes($pack->group_name);
+        if (empty($group_name)) {
+            return new return_package(0, array());
+        }
         $game_ids = $pack->game_ids;
         if (is_array($game_ids)) {
             $game_ids = array_map('intval', $game_ids);
@@ -22,9 +25,21 @@ class backpack extends dbconnection
         if (empty($game_ids)) {
             return new return_package(0, array());
         }
+        $relogin = isset($pack->relogin) && $pack->relogin;
+        if ($relogin) {
+            // For the relogin API: must supply authentication info
+            // for an editor of all the games
+            foreach ($game_ids as $game_id) {
+                $pack->auth->game_id    = $game_id;
+                $pack->auth->permission = "read_write"  ;
+                if (!editors::authenticateGameEditor($pack->auth)) {
+                    return new return_package(6, NULL, "Failed Authentication");
+                }
+            }
+        }
         $game_ids = implode(',', $game_ids);
 
-        $q = "SELECT users.user_id, users.display_name, users.media_id
+        $q = "SELECT users.user_id, users.display_name, users.media_id, users.read_write_key
             , media.file_name, media.file_folder
             FROM users
             LEFT JOIN media ON users.media_id = media.media_id
@@ -49,6 +64,9 @@ class backpack extends dbconnection
                 $new_user->player_thumb = null;
             }
             $new_user->in_game_name = $user->display_name;
+            if ($relogin) {
+                $new_user->read_write_key = $user->read_write_key;
+            }
             $new_users[] = $new_user;
         }
 
