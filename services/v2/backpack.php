@@ -74,7 +74,7 @@ class backpack extends dbconnection
         $sql_user = dbconnection::queryObject($q);
         if ($sql_user === false) return new return_package(6, NULL, "User not found");
         $backpack = new stdClass();
-        $backpack->player_id = intval($sql_user->user_id);
+        $backpack->player_id = $player_id;
         if ($sql_user->media_id) {
             $media = media::mediaObjectFromSQL($sql_user);
             $backpack->player_pic = $media->url;
@@ -100,7 +100,7 @@ class backpack extends dbconnection
                 WHERE instances.game_id = {$game_id}
                 AND instances.object_type = 'ITEM'
                 AND instances.owner_type = 'USER'
-                AND instances.owner_id = {$user_id}
+                AND instances.owner_id = {$player_id}
                 AND instances.qty > 0
                 ";
             $inventory = dbconnection::queryArray($q);
@@ -112,7 +112,7 @@ class backpack extends dbconnection
 
             $q = "SELECT DISTINCT content_id
                 FROM user_log
-                WHERE user_id = {$user_id}
+                WHERE user_id = {$player_id}
                 AND game_id = {$game_id}
                 AND event_type = 'COMPLETE_QUEST'
                 AND NOT deleted
