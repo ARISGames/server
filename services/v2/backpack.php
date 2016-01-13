@@ -112,9 +112,10 @@ class backpack extends dbconnection
 
         $backpack->games = array();
         foreach ($game_ids as $game_id) {
-            $q = "SELECT instances.object_id, instances.qty, items.name, items.type
+            $q = "SELECT instances.object_id, instances.qty, items.name, items.type, GROUP_CONCAT(DISTINCT object_tags.tag_id) as tags
                 FROM instances
                 INNER JOIN items ON items.item_id = instances.object_id
+                LEFT JOIN object_tags ON object_tags.object_type = 'ITEM' and object_tags.object_id = instances.object_id
                 WHERE instances.game_id = {$game_id}
                 AND instances.object_type = 'ITEM'
                 AND instances.owner_type = 'USER'
@@ -126,6 +127,7 @@ class backpack extends dbconnection
             foreach ($inventory as $item) {
                 $item->object_id = intval($item->object_id);
                 $item->qty = intval($item->qty);
+                $item->tags = array_map('intval', explode(',', $item->tags));
             }
 
             $q = "SELECT DISTINCT content_id

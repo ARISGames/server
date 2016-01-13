@@ -48,7 +48,6 @@ Returns:
             <for each item/attribute the player has at least one of>
             {"object_id": <number>, "qty": <number>, "name": <string>,
               "type": <one of "NORMAL", "HIDDEN", "ATTRIB", or "URL">,
-              <TODO: the following key will be included soon>
               "tags": <array of numbers>
             }
           ],
