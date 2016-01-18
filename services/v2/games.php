@@ -263,6 +263,7 @@ class games extends dbconnection
     {
         $siftr_url = isset($pack->siftr_url) ? addslashes($pack->siftr_url) : null;
         $count     = isset($pack->count    ) ? intval    ($pack->count    ) : 0   ;
+        $offset    = isset($pack->offset   ) ? intval    ($pack->offset   ) : 0   ;
         $order_by  = isset($pack->order_by ) ?            $pack->order_by   : null;
         $days      = isset($pack->days     ) ? intval    ($pack->days     ) : 30  ;
         $search    = isset($pack->search   ) ? addslashes($pack->search   ) : null;
@@ -293,7 +294,12 @@ class games extends dbconnection
             $q .= " ORDER BY COUNT(n.note_id) DESC";
         }
 
-        if ($count) $q .= " LIMIT $count";
+        if ($count) {
+            $q .= " LIMIT {$count}";
+            if ($offset) {
+                $q .= " OFFSET {$offset}";
+            }
+        }
 
         $sql_games = dbconnection::queryArray($q);
         $games = array();
