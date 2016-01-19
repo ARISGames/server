@@ -172,6 +172,7 @@ class users extends dbconnection
         $ret->user_name    = $user->user_name;
         $ret->display_name = $user->display_name;
         $ret->media_id     = $user->media_id;
+        $ret->email        = $user->email;
         if($pack->permission == "read"       || $pack->auth->permission == "read")       $ret->read_key       = $user->read_key;
         if($pack->permission == "write"      || $pack->auth->permission == "write")      $ret->write_key      = $user->write_key;
         if($pack->permission == "read_write" || $pack->auth->permission == "read_write") $ret->read_write_key = $user->read_write_key;
