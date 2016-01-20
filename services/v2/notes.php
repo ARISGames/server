@@ -450,7 +450,7 @@ class notes extends dbconnection
         $map_notes = array();
         $map_clusters = array();
         if ($map_data) {
-            foreach (notes::cluster($notes, 50, $zoom) as $map_object) {
+            foreach (notes::cluster($notes, 35, $zoom) as $map_object) {
                 if (is_array($map_object)) {
                     $low_latitude = $high_latitude = $low_longitude = $high_longitude = null;
                     $tags = new stdClass();
