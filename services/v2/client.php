@@ -626,6 +626,7 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
         dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, qty, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'RECEIVE_ITEM', '{$pack->item_id}', '{$pack->qty}', CURRENT_TIMESTAMP);");
+        client::checkForCascadingLogs($pack);
         return new return_package(0);
     }
 
@@ -634,6 +635,7 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
         dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, qty, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'LOSE_ITEM', '{$pack->item_id}', '{$pack->qty}', CURRENT_TIMESTAMP);");
+        client::checkForCascadingLogs($pack);
         return new return_package(0);
     }
 
@@ -642,6 +644,7 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
         dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, qty, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'GAME_RECEIVE_ITEM', '{$pack->item_id}', '{$pack->qty}', CURRENT_TIMESTAMP);");
+        client::checkForCascadingLogs($pack);
         games::bumpGameVersion($pack);
         return new return_package(0);
     }
@@ -651,6 +654,7 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
         dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, qty, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'GAME_LOSE_ITEM', '{$pack->item_id}', '{$pack->qty}', CURRENT_TIMESTAMP);");
+        client::checkForCascadingLogs($pack);
         games::bumpGameVersion($pack);
         return new return_package(0);
     }
@@ -660,6 +664,7 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
         dbconnection::queryInsert("INSERT INTO user_log (user_id, group_id, game_id, event_type, content_id, qty, created) VALUES ('{$pack->auth->user_id}', '{$pack->group_id}', '{$pack->game_id}', 'GROUP_RECEIVE_ITEM', '{$pack->item_id}', '{$pack->qty}', CURRENT_TIMESTAMP);");
+        client::checkForCascadingLogs($pack);
         games::bumpGameVersion($pack);
         return new return_package(0);
     }
@@ -669,6 +674,7 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
         dbconnection::queryInsert("INSERT INTO user_log (user_id, group_id, game_id, event_type, content_id, qty, created) VALUES ('{$pack->auth->user_id}', '{$pack->group_id}', '{$pack->game_id}', 'GROUP_LOSE_ITEM', '{$pack->item_id}', '{$pack->qty}', CURRENT_TIMESTAMP);");
+        client::checkForCascadingLogs($pack);
         games::bumpGameVersion($pack);
         return new return_package(0);
     }
@@ -706,6 +712,7 @@ class client extends dbconnection
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'CREATE_NOTE', '{$pack->note_id}', CURRENT_TIMESTAMP);");
+        client::checkForCascadingLogs($pack);
         return new return_package(0);
     }
 
@@ -715,6 +722,7 @@ class client extends dbconnection
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'GIVE_NOTE_COMMENT', '{$pack->note_comment_id}', CURRENT_TIMESTAMP);");
+        client::checkForCascadingLogs($pack);
         return new return_package(0);
     }
 
