@@ -175,11 +175,15 @@ class tags extends dbconnection
 
         dbconnection::query("DELETE FROM tags WHERE tag_id = '{$pack->tag_id}' LIMIT 1");
         //cleanup
-        $tags = dbconnection::queryArray("SELECT * FROM object_tags WHERE tag_id = '{$pack->tag_id}'");
-        for($i = 0; $i < count($tags); $i++)
-        {
-            $pack->object_tag_id = $tags[$i]->object_tag_id;
-            tags::deleteObjectTag($pack);
+        if ($pack->new_tag_id) {
+            dbconnection::query("UPDATE object_tags SET tag_id = '{$pack->new_tag_id}' WHERE tag_id = '{$pack->tag_id}'");
+        } else {
+            $tags = dbconnection::queryArray("SELECT * FROM object_tags WHERE tag_id = '{$pack->tag_id}'");
+            for($i = 0; $i < count($tags); $i++)
+            {
+                $pack->object_tag_id = $tags[$i]->object_tag_id;
+                tags::deleteObjectTag($pack);
+            }
         }
 
         $reqAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement = 'PLAYER_HAS_TAGGED_ITEM' AND content_id = '{$pack->tag_id}'");
