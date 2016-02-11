@@ -62,6 +62,7 @@ class games extends dbconnection
             (isset($pack->moderated)                                    ? "moderated,"                                    : "").
             (isset($pack->version)                                      ? "version,"                                      : "").
             (isset($pack->colors_id)                                    ? "colors_id,"                                    : "").
+            (isset($pack->prompt)                                       ? "prompt,"                                       : "").
             "created".
             ") VALUES (".
             (isset($pack->name)                                         ? "'".addslashes($pack->name)."',"                                         : "").
@@ -102,6 +103,7 @@ class games extends dbconnection
             (isset($pack->moderated)                                    ? "'".addslashes($pack->moderated)."',"                                    : "").
             (isset($pack->version)                                      ? "'".addslashes($pack->version)."',"                                      : "").
             (isset($pack->colors_id)                                    ? "'".addslashes($pack->colors_id)."',"                                    : "").
+            (isset($pack->prompt)                                       ? "'".addslashes($pack->prompt)."',"                                       : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -195,7 +197,8 @@ class games extends dbconnection
             (isset($pack->preload_media)                                ? "preload_media                                = '".addslashes($pack->preload_media)."', "                                : "").
             (isset($pack->moderated)                                    ? "moderated                                    = '".addslashes($pack->moderated)."', "                                    : "").
             (isset($pack->version)                                      ? "version                                      = '".addslashes($pack->version)."', "                                      : "").
-            (isset($pack->colors_id)                                    ? "colors_id                                    = '".addslashes($pack->colors_id)."', "                                      : "").
+            (isset($pack->colors_id)                                    ? "colors_id                                    = '".addslashes($pack->colors_id)."', "                                    : "").
+            (isset($pack->prompt)                                       ? "prompt                                       = '".addslashes($pack->prompt)."', "                                       : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE game_id = '{$pack->game_id}'"
         );
@@ -247,6 +250,7 @@ class games extends dbconnection
         $game->moderated                                    = $sql_game->moderated;
         $game->version                                      = $sql_game->version;
         $game->colors_id                                    = $sql_game->colors_id;
+        $game->prompt                                       = $sql_game->prompt;
         $game->created                                      = $sql_game->created;
 
         return $game;
