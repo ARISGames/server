@@ -22,6 +22,9 @@ class colors extends dbconnection
         $colors->tag_3     = $sql_colors->tag_3    ;
         $colors->tag_4     = $sql_colors->tag_4    ;
         $colors->tag_5     = $sql_colors->tag_5    ;
+        $colors->tag_6     = $sql_colors->tag_6    ;
+        $colors->tag_7     = $sql_colors->tag_7    ;
+        $colors->tag_8     = $sql_colors->tag_8    ;
 
         return $colors;
     }
