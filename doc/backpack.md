@@ -48,12 +48,12 @@ Returns:
             <for each item/attribute the player has at least one of>
             {"object_id": <number>, "qty": <number>, "name": <string>,
               "type": <one of "NORMAL", "HIDDEN", "ATTRIB", or "URL">,
-              "tags": <array of numbers>
+              "tags": <array of tag names>
             }
           ],
           "quests": [
             <for each quest the player has completed>
-            <number, a quest ID>
+            {"quest_id": <number>, "name": <string>}
           ]
         }
       }

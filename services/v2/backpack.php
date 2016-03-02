@@ -112,10 +112,11 @@ class backpack extends dbconnection
 
         $backpack->games = array();
         foreach ($game_ids as $game_id) {
-            $q = "SELECT instances.object_id, instances.qty, items.name, items.type, GROUP_CONCAT(DISTINCT object_tags.tag_id) as tags
+            $q = "SELECT instances.object_id, instances.qty, items.name, items.type, GROUP_CONCAT(DISTINCT tags.tag SEPARATOR '!TAG!') as tags
                 FROM instances
                 INNER JOIN items ON items.item_id = instances.object_id
                 LEFT JOIN object_tags ON object_tags.object_type = 'ITEM' and object_tags.object_id = instances.object_id
+                LEFT JOIN tags ON object_tags.tag_id = tags.tag_id
                 WHERE instances.game_id = {$game_id}
                 AND instances.object_type = 'ITEM'
                 AND instances.owner_type = 'USER'
@@ -128,22 +129,19 @@ class backpack extends dbconnection
             foreach ($inventory as $item) {
                 $item->object_id = intval($item->object_id);
                 $item->qty = intval($item->qty);
-                $item->tags = array_map('intval', explode(',', $item->tags));
+                $item->tags = explode('!TAG!', $item->tags);
             }
 
-            $q = "SELECT DISTINCT content_id
+            $q = "SELECT DISTINCT quests.quest_id, quests.name
                 FROM user_log
-                WHERE user_id = {$player_id}
-                AND game_id = {$game_id}
-                AND event_type = 'COMPLETE_QUEST'
-                AND NOT deleted
+                JOIN quests ON user_log.content_id = quests.quest_id
+                WHERE user_log.user_id = {$player_id}
+                AND user_log.game_id = {$game_id}
+                AND user_log.event_type = 'COMPLETE_QUEST'
+                AND NOT user_log.deleted
                 ";
-            $sql_quests = dbconnection::queryArray($q);
-            if ($sql_quests === false) $sql_quests = array();
-            $quests = array();
-            foreach ($sql_quests as $quest) {
-                $quests[] = intval($quest->content_id);
-            }
+            $quests = dbconnection::queryArray($q);
+            if ($quests === false) $quests = array();
 
             $result = new stdClass();
             $result->inventory = $inventory;
