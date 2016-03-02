@@ -112,6 +112,9 @@ class backpack extends dbconnection
 
         $backpack->games = array();
         foreach ($game_ids as $game_id) {
+            $q = "SELECT name FROM games WHERE game_id = {$game_id}";
+            $game_name = dbconnection::queryObject($q)->name;
+
             $q = "SELECT instances.object_id, instances.qty, items.name, items.type, GROUP_CONCAT(DISTINCT tags.tag SEPARATOR '!TAG!') as tags
                 FROM instances
                 INNER JOIN items ON items.item_id = instances.object_id
@@ -144,6 +147,7 @@ class backpack extends dbconnection
             if ($quests === false) $quests = array();
 
             $result = new stdClass();
+            $result->name = $game_name;
             $result->inventory = $inventory;
             $result->quests = $quests;
             $backpack->games[$game_id] = $result;

@@ -44,6 +44,7 @@ Returns:
       "games": {
         <for each game's game_id>
         <game_id>: {
+          "name": <string>,
           "inventory": [
             <for each item/attribute the player has at least one of>
             {"object_id": <number>, "qty": <number>, "name": <string>,
