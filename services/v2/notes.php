@@ -781,5 +781,17 @@ class notes extends dbconnection
       return new return_package(0, Config::v2_gamedata_www_path."/".$tmp_export_folder.".zip");
     }
 
+    public static function allSiftrData($pack)
+    {
+        $game_id = intval($pack->game_id);
+
+        $notes = notes::getNotesForGame($pack)->data;
+        foreach ($notes as $note) {
+            $note->media = media::getMedia($note);
+            $note->comments = note_comments::getNoteCommentsForNote($note);
+        }
+
+        return new return_package(0, $notes);
+    }
 }
 ?>
