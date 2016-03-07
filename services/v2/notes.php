@@ -783,8 +783,6 @@ class notes extends dbconnection
 
     public static function allSiftrData($pack)
     {
-        $game_id = intval($pack->game_id);
-
         $notes = notes::getNotesForGame($pack)->data;
         foreach ($notes as $note) {
             $note->media = media::getMedia($note);
