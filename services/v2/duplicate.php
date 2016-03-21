@@ -745,6 +745,9 @@ class duplicate extends dbconnection
               $old_file_path = Config::v2_gamedata_folder."/".$old_datum['file_folder']."/".$old_datum['file_name'];
               $new_file_path = Config::v2_gamedata_folder."/".$maps['games'][$game_id]."/".$old_datum['file_name'];
               $new_file_path_128 = Config::v2_gamedata_folder."/".$maps['games'][$game_id]."/".$filenametitle."_128".$filenameext;
+              $new_file_path_128 = str_replace('_resized_128', '_128', $new_file_path_128);
+              $new_file_path_256 = Config::v2_gamedata_folder."/".$maps['games'][$game_id]."/".$filenametitle."_256".$filenameext;
+              $new_file_path_256 = str_replace('_resized_256', '_256', $new_file_path_256);
 
               if(file_exists($old_file_path))
               {
@@ -767,6 +770,18 @@ class duplicate extends dbconnection
                         $h = $image->getImageHeight();
                         $image->cropImage(128, 128, ($w-128)/2, ($h-128)/2);
                         $image->writeImage($new_file_path_128);
+
+                        $image = new Imagick($new_file_path);
+                        //aspect fill to 256x256
+                        $w = $image->getImageWidth();
+                        $h = $image->getImageHeight();
+                        if($w < $h) $image->thumbnailImage(256, (256/$w)*$h, 1, 1);
+                        else        $image->thumbnailImage((256/$h)*$w, 256, 1, 1);
+                        //crop around center
+                        $w = $image->getImageWidth();
+                        $h = $image->getImageHeight();
+                        $image->cropImage(256, 256, ($w-256)/2, ($h-256)/2);
+                        $image->writeImage($new_file_path_256);
                     }
                   }
                   catch (ImagickException $e) 
