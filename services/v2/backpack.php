@@ -143,9 +143,8 @@ class backpack extends dbconnection
             $quests = array();
             foreach ($all_quests as $quest)
             {
-                $gameQuests[$i]->user_id = $player_id;
-
-                $gameQuests[$i]->requirement_root_package_id = $gameQuests[$i]->active_requirement_root_package_id;
+                $quest->user_id = $player_id;
+                $quest->requirement_root_package_id = $quest->active_requirement_root_package_id;
                 if(!requirements::evaluateRequirementPackage($gameQuests[$i])) continue; //ensure quest is active/visible
 
                 $ret_quest = new stdClass();
