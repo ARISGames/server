@@ -53,8 +53,8 @@ Returns:
             }
           ],
           "quests": [
-            <for each quest the player has completed>
-            {"quest_id": <number>, "name": <string>}
+            <for each quest currently visible to the player>
+            {"quest_id": <number>, "name": <string>, "icon_url": <string, a URL>}
           ]
         }
       }
