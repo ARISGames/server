@@ -135,9 +135,6 @@ class quests extends dbconnection
 
     public static function getQuestsForGame($pack)
     {
-        $pack->auth->permission = "read_write";
-        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
-
         $sql_quests = dbconnection::queryArray("SELECT * FROM quests WHERE game_id = '{$pack->game_id}' ORDER BY sort_index");
         $quests = array();
         for($i = 0; $i < count($sql_quests); $i++)

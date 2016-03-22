@@ -3,6 +3,8 @@ require_once("dbconnection.php");
 require_once("users.php");
 require_once("media.php");
 require_once("return_package.php");
+require_once("requirements.php");
+require_once("quests.php");
 
 class backpack extends dbconnection
 {
@@ -135,16 +137,27 @@ class backpack extends dbconnection
                 $item->tags = explode('!TAG!', $item->tags);
             }
 
-            $q = "SELECT DISTINCT quests.quest_id, quests.name
-                FROM user_log
-                JOIN quests ON user_log.content_id = quests.quest_id
-                WHERE user_log.user_id = {$player_id}
-                AND user_log.game_id = {$game_id}
-                AND user_log.event_type = 'COMPLETE_QUEST'
-                AND NOT user_log.deleted
-                ";
-            $quests = dbconnection::queryArray($q);
-            if ($quests === false) $quests = array();
+            $obj = new stdClass();
+            $obj->game_id = $game_id;
+            $all_quests = quests::getQuestsForGame($obj)->data;
+            $quests = array();
+            foreach ($all_quests as $quest)
+            {
+                $gameQuests[$i]->user_id = $player_id;
+
+                $gameQuests[$i]->requirement_root_package_id = $gameQuests[$i]->active_requirement_root_package_id;
+                if(!requirements::evaluateRequirementPackage($gameQuests[$i])) continue; //ensure quest is active/visible
+
+                $ret_quest = new stdClass();
+                $ret_quest->quest_id = $quest->quest_id;
+                $ret_quest->name = $quest->name;
+                if (isset($quest->active_icon_media_id) && $quest->active_icon_media_id) {
+                    $obj = new stdClass();
+                    $obj->media_id = $quest->active_icon_media_id;
+                    $ret_quest->icon_url = media::getMedia($obj)->data->url;
+                }
+                $quests[] = $ret_quest;
+            }
 
             $result = new stdClass();
             $result->name = $game_name;
