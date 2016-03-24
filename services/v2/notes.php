@@ -712,6 +712,20 @@ class notes extends dbconnection
         return new return_package(0);
     }
 
+    public static function likedNote($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $existing = dbconnection::queryObject(
+            "SELECT * FROM note_likes"
+            . " WHERE game_id = '" . intval($pack->game_id) . "'"
+            . " AND note_id = '" . intval($pack->note_id) . "'"
+            . " AND user_id = '" . intval($pack->auth->user_id) . "'"
+        );
+        return new return_package(0, $existing ? true : false);
+    }
+
     public static function likeNote($pack)
     {
         $pack->auth->permission = "read_write";
