@@ -63,6 +63,7 @@ class games extends dbconnection
             (isset($pack->version)                                      ? "version,"                                      : "").
             (isset($pack->colors_id)                                    ? "colors_id,"                                    : "").
             (isset($pack->prompt)                                       ? "prompt,"                                       : "").
+            (isset($pack->staff_pick)                                   ? "staff_pick,"                                   : "").
             "created".
             ") VALUES (".
             (isset($pack->name)                                         ? "'".addslashes($pack->name)."',"                                         : "").
@@ -104,6 +105,7 @@ class games extends dbconnection
             (isset($pack->version)                                      ? "'".addslashes($pack->version)."',"                                      : "").
             (isset($pack->colors_id)                                    ? "'".addslashes($pack->colors_id)."',"                                    : "").
             (isset($pack->prompt)                                       ? "'".addslashes($pack->prompt)."',"                                       : "").
+            (isset($pack->staff_pick)                                   ? "'".addslashes($pack->staff_pick)."',"                                   : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -199,6 +201,7 @@ class games extends dbconnection
             (isset($pack->version)                                      ? "version                                      = '".addslashes($pack->version)."', "                                      : "").
             (isset($pack->colors_id)                                    ? "colors_id                                    = '".addslashes($pack->colors_id)."', "                                    : "").
             (isset($pack->prompt)                                       ? "prompt                                       = '".addslashes($pack->prompt)."', "                                       : "").
+            (isset($pack->staff_pick)                                   ? "staff_pick                                   = '".addslashes($pack->staff_pick)."', "                                   : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE game_id = '{$pack->game_id}'"
         );
@@ -251,6 +254,7 @@ class games extends dbconnection
         $game->version                                      = $sql_game->version;
         $game->colors_id                                    = $sql_game->colors_id;
         $game->prompt                                       = $sql_game->prompt;
+        $game->staff_pick                                   = $sql_game->staff_pick;
         $game->created                                      = $sql_game->created;
 
         return $game;
@@ -352,6 +356,37 @@ class games extends dbconnection
             if($ob = games::gameObjectFromSQL($sql_games[$i])) $games[] = $ob;
 
         return new return_package(0,$games);
+    }
+
+    public static function getFollowedGamesForUser($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $sql_games = dbconnection::queryArray("SELECT * FROM game_follows LEFT JOIN games ON game_follows.game_id = games.game_id WHERE game_follows.user_id = '{$pack->auth->user_id}' AND games.game_id IS NOT NULL");
+        $games = array();
+        for($i = 0; $i < count($sql_games); $i++)
+            if($ob = games::gameObjectFromSQL($sql_games[$i])) $games[] = $ob;
+
+        return new return_package(0,$games);
+    }
+
+    public static function followGame($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        dbconnection::queryInsert("INSERT INTO game_follows (game_id, user_id, created) VALUES ('{$pack->game_id}','{$pack->auth->user_id}',CURRENT_TIMESTAMP)");
+        return new return_package(0);
+    }
+
+    public static function unfollowGame($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        dbconnection::query("DELETE FROM game_follows WHERE user_id = '{$pack->auth->user_id}' AND game_id = '{$pack->game_id}'");
+        return new return_package(0);
     }
 
     public static function deleteGame($pack)
