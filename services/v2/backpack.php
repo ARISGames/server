@@ -114,6 +114,16 @@ class backpack extends dbconnection
 
         $backpack->games = array();
         foreach ($game_ids as $game_id) {
+            // First, make sure the player has actually started this game
+            $q = "SELECT instance_id
+                FROM instances
+                WHERE instances.game_id = {$game_id}
+                AND instances.owner_type = 'USER'
+                AND instances.owner_id = {$player_id}
+                ";
+            $instances = dbconnection::queryArray($q);
+            if ($instances === false || !count($instances)) continue;
+
             $q = "SELECT name FROM games WHERE game_id = {$game_id}";
             $game_name = dbconnection::queryObject($q)->name;
 
