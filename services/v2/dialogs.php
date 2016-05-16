@@ -3,6 +3,7 @@ require_once("dbconnection.php");
 require_once("editors.php");
 require_once("games.php");
 require_once("return_package.php");
+require_once("util.php");
 
 require_once("tabs.php");
 require_once("tags.php");
@@ -18,6 +19,11 @@ class dialogs extends dbconnection
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        if (intval($pack->game_id) === 0) {
+            util::errorLog(json_encode($pack));
+            return new return_package(7, NULL, "Game ID is 0");
+        }
 
         $pack->dialog_id = dbconnection::queryInsert(
             "INSERT INTO dialogs (".
@@ -259,6 +265,15 @@ class dialogs extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
+        if (intval($pack->game_id) === 0) {
+            util::errorLog(json_encode($pack));
+            return new return_package(7, NULL, "Game ID is 0");
+        }
+        if (intval($pack->dialog_id) === 0) {
+            util::errorLog(json_encode($pack));
+            return new return_package(7, NULL, "Dialog ID is 0");
+        }
+
         $pack->dialog_script_id = dbconnection::queryInsert(
             "INSERT INTO dialog_scripts (".
             "game_id,".
@@ -391,6 +406,15 @@ class dialogs extends dbconnection
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        if (intval($pack->game_id) === 0) {
+            util::errorLog(json_encode($pack));
+            return new return_package(7, NULL, "Game ID is 0");
+        }
+        if (intval($pack->dialog_id) === 0) {
+            util::errorLog(json_encode($pack));
+            return new return_package(7, NULL, "Dialog ID is 0");
+        }
 
         $pack->dialog_option_id = dbconnection::queryInsert(
             "INSERT INTO dialog_options (".
