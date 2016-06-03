@@ -16,25 +16,25 @@ $numTopGames = 10; // number of top games to show in list
 $CURDIR = __DIR__ . DIRECTORY_SEPARATOR;
 
 require($CURDIR . '../config.class.php');
-$sqlLink = mysql_connect(Config::dbHost, Config::dbUser, Config::dbPass) or die('MySQL error: ' . mysql_error());
-mysql_select_db(Config::dbSchema) or die('MySQL error: ' . mysql_error());
+$sqlLink = mysql_connect(Config::v2_host, Config::v2_db_user, Config::v2_db_pass) or die('MySQL error: ' . mysql_error());
+mysql_select_db(Config::v2_db) or die('MySQL error: ' . mysql_error());
 
-    $query = 'SELECT COUNT(DISTINCT player_id) AS count FROM player_log WHERE timestamp BETWEEN DATE_SUB(NOW(), INTERVAL 1 MINUTE) AND NOW()';
+    $query = 'SELECT COUNT(DISTINCT user_id) AS count FROM user_log WHERE created BETWEEN DATE_SUB(NOW(), INTERVAL 1 MINUTE) AND NOW()';
     $result = mysql_query($query);
     $numCurrentPlayers1Object = mysql_fetch_object($result);
     $numCurrentPlayers1 = $numCurrentPlayers1Object->count;
     
-    $query = 'SELECT COUNT(DISTINCT player_id) AS count FROM player_log WHERE timestamp BETWEEN DATE_SUB(NOW(), INTERVAL 15 MINUTE) AND NOW()';
+    $query = 'SELECT COUNT(DISTINCT user_id) AS count FROM user_log WHERE created BETWEEN DATE_SUB(NOW(), INTERVAL 15 MINUTE) AND NOW()';
     $result = mysql_query($query);
     $numCurrentPlayers15Object = mysql_fetch_object($result);
     $numCurrentPlayers15 = $numCurrentPlayers15Object->count;
     
-    $query = 'SELECT COUNT(DISTINCT player_id) AS count FROM player_log WHERE timestamp BETWEEN DATE_SUB(NOW(), INTERVAL 1 HOUR) AND NOW()';
+    $query = 'SELECT COUNT(DISTINCT user_id) AS count FROM user_log WHERE created BETWEEN DATE_SUB(NOW(), INTERVAL 1 HOUR) AND NOW()';
     $result = mysql_query($query);
     $numCurrentPlayers60Object = mysql_fetch_object($result);
     $numCurrentPlayers60 = $numCurrentPlayers60Object->count;
     
-    $query = 'SELECT COUNT(DISTINCT player_id) AS count FROM player_log WHERE timestamp BETWEEN DATE_SUB(NOW(), INTERVAL 1 DAY) AND NOW()';
+    $query = 'SELECT COUNT(DISTINCT user_id) AS count FROM user_log WHERE created BETWEEN DATE_SUB(NOW(), INTERVAL 1 DAY) AND NOW()';
     $result = mysql_query($query);
     $numCurrentPlayers1440Object = mysql_fetch_object($result);
     $numCurrentPlayers1440 = $numCurrentPlayers1440Object->count;
@@ -55,13 +55,13 @@ function initialize()
 
   var map = new google.maps.Map(document.getElementById("mapContainer"), myOptions);
 
-  <?php generatePlayerLocations(); ?>
-  <?php generateGameLocations(); ?>
+  <?php /* generatePlayerLocations(); */ ?>
+  <?php /* generateGameLocations(); */ ?>
   
   ShowDiv('topTenElementForWeek');
   currentTopTenElement = 'topTenElementForWeek';
 
-  populateGraphs();
+  // populateGraphs();
 }
 
 function populateGraphs()
@@ -209,7 +209,7 @@ function reverseLatLng(lat, lng)
 <div id="mainStatsContainer">
 
   <div id="totalPlayers" class="statsContainer">
-    <p class="bigNum"><span style="color: #FF9900"><?php generatePlayersTotal(); ?></span></p>
+    <p class="bigNum"><span style="color: #FF9900"><?php /* generatePlayersTotal(); */ ?></span></p>
     <p class="bigText">players</p>
     <canvas id="playersGraph" class="graph">
     </canvas>
@@ -217,7 +217,7 @@ function reverseLatLng(lat, lng)
   </div>
   
   <div id="totalEditors" class="statsContainer">
-    <p class="bigNum"><span style="color: #7BB31A"><?php generateEditorsTotal(); ?></span></p>
+    <p class="bigNum"><span style="color: #7BB31A"><?php /* generateEditorsTotal(); */ ?></span></p>
     <p class="bigText">creators</p>
     <canvas id="editorsGraph" class="graph">
     </canvas>
@@ -225,7 +225,7 @@ function reverseLatLng(lat, lng)
   </div>
   
   <div id="totalGames" class="statsContainer">
-    <p class="bigNum"><span style="color: #336699"><?php generateGamesTotal(); ?></span></p>
+    <p class="bigNum"><span style="color: #336699"><?php /* generateGamesTotal(); */ ?></span></p>
     <p class="bigText">games</p>  
     <canvas id="gamesGraph" class="graph">
     </canvas>
@@ -245,9 +245,9 @@ function reverseLatLng(lat, lng)
     </script> 
   </div>   
   
-  <?php @generateTopGames(day); ?>
-  <?php @generateTopGames(week); ?>
-  <?php @generateTopGames(month); ?>
+  <?php /* @generateTopGames(day); */ ?>
+  <?php /* @generateTopGames(week); */ ?>
+  <?php /* @generateTopGames(month); */ ?>
   
 </div>
 
@@ -411,21 +411,21 @@ ORDER BY count DESC
   $counter = 0;
 
   echo "<div id=\"" . $topTenDivName . "\">\n";
-	
+  
   while ($game = mysql_fetch_object($result))
   {
-	$counter++;
-	  
+  $counter++;
+    
     if ($counter > $GLOBALS['numTopGames'])
     {
       break;
     }
     
-	  $name = $game->name;
-	  $gameid = $game->game_id;
-	  $count = $game->count;
-	  $iconFileURL = $game->file_path;
-	  $description = truncate_text($game->description, 215);   
+    $name = $game->name;
+    $gameid = $game->game_id;
+    $count = $game->count;
+    $iconFileURL = $game->file_path;
+    $description = truncate_text($game->description, 215);   
     
       $query = "SELECT name FROM game_editors LEFT JOIN editors ON game_editors.editor_id = editors.editor_id WHERE game_editors.game_id = $gameid";
                  
@@ -433,31 +433,31 @@ ORDER BY count DESC
       $authors = array();
       while($author = mysql_fetch_object($authorResult))
           $authors[] = $author;
-	  echo "<div class=\"topTenElement\">\n";
-	  
-	  if ($iconFileURL)
-	  {
-	    $iconURL = 'http://www.arisgames.org/server/gamedata/' . $iconFileURL;
-	  }
+    echo "<div class=\"topTenElement\">\n";
+    
+    if ($iconFileURL)
+    {
+      $iconURL = 'http://www.arisgames.org/server/gamedata/' . $iconFileURL;
+    }
     else
     {      
       $iconURL = 'defaultLogo.png';
     }
     echo '<div class="topTenNumBox"><div class="topTenNum"><img class="topTenImg" alt="img" width="64" height="64" src="' . $iconURL . "\" /></div></div>\n";
-	  echo '<div class="topTenGameNameAndDesc"><p class="topTenName"><strong>' . $name . "</strong></p>\n";
+    echo '<div class="topTenGameNameAndDesc"><p class="topTenName"><strong>' . $name . "</strong></p>\n";
       $editorString = '<p class="topTenAuthor">';
       foreach ($authors as $author)
-	  $editorString =  $editorString.$author->name .", ";
+    $editorString =  $editorString.$author->name .", ";
       
       $editorString = substr($editorString,0,strlen($editorString)-2);
       $editorString =  $editorString."</p>";
       echo $editorString;
 
-	  echo '<p class="topTenDescription">' . $description . "</p></div>\n";
-	  echo '<div class="topTenGameCount"><span class="topTenPlayerCount">' . $count .'</span><p class="topTenPlayerText">players</p></div>';
-	  
-	  /*
-	  // get the location (use the google maps api to get a name for the long/lat)
+    echo '<p class="topTenDescription">' . $description . "</p></div>\n";
+    echo '<div class="topTenGameCount"><span class="topTenPlayerCount">' . $count .'</span><p class="topTenPlayerText">players</p></div>';
+    
+    /*
+    // get the location (use the google maps api to get a name for the long/lat)
 
     $query2 = 'SELECT longitude, latitude FROM ' . $game->id . '_locations LIMIT 1';
     $result2 = mysql_query($query2);
@@ -473,9 +473,9 @@ ORDER BY count DESC
       }
     }   
     
-	  echo '<div class="topTenLocation">';
-	  //echo '<script type="text/javascript">';
-	  //echo 'document.write(reverseLatLng(' . $toplat . ', ' . $toplong . '));</script>';
+    echo '<div class="topTenLocation">';
+    //echo '<script type="text/javascript">';
+    //echo 'document.write(reverseLatLng(' . $toplat . ', ' . $toplong . '));</script>';
     //echo "</div>\n"; */
      
     echo "</div>\n"; 
@@ -485,31 +485,31 @@ ORDER BY count DESC
 
 function monthsago($i)
 {
-	return "DATE_SUB(NOW(), INTERVAL $i MONTH)";
+  return "DATE_SUB(NOW(), INTERVAL $i MONTH)";
 }
 
 function getCountsForTable($t, $range)
 {
-	$query = "SELECT SUM(created BETWEEN ".monthsago(1)." AND ".monthsago(0).") AS '_1_months_ago'";
-	for($i = 1; $i < $range; $i++)
-	{
-		$query = $query . ", SUM(created BETWEEN ".monthsago($i+1)." AND ".monthsago($i).") AS '_".($i+1)."_months_ago'";
-	}
-	$query = $query." FROM $t;";
-	$result = mysql_query($query);
-	$counts = mysql_fetch_array($result);
+  $query = "SELECT SUM(created BETWEEN ".monthsago(1)." AND ".monthsago(0).") AS '_1_months_ago'";
+  for($i = 1; $i < $range; $i++)
+  {
+    $query = $query . ", SUM(created BETWEEN ".monthsago($i+1)." AND ".monthsago($i).") AS '_".($i+1)."_months_ago'";
+  }
+  $query = $query." FROM $t;";
+  $result = mysql_query($query);
+  $counts = mysql_fetch_array($result);
 
-	$countarray = array();
-	$max = 0;
-	for($i = 0; $i < $range; $i++)
-	{
-		$countarray[] = $counts[$i];	
-		if($counts[$i] > $max)
-			$max = $counts[$i];
-	}
-	$graph->countarray = $countarray;
-	$graph->max = $max;
-	return $graph;
+  $countarray = array();
+  $max = 0;
+  for($i = 0; $i < $range; $i++)
+  {
+    $countarray[] = $counts[$i];  
+    if($counts[$i] > $max)
+      $max = $counts[$i];
+  }
+  $graph->countarray = $countarray;
+  $graph->max = $max;
+  return $graph;
 }
 
 function generateGraphData()
