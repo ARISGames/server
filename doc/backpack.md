@@ -74,3 +74,27 @@ Returns:
       "user_id": <number>,
       "read_wrte_key": <string>
     }}
+
+## `v2.backpack.getItemsForGame`
+
+Takes:
+
+    {"game_ids": <array of numbers>}
+
+Returns:
+
+    {"returnCode": 0, "returnCodeDescription": null, "data": {
+      "games": {
+        <for each game's game_id>
+        <game_id>: {
+          "name": <string>,
+          "inventory": [
+            <for each item/attribute>
+            {"object_id": <number>, "name": <string>,
+              "type": <one of "NORMAL", "HIDDEN", "ATTRIB", or "URL">,
+              "tags": <array of tag names>
+            }
+          ]
+        }
+      }
+    }}

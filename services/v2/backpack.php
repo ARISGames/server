@@ -177,4 +177,43 @@ class backpack extends dbconnection
 
         return new return_package(0, $backpack);
     }
+
+    public static function getItemsForGame($pack)
+    {
+        $game_ids = $pack->game_ids;
+        if (is_array($game_ids)) {
+            $game_ids = array_map('intval', $game_ids);
+        } else {
+            $game_ids = array(intval($game_ids));
+        }
+
+        $backpack->games = array();
+        foreach ($game_ids as $game_id) {
+
+            $q = "SELECT name FROM games WHERE game_id = {$game_id}";
+            $game_name = dbconnection::queryObject($q)->name;
+
+            $q = "SELECT items.item_id as object_id, items.name, items.type, GROUP_CONCAT(DISTINCT tags.tag SEPARATOR '!TAG!') as tags
+                FROM items
+                LEFT JOIN object_tags ON object_tags.object_type = 'ITEM' and object_tags.object_id = items.item_id
+                LEFT JOIN tags ON object_tags.tag_id = tags.tag_id
+                WHERE items.game_id = {$game_id}
+                GROUP BY items.item_id
+                ";
+            $inventory = dbconnection::queryArray($q);
+            if ($inventory === false) $inventory = array();
+            foreach ($inventory as $item) {
+                $item->object_id = intval($item->object_id);
+                $item->qty = intval($item->qty);
+                $item->tags = explode('!TAG!', $item->tags);
+            }
+
+            $result = new stdClass();
+            $result->name = $game_name;
+            $result->inventory = $inventory;
+            $backpack->games[$game_id] = $result;
+        }
+
+        return new return_package(0, $backpack);
+    }
 }
