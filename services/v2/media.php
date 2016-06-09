@@ -224,7 +224,7 @@ class media extends dbconnection
 
     public static function getMediaForGame($pack)
     {
-        $sql_medias = dbconnection::queryArray("SELECT * FROM media WHERE (game_id = '{$pack->game_id}' OR (game_id = 0 AND user_id = 0))");
+        $sql_medias = dbconnection::queryArray("SELECT * FROM media WHERE (game_id = '{$pack->game_id}')");
         $medias = array();
         for($i = 0; $i < count($sql_medias); $i++)
             if($ob = media::mediaObjectFromSQL($sql_medias[$i])) $medias[] = $ob;
