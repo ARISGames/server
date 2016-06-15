@@ -15,6 +15,7 @@ class media extends dbconnection
         $fake_sql_media->name = "Default NPC";
         $fake_sql_media->file_folder = "0";
         $fake_sql_media->file_name = "npc.png";
+        $fake_sql_media->autoplay = 0;
         return media::mediaObjectFromSQL($fake_sql_media);
     }
 
@@ -158,6 +159,7 @@ class media extends dbconnection
             (isset($pack->game_id)       ? "game_id,"      : "").
             (isset($pack->auth->user_id) ? "user_id,"      : "").
             (isset($pack->name)          ? "name,"         : "").
+            (isset($pack->autoplay)      ? "autoplay,"     : "").
             "created".
             ") VALUES (".
             "'".$filefolder."',".
@@ -165,6 +167,7 @@ class media extends dbconnection
             (isset($pack->game_id)       ? "'".addslashes($pack->game_id)."',"       : "").
             (isset($pack->auth->user_id) ? "'".addslashes($pack->auth->user_id)."'," : "").
             (isset($pack->name)          ? "'".addslashes($pack->name)."',"          : "").
+            (isset($pack->autoplay)      ? "'".addslashes($pack->autoplay)."',"      : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -179,10 +182,10 @@ class media extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        //boring, but this is the only immutable property of media
         dbconnection::query(
             "UPDATE media SET ".
-            (isset($pack->name) ? "name = '".addslashes($pack->name)."', " : "").
+            (isset($pack->name    ) ?     "name = '".addslashes($pack->name    )."', " : "").
+            (isset($pack->autoplay) ? "autoplay = '".addslashes($pack->autoplay)."', " : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE media_id = '{$pack->media_id}'"
         );
@@ -198,6 +201,7 @@ class media extends dbconnection
         $media->media_id     = $sql_media->media_id;
         $media->game_id      = $sql_media->game_id;
         $media->name         = $sql_media->name;
+        $media->autoplay     = $sql_media->autoplay;
         $media->file_name    = $sql_media->file_name;
 
         $filenametitle = substr($sql_media->file_name,0,strrpos($sql_media->file_name,'.'));
