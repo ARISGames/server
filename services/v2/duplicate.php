@@ -74,8 +74,13 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('inventory_weight_cap','');
     $columns[$i][] = new column('is_siftr','');
     $columns[$i][] = new column('siftr_url','special');
+    $columns[$i][] = new column('moderated','');
+    $columns[$i][] = new column('version','');
     $columns[$i][] = new column('created','timestamp');
     $columns[$i][] = new column('last_active','timestamp');
+    $columns[$i][] = new column('colors_id','');
+    $columns[$i][] = new column('prompt','');
+    $columns[$i][] = new column('staff_pick','');
     $i++;
 
     $tables[] = 'dialog_characters';
@@ -125,6 +130,7 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('description','');
     $columns[$i][] = new column('icon_media_id','map');
     $columns[$i][] = new column('intro_dialog_script_id','map');
+    $columns[$i][] = new column('back_button_enabled','');
     $columns[$i][] = new column('created','timestamp');
     $columns[$i][] = new column('last_active','timestamp');
     $i++;
@@ -134,6 +140,7 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('event_package_id','id');
     $columns[$i][] = new column('game_id','map');
     $columns[$i][] = new column('name','');
+    $columns[$i][] = new column('icon_media_id','map');
     $columns[$i][] = new column('created','timestamp');
     $columns[$i][] = new column('last_active','timestamp');
     $i++;
@@ -146,6 +153,7 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('event','');
     $columns[$i][] = new column('content_id','special');
     $columns[$i][] = new column('qty','');
+    $columns[$i][] = new column('script','');
     $columns[$i][] = new column('created','timestamp');
     $columns[$i][] = new column('last_active','timestamp');
     $i++;
@@ -214,6 +222,7 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('weight','');
     $columns[$i][] = new column('url','');
     $columns[$i][] = new column('type','');
+    $columns[$i][] = new column('delta_notification','');
     $columns[$i][] = new column('created','timestamp');
     $columns[$i][] = new column('last_active','timestamp');
     $i++;
@@ -226,6 +235,7 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('name','');
     $columns[$i][] = new column('file_folder','special');
     $columns[$i][] = new column('file_name','');
+    $columns[$i][] = new column('autoplay','');
     $columns[$i][] = new column('created','timestamp');
     $columns[$i][] = new column('last_active','timestamp');
     $i++;
@@ -280,6 +290,8 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('icon_media_id','map');
     $columns[$i][] = new column('media_id','map');
     $columns[$i][] = new column('event_package_id','map');
+    $columns[$i][] = new column('back_button_enabled','');
+    $columns[$i][] = new column('continue_function','');
     $columns[$i][] = new column('created','timestamp');
     $columns[$i][] = new column('last_active','timestamp');
     $i++;
@@ -404,6 +416,7 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('hidden','');
     $columns[$i][] = new column('trigger_on_enter','');
     $columns[$i][] = new column('qr_code','');
+    $columns[$i][] = new column('seconds','');
     $columns[$i][] = new column('created','timestamp');
     $columns[$i][] = new column('last_active','timestamp');
     $columns[$i][] = new column('infinite_distance','');
@@ -428,6 +441,7 @@ class duplicate extends dbconnection
     $columns[$i][] = new column('name','');
     $columns[$i][] = new column('icon_media_id','map');
     $columns[$i][] = new column('url','');
+    $columns[$i][] = new column('back_button_enabled','');
     $columns[$i][] = new column('created','timestamp');
     $columns[$i][] = new column('last_active','timestamp');
     $i++;
