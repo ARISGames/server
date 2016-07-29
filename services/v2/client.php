@@ -723,7 +723,7 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, latitude, longitude, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'UPLOAD_MEDIA_ITEM', '{$pack->media_id}', '{$pack->latitude}', '{$pack->longitude}', CURRENT_TIMESTAMP);");
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, latitude, longitude, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'UPLOAD_MEDIA_ITEM', '{$pack->media_id}', '{$pack->latitude || 0}', '{$pack->longitude || 0}', CURRENT_TIMESTAMP);");
         client::checkForCascadingLogs($pack);
         return new return_package(0);
     }
@@ -733,7 +733,7 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, latitude, longitude, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'UPLOAD_MEDIA_ITEM_IMAGE', '{$pack->media_id}', '{$pack->latitude}', '{$pack->longitude}', CURRENT_TIMESTAMP);");
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, latitude, longitude, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'UPLOAD_MEDIA_ITEM_IMAGE', '{$pack->media_id}', '{$pack->latitude || 0}', '{$pack->longitude || 0}', CURRENT_TIMESTAMP);");
         client::checkForCascadingLogs($pack);
         return new return_package(0);
     }
@@ -743,7 +743,7 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, latitude, longitude, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'UPLOAD_MEDIA_ITEM_AUDIO', '{$pack->media_id}', '{$pack->latitude}', '{$pack->longitude}', CURRENT_TIMESTAMP);");
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, latitude, longitude, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'UPLOAD_MEDIA_ITEM_AUDIO', '{$pack->media_id}', '{$pack->latitude || 0}', '{$pack->longitude || 0}', CURRENT_TIMESTAMP);");
         client::checkForCascadingLogs($pack);
         return new return_package(0);
     }
@@ -753,7 +753,7 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, latitude, longitude, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'UPLOAD_MEDIA_ITEM_VIDEO', '{$pack->media_id}', '{$pack->latitude}', '{$pack->longitude}', CURRENT_TIMESTAMP);");
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, latitude, longitude, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'UPLOAD_MEDIA_ITEM_VIDEO', '{$pack->media_id}', '{$pack->latitude || 0}', '{$pack->longitude || 0}', CURRENT_TIMESTAMP);");
         client::checkForCascadingLogs($pack);
         return new return_package(0);
     }
