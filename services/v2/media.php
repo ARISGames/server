@@ -172,6 +172,16 @@ class media extends dbconnection
             ")"
         );
 
+        client::logPlayerUploadedMedia($pack);
+        if ($filenameext === 'jpg' || $filenameext === 'png' || $filenameext === 'gif') {
+            client::logPlayerUploadedMediaImage($pack);
+        }
+        if ($filenameext === 'mp4' || $filenameext === 'mov' || $filenameext === 'm4v' || $filenameext === '3gp') {
+            client::logPlayerUploadedMediaVideo($pack);
+        }
+        if ($filenameext === 'caf' || $filenameext === 'mp3' || $filenameext === 'aac' || $filenameext === 'm4a') {
+            client::logPlayerUploadedMediaAudio($pack);
+        }
         games::bumpGameVersion($pack);
         return media::getMedia($pack);
     }

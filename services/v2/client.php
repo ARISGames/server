@@ -718,6 +718,46 @@ class client extends dbconnection
         return new return_package(0);
     }
 
+    public static function logPlayerUploadedMedia($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, latitude, longitude, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'UPLOAD_MEDIA_ITEM', '{$pack->media_id}', '{$pack->latitude}', '{$pack->longitude}', CURRENT_TIMESTAMP);");
+        client::checkForCascadingLogs($pack);
+        return new return_package(0);
+    }
+
+    public static function logPlayerUploadedMediaImage($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, latitude, longitude, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'UPLOAD_MEDIA_ITEM_IMAGE', '{$pack->media_id}', '{$pack->latitude}', '{$pack->longitude}', CURRENT_TIMESTAMP);");
+        client::checkForCascadingLogs($pack);
+        return new return_package(0);
+    }
+
+    public static function logPlayerUploadedMediaAudio($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, latitude, longitude, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'UPLOAD_MEDIA_ITEM_AUDIO', '{$pack->media_id}', '{$pack->latitude}', '{$pack->longitude}', CURRENT_TIMESTAMP);");
+        client::checkForCascadingLogs($pack);
+        return new return_package(0);
+    }
+
+    public static function logPlayerUploadedMediaVideo($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        dbconnection::queryInsert("INSERT INTO user_log (user_id, game_id, event_type, content_id, latitude, longitude, created) VALUES ('{$pack->auth->user_id}', '{$pack->game_id}', 'UPLOAD_MEDIA_ITEM_VIDEO', '{$pack->media_id}', '{$pack->latitude}', '{$pack->longitude}', CURRENT_TIMESTAMP);");
+        client::checkForCascadingLogs($pack);
+        return new return_package(0);
+    }
+
     public static function logPlayerCreatedComment($pack)
     {
         $pack->auth->permission = "read_write";
