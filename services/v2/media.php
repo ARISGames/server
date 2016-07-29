@@ -3,6 +3,7 @@ require_once("dbconnection.php");
 require_once("users.php");
 require_once("editors.php");
 require_once("games.php");
+require_once("client.php");
 require_once("return_package.php");
 
 class media extends dbconnection
