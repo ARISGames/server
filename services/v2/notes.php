@@ -24,6 +24,10 @@ class notes extends dbconnection
         {
             $pack->media->auth = $pack->auth;
             $pack->media->game_id = $pack->game_id;
+            if (isset($pack->trigger)) {
+                $pack->media->latitude  = $pack->trigger->latitude;
+                $pack->media->longitude = $pack->trigger->longitude;
+            }
             $pack->media_id = media::createMedia($pack->media)->data->media_id;
         }
 
