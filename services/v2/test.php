@@ -12,6 +12,12 @@ class test extends dbconnection
       //dbconnection::query("UPDATE games SET network_level = 'REMOTE' WHERE network_level == 'HYBRID';");
       $games = dbconnection::queryArray("SELECT * FROM games WHERE network_level != 'REMOTE';");
 
+      $n_remote = 0;
+      $n_offline = 0;
+      $n_notebookd = 0;
+      $n_factoried = 0;
+      $n_instanced = 0;
+
       for($i = 0; $i < count($games); $i++)
       {
         $ought_be_remote = false;
@@ -19,16 +25,23 @@ class test extends dbconnection
 
         //figure out if ought be remote
         $should_be_empty = dbconnection::queryArray("SELECT * FROM tabs WHERE game_id = '".$game->game_id."' && type == 'NOTEBOOK';");
-        if(count($should_be_empty)) $ought_be_remote = true;
+        if(count($should_be_empty)) { $ought_be_remote = true; $n_notebookd++; }
         $should_be_empty = dbconnection::queryArray("SELECT * FROM factories WHERE game_id = '".$game->game_id."';");
-        if(count($should_be_empty)) $ought_be_remote = true;
-        $should_be_empty = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '".$game->game_id."' && (owner_type == 'GAME' || owner_type == 'GROUP');");
-        if(count($should_be_empty)) $ought_be_remote = true;
+        if(count($should_be_empty)) { $ought_be_remote = true; $n_factoried++; }
+        $should_be_empty = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '".$game->game_id."' && (owner_type == 'GAME' || owner_type == 'GROUP') && qty > 0;");
+        if(count($should_be_empty)) { $ought_be_remote = true; $n_instanced++; }
 
         //if($ought_be_remote) dbconnection::query("UPDATE games SET network_level = 'REMOTE'       WHERE game_id = '".$game->game_id."';");
         //else                 dbconnection::query("UPDATE games SET network_level = 'REMOTE_WRITE' WHERE game_id = '".$game->game_id."';");
-        echo($game->game_id." y".$ought_be_remote."n : ");
+        if($ought_be_remote) $n_remote++;
+        else $n_offline++;
       }
+
+      echo($n_remote."\n");
+      echo($n_offline."\n");
+      echo($n_notebookd."\n");
+      echo($n_factoried."\n");
+      echo($n_instanced."\n");
     }
 }
 ?>
