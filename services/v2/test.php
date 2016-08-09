@@ -24,7 +24,7 @@ class test extends dbconnection
 
         //if($ought_be_remote) dbconnection::query("UPDATE games SET network_level = 'REMOTE'       WHERE game_id = '".$game->game_id."';");
         //else                 dbconnection::query("UPDATE games SET network_level = 'REMOTE_WRITE' WHERE game_id = '".$game->game_id."';");
-        echo($game->game_id." ".$ought_be_remote);
+        echo($game->game_id." y".$ought_be_remote."n : ");
       }
     }
 }
