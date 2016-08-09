@@ -9,7 +9,7 @@ class test extends dbconnection
       //get quick estimate of # games w/o NOTEBOOK tab (last check = 630/8,000)
       //SELECT games.game_id, ntabs.type FROM games LEFT JOIN (SELECT tabs.game_id, tabs.type FROM tabs WHERE type = 'NOTEBOOK') as ntabs ON games.game_id = ntabs.game_id WHERE ntabs.type IS NULL group by games.game_id;
 
-      //dbconnection::query("UPDATE games SET network_level = 'REMOTE' WHERE network_level == 'HYBRID';");
+      dbconnection::query("UPDATE games SET network_level = 'REMOTE' WHERE network_level = 'HYBRID';");
       $games = dbconnection::queryArray("SELECT * FROM games WHERE network_level != 'REMOTE';");
 
       $n_remote = 0;
@@ -31,12 +31,13 @@ class test extends dbconnection
         $should_be_empty = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '".$game->game_id."' && (owner_type = 'GAME' || owner_type = 'GROUP') && qty > 0;");
         if(count($should_be_empty)>0) { $ought_be_remote = true; $n_instanced++; }
 
-        //if($ought_be_remote) dbconnection::query("UPDATE games SET network_level = 'REMOTE'       WHERE game_id = '".$game->game_id."';");
-        //else                 dbconnection::query("UPDATE games SET network_level = 'REMOTE_WRITE' WHERE game_id = '".$game->game_id."';");
+        if($ought_be_remote) dbconnection::query("UPDATE games SET network_level = 'REMOTE'       WHERE game_id = '".$game->game_id."';");
+        else                 dbconnection::query("UPDATE games SET network_level = 'REMOTE_WRITE' WHERE game_id = '".$game->game_id."';");
         if($ought_be_remote) $n_remote++;
         else $n_offline++;
       }
 
+      echo(count($games)."\n");
       echo($n_remote."\n");
       echo($n_offline."\n");
       echo($n_notebookd."\n");
