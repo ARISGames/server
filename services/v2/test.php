@@ -6,26 +6,26 @@ class test extends dbconnection
 {
     public static function doTest($pack)
     {
-      //$inst_id = dbconnection::queryInsert("INSERT INTO instances (game_id,object_type,object_id,qty,infinite_qty,factory_id,owner_type,owner_id,created) VALUES (7045,'EVENT_PACKAGE','{$pack->event_pack_id}',0,0,0,'GAME_CONTENT',0,CURRENT_TIMESTAMP);");
-      //$trig_id = dbconnection::queryInsert("INSERT INTO triggers (game_id,instance_id,scene_id,requirement_root_package_id,type,name,title,icon_media_id,latitude,longitude,distance,infinite_distance,wiggle,show_title,hidden,trigger_on_enter,qr_code,created) VALUES (7054, '{$inst_id}', 15292,0,'LOCATION','EVENT TRIGGER','',0,43.070,-89.4015,0,1,0,1,0,0,'',CURRENT_TIMESTAMP);");
+      //dbconnection::query("UPDATE games SET network_level = 'REMOTE' WHERE network_level == 'HYBRID';");
+      $games = dbconnection::queryArray("SELECT * FROM games WHERE network_level != 'REMOTE';");
 
-    /*
-      $games = dbconnection::queryArray("SELECT * FROM games;");
       for($i = 0; $i < count($games); $i++)
       {
-        $lat = 0;
-        $lon = 0;
-        $triggers = dbconnection::queryArray("SELECT * FROM triggers WHERE game_id = '{$games[$i]->game_id}';");
-        $n = count($triggers);
-        for($j = 0; $j < $n; $j++)
-        {
-          $lat += $triggers[$j]->latitude/$n;
-          $lon += $triggers[$j]->longitude/$n;
-        }
-        dbconnection::query("UPDATE games SET latitude = '{$lat}', longitude = '{$lon}' WHERE game_id = '{$games[$i]->game_id}';");
+        $ought_be_remote = false;
+        $game = $games[$i];
+
+        //figure out if ought be remote
+        $should_be_empty = dbconnection::queryArray("SELECT * FROM tabs WHERE game_id = ".$game->game_id." && type == 'NOTEBOOK';");
+        if(count($should_be_empty)) $ought_be_remote = true;
+        $should_be_empty = dbconnection::queryArray("SELECT * FROM factories WHERE game_id = ".$game->game_id.";");
+        if(count($should_be_empty)) $ought_be_remote = true;
+        $should_be_empty = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = ".$game->game_id." && (owner_type == 'GAME' || owner_type == 'GROUP');");
+        if(count($should_be_empty)) $ought_be_remote = true;
+
+        //if($ought_be_remote) dbconnection::query("UPDATE games SET network_level = 'REMOTE'       WHERE game_id = ".$game->game_id.";");
+        //else                 dbconnection::query("UPDATE games SET network_level = 'REMOTE_WRITE' WHERE game_id = ".$game->game_id.";");
+        echo($game->game_id." ".$ought_be_remote);
       }
-      return 0;
-      */
     }
 }
 ?>
