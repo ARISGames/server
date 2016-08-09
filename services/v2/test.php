@@ -6,10 +6,13 @@ class test extends dbconnection
 {
     public static function doTest($pack)
     {
+      //get quick estimate of # games w/o NOTEBOOK tab (last check = 630/8,000)
+      //SELECT games.game_id, ntabs.type FROM games LEFT JOIN (SELECT tabs.game_id, tabs.type FROM tabs WHERE type = 'NOTEBOOK') as ntabs ON games.game_id = ntabs.game_id WHERE ntabs.type IS NULL group by games.game_id;
+
       //dbconnection::query("UPDATE games SET network_level = 'REMOTE' WHERE network_level == 'HYBRID';");
       $games = dbconnection::queryArray("SELECT * FROM games WHERE network_level != 'REMOTE';");
 
-      for($i = 0; $i < count($games) && $i < 10; $i++)
+      for($i = 0; $i < count($games); $i++)
       {
         $ought_be_remote = false;
         $game = $games[$i];
