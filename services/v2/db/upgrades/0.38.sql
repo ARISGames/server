@@ -1,0 +1,1 @@
+ALTER TABLE games CHANGE network_level network_level ENUM('LOCAL','REMOTE_WRITE','HYBRID','REMOTE') NOT NULL DEFAULT 'REMOTE';
