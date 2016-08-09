@@ -18,7 +18,7 @@ class test extends dbconnection
       $n_factoried = 0;
       $n_instanced = 0;
 
-      for($i = 0; $i < count($games); $i++)
+      for($i = $pack->from; $i < count($games) && $i < $pack->to; $i++)
       {
         $ought_be_remote = false;
         $game = $games[$i];
