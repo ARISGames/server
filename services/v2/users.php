@@ -325,6 +325,8 @@ class users extends dbconnection
         $email = $user->email;
         $junk = users::breakPassword($userId);
 
+        $url = "https://fielddaylab.wisc.edu/auth/index.html?i=$userId&j=$junk";
+
         //email it to them
         $subject = "ARIS Password Request";
         $body = "We received a forgotten password request for your ARIS account.
@@ -333,7 +335,8 @@ class users extends dbconnection
         Please remember that passwords are case sensitive.
         If you are not able to click on the link, please copy and paste it into your web browser.
         <br><br>
-        <a href='".Config::serverWWWPath."/services/v2/resetpassword.html?i=$userId&j=$junk'>".Config::serverWWWPath."/services/v2/resetpassword.html?i=$userId&j=$junk</a>
+        <a href='$url'>$url</a>
+
         <br><br> Regards, <br>ARIS";
 
         util::sendEmail($email, $subject, $body);
