@@ -2,71 +2,67 @@
 
 class Config
 {
-	// LEGACY SECTION ///////////////////////////
-	//
-	//
+  // LEGACY SECTION ///////////////////////////
+  //
+  //
 
-	// old v1 conf
-    const dbUser     = 'user';
-    const dbPass     = 'pass';
-    const dbSchema   = 'dbname';
-    const dbHost     = 'host';
-    const adminEmail = 'admin@email.com'; //This email address, if specified, will be notified of server errors
+  // old v1 conf
+  const dbUser     = 'user';
+  const dbPass     = 'pass';
+  const dbSchema   = 'dbname';
+  const dbHost     = 'host';
+  const adminEmail = 'admin@email.com'; //This email address, if specified, will be notified of server errors
 
-	//v1 data dirs
-    const serverWWWPath   = 'http://aris/server';
-    const WWWPath         = 'http://ariswebsite';
-    const gamedataWWWPath = 'http://aris/server/gamedata';
-    const gamedataFSPath  = '/path/to/server/gamedata'; //Make Sure this directory is writable
-    const migrationsDir   = '/path/to/server/migrations';
-    const serverErrorLog  = '/path/to/server/gamedata/aris_error_log.txt'; //Make sure this file is writable
+  //v1 data dirs
+  const serverWWWPath   = 'http://aris/server';
+  const WWWPath         = 'http://ariswebsite';
+  const gamedataWWWPath = 'http://aris/server/gamedata';
+  const gamedataFSPath  = '/path/to/server/gamedata'; //Make Sure this directory is writable
+  const migrationsDir   = '/path/to/server/migrations';
+  const serverErrorLog  = '/path/to/server/gamedata/aris_error_log.txt'; //Make sure this file is writable
 
+  // VERSION TWO ///////////////////////////////
+  //
+  //
 
+  const errorLog  = '/path/to/server/gamedata/aris_error_log.txt'; //Make sure this file is writable
+  const mysqlBinPath = '/usr/bin';
 
-	// VERSION TWO ///////////////////////////////
-	//
-	//
+  //pusher.com service
+  const pusher_key    = '####################';
+  const pusher_secret = '####################';
+  const pusher_app_id = '#####';
 
+  //mailgun service
+  const mailgun_key = 'key-################################';
 
-    const errorLog  = '/path/to/server/gamedata/aris_error_log.txt'; //Make sure this file is writable
-    const mysqlBinPath = '/usr/bin';
+  //PHP accelerator and cache
+  const isAPCLoaded = FALSE; //Change to TRUE if the APC server extension has been configured
 
-    //pusher.com service
-    const pusher_key    = '####################';
-    const pusher_secret = '####################';
-    const pusher_app_id = '#####';
+  //v1 conf
+  const v1_host     = 'host';
+  const v1_db_user  = 'user';
+  const v1_db_pass  = 'pass';
+  const v1_db       = 'dbname';
 
-    //mailgun service
-    const mailgun_key = 'key-################################';
+  //migration conf
+  const mig_host    = 'host';
+  const mig_db_user = 'user';
+  const mig_db_pass = 'pass';
+  const mig_db      = 'dbname';
 
-    //PHP accelerator and cache
-    const isAPCLoaded = FALSE; //Change to TRUE if the APC server extension has been configured
+  //v2 conf
+  const v2_host     = 'host';
+  const v2_db_user  = 'user';
+  const v2_db_pass  = 'pass';
+  const v2_db       = 'dbname';
 
+  const v2_gamedata_folder   = '/path/to/server/gamedata/v2';
+  const v2_gamedata_www_path = 'http://aris/server/gamedata/v2';
+  const v2_error_log         = '/path/to/server/gamedata/v2/aris_error_log.txt';
 
-    //v1 conf
-    const v1_host     = 'host';
-    const v1_db_user  = 'user';
-    const v1_db_pass  = 'pass';
-    const v1_db       = 'dbname';
+  const bridge_api_path = "localhost/server";
 
-    //migration conf
-    const mig_host    = 'host';
-    const mig_db_user = 'user';
-    const mig_db_pass = 'pass';
-    const mig_db      = 'dbname';
-
-    //v2 conf
-    const v2_host     = 'host';
-    const v2_db_user  = 'user';
-    const v2_db_pass  = 'pass';
-    const v2_db       = 'dbname';
-
-    const v2_gamedata_folder   = '/path/to/server/gamedata/v2';
-    const v2_gamedata_www_path = 'http://aris/server/gamedata/v2';
-    const v2_error_log         = '/path/to/server/gamedata/v2/aris_error_log.txt';
-
-    const bridge_api_path = "localhost/server";
-
-    const raw_uploads_folder = '/var/www/server/gamedata/rawuploads';
+  const raw_uploads_folder = '/var/www/server/gamedata/rawuploads';
 }
 ?>

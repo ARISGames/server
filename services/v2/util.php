@@ -28,7 +28,7 @@ class util
 
       curl_setopt($c, CURLOPT_POST, 1);
       curl_setopt($c, CURLOPT_POSTFIELDS,
-        array('from'    => 'noreply@arisgames.org',
+        array('from'    => 'noreply@fielddaylab.org',
               'to'      => $to,
               'subject' => $subject,
               'text'    => $body,
