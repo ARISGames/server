@@ -328,8 +328,8 @@ class users extends dbconnection
         $url = "https://fielddaylab.wisc.edu/auth/index.html?i=$userId&j=$junk";
 
         //email it to them
-        $subject = "ARIS Password Request";
-        $body = "We received a forgotten password request for your ARIS account.
+        $subject = "Field Day Password Request";
+        $body = "We received a forgotten password request for your Field Day account.
         If you did not make this request, do nothing and your account info will not change.
         <br><br>To reset your password, simply click the link below.
         Please remember that passwords are case sensitive.
@@ -337,7 +337,7 @@ class users extends dbconnection
         <br><br>
         <a href='$url'>$url</a>
 
-        <br><br> Regards, <br>ARIS";
+        <br><br> Regards, <br>Field Day Lab";
 
         util::sendEmail($email, $subject, $body);
         return new return_package(0);
