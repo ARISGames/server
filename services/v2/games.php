@@ -59,6 +59,7 @@ class games extends dbconnection
             (isset($pack->network_level)                                ? "network_level,"                                : "").
             (isset($pack->allow_download)                               ? "allow_download,"                               : "").
             (isset($pack->preload_media)                                ? "preload_media,"                                : "").
+            (isset($pack->ipad_two_x)                                   ? "ipad_two_x,"                                   : "").
             (isset($pack->moderated)                                    ? "moderated,"                                    : "").
             (isset($pack->version)                                      ? "version,"                                      : "").
             (isset($pack->colors_id)                                    ? "colors_id,"                                    : "").
@@ -101,6 +102,7 @@ class games extends dbconnection
             (isset($pack->network_level)                                ? "'".addslashes($pack->network_level)."',"                                : "").
             (isset($pack->allow_download)                               ? "'".addslashes($pack->allow_download)."',"                               : "").
             (isset($pack->preload_media)                                ? "'".addslashes($pack->preload_media)."',"                                : "").
+            (isset($pack->ipad_two_x)                                   ? "'".addslashes($pack->ipad_two_x)."',"                                   : "").
             (isset($pack->moderated)                                    ? "'".addslashes($pack->moderated)."',"                                    : "").
             (isset($pack->version)                                      ? "'".addslashes($pack->version)."',"                                      : "").
             (isset($pack->colors_id)                                    ? "'".addslashes($pack->colors_id)."',"                                    : "").
@@ -197,6 +199,7 @@ class games extends dbconnection
             (isset($pack->network_level)                                ? "network_level                                = '".addslashes($pack->network_level)."', "                                : "").
             (isset($pack->allow_download)                               ? "allow_download                               = '".addslashes($pack->allow_download)."', "                               : "").
             (isset($pack->preload_media)                                ? "preload_media                                = '".addslashes($pack->preload_media)."', "                                : "").
+            (isset($pack->ipad_two_x)                                   ? "ipad_two_x                                   = '".addslashes($pack->ipad_two_x)."', "                                   : "").
             (isset($pack->moderated)                                    ? "moderated                                    = '".addslashes($pack->moderated)."', "                                    : "").
             (isset($pack->version)                                      ? "version                                      = '".addslashes($pack->version)."', "                                      : "").
             (isset($pack->colors_id)                                    ? "colors_id                                    = '".addslashes($pack->colors_id)."', "                                    : "").
@@ -250,6 +253,7 @@ class games extends dbconnection
         $game->network_level                                = $sql_game->network_level;
         $game->allow_download                               = $sql_game->allow_download;
         $game->preload_media                                = $sql_game->preload_media;
+        $game->ipad_two_x                                   = $sql_game->ipad_two_x;
         $game->moderated                                    = $sql_game->moderated;
         $game->version                                      = $sql_game->version;
         $game->colors_id                                    = $sql_game->colors_id;
