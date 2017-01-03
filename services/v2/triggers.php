@@ -36,6 +36,7 @@ class triggers extends dbconnection
             (isset($pack->trigger_on_enter)            ? "trigger_on_enter,"            : "").
             (isset($pack->qr_code)                     ? "qr_code,"                     : "").
             (isset($pack->seconds)                     ? "seconds,"                     : "").
+            (isset($pack->ar_target_id)                ? "ar_target_id,"                : "").
             (isset($pack->beacon_uuid)                 ? "beacon_uuid,"                 : "").
             (isset($pack->beacon_major)                ? "beacon_major,"                : "").
             (isset($pack->beacon_minor)                ? "beacon_minor,"                : "").
@@ -59,6 +60,7 @@ class triggers extends dbconnection
             (isset($pack->trigger_on_enter)            ? "'".addslashes($pack->trigger_on_enter)."',"            : "").
             (isset($pack->qr_code)                     ? "'".addslashes($pack->qr_code)."',"                     : "").
             (isset($pack->seconds)                     ? "'".addslashes($pack->seconds)."',"                     : "").
+            (isset($pack->ar_target_id)                ? "'".addslashes($pack->ar_target_id)."',"                : "").
             (isset($pack->beacon_uuid)                 ? "'".addslashes($pack->beacon_uuid)."',"                 : "").
             (isset($pack->beacon_major)                ? "'".addslashes($pack->beacon_major)."',"                : "").
             (isset($pack->beacon_minor)                ? "'".addslashes($pack->beacon_minor)."',"                : "").
@@ -96,6 +98,7 @@ class triggers extends dbconnection
             (isset($pack->trigger_on_enter)            ? "trigger_on_enter            = '".addslashes($pack->trigger_on_enter)."', "            : "").
             (isset($pack->qr_code)                     ? "qr_code                     = '".addslashes($pack->qr_code)."', "                     : "").
             (isset($pack->seconds)                     ? "seconds                     = '".addslashes($pack->seconds)."', "                     : "").
+            (isset($pack->ar_target_id)                ? "ar_target_id                = '".addslashes($pack->ar_target_id)."', "                : "").
             (isset($pack->beacon_uuid)                 ? "beacon_uuid                 = '".addslashes($pack->beacon_uuid)."', "                 : "").
             (isset($pack->beacon_major)                ? "beacon_major                = '".addslashes($pack->beacon_major)."', "                : "").
             (isset($pack->beacon_minor)                ? "beacon_minor                = '".addslashes($pack->beacon_minor)."', "                : "").
@@ -130,6 +133,7 @@ class triggers extends dbconnection
         $trigger->trigger_on_enter            = $sql_trigger->trigger_on_enter;
         $trigger->qr_code                     = $sql_trigger->qr_code;
         $trigger->seconds                     = $sql_trigger->seconds;
+        $trigger->ar_target_id                = $sql_trigger->ar_target_id;
         $trigger->beacon_uuid                 = $sql_trigger->beacon_uuid;
         $trigger->beacon_major                = $sql_trigger->beacon_major;
         $trigger->beacon_minor                = $sql_trigger->beacon_minor;
