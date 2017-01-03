@@ -98,5 +98,116 @@ class ar_targets extends dbconnection
         games::bumpGameVersion($pack);
         return new return_package(0);
     }
+
+    //Takes in JSON, requires auth, game_id, file_name, data
+    public static function uploadARTargetDB($pack)
+    {
+      $pack->auth->permission = "read_write";
+      if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+      //validate name/type
+      $filenameext = strtolower(substr($pack->file_name,strrpos($pack->file_name,'.')+1));
+      if($filenameext != "zip") return new return_package(1,NULL,"Invalid filetype: '{$filenameext}'");
+      $fsfolder = Config::v2_gamedata_folder."/".$pack->game_id;
+      $fspath = $fsfolder."/vuforiadb.zip";
+
+      //write file
+      $fp = fopen($fspath, 'w');
+      if(!$fp) return new return_package(1,NULL,"Couldn't open file:$fspath");
+      fwrite($fp,base64_decode($pack->data));
+      fclose($fp);
+
+      //open zip
+      $zip = new ZipArchive;
+      $res = $zip->open($fspath);
+      if(!$res) return new return_package(1,NULL,"Couldn't open zip");
+
+      //verify contents
+      if($zip->numFiles != 2) return new return_package(1,NULL,"Invalid DB zip");
+      $xmlpresent = false;
+      $datpresent = false;
+      for($i = 0; $i < $zip->numFiles; $i++)
+      {
+        $name = $zip->statIndex($i)['name'];
+        $filenameext = strtolower(substr($name,strrpos($name,'.')+1));
+             if($filenameext == "xml") $xmlpresent = true;
+        else if($filenameext == "dat") $datpresent = true;
+        else return new return_package(1,NULL,"Invalid contents of DB zip");
+      }
+      if(!($xmlpresent && $datpresent)) return new return_package(1,NULL,"Invalid contents of DB zip");
+
+      //extract
+      $zip->extractTo($fsfolder);
+
+      //rename
+      for($i = 0; $i < $zip->numFiles; $i++)
+      {
+        $name = $zip->statIndex($i)['name'];
+        $filenameext = strtolower(substr($name,strrpos($name,'.')+1));
+             if($filenameext == "xml") rename($fsfolder."/".$name, $fsfolder."/vuforiadb.xml");
+        else if($filenameext == "dat") rename($fsfolder."/".$name, $fsfolder."/vuforiadb.dat");
+      }
+
+      $zip->close();
+
+      //parse xml
+      $names = array();
+      $fp = fopen($fsfolder."/vuforiadb.xml", 'r');
+      if(!$fp) return new return_package(1,NULL,"Can't open DB XML");
+      $preamble = "<ImageTarget name=\"";
+      $preamblelen = strlen($preamble);
+      while($line = fgets($fp))
+      {
+        $pos = strpos($line,$preamble);
+        $start = $pos+$preamblelen
+        if($pos)
+        {
+          $end = strpos($line,"\"",$start+1);
+          $names[] = substr($line,$start,$end-$start);
+        }
+      }
+      fwrite($fp,base64_decode($pack->data));
+      fclose($fp);
+
+      //merge xml into dataset
+      $cur_targets = ar_targets::getARTargetsForGame($pack);
+      $tmppack = new stdClass();
+      $tmppack->auth = $pack->auth;
+      $tmppack->game_id = $pack->game_id;
+      //update/delete
+      for($i = 0; $i < count($cur_targets); $i++)
+      {
+        $found = false;
+        for($j = 0; !$found && $j < count($names); $j++)
+        {
+          if($cur_targets[$i]->name == $names[$j])
+          {
+            $tmppack->name = $cur_targets[$i]->name;
+            $tmppack->vuforia_index = $j;
+            ar_targets::updateARTarget($tmppack);
+            $names[$j] == ""; //to indicate it no longer needs adding
+            $found = true;
+          }
+        }
+        if(!$found)
+        {
+          $tmppack->ar_target_id = $cur_target[$i]->ar_target_id;
+          ar_targets::deleteARTarget($tmppack);
+        }
+      }
+      //add
+      for($j = 0; $j < count($names); $j++)
+      {
+        if($names[$j] != "") //already added
+        {
+          $tmppack->name = $names[$j];
+          $tmppack->vuforia_index = $j;
+          ar_targets::createARTarget($tmppack);
+        }
+      }
+
+      games::bumpGameVersion($pack);
+      return ar_targets::getARTargetsForGame($pack);
+    }
 }
 ?>
