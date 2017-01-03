@@ -108,7 +108,8 @@ class ar_targets extends dbconnection
       //validate name/type
       $filenameext = strtolower(substr($pack->file_name,strrpos($pack->file_name,'.')+1));
       if($filenameext != "zip") return new return_package(1,NULL,"Invalid filetype: '{$filenameext}'");
-      $fsfolder = Config::v2_gamedata_folder."/".$pack->game_id;
+      $fsfolder = Config::v2_gamedata_folder."/".$pack->game_id."/ar";
+      mkdir($fsfolder);
       $fspath = $fsfolder."/vuforiadb.zip";
 
       //write file
