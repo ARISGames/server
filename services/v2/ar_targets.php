@@ -108,8 +108,9 @@ class ar_targets extends dbconnection
       //validate name/type
       $filenameext = strtolower(substr($pack->file_name,strrpos($pack->file_name,'.')+1));
       if($filenameext != "zip") return new return_package(1,NULL,"Invalid filetype: '{$filenameext}'");
+      $filenamebase = basename($pack->file_name,".zip");
       $fsfolder = Config::v2_gamedata_folder."/".$pack->game_id."/ar";
-      mkdir($fsfolder);
+      mkdir($fsfolder."/thumbs"); //will create $fsfolder and $fsfolder/thumbs
       $fspath = $fsfolder."/vuforiadb.zip";
 
       //write file
@@ -130,29 +131,26 @@ class ar_targets extends dbconnection
       for($i = 0; $i < $zip->numFiles; $i++)
       {
         $name = $zip->statIndex($i)['name'];
-        $filenameext = strtolower(substr($name,strrpos($name,'.')+1));
-             if($filenameext == "xml") $xmlpresent = true;
-        else if($filenameext == "dat") $datpresent = true;
+             if($name == "vuforiadb/".$filenamebase.".xml") $xmlpresent = true;
+        else if($name == "vuforiadb/".$filenamebase.".dat") $datpresent = true;
         else return new return_package(1,NULL,"Invalid contents of DB zip");
       }
       if(!($xmlpresent && $datpresent)) return new return_package(1,NULL,"Invalid contents of DB zip");
 
       //extract
       $zip->extractTo($fsfolder);
-
-      //rename
-      for($i = 0; $i < $zip->numFiles; $i++)
-      {
-        $name = $zip->statIndex($i)['name'];
-        $filenameext = strtolower(substr($name,strrpos($name,'.')+1));
-             if($filenameext == "xml") rename($fsfolder."/".$name, $fsfolder."/vuforiadb.xml");
-        else if($filenameext == "dat") rename($fsfolder."/".$name, $fsfolder."/vuforiadb.dat");
-      }
-
       $zip->close();
+
+      //situate contents
+      rename($fsfolder."/vuforiadb/".$filenamebase.".xml", $fsfolder."/vuforiadb.xml");
+      rename($fsfolder."/vuforiadb/".$filenamebase.".dat", $fsfolder."/vuforiadb.dat");
+      //cleanup
+      unlink($fspath); //zip
+      rmdir($fsfolder."/vuforiadb");
 
       //parse xml
       $names = array();
+      $namesadded = array();
       $fp = fopen($fsfolder."/vuforiadb.xml", 'r');
       if(!$fp) return new return_package(1,NULL,"Can't open DB XML");
       $preamble = "<ImageTarget name=\"";
@@ -165,6 +163,7 @@ class ar_targets extends dbconnection
         {
           $end = strpos($line,"\"",$start+1);
           $names[] = substr($line,$start,$end-$start);
+          $namesadded = false;
         }
       }
       fwrite($fp,base64_decode($pack->data));
@@ -186,7 +185,7 @@ class ar_targets extends dbconnection
             $tmppack->name = $cur_targets[$i]->name;
             $tmppack->vuforia_index = $j;
             ar_targets::updateARTarget($tmppack);
-            $names[$j] == ""; //to indicate it no longer needs adding
+            $namesadded[$j] = true;
             $found = true;
           }
         }
@@ -199,13 +198,32 @@ class ar_targets extends dbconnection
       //add
       for($j = 0; $j < count($names); $j++)
       {
-        if($names[$j] != "") //already added
+        if(!$namesadded[$j]) //already added
         {
           $tmppack->name = $names[$j];
           $tmppack->vuforia_index = $j;
           ar_targets::createARTarget($tmppack);
+          $namesadded[$j] = true;
         }
       }
+
+      //parse contents of meta zip
+      $fspath = $fsfolder."/vuforiametadb.zip";
+      copy($fsfolder."/vuforiadb.dat",$fspath);
+      //open metazip
+      $zip = new ZipArchive;
+      $res = $zip->open($fspath);
+      if(!$res) return new return_package(1,NULL,"Couldn't open meta zip");
+
+      //extract
+      $zip->extractTo($fsfolder."/thumbs");
+      $zip->close();
+
+      for($j = 0; $j < count($names); $j++)
+        rename($fsfolder."thumbs/vuforiametadb/".$names[$j].".tex.jpg", $fsfolder."/thumbs/".$names[$j].".jpg");
+
+      //cleanup
+      unlink($fspath); //zip
 
       games::bumpGameVersion($pack);
       return ar_targets::getARTargetsForGame($pack);
