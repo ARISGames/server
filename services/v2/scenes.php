@@ -9,7 +9,7 @@ require_once("triggers.php");
 
 class scenes extends dbconnection
 {
-    //Takes in game JSON, all fields optional except user_id + key
+    //Takes in scene JSON, all fields optional except game_id, user_id, key
     public static function createScene($pack)
     {
         $pack->auth->game_id = $pack->game_id;
@@ -43,7 +43,7 @@ class scenes extends dbconnection
         return scenes::getScene($pack);
     }
 
-    //Takes in game JSON, all fields optional except user_id + key
+    //Takes in scene JSON, all fields optional except scene_id, user_id, key
     public static function updateScene($pack)
     {
         $pack->auth->game_id = dbconnection::queryObject("SELECT * FROM scenes WHERE scene_id = '{$pack->scene_id}'")->game_id;
