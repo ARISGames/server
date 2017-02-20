@@ -878,6 +878,7 @@ class duplicate extends dbconnection
                   case 'MAP':
                   case 'DECODER':
                   case 'SCANNER':
+                  case 'AUGMENTED':
                   case 'QUESTS':
                   case 'INVENTORY':
                   case 'PLAYER':
