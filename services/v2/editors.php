@@ -11,7 +11,8 @@ class editors extends dbconnection
     {
         if(!users::authenticateUser($pack)) return false;
         if(dbconnection::queryObject("SELECT * FROM user_games WHERE user_id = '{$pack->user_id}' AND game_id = '{$pack->game_id}'")) return true;
-        util::errorLog("Failed Game Editor Authentication!"); return false;
+        // util::errorLog("Failed Game Editor Authentication!");
+        return false;
     }
 
     public static function addEditorToGame($pack)
