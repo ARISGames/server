@@ -23,6 +23,12 @@ class log extends dbconnection
     return new return_package(0);
   }
 
+  public static function errorLog($pack)
+  {
+    util::errorLog($pack->message);
+    return new return_package(0);
+  }
+
   public static function getLogsForGame($pack)
   {
     $pack->auth->permission = "read_write";
