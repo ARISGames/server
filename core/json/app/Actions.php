@@ -95,6 +95,15 @@ function serializationAction(& $body)
 	//Now serialize it
 	$encodedResponse = json_encode($rawResponse);
 	
+	// MT: log when we return a non-zero returnCode
+	if (isset($rawResponse->returnCode) && $rawResponse->returnCode !== 0) {
+		// this is copied from util::errorLog
+		$errorLogFile = fopen(Config::errorLog, "a");
+		$errorData = date('c').":\nRequest:\n"."http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]"."\n".$encodedResponse."\n\n";
+		fwrite($errorLogFile, $errorData);
+		fclose($errorLogFile);
+	}
+	
 	if(count(NetDebug::getTraceStack()) > 0)
 	{
 		$trace = "/*" . implode("\n", NetDebug::getTraceStack()) . "*/";
