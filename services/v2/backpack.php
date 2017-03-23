@@ -130,14 +130,13 @@ class backpack extends dbconnection
             $q = "SELECT instances.object_id, instances.qty, items.name, items.type, GROUP_CONCAT(DISTINCT tags.tag SEPARATOR '!TAG!') as tags
                 FROM instances
                 INNER JOIN items ON items.item_id = instances.object_id
-                LEFT JOIN object_tags ON object_tags.object_type = 'ITEM' and object_tags.object_id = instances.object_id
+                LEFT JOIN object_tags ON object_tags.object_type = 'ITEM' AND object_tags.object_id = instances.object_id AND object_tags.game_id = {$game_id}
                 LEFT JOIN tags ON object_tags.tag_id = tags.tag_id
                 WHERE instances.game_id = {$game_id}
                 AND instances.object_type = 'ITEM'
                 AND instances.owner_type = 'USER'
                 AND instances.owner_id = {$player_id}
                 AND instances.qty > 0
-                AND object_tags.game_id = {$game_id}
                 GROUP BY instances.object_id
                 ";
             $inventory = dbconnection::queryArray($q);
