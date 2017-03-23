@@ -137,6 +137,7 @@ class backpack extends dbconnection
                 AND instances.owner_type = 'USER'
                 AND instances.owner_id = {$player_id}
                 AND instances.qty > 0
+                AND object_tags.game_id = {$game_id}
                 GROUP BY instances.object_id
                 ";
             $inventory = dbconnection::queryArray($q);
