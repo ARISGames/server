@@ -10,7 +10,7 @@ class Gateway extends BasicGateway
 	function createBody()
 	{
 		$GLOBALS['amfphp']['encoding'] = 'json';
-		$body = & new MessageBody();
+		$body = new MessageBody();
 		
 		$uri = __setUri();
 		$elements = explode('/json.php', $uri);
