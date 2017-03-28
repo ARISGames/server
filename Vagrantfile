@@ -21,7 +21,8 @@ Vagrant.configure(2) do |config|
     ln -fs /vagrant /var/www/html/server
     touch /var/log/aris_error_log.txt
     chmod 777 /var/log/aris_error_log.txt
-    awk -f /vagrant/fixconf.awk /etc/apache2/sites-available/000-default.conf > /etc/apache2/sites-available/000-default.conf
+    awk -f /vagrant/fixconf.awk /etc/apache2/sites-available/000-default.conf > /tmp/fixing.conf
+    mv /tmp/fixing.conf /etc/apache2/sites-available/000-default.conf
     a2enmod headers
     service apache2 restart
   SHELL
