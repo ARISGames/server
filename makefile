@@ -11,6 +11,9 @@ CLEAR=\033[m\017
 arisprod1="root@neo.arisgames.org"
 arisprod2="root@trinity.arisgames.org"
 arisprod3="root@morpheus.arisgames.org"
+arisprod4="root@192.237.163.75"
+arisprod5="root@192.237.163.222"
+arisprod6="root@67.207.157.191"
 
 help:
 	@echo "Aris Server"
@@ -54,9 +57,18 @@ prod:
 	@echo "Deploying to Production 3."
 	@ssh -t $(arisprod3) $(CHECKOUT_COMMAND) 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
+	@echo "Deploying to Production 4."
+	@ssh -t $(arisprod4) $(CHECKOUT_COMMAND) 1>/dev/null
+	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
+	@echo "Deploying to Production 5."
+	@ssh -t $(arisprod5) $(CHECKOUT_COMMAND) 1>/dev/null
+	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
+	@echo "Deploying to Production 6."
+	@ssh -t $(arisprod6) $(CHECKOUT_COMMAND) 1>/dev/null
+	@echo "   $(OK_COLOR)(Done)$(CLEAR)"	
 
 cache_clear_dev:
-	@echo "Clearing cache on Production 1."
+	@echo "Clearing cache on Dev."
 	@ssh -t aris-dev $(DEV_CACHE_COMMAND) 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
 
@@ -70,6 +82,15 @@ cache_clear_prod:
 	@echo "Clearing cache on Production 3."
 	@ssh -t $(arisprod3) $(CACHE_COMMAND) 1>/dev/null
 	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
+	@echo "Clearing cache on Production 4."
+	@ssh -t $(arisprod4) $(CACHE_COMMAND) 1>/dev/null
+	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
+	@echo "Clearing cache on Production 5."
+	@ssh -t $(arisprod5) $(CACHE_COMMAND) 1>/dev/null
+	@echo "   $(OK_COLOR)(Done)$(CLEAR)"
+	@echo "Clearing cache on Production 6."
+	@ssh -t $(arisprod6) $(CACHE_COMMAND) 1>/dev/null
+	@echo "   $(OK_COLOR)(Done)$(CLEAR)"	
 
 upgrade_dev:
 	@echo "Upgrading Development$(INFO_COLOR)"
@@ -91,6 +112,15 @@ status:
 	@echo "Commit on Production 3$(INFO_COLOR)"
 	@ssh $(arisprod3) $(STATUS_COMMAND)
 	@echo "$(CLEAR)"
+	@echo "Commit on Production 4$(INFO_COLOR)"
+	@ssh $(arisprod4) $(STATUS_COMMAND)
+	@echo "$(CLEAR)"
+	@echo "Commit on Production 5$(INFO_COLOR)"
+	@ssh $(arisprod5) $(STATUS_COMMAND)
+	@echo "$(CLEAR)"
+	@echo "Commit on Production 6$(INFO_COLOR)"
+	@ssh $(arisprod6) $(STATUS_COMMAND)
+	@echo "$(CLEAR)"	
 
 cache_clear: cache_clear_prod
 deploy: prod
