@@ -6,3 +6,7 @@ php_value upload_max_filesize 100M
 
 Header set Access-Control-Allow-Origin "*"
 Header set Access-Control-Allow-Headers "Origin, Authorization, X-Requested-With, Content-Type, Accept"
+
+RewriteEngine On
+RewriteCond %{REQUEST_METHOD} OPTIONS
+RewriteRule ^(.*)$ blank.php [QSA,L]

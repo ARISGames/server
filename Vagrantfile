@@ -24,6 +24,7 @@ Vagrant.configure(2) do |config|
     awk -f /vagrant/fixconf.awk /etc/apache2/sites-available/000-default.conf > /tmp/fixing.conf
     mv /tmp/fixing.conf /etc/apache2/sites-available/000-default.conf
     a2enmod headers
+    a2enmod rewrite
     service apache2 restart
   SHELL
 
