@@ -14,6 +14,7 @@ class quests extends dbconnection
     //Takes in quest JSON, all fields optional except user_id + key
     public static function createQuest($pack)
     {
+        if(intval($pack->game_id) <= 0) return new return_package(6, NULL, "Invalid game ID");
         $pack->auth->game_id = $pack->game_id;
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");

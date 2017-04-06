@@ -779,7 +779,7 @@ class client extends dbconnection
     //analyzes the player log to see if any other logs should exist (QUEST_COMPLETE for example is deterministic on the existence of other logs)
     public static function checkForCascadingLogs($pack)
     {
-        $quests = dbconnection::queryArray("SELECT * FROM quests WHERE game_id = '{$pack->game_id}'");
+        $quests = dbconnection::queryArray("SELECT * FROM quests WHERE game_id = '{$pack->game_id}' AND game_id != 0");
         $completedRecords = dbconnection::queryArray("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->auth->user_id}' AND event_type = 'COMPLETE_QUEST' AND deleted = 0 GROUP BY content_id");
 
         $incompleteQuests = array();
