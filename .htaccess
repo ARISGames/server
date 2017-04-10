@@ -4,9 +4,9 @@ AddType video/mp4 mp4 MP4
 php_value post_max_size 100M
 php_value upload_max_filesize 100M
 
-Header set Access-Control-Allow-Origin "*"
-Header set Access-Control-Allow-Headers "Origin, Authorization, X-Requested-With, Content-Type, Accept"
+Header always set Access-Control-Allow-Headers "Origin, Authorization, X-Requested-With, Content-Type, Accept"
+Header always set Access-Control-Allow-Origin "*"
 
 RewriteEngine On
 RewriteCond %{REQUEST_METHOD} OPTIONS
-RewriteRule ^(.*)$ blank.php [QSA,L]
+RewriteRule ^(.*)$ blank.php [R=200,L]
