@@ -5,6 +5,7 @@ Vagrant.configure(2) do |config|
   config.vm.box = "ubuntu/xenial64"
 
   config.vm.network "forwarded_port", guest: 80, host: 10080
+  config.vm.network "forwarded_port", guest: 3306, host: 13306
 
   # The repo is at /vagrant by default, but we need to adjust permissions
   config.vm.synced_folder "./", "/vagrant", id: "vagrant-root",
