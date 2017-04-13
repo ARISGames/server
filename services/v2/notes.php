@@ -426,7 +426,7 @@ class notes extends dbconnection
         }
 
         // Order
-        $q .= " GROUP BY notes.note_id";
+        $q .= " GROUP BY notes.note_id, object_tags.tag_id, triggers.latitude, triggers.longitude";
         if ($order === 'recent') {
             $q .= " ORDER BY notes.note_id DESC";
         } else if ($order === 'popular') {
@@ -605,7 +605,7 @@ class notes extends dbconnection
             }
         }
 
-        $lines[] = "GROUP BY notes.note_id";
+        $lines[] = "GROUP BY notes.note_id, object_tags.tag_id, triggers.latitude, triggers.longitude";
         if ($order_by === 'popular') {
             $lines[] = "ORDER BY (COUNT(all_likes.note_id) + COUNT(note_comments.note_id)) DESC";
         }
