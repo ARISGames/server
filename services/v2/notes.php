@@ -68,6 +68,19 @@ class notes extends dbconnection
             dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$pack->game_id}', 'NOTE', '{$pack->note_id}', '{$pack->tag_id}', CURRENT_TIMESTAMP)");
         }
 
+        // create Siftr form data
+        if (isset($pack->field_data) && is_array($pack->field_data)) {
+            foreach ($pack->field_data as $data) {
+                dbconnection::queryInsert("INSERT INTO field_data (note_id, field_id, field_data, media_id, field_option_id) VALUES "
+                    . '(' . intval($pack->note_id)
+                    . ',' . intval($data->field_id)
+                    . ',' . ($data->field_data ? '"' . addslashes($data->field_data) . '"' : 'NULL')
+                    . ',' . intval($data->media_id)
+                    . ',' . intval($data->field_option_id)
+                    . ')');
+            }
+        }
+
         client::logPlayerCreatedNote($pack);
         games::bumpGameVersion($pack);
         return notes::getNote($pack);
