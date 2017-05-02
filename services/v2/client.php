@@ -51,10 +51,21 @@ class client extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        $text = urldecode(addSlashes($pack->text));
-        if($text == "") return new return_package(0, array()); //technically, returns ALL games. but that's ridiculous, so return none.
+        $words = array();
+        foreach (preg_split('/\s+/', $pack->text) as $word) {
+            if ($word != '') {
+                $words[] = $word;
+            }
+        }
+        if(count($words) === 0) return new return_package(0, array()); //technically, returns ALL games. but that's ridiculous, so return none.
 
-        $sql_games = dbconnection::queryArray("SELECT * FROM games WHERE (name LIKE '%{$text}%' OR description LIKE '%{$text}%') AND published = TRUE ORDER BY name ASC LIMIT ".($pack->page*25).",25");
+        $query = "SELECT * FROM games WHERE 1=1";
+        foreach ($words as $word) {
+            $esc = addslashes($word);
+            $query .= " AND (name LIKE '%{$esc}%' OR description LIKE '%{$esc}%')";
+        }
+        $query .= " AND published = TRUE ORDER BY name ASC LIMIT ".(intval($pack->page)*25).",25";
+        $sql_games = dbconnection::queryArray($query);
         $games = array();
         for($i = 0; $i < count($sql_games); $i++)
             $games[] = games::gameObjectFromSQL($sql_games[$i]);
