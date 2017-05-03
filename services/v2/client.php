@@ -23,7 +23,8 @@ class client extends dbconnection
 
         //method 1 (JOIN)
         $sTime = microtime(true);
-        $sql_games = dbconnection::queryArray("SELECT * FROM (SELECT game_id, MAX(created) as ts FROM user_log WHERE user_id = '{$pack->auth->user_id}' AND game_id != 0 GROUP BY game_id ORDER BY ts DESC LIMIT 20) as u_log LEFT JOIN games ON u_log.game_id = games.game_id WHERE games.published = TRUE");
+        $page = (isset($pack->page) ? intval($pack->page) : 0);
+        $sql_games = dbconnection::queryArray("SELECT * FROM (SELECT game_id, MAX(created) as ts FROM user_log WHERE user_id = '{$pack->auth->user_id}' AND game_id != 0 GROUP BY game_id ORDER BY ts DESC LIMIT ".($page*25).",25) as u_log LEFT JOIN games ON u_log.game_id = games.game_id WHERE games.published = TRUE");
         $games = array();
         for($i = 0; $i < count($sql_games); $i++)
             $games[] = games::gameObjectFromSQL($sql_games[$i]);
@@ -64,7 +65,8 @@ class client extends dbconnection
             $esc = addslashes($word);
             $query .= " AND (name LIKE '%{$esc}%' OR description LIKE '%{$esc}%')";
         }
-        $query .= " AND published = TRUE ORDER BY name ASC LIMIT ".(intval($pack->page)*25).",25";
+        $page = (isset($pack->page) ? intval($pack->page) : 0);
+        $query .= " AND published = TRUE ORDER BY name ASC LIMIT ".($page*25).",25";
         $sql_games = dbconnection::queryArray($query);
         $games = array();
         for($i = 0; $i < count($sql_games); $i++)
@@ -95,7 +97,8 @@ class client extends dbconnection
 
         //method 2 (SELECT)
         $sTime = microtime(true);
-        $sql_logs = dbconnection::queryArray("SELECT game_id, COUNT(DISTINCT user_id) as count FROM user_log WHERE created BETWEEN DATE_SUB(NOW(), INTERVAL {$interval}) AND NOW() GROUP BY game_id HAVING count > 0 ORDER BY count DESC LIMIT 20");
+        $page = (isset($pack->page) ? intval($pack->page) : 0);
+        $sql_logs = dbconnection::queryArray("SELECT game_id, COUNT(DISTINCT user_id) as count FROM user_log WHERE created BETWEEN DATE_SUB(NOW(), INTERVAL {$interval}) AND NOW() GROUP BY game_id HAVING count > 0 ORDER BY count DESC LIMIT ".($page*25).",25");
         $games = array();
         for($i = 0; $i < count($sql_logs); $i++)
         {
