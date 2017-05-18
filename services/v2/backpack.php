@@ -187,6 +187,7 @@ class backpack extends dbconnection
             $game_ids = array(intval($game_ids));
         }
 
+        $backpack = new stdClass();
         $backpack->games = array();
         foreach ($game_ids as $game_id) {
 
