@@ -88,12 +88,7 @@ class ar_targets extends dbconnection
 
     dbconnection::query("DELETE FROM ar_targets WHERE ar_target_id = '{$pack->ar_target_id}' LIMIT 1");
 
-    $triggers = dbconnection::queryArray("SELECT * FROM triggers WHERE type = 'AR' AND ar_target_id  = '{$pack->ar_target_id}'");
-    for($i = 0; $i < count($triggers); $i++)
-    {
-      $pack->trigger_id = $triggers[$i]->trigger_id;
-      triggers::deleteTrigger($pack);
-    }
+    dbconnection::query("UPDATE triggers SET ar_target_id = 0 WHERE game_id = '{$pack->auth->game_id}' AND type = 'AR' AND ar_target_id  = '{$pack->ar_target_id}'");
 
     games::bumpGameVersion($pack);
     return new return_package(0);
@@ -181,6 +176,7 @@ class ar_targets extends dbconnection
       {
         if($cur_targets[$i]->name == $names[$j])
         {
+          $tmppack->ar_target_id = $cur_targets[$i]->ar_target_id;
           $tmppack->name = $cur_targets[$i]->name;
           $tmppack->vuforia_index = $j;
           ar_targets::updateARTarget($tmppack);
