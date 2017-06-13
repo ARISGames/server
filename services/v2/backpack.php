@@ -127,23 +127,38 @@ class backpack extends dbconnection
             $q = "SELECT name FROM games WHERE game_id = {$game_id}";
             $game_name = dbconnection::queryObject($q)->name;
 
-            $q = "SELECT instances.object_id, instances.qty, items.name, items.type, GROUP_CONCAT(DISTINCT tags.tag SEPARATOR '!TAG!') as tags
-                FROM instances
-                INNER JOIN items ON items.item_id = instances.object_id
-                LEFT JOIN object_tags ON object_tags.object_type = 'ITEM' AND object_tags.object_id = instances.object_id AND object_tags.game_id = {$game_id}
-                LEFT JOIN tags ON object_tags.tag_id = tags.tag_id
-                WHERE instances.game_id = {$game_id}
-                AND instances.object_type = 'ITEM'
-                AND instances.owner_type = 'USER'
-                AND instances.owner_id = {$player_id}
-                AND instances.qty > 0
-                GROUP BY instances.object_id
-                ";
+            if (isset($pack->mode) && $pack->mode === 'history') {
+                // get all items player has ever had
+                $q = "SELECT user_log.content_id AS object_id, items.name, items.type, GROUP_CONCAT(DISTINCT tags.tag SEPARATOR '!TAG!') as tags
+                    FROM user_log
+                    INNER JOIN items on items.item_id = user_log.content_id
+                    LEFT JOIN object_tags ON object_tags.object_type = 'ITEM' AND object_tags.object_id = user_log.content_id AND object_tags.game_id = {$game_id}
+                    LEFT JOIN tags ON object_tags.tag_id = tags.tag_id
+                    WHERE user_log.user_id = {$player_id}
+                    AND user_log.game_id = {$game_id}
+                    AND user_log.event_type = 'RECEIVE_ITEM'
+                    AND !(user_log.deleted)
+                    GROUP BY user_log.content_id";
+            } else {
+                // get player's current inventory
+                $q = "SELECT instances.object_id, instances.qty, items.name, items.type, GROUP_CONCAT(DISTINCT tags.tag SEPARATOR '!TAG!') as tags
+                    FROM instances
+                    INNER JOIN items ON items.item_id = instances.object_id
+                    LEFT JOIN object_tags ON object_tags.object_type = 'ITEM' AND object_tags.object_id = instances.object_id AND object_tags.game_id = {$game_id}
+                    LEFT JOIN tags ON object_tags.tag_id = tags.tag_id
+                    WHERE instances.game_id = {$game_id}
+                    AND instances.object_type = 'ITEM'
+                    AND instances.owner_type = 'USER'
+                    AND instances.owner_id = {$player_id}
+                    AND instances.qty > 0
+                    GROUP BY instances.object_id
+                    ";
+            }
             $inventory = dbconnection::queryArray($q);
             if ($inventory === false) $inventory = array();
             foreach ($inventory as $item) {
                 $item->object_id = intval($item->object_id);
-                $item->qty = intval($item->qty);
+                if (isset($item->qty)) $item->qty = intval($item->qty);
                 $item->tags = explode('!TAG!', $item->tags);
             }
 
