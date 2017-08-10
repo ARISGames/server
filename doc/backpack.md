@@ -32,7 +32,7 @@ Returns:
 
 Takes:
 
-    {"player_id": <number>, "game_ids": <array of numbers>}
+    {"player_id": <number>, "game_ids": <array of numbers>, "mode": "current" or "history"}
 
 Returns:
 
@@ -59,6 +59,8 @@ Returns:
         }
       }
     }}
+
+`"history"` mode returns all items the player ever picked up, and does not include `"qty"`.
 
 ## `v2.users.logIn`
 
