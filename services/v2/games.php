@@ -564,5 +564,27 @@ class games extends dbconnection
 
         return new return_package(0,$game);
     }
+
+    public static function getStaffPicks($pack)
+    {
+        $count  = isset($pack->count ) ? intval($pack->count ) : 0;
+        $offset = isset($pack->offset) ? intval($pack->offset) : 0;
+
+        $q = "SELECT * FROM games WHERE staff_pick != '0000-00-00 00:00:00' ORDER BY staff_pick DESC";
+        if ($count) {
+            $q .= " LIMIT {$count}";
+            if ($offset) {
+                $q .= " OFFSET {$offset}";
+            }
+        }
+
+        $sql_games = dbconnection::queryArray($q);
+        $games = array();
+        for ($i = 0; $i < count($sql_games); $i++) {
+            if ($ob = games::gameObjectFromSQL($sql_games[$i])) $games[] = $ob;
+        }
+
+        return new return_package(0,$games);
+    }
 }
 ?>
