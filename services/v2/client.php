@@ -129,10 +129,21 @@ class client extends dbconnection
 
         while(count($games) < 20 && $dist < 64)
         {
-          $sql_games = dbconnection::queryArray("SELECT * FROM games WHERE latitude BETWEEN {$pack->latitude}-{$dist} AND {$pack->latitude}+{$dist} AND longitude BETWEEN {$pack->longitude}-{$dist} AND {$pack->longitude}+{$dist} AND published = TRUE {$filter} GROUP BY game_id LIMIT 50");
-          for($i = 0; $i < count($sql_games); $i++)
-              $games[] = games::gameObjectFromSQL($sql_games[$i]);
-          $dist *= 2;
+            $sql_games = dbconnection::queryArray("SELECT * FROM games WHERE latitude BETWEEN {$pack->latitude}-{$dist} AND {$pack->latitude}+{$dist} AND longitude BETWEEN {$pack->longitude}-{$dist} AND {$pack->longitude}+{$dist} AND published = TRUE {$filter} GROUP BY game_id LIMIT 50");
+            for($i = 0; $i < count($sql_games); $i++) {
+                $game = games::gameObjectFromSQL($sql_games[$i]);
+                $already_present = false;
+                foreach ($games as $g) {
+                    if ($g->game_id === $game->game_id) {
+                        $already_present = true;
+                        break;
+                    }
+                }
+                if (!$already_present) {
+                    $games[] = $game;
+                }
+            }
+            $dist *= 2;
         }
 
         return new return_package(0, $games);
