@@ -122,10 +122,14 @@ class client extends dbconnection
 
         $dist = 0.5;
         $games = array();
+        $filter = '';
+        if (isset($pack->filter) && $pack->filter === 'siftr') {
+            $filter .= " AND is_siftr ";
+        }
 
         while(count($games) == 0 && $dist < 64)
         {
-          $sql_games = dbconnection::queryArray("SELECT * FROM games WHERE latitude BETWEEN {$pack->latitude}-{$dist} AND {$pack->latitude}+{$dist} AND longitude BETWEEN {$pack->longitude}-{$dist} AND {$pack->longitude}+{$dist} AND published = TRUE GROUP BY game_id LIMIT 50");
+          $sql_games = dbconnection::queryArray("SELECT * FROM games WHERE latitude BETWEEN {$pack->latitude}-{$dist} AND {$pack->latitude}+{$dist} AND longitude BETWEEN {$pack->longitude}-{$dist} AND {$pack->longitude}+{$dist} AND published = TRUE {$filter} GROUP BY game_id LIMIT 50");
           for($i = 0; $i < count($sql_games); $i++)
               $games[] = games::gameObjectFromSQL($sql_games[$i]);
           $dist *= 2;
