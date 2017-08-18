@@ -123,13 +123,17 @@ class client extends dbconnection
         $dist = 0.5;
         $games = array();
         $filter = '';
+        $key_latitude = 'latitude';
+        $key_longitude = 'longitude';
         if (isset($pack->filter) && $pack->filter === 'siftr') {
             $filter .= " AND is_siftr ";
+            $key_latitude = 'map_latitude';
+            $key_longitude = 'map_longitude';
         }
 
         while(count($games) < 20 && $dist < 64)
         {
-            $sql_games = dbconnection::queryArray("SELECT * FROM games WHERE latitude BETWEEN {$pack->latitude}-{$dist} AND {$pack->latitude}+{$dist} AND longitude BETWEEN {$pack->longitude}-{$dist} AND {$pack->longitude}+{$dist} AND published = TRUE {$filter} GROUP BY game_id LIMIT 50");
+            $sql_games = dbconnection::queryArray("SELECT * FROM games WHERE {$key_latitude} BETWEEN {$pack->latitude}-{$dist} AND {$pack->latitude}+{$dist} AND {$key_longitude} BETWEEN {$pack->longitude}-{$dist} AND {$pack->longitude}+{$dist} AND published = TRUE {$filter} GROUP BY game_id LIMIT 50");
             for($i = 0; $i < count($sql_games); $i++) {
                 $game = games::gameObjectFromSQL($sql_games[$i]);
                 $already_present = false;
