@@ -104,7 +104,7 @@ class users extends dbconnection
         if($pack->media)
         {
             $pack->media->auth = $pack->auth;
-            $pack->media->user_id = $pack->user_id;
+            $pack->media->user_id = $pack->auth->user_id;
             $pack->media_id = media::createMedia($pack->media)->data->media_id;
         }
 
@@ -114,7 +114,7 @@ class users extends dbconnection
             (isset($pack->email)        ? "email        = '".addslashes($pack->email)."',"        : "").
             (isset($pack->media_id)     ? "media_id     = '".addslashes($pack->media_id)."',"     : "").
             "last_active = CURRENT_TIMESTAMP ".
-            "WHERE user_id = '{$pack->user_id}'"
+            "WHERE user_id = '{$pack->auth->user_id}'"
         );
 
         return users::logIn($pack);
