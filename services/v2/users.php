@@ -44,6 +44,8 @@ class users extends dbconnection
             (isset($pack->group_name) ? "group_name," : "").
             (isset($pack->transient)  ? "transient,"  : "").
             (isset($pack->email)      ? "email,"      : "").
+            (isset($pack->bio)        ? "bio,"        : "").
+            (isset($pack->url)        ? "url,"        : "").
             (isset($pack->media_id)   ? "media_id,"   : "").
             "created".
             ") VALUES (".
@@ -57,6 +59,8 @@ class users extends dbconnection
             (isset($pack->group_name)   ? "'".addslashes($pack->group_name)."',"   : "").
             (isset($pack->transient)    ? "'".addslashes($pack->transient)."',"    : "").
             (isset($pack->email)        ? "'".addslashes($pack->email)."',"        : "").
+            (isset($pack->bio)          ? "'".addslashes($pack->bio)."',"          : "").
+            (isset($pack->url)          ? "'".addslashes($pack->url)."',"          : "").
             (isset($pack->media_id)     ? "'".addslashes($pack->media_id)."',"     : "").
             "CURRENT_TIMESTAMP".
             ")"
@@ -112,6 +116,8 @@ class users extends dbconnection
             "UPDATE users SET ".
             (isset($pack->display_name) ? "display_name = '".addslashes($pack->display_name)."'," : "").
             (isset($pack->email)        ? "email        = '".addslashes($pack->email)."',"        : "").
+            (isset($pack->bio)          ? "bio          = '".addslashes($pack->bio)."',"          : "").
+            (isset($pack->url)          ? "url          = '".addslashes($pack->url)."',"          : "").
             (isset($pack->media_id)     ? "media_id     = '".addslashes($pack->media_id)."',"     : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE user_id = '{$pack->auth->user_id}'"
@@ -174,6 +180,8 @@ class users extends dbconnection
         $ret->group_name   = $user->group_name;
         $ret->media_id     = $user->media_id;
         $ret->email        = $user->email;
+        $ret->bio          = $user->bio;
+        $ret->url          = $user->url;
         if($pack->permission == "read"       || $pack->auth->permission == "read")       $ret->read_key       = $user->read_key;
         if($pack->permission == "write"      || $pack->auth->permission == "write")      $ret->write_key      = $user->write_key;
         if($pack->permission == "read_write" || $pack->auth->permission == "read_write") $ret->read_write_key = $user->read_write_key;
@@ -274,6 +282,8 @@ class users extends dbconnection
         $user->user_id       = $sql_user->user_id;
         $user->user_name     = $sql_user->user_name;
         $user->display_name  = $sql_user->display_name;
+        $user->bio           = $sql_user->bio;
+        $user->url           = $sql_user->url;
         $user->media_id      = $sql_user->media_id;
 
         return $user;
