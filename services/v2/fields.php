@@ -1,6 +1,7 @@
 <?php
 require_once("dbconnection.php");
 require_once("return_package.php");
+require_once("media.php");
 
 class fields extends dbconnection
 {
@@ -24,6 +25,11 @@ class fields extends dbconnection
         if ($note_id <= 0) return new return_package(6, NULL, "Invalid note ID");
 
         $data = dbconnection::queryArray("SELECT * FROM field_data WHERE note_id = $note_id");
+        foreach ($data as $row) {
+            if ($row->media_id) {
+                $row->media = media::getMedia($row)->data;
+            }
+        }
 
         return new return_package(0, $data);
     }
