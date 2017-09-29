@@ -129,11 +129,12 @@ class backpack extends dbconnection
 
             if (isset($pack->mode) && $pack->mode === 'history') {
                 // get all items player has ever had
-                $q = "SELECT user_log.content_id AS object_id, items.name, items.type, GROUP_CONCAT(DISTINCT tags.tag SEPARATOR '!TAG!') as tags
+                $q = "SELECT user_log.content_id AS object_id, instances.qty, items.name, items.type, GROUP_CONCAT(DISTINCT tags.tag SEPARATOR '!TAG!') as tags
                     FROM user_log
                     INNER JOIN items on items.item_id = user_log.content_id
                     LEFT JOIN object_tags ON object_tags.object_type = 'ITEM' AND object_tags.object_id = user_log.content_id AND object_tags.game_id = {$game_id}
                     LEFT JOIN tags ON object_tags.tag_id = tags.tag_id
+                    LEFT JOIN instances ON instances.object_type = 'ITEM' AND instances.object_id = user_log.content_id AND instances.owner_type = 'USER' and instances.owner_id = {$player_id}
                     WHERE user_log.user_id = {$player_id}
                     AND user_log.game_id = {$game_id}
                     AND user_log.event_type = 'RECEIVE_ITEM'
