@@ -60,7 +60,7 @@ Returns:
       }
     }}
 
-`"history"` mode returns all items the player ever picked up, and does not include `"qty"`.
+`"history"` mode returns all items the player ever had, even if they now have 0.
 
 ## `v2.users.logIn`
 
