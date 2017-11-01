@@ -71,6 +71,7 @@ class note_comments extends dbconnection
         $note_comment->user->user_id      = $note_comment->user_id;
         $note_comment->user->user_name    = $sql_note_comment->user_name;
         $note_comment->user->display_name = $sql_note_comment->display_name;
+        $note_comment->user->media_id     = $sql_note_comment->media_id;
 
         return $note_comment;
     }
