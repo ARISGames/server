@@ -13,9 +13,9 @@ class media extends dbconnection
         $fake_sql_media = new stdClass;
         $fake_sql_media->game_id = 0;
         $fake_sql_media->media_id = $mediaId;
-        $fake_sql_media->name = "Default NPC";
+        $fake_sql_media->name = "ARIS";
         $fake_sql_media->file_folder = "0";
-        $fake_sql_media->file_name = "npc.png";
+        $fake_sql_media->file_name = "aris.png";
         $fake_sql_media->autoplay = 0;
         return media::mediaObjectFromSQL($fake_sql_media);
     }
