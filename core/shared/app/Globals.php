@@ -8,8 +8,6 @@
  * @subpackage app
  */
 
-date_default_timezone_set("UTC");
-
 global $amfphp;
 
 $amfphp['errorLevel'] = E_ALL ^ E_NOTICE;
