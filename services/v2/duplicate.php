@@ -485,6 +485,8 @@ class duplicate extends dbconnection
     $pack->auth->permission = "read_write";
     if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
+    set_time_limit(60*5); //in seconds
+
     $pack->import = duplicate::exportGameData($pack);
     return duplicate::importGameData($pack);
   }
