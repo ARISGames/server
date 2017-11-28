@@ -2,29 +2,6 @@
 
 class Config
 {
-  // LEGACY SECTION ///////////////////////////
-  //
-  //
-
-  // old v1 conf
-  const dbUser     = 'root';
-  const dbPass     = 'root';
-  const dbSchema   = 'arisv1';
-  const dbHost     = '127.0.0.1';
-  const adminEmail = 'admin@email.com'; //This email address, if specified, will be notified of server errors
-
-  //v1 data dirs
-  const serverWWWPath   = 'http://localhost:10080/server';
-  const WWWPath         = 'http://localhost:10080';
-  const gamedataWWWPath = 'http://localhost:10080/server/gamedata';
-  const gamedataFSPath  = '/var/www/html/server/gamedata'; //Make Sure this directory is writable
-  const migrationsDir   = '/path/to/server/migrations';
-  const serverErrorLog  = '/var/log/aris_error_log.txt'; //Make sure this file is writable
-
-  // VERSION TWO ///////////////////////////////
-  //
-  //
-
   const errorLog  = '/var/log/aris_error_log.txt'; //Make sure this file is writable
   const mysqlBinPath = '/usr/bin';
 
@@ -38,18 +15,6 @@ class Config
 
   //PHP accelerator and cache
   const isAPCLoaded = FALSE; //Change to TRUE if the APC server extension has been configured
-
-  //v1 conf
-  const v1_host     = '127.0.0.1';
-  const v1_db_user  = 'root';
-  const v1_db_pass  = 'root';
-  const v1_db       = 'arisv1';
-
-  //migration conf
-  const mig_host    = '127.0.0.1';
-  const mig_db_user = 'root';
-  const mig_db_pass = 'root';
-  const mig_db      = 'migration_db';
 
   //v2 conf
   const v2_host     = '127.0.0.1';

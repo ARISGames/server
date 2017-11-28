@@ -17,8 +17,7 @@ Vagrant.configure(2) do |config|
     apt-get update
     echo "mysql-server-5.7 mysql-server/root_password password root" | sudo debconf-set-selections
     echo "mysql-server-5.7 mysql-server/root_password_again password root" | sudo debconf-set-selections
-    apt-get install -y php php-imagick php-curl php-gd mysql-server apache2 libapache2-mod-php php-mysql
-    # GD above is required for WideImage, only in use in v1
+    apt-get install -y php php-imagick php-curl mysql-server apache2 libapache2-mod-php php-mysql
     ln -fs /vagrant /var/www/html/server
     touch /var/log/aris_error_log.txt
     chmod 777 /var/log/aris_error_log.txt
@@ -31,10 +30,6 @@ Vagrant.configure(2) do |config|
 
   config.vm.provision 'shell', privileged: false, inline: <<-SHELL
     cd /vagrant
-    mysql --user=root --password=root -e "CREATE DATABASE arisv1"
-    mysql --user=root --password=root arisv1 < migrations/0.sql
-    mysql --user=root --password=root -e "CREATE DATABASE migration_db"
-    mysql --user=root --password=root migration_db < services/migration/reset_database.sql
     mysql --user=root --password=root -e "CREATE DATABASE arisv2"
     mysql --user=root --password=root arisv2 < services/v2/db/upgrades_table.sql
     # next line ensures that zero dates are allowed

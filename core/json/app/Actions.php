@@ -56,12 +56,7 @@ function deserializationAction(&$body)
 			}
 			else
 			{
-                                //phil hack to preserve v1 behavior
-                                if(strpos($_SERVER['REQUEST_URI'],"v1.") !== false)
-                                    $value = json_decode($value, TRUE);
-                                else
-                                    $value = json_decode($value);
-                                //end hack
+                                $value = json_decode($value);
 			}
 		}
 		$actualArgs[] = $value;

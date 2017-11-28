@@ -1,8 +1,6 @@
 config.class.php
 browser
 newTest/human/results.txt
-services/v1/samples/yoimap
-services/v1/samples/yoimapC
 .AppleDouble
 .DS_Store
 .vagrant/
