@@ -135,7 +135,11 @@ class users extends dbconnection
         }
         else if(!($user = dbconnection::queryObject("SELECT * FROM users WHERE user_name = '{$pack->user_name}'")) || hash("sha256",$user->salt.$pack->password) != $user->hash)
         {
-          return new return_package(1, NULL, "Incorrect username/password");
+            return new return_package(1, NULL, "Incorrect username/password");
+        }
+
+        if($user->banned) {
+            return new return_package(1, NULL, "This user has been banned");
         }
 
         $ret = new stdClass();

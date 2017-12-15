@@ -1,0 +1,1 @@
+ALTER TABLE users ADD `banned` TINYINT(1) UNSIGNED NOT NULL DEFAULT 0 AFTER `display_name`;
