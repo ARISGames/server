@@ -663,6 +663,32 @@ class notes extends dbconnection
         dbconnection::query(
             "UPDATE notes SET published = 'PENDING' WHERE note_id = '{$pack->note_id}'"
         );
+
+        $game = games::getGame($note)->data;
+        $note_url = "https://siftr.org/";
+        $note_url .= ($game->siftr_url ? $game->siftr_url : $game->game_id);
+        $note_url .= '/#';
+        $note_url .= $note->note_id;
+
+        $note_user = users::getUser($note)->data;
+        $subject = 'Siftr note flagged';
+        $body = 'The following note posted to Siftr has been flagged for possible inappropriate content:<br><br>';
+        $body .= "<a href=\"$note_url\">$note_url</a><br><br>";
+        $body .= 'The Siftr moderators have been notified and will make a decision to reinstate or remove the note.<br><br>';
+        $body .= 'Regards,<br>Field Day Lab';
+        util::sendEmail($note_user->email, $subject, $body);
+
+        $moderators = users::getUsersForGame($note)->data;
+        $subject = 'Siftr note requires your attention';
+        $body = 'The following note posted to a Siftr you moderate has been flagged for possible inappropriate content:<br><br>';
+        $body .= "<a href=\"$note_url\">$note_url</a><br><br>";
+        $body .= 'Please login and review whether the note should be reinstated or removed.<br><br>';
+        $body .= 'Regards,<br>Field Day Lab';
+        foreach ($moderators as $moderator) {
+            util::sendEmail($moderator->email, $subject, $body);
+        }
+        util::sendEmail(Config::adminEmail, $subject, $body);
+
         return new return_package(0);
     }
 
