@@ -830,7 +830,7 @@ var CRUD_DEFAULTS = [
           "complete_description":"completeDescription",\n\
           "complete_notification_type":"NONE",\n\
           "complete_function":"NONE",\n\
-          "complete_event_package_id":1\n\
+          "complete_event_package_id":1,\n\
           "complete_requirement_root_package_id":1\n\
         }\n\
         ',
@@ -858,7 +858,7 @@ var CRUD_DEFAULTS = [
           "complete_description":"completeDescription",\n\
           "complete_notification_type":"NONE",\n\
           "complete_function":"NONE",\n\
-          "complete_event_package_id":1\n\
+          "complete_event_package_id":1,\n\
           "complete_requirement_root_package_id":1\n\
         }\n\
         ',

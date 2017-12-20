@@ -24,6 +24,7 @@ class quests extends dbconnection
             "game_id,".
             (isset($pack->name)                                 ? "name,"                                 : "").
             (isset($pack->description)                          ? "description,"                          : "").
+            (isset($pack->quest_type)                           ? "quest_type,"                           : "").
             (isset($pack->active_icon_media_id)                 ? "active_icon_media_id,"                 : "").
             (isset($pack->active_media_id)                      ? "active_media_id,"                      : "").
             (isset($pack->active_description)                   ? "active_description,"                   : "").
@@ -39,11 +40,13 @@ class quests extends dbconnection
             (isset($pack->complete_requirement_root_package_id) ? "complete_requirement_root_package_id," : "").
             (isset($pack->complete_event_package_id)            ? "complete_event_package_id,"            : "").
             (isset($pack->sort_index)                           ? "sort_index,"                           : "").
+            (isset($pack->parent_quest_id)                      ? "parent_quest_id,"                      : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
             (isset($pack->name)                                 ? "'".addslashes($pack->name)."',"                                 : "").
             (isset($pack->description)                          ? "'".addslashes($pack->description)."',"                          : "").
+            (isset($pack->quest_type)                           ? "'".addslashes($pack->quest_type)."',"                           : "").
             (isset($pack->active_icon_media_id)                 ? "'".addslashes($pack->active_icon_media_id)."',"                 : "").
             (isset($pack->active_media_id)                      ? "'".addslashes($pack->active_media_id)."',"                      : "").
             (isset($pack->active_description)                   ? "'".addslashes($pack->active_description)."',"                   : "").
@@ -59,6 +62,7 @@ class quests extends dbconnection
             (isset($pack->complete_requirement_root_package_id) ? "'".addslashes($pack->complete_requirement_root_package_id)."'," : "").
             (isset($pack->complete_event_package_id)            ? "'".addslashes($pack->complete_event_package_id)."',"            : "").
             (isset($pack->sort_index)                           ? "'".addslashes($pack->sort_index)."',"                           : "").
+            (isset($pack->parent_quest_id)                      ? "'".addslashes($pack->parent_quest_id)."',"                      : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -77,6 +81,7 @@ class quests extends dbconnection
             "UPDATE quests SET ".
             (isset($pack->name)                                 ? "name                                 = '".addslashes($pack->name)."', "                                 : "").
             (isset($pack->description)                          ? "description                          = '".addslashes($pack->description)."', "                          : "").
+            (isset($pack->quest_type)                           ? "quest_type                           = '".addslashes($pack->quest_type)."', "                           : "").
             (isset($pack->active_icon_media_id)                 ? "active_icon_media_id                 = '".addslashes($pack->active_icon_media_id)."', "                 : "").
             (isset($pack->active_media_id)                      ? "active_media_id                      = '".addslashes($pack->active_media_id)."', "                      : "").
             (isset($pack->active_description)                   ? "active_description                   = '".addslashes($pack->active_description)."', "                   : "").
@@ -92,6 +97,7 @@ class quests extends dbconnection
             (isset($pack->complete_requirement_root_package_id) ? "complete_requirement_root_package_id = '".addslashes($pack->complete_requirement_root_package_id)."', " : "").
             (isset($pack->complete_event_package_id)            ? "complete_event_package_id            = '".addslashes($pack->complete_event_package_id)."', "            : "").
             (isset($pack->sort_index)                           ? "sort_index                           = '".addslashes($pack->sort_index)."', "                           : "").
+            (isset($pack->parent_quest_id)                      ? "parent_quest_id                      = '".addslashes($pack->parent_quest_id)."', "                      : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE quest_id = '{$pack->quest_id}'"
         );
@@ -108,6 +114,7 @@ class quests extends dbconnection
         $quest->game_id                              = $sql_quest->game_id;
         $quest->name                                 = $sql_quest->name;
         $quest->description                          = $sql_quest->description;
+        $quest->quest_type                           = $sql_quest->quest_type;
         $quest->active_icon_media_id                 = $sql_quest->active_icon_media_id;
         $quest->active_media_id                      = $sql_quest->active_media_id;
         $quest->active_description                   = $sql_quest->active_description;
@@ -123,6 +130,7 @@ class quests extends dbconnection
         $quest->complete_requirement_root_package_id = $sql_quest->complete_requirement_root_package_id;
         $quest->complete_event_package_id            = $sql_quest->complete_event_package_id;
         $quest->sort_index                           = $sql_quest->sort_index;
+        $quest->parent_quest_id                      = $sql_quest->parent_quest_id;
 
         return $quest;
     }
