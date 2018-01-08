@@ -11,8 +11,37 @@ require_once("../../events/pusher_defaults.php");
 ?><!DOCTYPE html>
 <html>
 <head>
-<title>ARIS Status</title>
-<script type="text/javascript" src="//js.pusher.com/1.11/pusher.min.js"></script>
+<title>ARIS Server Status</title>
+<link href="https://fonts.googleapis.com/css?family=Josefin+Sans:400,600|Roboto:300,400|Volkhov" rel="stylesheet">
+<style type="text/css">
+body {
+  background-color: rgb(17,19,24);
+  color: #eee;
+  font-family: Roboto;
+  letter-spacing: 1px;
+  text-align: center;
+}
+.green-light {
+  display: inline-block;
+  height: 20px;
+  width: 20px;
+  border-radius: 10px;
+  background-color: rgb(60,220,60);
+  margin-right: 10px;
+}
+.red-light {
+  display: inline-block;
+  height: 20px;
+  width: 20px;
+  border-radius: 10px;
+  background-color: rgb(247,0,0);
+  margin-right: 10px;
+}
+h1 {
+  margin-top: 50px;
+}
+</style>
+<script type="text/javascript" src="https://js.pusher.com/1.11/pusher.min.js"></script>
 <script type="text/javascript">
 
 function sendRequest(fn, params, method)
@@ -30,14 +59,13 @@ document.addEventListener('DOMContentLoaded', function(){
   var res = sendRequest('users.getUser', JSON.stringify({user_id: 1}), 'POST');
   var msg = '';
   if (res != null && res.returnCode === 0) {
-    msg = 'Web API is online. User #1 is ';
-    if (res.data != null && res.data.user_name != null) {
-      msg += '"' + res.data.user_name + '"';
-    } else {
-      msg += JSON.stringify(res.data);
-    }
+    document.getElementById('api-light').classList.add('green-light');
+    document.getElementById('api-light').classList.remove('red-light');
+    msg = 'Web API is online.';
+  } else {
+    msg = 'Web API call was unsuccessful.';
   }
-  document.getElementById('api-results').innerHTML = msg;
+  document.getElementById('api-text').innerHTML = msg;
 });
 
 var pm_config =
@@ -71,7 +99,9 @@ var timestamp = Date.now() + '-' + Math.floor(Math.random() * 1000);
 
 function onLoopback(res) {
   if (res === timestamp) {
-    document.getElementById('pusher-results').innerHTML = 'Pusher loopback successful.';
+    document.getElementById('pusher-light').classList.add('green-light');
+    document.getElementById('pusher-light').classList.remove('red-light');
+    document.getElementById('pusher-text').innerHTML = 'Pusher loopback successful.';
     pm.pusher.disconnect();
   }
 }
@@ -101,7 +131,7 @@ trySend();
 </head>
 <body>
 
-<h1>ARIS Status</h1>
+<h1>ARIS Server Status</h1>
 
 <p>
 <?php
@@ -109,10 +139,10 @@ trySend();
 class status extends dbconnection {
   public function testStatus() {
     $res = dbconnection::queryArray("SHOW TABLES;");
-    if ($res === false) {
-      return "Database could not be reached.";
+    if ($res === false || count($res) === 0) {
+      return "<span class=\"red-light\"></span> Database could not be reached.";
     } else {
-      return "Database is online, with " . count($res) . " tables.";
+      return "<span class=\"green-light\"></span> Database is online.";
     }
     var_dump($res);
   }
@@ -124,9 +154,15 @@ echo $con->testStatus();
 ?>
 </p>
 
-<p id="api-results"></p>
+<p id="api-results">
+  <span id="api-light" class="red-light"></span>
+  <span id="api-text">Waiting for API results...</span>
+</p>
 
-<p id="pusher-results">Waiting for Pusher loopback...</p>
+<p id="pusher-results">
+  <span id="pusher-light" class="red-light"></span>
+  <span id="pusher-text">Waiting for Pusher results...</span>
+</p>
 
 </body>
 </html>
