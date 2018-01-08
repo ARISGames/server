@@ -12,7 +12,7 @@ require_once("../../events/pusher_defaults.php");
 <html>
 <head>
 <title>ARIS Status</title>
-<script type="text/javascript" src="http://js.pusher.com/1.11/pusher.min.js"></script>
+<script type="text/javascript" src="//js.pusher.com/1.11/pusher.min.js"></script>
 <script type="text/javascript">
 
 function sendRequest(fn, params, method)
