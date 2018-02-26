@@ -25,6 +25,7 @@ class quests extends dbconnection
             (isset($pack->name)                                 ? "name,"                                 : "").
             (isset($pack->description)                          ? "description,"                          : "").
             (isset($pack->prompt)                               ? "prompt,"                               : "").
+            (isset($pack->stars)                                ? "stars,"                                : "").
             (isset($pack->quest_type)                           ? "quest_type,"                           : "").
             (isset($pack->active_icon_media_id)                 ? "active_icon_media_id,"                 : "").
             (isset($pack->active_media_id)                      ? "active_media_id,"                      : "").
@@ -48,6 +49,7 @@ class quests extends dbconnection
             (isset($pack->name)                                 ? "'".addslashes($pack->name)."',"                                 : "").
             (isset($pack->description)                          ? "'".addslashes($pack->description)."',"                          : "").
             (isset($pack->prompt)                               ? "'".addslashes($pack->prompt)."',"                               : "").
+            (isset($pack->stars)                                ? "'".addslashes($pack->stars)."',"                                : "").
             (isset($pack->quest_type)                           ? "'".addslashes($pack->quest_type)."',"                           : "").
             (isset($pack->active_icon_media_id)                 ? "'".addslashes($pack->active_icon_media_id)."',"                 : "").
             (isset($pack->active_media_id)                      ? "'".addslashes($pack->active_media_id)."',"                      : "").
@@ -84,6 +86,7 @@ class quests extends dbconnection
             (isset($pack->name)                                 ? "name                                 = '".addslashes($pack->name)."', "                                 : "").
             (isset($pack->description)                          ? "description                          = '".addslashes($pack->description)."', "                          : "").
             (isset($pack->prompt)                               ? "prompt                               = '".addslashes($pack->prompt)."', "                               : "").
+            (isset($pack->stars)                                ? "stars                                = '".addslashes($pack->stars)."', "                                : "").
             (isset($pack->quest_type)                           ? "quest_type                           = '".addslashes($pack->quest_type)."', "                           : "").
             (isset($pack->active_icon_media_id)                 ? "active_icon_media_id                 = '".addslashes($pack->active_icon_media_id)."', "                 : "").
             (isset($pack->active_media_id)                      ? "active_media_id                      = '".addslashes($pack->active_media_id)."', "                      : "").
@@ -118,6 +121,7 @@ class quests extends dbconnection
         $quest->name                                 = $sql_quest->name;
         $quest->description                          = $sql_quest->description;
         $quest->prompt                               = $sql_quest->prompt;
+        $quest->stars                                = $sql_quest->stars;
         $quest->quest_type                           = $sql_quest->quest_type;
         $quest->active_icon_media_id                 = $sql_quest->active_icon_media_id;
         $quest->active_media_id                      = $sql_quest->active_media_id;
