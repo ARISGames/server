@@ -130,6 +130,29 @@ class games extends dbconnection
         $pack->description = "";
         scenes::createScene($pack);
 
+        if (isset($pack->fields)) {
+            foreach ($pack->fields as $field) {
+                $field_id = dbconnection::queryInsert
+                    ( "INSERT INTO fields (game_id, field_type, label, required) VALUES ("
+                    .          intval($pack->game_id)
+                    . ",\""  . addslashes($field->field_type) . "\""
+                    . ",\""  . addslashes($field->label) . "\""
+                    . ","    . ($field->required ? 1 : 0)
+                    . ")"
+                    );
+                if (isset($field->options)) {
+                    foreach ($field->options as $option) {
+                        dbconnection::queryInsert
+                            ( "INSERT INTO field_options (field_id, game_id, option) VALUES ("
+                            .         intval($field_id)
+                            . ","   . intval($pack->game_id)
+                            . ",\"" . addslashes($option) . "\""
+                            );
+                    }
+                }
+            }
+        }
+
         return games::getGame($pack);
     }
 
