@@ -147,6 +147,7 @@ class games extends dbconnection
                             .         intval($field_id)
                             . ","   . intval($pack->game_id)
                             . ",\"" . addslashes($option) . "\""
+                            . ")"
                             );
                     }
                 }
