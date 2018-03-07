@@ -44,7 +44,7 @@ class fields extends dbconnection
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         $columns = array('game_id', 'field_type');
-        $values = array($pack->game_id, $pack->field_type);
+        $values = array($game_id, $pack->field_type);
         foreach (array('label', 'required') as $column) {
             if (isset($pack->$column)) {
                 $columns[] = $column;
@@ -61,7 +61,36 @@ class fields extends dbconnection
         $field_id = dbconnection::queryInsert("INSERT INTO fields ($columns) VALUES ($quoted)");
 
         games::bumpGameVersion($pack);
-        return new return_package(0); // could return field but siftr editor will just update call getFieldsForGame
+        return new return_package(0); // could return field but siftr editor will just call getFieldsForGame
+    }
+
+    public static function updateField($pack)
+    {
+        $game_id = intval($pack->game_id);
+        $pack->game_id = $game_id;
+        $field_id = intval($pack->field_id);
+
+        $pack->auth->game_id = $game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $columns = array();
+        $values = array();
+        foreach (array('label', 'required') as $column) {
+            if (isset($pack->$column)) {
+                $columns[] = $column;
+                $values[] = $pack->$column;
+            }
+        }
+        $pairs = array();
+        foreach ($columns as $key => $column) {
+            $pairs[] = $column . ' = "' . addslashes($values[$key]) . '"';
+        }
+        $pairs = implode(",", $pairs);
+
+        dbconnection::query("UPDATE fields SET $pairs WHERE game_id = $game_id AND field_id = $field_id");
+        games::bumpGameVersion($pack);
+        return new return_package(0); // could return field but siftr editor will just call getFieldsForGame
     }
 
     public static function deleteField($pack)
@@ -75,14 +104,102 @@ class fields extends dbconnection
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         $fields = dbconnection::queryArray("SELECT * FROM fields WHERE game_id = $game_id AND field_id = $field_id");
-        if (count($fields)) {
-            dbconnection::query("DELETE FROM field_data WHERE field_id = '{$field_id}'");
-            // ^ really should have game_id but not in the table. so we do the select check instead
-            dbconnection::query("DELETE FROM field_options WHERE game_id = $game_id AND field_id = '{$field_id}'");
-            dbconnection::query("DELETE FROM fields WHERE game_id = $game_id AND field_id = '{$field_id}'");
-        } else {
+        if (!count($fields)) {
             return new return_package(1, NULL, "Field not found");
         }
+
+        dbconnection::query("DELETE FROM field_data WHERE field_id = '{$field_id}'");
+        // ^ really should have game_id but not in the table. so we do the select check instead
+        dbconnection::query("DELETE FROM field_options WHERE game_id = $game_id AND field_id = '{$field_id}'");
+        dbconnection::query("DELETE FROM fields WHERE game_id = $game_id AND field_id = '{$field_id}'");
+
+        games::bumpGameVersion($pack);
+        return new return_package(0);
+    }
+
+    public static function createFieldOption($pack)
+    {
+        $game_id = intval($pack->game_id);
+        $pack->game_id = $game_id;
+        $field_id = intval($pack->field_id);
+
+        $pack->auth->game_id = $game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $fields = dbconnection::queryArray("SELECT * FROM fields WHERE game_id = $game_id AND field_id = $field_id");
+        if (!count($fields)) {
+            return new return_package(1, NULL, "Field not found");
+        }
+
+        $columns = array('field_id', 'game_id', 'option');
+        $values = array($field_id, $game_id, $pack->option);
+        $columns = implode(",", $columns);
+        $quoted = array();
+        foreach ($values as $value) {
+            $quoted[] = '"'.addslashes($value).'"';
+        }
+        $quoted = implode(",", $quoted);
+
+        $field_id = dbconnection::queryInsert("INSERT INTO field_options ($columns) VALUES ($quoted)");
+
+        games::bumpGameVersion($pack);
+        return new return_package(0); // could return field but siftr editor will just call getFieldsForGame
+    }
+
+    public static function updateFieldOption($pack)
+    {
+        $game_id = intval($pack->game_id);
+        $pack->game_id = $game_id;
+        $field_id = intval($pack->field_id);
+        $field_option_id = intval($pack->field_option_id);
+
+        $pack->auth->game_id = $game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $columns = array();
+        $values = array();
+        foreach (array('option') as $column) {
+            if (isset($pack->$column)) {
+                $columns[] = $column;
+                $values[] = $pack->$column;
+            }
+        }
+        $pairs = array();
+        foreach ($columns as $key => $column) {
+            $pairs[] = $column . ' = "' . addslashes($values[$key]) . '"';
+        }
+        $pairs = implode(",", $pairs);
+
+        dbconnection::query("UPDATE fields SET $pairs WHERE game_id = $game_id AND field_option_id = $field_option_id");
+        games::bumpGameVersion($pack);
+        return new return_package(0); // could return field but siftr editor will just call getFieldsForGame
+    }
+
+    public static function deleteFieldOption($pack)
+    {
+        $game_id = intval($pack->game_id);
+        $pack->game_id = $game_id;
+        $field_id = intval($pack->field_id);
+        $field_option_id = intval($pack->field_option_id);
+        $new_field_option_id = intval($pack->new_field_option_id);
+
+        $pack->auth->game_id = $game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $fields = dbconnection::queryArray("SELECT * FROM fields WHERE game_id = $game_id AND field_id = $field_id");
+        if (!count($fields)) {
+            return new return_package(1, NULL, "Field not found");
+        }
+
+        if ($new_field_option_id) {
+            dbconnection::query("UPDATE field_data SET field_option_id = {$new_field_option_id} WHERE field_id = {$field_id} AND field_option_id = {$field_option_id}");
+        } else {
+            dbconnection::query("DELETE FROM field_data WHERE field_id = {$field_id} AND field_option_id = {$field_option_id}");
+        }
+        dbconnection::query("DELETE FROM field_options WHERE field_id = {$field_id} AND field_option_id = {$field_option_id}");
 
         games::bumpGameVersion($pack);
         return new return_package(0);
