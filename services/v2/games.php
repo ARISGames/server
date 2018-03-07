@@ -433,6 +433,9 @@ class games extends dbconnection
         $tables[] = "event_packages";
         $tables[] = "events";
         $tables[] = "factories";
+        $tables[] = "fields";
+        $tables[] = "field_options";
+        $tables[] = "field_data";
         $tables[] = "game_comments";
         $tables[] = "instances";
         $tables[] = "items";
@@ -476,6 +479,9 @@ class games extends dbconnection
       $tables[] = "event_packages";
       $tables[] = "events";
       $tables[] = "factories";
+      $tables[] = "fields";
+      $tables[] = "field_options";
+      $tables[] = "field_data";
       $tables[] = "game_comments";
       $tables[] = "instances";
       $tables[] = "items";
