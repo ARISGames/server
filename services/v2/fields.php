@@ -132,7 +132,7 @@ class fields extends dbconnection
             return new return_package(1, NULL, "Field not found");
         }
 
-        $columns = array('field_id', 'game_id', 'option');
+        $columns = array('field_id', 'game_id', '`option`');
         $values = array($field_id, $game_id, $pack->option);
         $columns = implode(",", $columns);
         $quoted = array();
@@ -168,7 +168,7 @@ class fields extends dbconnection
         }
         $pairs = array();
         foreach ($columns as $key => $column) {
-            $pairs[] = $column . ' = "' . addslashes($values[$key]) . '"';
+            $pairs[] = '`' . $column . '` = "' . addslashes($values[$key]) . '"';
         }
         $pairs = implode(",", $pairs);
 
