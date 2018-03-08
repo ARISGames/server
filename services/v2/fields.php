@@ -172,7 +172,7 @@ class fields extends dbconnection
         }
         $pairs = implode(",", $pairs);
 
-        dbconnection::query("UPDATE fields SET $pairs WHERE game_id = $game_id AND field_option_id = $field_option_id");
+        dbconnection::query("UPDATE field_options SET $pairs WHERE game_id = $game_id AND field_option_id = $field_option_id");
         games::bumpGameVersion($pack);
         return new return_package(0); // could return field but siftr editor will just call getFieldsForGame
     }
