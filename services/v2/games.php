@@ -143,7 +143,7 @@ class games extends dbconnection
                 if (isset($field->options)) {
                     foreach ($field->options as $option) {
                         dbconnection::queryInsert
-                            ( "INSERT INTO field_options (field_id, game_id, option) VALUES ("
+                            ( "INSERT INTO field_options (field_id, game_id, `option`) VALUES ("
                             .         intval($field_id)
                             . ","   . intval($pack->game_id)
                             . ",\"" . addslashes($option) . "\""
