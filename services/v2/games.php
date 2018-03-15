@@ -64,6 +64,7 @@ class games extends dbconnection
             (isset($pack->version)                                      ? "version,"                                      : "").
             (isset($pack->colors_id)                                    ? "colors_id,"                                    : "").
             (isset($pack->prompt)                                       ? "prompt,"                                       : "").
+            (isset($pack->password)                                     ? "password,"                                     : "").
             (isset($pack->staff_pick)                                   ? "staff_pick,"                                   : "").
             "created".
             ") VALUES (".
@@ -107,6 +108,7 @@ class games extends dbconnection
             (isset($pack->version)                                      ? "'".addslashes($pack->version)."',"                                      : "").
             (isset($pack->colors_id)                                    ? "'".addslashes($pack->colors_id)."',"                                    : "").
             (isset($pack->prompt)                                       ? "'".addslashes($pack->prompt)."',"                                       : "").
+            (isset($pack->password)                                     ? "'".addslashes($pack->password)."',"                                     : "").
             (isset($pack->staff_pick)                                   ? "'".addslashes($pack->staff_pick)."',"                                   : "").
             "CURRENT_TIMESTAMP".
             ")"
@@ -114,14 +116,15 @@ class games extends dbconnection
 
         dbconnection::queryInsert("INSERT INTO user_games (game_id, user_id, created) VALUES ('{$pack->game_id}','{$pack->auth->user_id}',CURRENT_TIMESTAMP)");
 
+        $game_id = intval($pack->game_id);
         //                                                                                                          game_id,         type,    name, icon, sort, created
-        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', 'MAP',       '', '0', '1', CURRENT_TIMESTAMP)");
-        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', 'QUESTS',    '', '0', '2', CURRENT_TIMESTAMP)");
-        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', 'INVENTORY', '', '0', '3', CURRENT_TIMESTAMP)");
-        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', 'SCANNER',   '', '0', '4', CURRENT_TIMESTAMP)");
-        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', 'DECODER',   '', '0', '5', CURRENT_TIMESTAMP)");
-        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', 'PLAYER',    '', '0', '6', CURRENT_TIMESTAMP)");
-        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$pack->game_id}', 'NOTEBOOK',  '', '0', '7', CURRENT_TIMESTAMP)");
+        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$game_id}', 'MAP',       '', '0', '1', CURRENT_TIMESTAMP)");
+        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$game_id}', 'QUESTS',    '', '0', '2', CURRENT_TIMESTAMP)");
+        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$game_id}', 'INVENTORY', '', '0', '3', CURRENT_TIMESTAMP)");
+        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$game_id}', 'SCANNER',   '', '0', '4', CURRENT_TIMESTAMP)");
+        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$game_id}', 'DECODER',   '', '0', '5', CURRENT_TIMESTAMP)");
+        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$game_id}', 'PLAYER',    '', '0', '6', CURRENT_TIMESTAMP)");
+        dbconnection::query("INSERT INTO tabs (game_id, type, name, icon_media_id, sort_index, created) VALUES ('{$game_id}', 'NOTEBOOK',  '', '0', '7', CURRENT_TIMESTAMP)");
 
         mkdir(Config::v2_gamedata_folder."/{$pack->game_id}",0777);
 
@@ -154,19 +157,21 @@ class games extends dbconnection
             }
         }
 
-        return games::getGame($pack);
+        return games::getGame($pack); // TODO include password?
     }
 
     //no need for security- just invalidates local game downloads
     public static function bumpGameVersion($pack)
     {
-      dbconnection::query("UPDATE games SET version = version+1, last_active = CURRENT_TIMESTAMP WHERE game_id = '{$pack->game_id}';");
+        $game_id = intval($pack->game_id);
+        dbconnection::query("UPDATE games SET version = version+1, last_active = CURRENT_TIMESTAMP WHERE game_id = '{$game_id}';");
     }
 
     //Takes in game JSON, all fields optional except user_id + key
     public static function updateGame($pack)
     {
-        $pack->auth->game_id = $pack->game_id;
+        $game_id = intval($pack->game_id);
+        $pack->auth->game_id = $game_id;
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
@@ -178,10 +183,12 @@ class games extends dbconnection
 
         //ensure requested scene_id exists, otherwise pick one from list of existing scenes
         //this is a hack, in case you were wondering...
-        if(!dbconnection::queryObject("SELECT * FROM scenes WHERE scene_id = '{$pack->intro_scene_id}' AND game_id = '{$pack->game_id}'"))
+        $intro_scene_id = intval($pack->intro_scene_id);
+        $game_id = intval($pack->game_id);
+        if(!dbconnection::queryObject("SELECT * FROM scenes WHERE scene_id = '{$intro_scene_id}' AND game_id = '{$game_id}'"))
         {
             $pack->intro_scene_id = 0; //fallback if we can't find a good one
-            $scenes = dbconnection::queryArray("SELECT * FROM scenes WHERE game_id = '{$pack->game_id}'");
+            $scenes = dbconnection::queryArray("SELECT * FROM scenes WHERE game_id = '{$game_id}'");
             if(count($scenes) > 0) $pack->intro_scene_id = $scenes[0]->scene_id;
         }
 
@@ -228,9 +235,10 @@ class games extends dbconnection
             (isset($pack->version)                                      ? "version                                      = '".addslashes($pack->version)."', "                                      : "").
             (isset($pack->colors_id)                                    ? "colors_id                                    = '".addslashes($pack->colors_id)."', "                                    : "").
             (isset($pack->prompt)                                       ? "prompt                                       = '".addslashes($pack->prompt)."', "                                       : "").
+            (isset($pack->password)                                     ? "password                                     = '".addslashes($pack->password)."', "                                     : "").
             (isset($pack->staff_pick)                                   ? "staff_pick                                   = '".addslashes($pack->staff_pick)."', "                                   : "").
             "last_active = CURRENT_TIMESTAMP ".
-            "WHERE game_id = '{$pack->game_id}'"
+            "WHERE game_id = '{$game_id}'"
         );
 
         games::bumpGameVersion($pack);
@@ -288,9 +296,18 @@ class games extends dbconnection
         return $game;
     }
 
+    public static function gameObjectFromSQLWithPassword($sql_game)
+    {
+        if(!$sql_game) return $sql_game;
+        $game = games::gameObjectFromSQL($sql_game);
+        $game->password = $sql_game->password;
+        return $game;
+    }
+
     public static function getGame($pack)
     {
-        $sql_game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$pack->game_id}' LIMIT 1");
+        $game_id = intval($pack->game_id);
+        $sql_game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$game_id}' LIMIT 1");
         if(!$sql_game) return new return_package(2, NULL, "The game you've requested does not exist");
         return new return_package(0,games::gameObjectFromSQL($sql_game));
     }
@@ -381,7 +398,7 @@ class games extends dbconnection
         $sql_games = dbconnection::queryArray("SELECT * FROM user_games LEFT JOIN games ON user_games.game_id = games.game_id WHERE user_games.user_id = '{$pack->auth->user_id}' AND games.game_id IS NOT NULL");
         $games = array();
         for($i = 0; $i < count($sql_games); $i++)
-            if($ob = games::gameObjectFromSQL($sql_games[$i])) $games[] = $ob;
+            if($ob = games::gameObjectFromSQLWithPassword($sql_games[$i])) $games[] = $ob;
 
         return new return_package(0,$games);
     }
@@ -404,7 +421,9 @@ class games extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        dbconnection::queryInsert("INSERT INTO game_follows (game_id, user_id, created) VALUES ('{$pack->game_id}','{$pack->auth->user_id}',CURRENT_TIMESTAMP)");
+        $game_id = intval($pack->game_id);
+        $user_id = intval($pack->auth->user_id);
+        dbconnection::queryInsert("INSERT INTO game_follows (game_id, user_id, created) VALUES ('{$game_id}','{$user_id}',CURRENT_TIMESTAMP)");
         return new return_package(0);
     }
 
@@ -413,7 +432,9 @@ class games extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        dbconnection::query("DELETE FROM game_follows WHERE user_id = '{$pack->auth->user_id}' AND game_id = '{$pack->game_id}'");
+        $game_id = intval($pack->game_id);
+        $user_id = intval($pack->auth->user_id);
+        dbconnection::query("DELETE FROM game_follows WHERE user_id = '{$user_id}' AND game_id = '{$game_id}'");
         return new return_package(0);
     }
 
@@ -579,7 +600,8 @@ class games extends dbconnection
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        $sql_game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$pack->game_id}' LIMIT 1");
+        $game_id = intval($pack->game_id);
+        $sql_game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$game_id}' LIMIT 1");
         if(!$sql_game) return new return_package(2, NULL, "The game you've requested does not exist");
 
         $game = games::getGame($pack)->data;

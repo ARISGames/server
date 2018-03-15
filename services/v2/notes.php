@@ -18,7 +18,10 @@ class notes extends dbconnection
     public static function createNote($pack)
     {
         $pack->auth->permission = "read_write";
-        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        $pack->auth->game_id = $pack->game_id;
+        if(!users::authenticateUser($pack->auth) || !editors::authenticateGameAccess($pack->auth)) {
+            return new return_package(6, NULL, "Failed Authentication");
+        }
 
         if($pack->media)
         {
@@ -89,9 +92,11 @@ class notes extends dbconnection
     public static function updateNote($pack)
     {
         $pack->auth->permission = "read_write";
+        $pack->auth->game_id = $pack->game_id;
         if(
           $pack->auth->user_id != dbconnection::queryObject("SELECT * FROM notes WHERE note_id = '{$pack->note_id}'")->user_id ||
-          !users::authenticateUser($pack->auth)
+          !users::authenticateUser($pack->auth) ||
+          !editors::authenticateGameAccess($pack->auth)
         ) return new return_package(6, NULL, "Failed Authentication");
 
         if($pack->trigger)
@@ -160,6 +165,7 @@ class notes extends dbconnection
 
     public static function getNote($pack)
     {
+        // TODO editors::authenticateGameAccess
         $sql_note = dbconnection::queryObject("SELECT notes.*, users.user_name, users.display_name FROM notes LEFT JOIN users ON notes.user_id = users.user_id WHERE note_id = '{$pack->note_id}' LIMIT 1");
         $note = notes::noteObjectFromSQL($sql_note);
         if($note)
@@ -181,46 +187,13 @@ class notes extends dbconnection
 
     public static function getNotesForGame($pack)
     {
+        // TODO editors::authenticateGameAccess
         $notes = array();
-        //two separate impls depending on presense of search. search makes query MUCH slower.
         if(isset($pack->search))
         {
-            /*
-            //Search in PHP
-            $notes_arr       = dbconnection::queryArray("SELECT * FROM notes       WHERE game_id = '{$pack->game_id}'");
-            $tags_arr        = dbconnection::queryArray("SELECT * FROM tags        WHERE game_id = '{$pack->game_id}' AND object_type = 'NOTE'");
-            $object_tags_arr = dbconnection::queryArray("SELECT * FROM object_tags WHERE game_id = '{$pack->game_id}'");
+            // there used to be another search implementation here that did text search via PHP
+            // but now we just use the LIKE queries to do it all in SQL
 
-            $tags        = array(); for($i = 0; $i < count($tags_arr);        $i++)        $tags[       $tags_arr[$i]->tag_id] =        $tags_arr[$i];
-            $object_tags = array(); for($i = 0; $i < count($object_tags_arr); $i++) $object_tags[$object_tags_arr[$i]->tag_id] = $object_tags_arr[$i];
-            $users       = array(); //will be derived on the spot
-
-            $returned
-            for($i = 0; $i < count($notes_arr); $i++)
-            {
-                $note = $notes_arr[$i];
-                if(!$users[$note->user_id]) $users[$note->user_id] = dbconnection::queryObject("SELECT * FROM users WHERE user_id = '{$note->user_id}'");
-                $user = $users[$note->user_id];
-                $tag = $tags[$object_tags_arr[$note->note_id]->tag_id]
-
-                if(
-                    preg_match("@".$pack->search."@is",$note->name) ||
-                    preg_match("@".$pack->search."@is",$note->description) ||
-                    preg_match("@".$pack->search."@is",$user->user_name) ||
-                    preg_match("@".$pack->search."@is",$user->display_name) ||
-                    preg_match("@".$pack->search."@is",$tag->tag)
-                )
-                {
-                    $note->user_name    = $users->user_name;
-                    $note->display_name = $users->display_name;
-                    $n = notes::noteObjectFromSQL($note);
-                    $n-tag_id = $tag->tag_id;
-                    $notes[] = $n;
-                }
-            }
-            */
-
-            //Search w/ SQL
             $sql_notes = dbconnection::queryArray("SELECT notes.*, users.user_name, users.display_name FROM notes LEFT JOIN users ON notes.user_id = users.user_id WHERE game_id = '{$pack->game_id}' AND (name LIKE '%{$pack->search}%' OR description LIKE '%{$pack->search}%' OR user_name LIKE '%{$pack->search}%' OR display_name LIKE '%{$pack->search}%')");
             for($i = 0; $i < count($sql_notes); $i++)
             {
@@ -337,15 +310,19 @@ class notes extends dbconnection
     public static function siftrSearch($pack)
     {
         if (isset($pack->auth)) {
-            $pack->auth->game_id    = $pack->game_id;
-            $pack->auth->permission = "read_write"  ;
-            $auth_user   =   users::authenticateUser      ($pack->auth);
-            $auth_editor = editors::authenticateGameEditor($pack->auth);
+            $auth = $pack->auth;
+            $auth->game_id    = $pack->game_id;
+            $auth->permission = "read_write"  ;
+            $auth_user   =   users::authenticateUser      ($auth);
+            $auth_editor = editors::authenticateGameEditor($auth);
         }
         else {
-            $auth_user   = false;
-            $auth_editor = false;
+            $auth_user     = false;
+            $auth_editor   = false;
+            $auth          = new stdClass();
+            $auth->game_id = $pack->game_id;
         }
+        if (!editors::authenticateGameAccess($auth)) return new return_package(6, NULL, "Failed Authentication");
 
         $game_id       = isset($pack->game_id)                                ? intval($pack->game_id)              : 0;
         $note_id       = isset($pack->note_id)                                ? intval($pack->note_id)              : 0;
@@ -538,15 +515,20 @@ class notes extends dbconnection
     public static function searchNotes($pack)
     {
         if (isset($pack->auth)) {
-            $pack->auth->game_id    = $pack->game_id;
-            $pack->auth->permission = "read_write"  ;
-            $auth_user   =   users::authenticateUser      ($pack->auth);
-            $auth_editor = editors::authenticateGameEditor($pack->auth);
+            $auth = $pack->auth;
+            $auth->game_id    = $pack->game_id;
+            $auth->permission = "read_write"  ;
+            $auth_user   =   users::authenticateUser      ($auth);
+            $auth_editor = editors::authenticateGameEditor($auth);
         }
         else {
-            $auth_user   = false;
-            $auth_editor = false;
+            $auth_user     = false;
+            $auth_editor   = false;
+            $auth          = new stdClass();
+            $auth->game_id = $pack->game_id;
         }
+        if (!isset($auth->password) && isset($pack->password)) $auth->password = $pack->password;
+        if (!editors::authenticateGameAccess($auth)) return new return_package(6, NULL, "Failed Authentication");
 
         $game_id = intval($pack->game_id);
         $search_terms = isset($pack->search_terms) ? $pack->search_terms : array();
@@ -716,6 +698,9 @@ class notes extends dbconnection
           ($pack->auth->user_id != $note->user_id || !users::authenticateUser($pack->auth)) &&
           !editors::authenticateGameEditor($pack->auth)
         ) return new return_package(6, NULL, "Failed Authentication");
+        if(!editors::authenticateGameAccess($pack->auth)) {
+            return new return_package(6, NULL, "Failed Authentication");
+        }
 
         // Cleanup related items.
         $noteComments = dbconnection::queryArray("SELECT * FROM note_comments WHERE note_id = '{$pack->note_id}'");
@@ -759,6 +744,7 @@ class notes extends dbconnection
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        // TODO authenticateGameAccess ?
 
         $existing = dbconnection::queryObject(
             "SELECT * FROM note_likes"
@@ -773,6 +759,7 @@ class notes extends dbconnection
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        // TODO authenticateGameAccess ?
 
         $existing = dbconnection::queryObject(
             "SELECT * FROM note_likes"
@@ -803,6 +790,7 @@ class notes extends dbconnection
     {
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        // TODO authenticateGameAccess ?
 
         dbconnection::query(
             "DELETE FROM note_likes"
