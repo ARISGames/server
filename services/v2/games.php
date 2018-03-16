@@ -309,7 +309,18 @@ class games extends dbconnection
         $game_id = intval($pack->game_id);
         $sql_game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = '{$game_id}' LIMIT 1");
         if(!$sql_game) return new return_package(2, NULL, "The game you've requested does not exist");
-        return new return_package(0,games::gameObjectFromSQL($sql_game));
+        $is_editor = false;
+        if(isset($pack->auth)) {
+            $pack->auth->game_id = $game_id;
+            if(editors::authenticateGameEditor($pack->auth)) {
+                $is_editor = true;
+            }
+        }
+        if ($is_editor) {
+            return new return_package(0,games::gameObjectFromSQLWithPassword($sql_game));
+        } else {
+            return new return_package(0,games::gameObjectFromSQL($sql_game));
+        }
     }
 
     public static function searchSiftrs($pack)
