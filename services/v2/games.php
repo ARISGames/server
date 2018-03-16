@@ -367,9 +367,18 @@ class games extends dbconnection
 
         $sql_games = dbconnection::queryArray($q);
         $games = array();
+        $auth = (isset($pack->auth) ? $pack->auth : new stdClass());
         for($i = 0; $i < count($sql_games); $i++) {
-            if ( $ob = games::gameObjectFromSQL($sql_games[$i]) ) {
-                $games[] = $ob;
+            $sql_game = $sql_games[$i];
+            $auth->game_id = $sql_game->game_id;
+            if (editors::authenticateGameEditor($auth)) {
+                if ( $ob = games::gameObjectFromSQLWithPassword($sql_game) ) {
+                    $games[] = $ob;
+                }
+            } else {
+                if ( $ob = games::gameObjectFromSQL($sql_game) ) {
+                    $games[] = $ob;
+                }
             }
         }
         return new return_package(0, $games);
