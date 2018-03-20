@@ -836,5 +836,13 @@ class notes extends dbconnection
 
         return new return_package(0, $notes);
     }
+
+    public static function siftrBounds($pack)
+    {
+        // TODO handle cases where it would be better to wrap around IDL
+        $game_id = intval($pack->game_id);
+        $q = "SELECT min(latitude) AS min_latitude, max(latitude) AS max_latitude, min(longitude) AS min_longitude, max(longitude) AS max_longitude FROM triggers WHERE game_id = {$game_id}";
+        return new return_package(0, dbconnection::queryObject($q));
+    }
 }
 ?>
