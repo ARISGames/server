@@ -45,7 +45,7 @@ class fields extends dbconnection
 
         $columns = array('game_id', 'field_type');
         $values = array($game_id, $pack->field_type);
-        foreach (array('label', 'required') as $column) {
+        foreach (array('label', 'required', 'sort_index') as $column) {
             if (isset($pack->$column)) {
                 $columns[] = $column;
                 $values[] = $pack->$column;
@@ -76,7 +76,7 @@ class fields extends dbconnection
 
         $columns = array();
         $values = array();
-        foreach (array('label', 'required') as $column) {
+        foreach (array('label', 'required', 'sort_index') as $column) {
             if (isset($pack->$column)) {
                 $columns[] = $column;
                 $values[] = $pack->$column;
@@ -132,7 +132,7 @@ class fields extends dbconnection
             return new return_package(1, NULL, "Field not found");
         }
 
-        $columns = array('field_id', 'game_id', '`option`');
+        $columns = array('field_id', 'game_id', '`option`', 'sort_index');
         $values = array($field_id, $game_id, $pack->option);
         $columns = implode(",", $columns);
         $quoted = array();
@@ -160,7 +160,7 @@ class fields extends dbconnection
 
         $columns = array();
         $values = array();
-        foreach (array('option') as $column) {
+        foreach (array('option', 'sort_index') as $column) {
             if (isset($pack->$column)) {
                 $columns[] = $column;
                 $values[] = $pack->$column;
