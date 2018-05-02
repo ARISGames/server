@@ -133,7 +133,8 @@ class fields extends dbconnection
         }
 
         $columns = array('field_id', 'game_id', '`option`', 'sort_index');
-        $values = array($field_id, $game_id, $pack->option);
+        $sort_index = intval($pack->sort_index) || 0;
+        $values = array($field_id, $game_id, $pack->option, $sort_index);
         $columns = implode(",", $columns);
         $quoted = array();
         foreach ($values as $value) {
