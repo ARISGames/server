@@ -91,6 +91,8 @@ class notes extends dbconnection
 
     public static function updateNote($pack)
     {
+        $pack->game_id = intval($pack->game_id);
+        $pack->note_id = intval($pack->note_id);
         $pack->auth->permission = "read_write";
         $pack->auth->game_id = $pack->game_id;
         if(
@@ -136,6 +138,20 @@ class notes extends dbconnection
             if($pack->tag_id != 0)
             {
                 dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$pack->game_id}', 'NOTE', '{$pack->note_id}', '{$pack->tag_id}', CURRENT_TIMESTAMP)");
+            }
+        }
+
+        // recreate Siftr form data
+        if (isset($pack->field_data) && is_array($pack->field_data)) {
+            dbconnection::query("DELETE FROM field_data WHERE note_id = '{$pack->note_id}'");
+            foreach ($pack->field_data as $data) {
+                dbconnection::queryInsert("INSERT INTO field_data (note_id, field_id, field_data, media_id, field_option_id) VALUES "
+                    . '(' . intval($pack->note_id)
+                    . ',' . intval($data->field_id)
+                    . ',' . ($data->field_data ? '"' . addslashes($data->field_data) . '"' : 'NULL')
+                    . ',' . intval($data->media_id)
+                    . ',' . intval($data->field_option_id)
+                    . ')');
             }
         }
 
