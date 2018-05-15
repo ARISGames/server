@@ -60,6 +60,13 @@ class fields extends dbconnection
 
         $field_id = dbconnection::queryInsert("INSERT INTO fields ($columns) VALUES ($quoted)");
 
+        if ($pack->field_type === 'SINGLESELECT' || $pack->field_type === 'MULTISELECT') {
+            $pack->field_id = $field_id;
+            $pack->sort_index = 0;
+            $pack->option = '';
+            fields::createFieldOption($pack);
+        }
+
         games::bumpGameVersion($pack);
         return new return_package(0); // could return field but siftr editor will just call getFieldsForGame
     }
