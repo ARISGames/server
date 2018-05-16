@@ -159,10 +159,11 @@ class games extends dbconnection
             }
         }
 
-        $user = users::getUser($pack->auth)->data;
-        if ($pack->is_siftr && intval($user->user_id) === 788) {
+        if ($pack->is_siftr && intval($pack->auth->user_id) === 788) {
             $subject = 'Your new Siftr: ' . $pack->name;
             $body = 'Copy to go here'; // TODO
+            $email = dbconnection::queryObject("SELECT email FROM users WHERE user_id = '{$pack->auth->user_id}'")->email;
+            return new return_package(6, NULL, json_encode(array($subject, $body, $email)));
             util::sendEmail($user->email, $subject, $body);
         }
 

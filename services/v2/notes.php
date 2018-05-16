@@ -668,13 +668,13 @@ class notes extends dbconnection
         $note_url .= '/#';
         $note_url .= $note->note_id;
 
-        $note_user = users::getUser($note)->data;
+        $email = dbconnection::queryObject("SELECT email FROM users WHERE user_id = '{$note->user_id}'")->email;
         $subject = 'Siftr note flagged';
         $body = 'The following note posted to Siftr has been flagged for possible inappropriate content:<br><br>';
         $body .= "<a href=\"$note_url\">$note_url</a><br><br>";
         $body .= 'The Siftr moderators have been notified and will make a decision to reinstate or remove the note.<br><br>';
         $body .= 'Regards,<br>Field Day Lab';
-        util::sendEmail($note_user->email, $subject, $body);
+        util::sendEmail($email, $subject, $body);
 
         $moderators = users::getUsersForGame($note)->data;
         $subject = 'Siftr note requires your attention';
@@ -683,7 +683,8 @@ class notes extends dbconnection
         $body .= 'Please login and review whether the note should be reinstated or removed.<br><br>';
         $body .= 'Regards,<br>Field Day Lab';
         foreach ($moderators as $moderator) {
-            util::sendEmail($moderator->email, $subject, $body);
+            $email = dbconnection::queryObject("SELECT email FROM users WHERE user_id = '{$moderator->user_id}'")->email;
+            util::sendEmail($email, $subject, $body);
         }
         util::sendEmail(Config::adminEmail, $subject, $body);
 
