@@ -163,7 +163,6 @@ class games extends dbconnection
             $subject = 'Your new Siftr: ' . $pack->name;
             $body = 'Copy to go here'; // TODO
             $email = dbconnection::queryObject("SELECT email FROM users WHERE user_id = '{$pack->auth->user_id}'")->email;
-            return new return_package(6, NULL, json_encode(array($subject, $body, $email)));
             util::sendEmail($user->email, $subject, $body);
         }
 
