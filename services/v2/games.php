@@ -1,6 +1,7 @@
 <?php
 require_once("dbconnection.php");
 require_once("users.php");
+require_once("util.php");
 require_once("editors.php");
 require_once("media.php");
 require_once("scenes.php");
@@ -156,6 +157,13 @@ class games extends dbconnection
                     }
                 }
             }
+        }
+
+        $user = users::getUser($pack->auth)->data;
+        if ($pack->is_siftr && intval($user->user_id) === 788) {
+            $subject = 'Your new Siftr: ' . $pack->name;
+            $body = 'Copy to go here'; // TODO
+            util::sendEmail($user->email, $subject, $body);
         }
 
         return games::getGame($pack); // TODO include password?
