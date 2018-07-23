@@ -31,6 +31,7 @@ class plaques extends dbconnection
             (isset($pack->event_package_id)    ? "event_package_id,"    : "").
             (isset($pack->back_button_enabled) ? "back_button_enabled," : "").
             (isset($pack->continue_function)   ? "continue_function,"   : "").
+            (isset($pack->full_screen)         ? "full_screen,"         : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
@@ -41,6 +42,7 @@ class plaques extends dbconnection
             (isset($pack->event_package_id)    ? "'".addslashes($pack->event_package_id)."',"    : "").
             (isset($pack->back_button_enabled) ? "'".addslashes($pack->back_button_enabled)."'," : "").
             (isset($pack->continue_function)   ? "'".addslashes($pack->continue_function)."',"   : "").
+            (isset($pack->full_screen)         ? "'".addslashes($pack->full_screen)."',"         : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -65,6 +67,7 @@ class plaques extends dbconnection
             (isset($pack->event_package_id)    ? "event_package_id    = '".addslashes($pack->event_package_id)."', "    : "").
             (isset($pack->back_button_enabled) ? "back_button_enabled = '".addslashes($pack->back_button_enabled)."', " : "").
             (isset($pack->continue_function)   ? "continue_function   = '".addslashes($pack->continue_function)."', "   : "").
+            (isset($pack->full_screen)         ? "full_screen         = '".addslashes($pack->full_screen)."', "         : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE plaque_id = '{$pack->plaque_id}'"
         );
@@ -86,6 +89,7 @@ class plaques extends dbconnection
         $plaque->event_package_id    = $sql_plaque->event_package_id;
         $plaque->back_button_enabled = $sql_plaque->back_button_enabled;
         $plaque->continue_function   = $sql_plaque->continue_function;
+        $plaque->full_screen         = $sql_plaque->full_screen;
 
         return $plaque;
     }
