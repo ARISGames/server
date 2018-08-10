@@ -1,0 +1,1 @@
+ALTER TABLE tags ADD color VARCHAR(255) DEFAULT '' AFTER sort_index;

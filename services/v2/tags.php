@@ -26,6 +26,7 @@ class tags extends dbconnection
             (isset($pack->visible)        ? "visible,"        : "").
             (isset($pack->curated)        ? "curated,"        : "").
             (isset($pack->sort_index)     ? "sort_index,"     : "").
+            (isset($pack->color)          ? "color,"          : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
@@ -34,6 +35,7 @@ class tags extends dbconnection
             (isset($pack->visible)        ? "'".addslashes($pack->visible)."',"        : "").
             (isset($pack->curated)        ? "'".addslashes($pack->curated)."',"        : "").
             (isset($pack->sort_index)     ? "'".addslashes($pack->sort_index)."',"     : "").
+            (isset($pack->color)          ? "'".addslashes($pack->color)."',"          : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -82,6 +84,7 @@ class tags extends dbconnection
             (isset($pack->visible)        ? "visible        = '".addslashes($pack->visible)."', "        : "").
             (isset($pack->curated)        ? "curated        = '".addslashes($pack->curated)."', "        : "").
             (isset($pack->sort_index)     ? "sort_index     = '".addslashes($pack->sort_index)."', "     : "").
+            (isset($pack->color)          ? "color          = '".addslashes($pack->color)."', "          : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE tag_id = '{$pack->tag_id}'"
         );
@@ -104,6 +107,7 @@ class tags extends dbconnection
         $tag->visible        = $sql_tag->visible;
         $tag->curated        = $sql_tag->curated;
         $tag->sort_index     = $sql_tag->sort_index;
+        $tag->color          = $sql_tag->color;
 
         return $tag;
     }
