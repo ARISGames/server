@@ -6,7 +6,8 @@ class colors extends dbconnection
 {
     public static function getColors($pack)
     {
-        $sql_colors = dbconnection::queryObject("SELECT * FROM colors WHERE colors_id = '{$pack->colors_id}' LIMIT 1");
+        $colors_id = intval($pack->colors_id);
+        $sql_colors = dbconnection::queryObject("SELECT * FROM colors WHERE colors_id = '{$colors_id}' LIMIT 1");
         if(!$sql_colors) return new return_package(2, NULL, "The colors you've requested do not exist");
         return new return_package(0, colors::colorsObjectFromSQL($sql_colors));
     }

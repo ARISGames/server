@@ -36,6 +36,8 @@ class games extends dbconnection
             (isset($pack->map_zoom_level)                               ? "map_zoom_level,"                               : "").
             (isset($pack->map_show_player)                              ? "map_show_player,"                              : "").
             (isset($pack->map_show_players)                             ? "map_show_players,"                             : "").
+            (isset($pack->map_show_labels)                              ? "map_show_labels,"                              : "").
+            (isset($pack->map_show_roads)                               ? "map_show_roads,"                               : "").
             (isset($pack->map_offsite_mode)                             ? "map_offsite_mode,"                             : "").
             (isset($pack->notebook_allow_comments)                      ? "notebook_allow_comments,"                      : "").
             (isset($pack->notebook_allow_likes)                         ? "notebook_allow_likes,"                         : "").
@@ -64,6 +66,7 @@ class games extends dbconnection
             (isset($pack->moderated)                                    ? "moderated,"                                    : "").
             (isset($pack->version)                                      ? "version,"                                      : "").
             (isset($pack->colors_id)                                    ? "colors_id,"                                    : "").
+            (isset($pack->theme_id)                                     ? "theme_id,"                                     : "").
             (isset($pack->prompt)                                       ? "prompt,"                                       : "").
             (isset($pack->password)                                     ? "password,"                                     : "").
             (isset($pack->staff_pick)                                   ? "staff_pick,"                                   : "").
@@ -80,6 +83,8 @@ class games extends dbconnection
             (isset($pack->map_zoom_level)                               ? "'".addslashes($pack->map_zoom_level)."',"                               : "").
             (isset($pack->map_show_player)                              ? "'".addslashes($pack->map_show_player)."',"                              : "").
             (isset($pack->map_show_players)                             ? "'".addslashes($pack->map_show_players)."',"                             : "").
+            (isset($pack->map_show_labels)                              ? "'".addslashes($pack->map_show_labels)."',"                              : "").
+            (isset($pack->map_show_roads)                               ? "'".addslashes($pack->map_show_roads)."',"                               : "").
             (isset($pack->map_offsite_mode)                             ? "'".addslashes($pack->map_offsite_mode)."',"                             : "").
             (isset($pack->notebook_allow_comments)                      ? "'".addslashes($pack->notebook_allow_comments)."',"                      : "").
             (isset($pack->notebook_allow_likes)                         ? "'".addslashes($pack->notebook_allow_likes)."',"                         : "").
@@ -108,6 +113,7 @@ class games extends dbconnection
             (isset($pack->moderated)                                    ? "'".addslashes($pack->moderated)."',"                                    : "").
             (isset($pack->version)                                      ? "'".addslashes($pack->version)."',"                                      : "").
             (isset($pack->colors_id)                                    ? "'".addslashes($pack->colors_id)."',"                                    : "").
+            (isset($pack->theme_id)                                     ? "'".addslashes($pack->theme_id)."',"                                     : "").
             (isset($pack->prompt)                                       ? "'".addslashes($pack->prompt)."',"                                       : "").
             (isset($pack->password)                                     ? "'".addslashes($pack->password)."',"                                     : "").
             (isset($pack->staff_pick)                                   ? "'".addslashes($pack->staff_pick)."',"                                   : "").
@@ -214,6 +220,8 @@ class games extends dbconnection
             (isset($pack->map_zoom_level)                               ? "map_zoom_level                               = '".addslashes($pack->map_zoom_level)."', "                               : "").
             (isset($pack->map_show_player)                              ? "map_show_player                              = '".intval($pack->map_show_player)."', "                                  : "").
             (isset($pack->map_show_players)                             ? "map_show_players                             = '".intval($pack->map_show_players)."', "                                 : "").
+            (isset($pack->map_show_labels)                              ? "map_show_labels                              = '".intval($pack->map_show_labels)."', "                                  : "").
+            (isset($pack->map_show_roads)                               ? "map_show_roads                               = '".intval($pack->map_show_roads)."', "                                   : "").
             (isset($pack->map_offsite_mode)                             ? "map_offsite_mode                             = '".intval($pack->map_offsite_mode)."', "                                 : "").
             (isset($pack->notebook_allow_comments)                      ? "notebook_allow_comments                      = '".intval($pack->notebook_allow_comments)."', "                          : "").
             (isset($pack->notebook_allow_likes)                         ? "notebook_allow_likes                         = '".intval($pack->notebook_allow_likes)."', "                             : "").
@@ -243,6 +251,7 @@ class games extends dbconnection
             (isset($pack->moderated)                                    ? "moderated                                    = '".intval($pack->moderated)."', "                                        : "").
             (isset($pack->version)                                      ? "version                                      = '".addslashes($pack->version)."', "                                      : "").
             (isset($pack->colors_id)                                    ? "colors_id                                    = '".addslashes($pack->colors_id)."', "                                    : "").
+            (isset($pack->theme_id)                                     ? "theme_id                                     = '".addslashes($pack->theme_id)."', "                                    : "").
             (isset($pack->prompt)                                       ? "prompt                                       = '".addslashes($pack->prompt)."', "                                       : "").
             (isset($pack->password)                                     ? "password                                     = '".addslashes($pack->password)."', "                                     : "").
             (isset($pack->staff_pick)                                   ? "staff_pick                                   = '".addslashes($pack->staff_pick)."', "                                   : "").
@@ -270,6 +279,8 @@ class games extends dbconnection
         $game->map_zoom_level                               = $sql_game->map_zoom_level;
         $game->map_show_player                              = $sql_game->map_show_player;
         $game->map_show_players                             = $sql_game->map_show_players;
+        $game->map_show_labels                              = $sql_game->map_show_labels;
+        $game->map_show_roads                               = $sql_game->map_show_roads;
         $game->map_offsite_mode                             = $sql_game->map_offsite_mode;
         $game->notebook_allow_comments                      = $sql_game->notebook_allow_comments;
         $game->notebook_allow_likes                         = $sql_game->notebook_allow_likes;
@@ -298,6 +309,7 @@ class games extends dbconnection
         $game->moderated                                    = $sql_game->moderated;
         $game->version                                      = $sql_game->version;
         $game->colors_id                                    = $sql_game->colors_id;
+        $game->theme_id                                     = $sql_game->theme_id;
         $game->prompt                                       = $sql_game->prompt;
         $game->staff_pick                                   = $sql_game->staff_pick;
         $game->created                                      = $sql_game->created;
