@@ -10,6 +10,7 @@ require_once("note_comments.php");
 require_once("instances.php");
 require_once("triggers.php");
 require_once("tags.php");
+require_once("fields.php");
 
 require_once("client.php");
 
@@ -841,6 +842,129 @@ class notes extends dbconnection
       util::rdel($fs_tmp_export_folder);
 
       return new return_package(0, Config::v2_gamedata_www_path."/".$tmp_export_folder.".zip");
+    }
+
+    public static function siftrCSV($pack)
+    {
+        $game_id = intval($pack->game_id);
+        if ($game_id <= 0) return new return_package(6, NULL, "Invalid game ID");
+
+        $form = fields::getFieldsForGame($pack)->data;
+
+        $query = "select
+          notes.note_id
+        , notes.user_id
+        , media.file_name as url
+        , notes.description
+        , notes.created
+        , notes.last_active
+        , notes.published
+        , triggers.latitude
+        , triggers.longitude";
+        foreach ($form['fields'] as $field) {
+            $id = $field->field_id;
+            switch ($field->field_type) {
+                case 'TEXT':
+                case 'TEXTAREA':
+                    $query .= "\n, field_".$id.".field_data as data_".$id;
+                    break;
+                case 'MEDIA':
+                    $query .= "\n, media_".$id.".file_name as url_".$id;
+                    break;
+                case 'SINGLESELECT':
+                case 'MULTISELECT':
+                    $query .= "\n, GROUP_CONCAT(field_".$id.".field_option_id) as option_".$id;
+                    break;
+            }
+        }
+        $query .= "\nfrom notes
+        left join instances on instances.object_type = 'NOTE' and instances.object_id = notes.note_id
+        left join triggers on triggers.instance_id = instances.instance_id";
+        foreach ($form['fields'] as $field) {
+            $id = $field->field_id;
+            $query .= "\nleft join field_data as field_".$id." on field_".$id.".note_id = notes.note_id and field_".$id.".field_id = ".$id;
+        }
+        $query .= "\nleft join media on media.media_id = notes.media_id";
+        foreach ($form['fields'] as $field) {
+            $id = $field->field_id;
+            if ($field->field_type === 'MEDIA') {
+                $query .= "\nleft join media as media_".$id." on media_".$id.".media_id = field_".$id.".media_id";
+            }
+        }
+        $query .= "\nwhere notes.game_id = ".$game_id."
+        group by notes.note_id";
+
+        $results = dbconnection::queryArray($query);
+
+        // replace option IDs with names
+        $options = [];
+        foreach ($form['options'] as $option) {
+            $options[intval($option->field_option_id)] = $option;
+        }
+        foreach ($form['fields'] as $field) {
+            $id = $field->field_id;
+            if ($field->field_type === 'SINGLESELECT' || $field->field_type === 'MULTISELECT') {
+                $k = 'option_' . $id;
+                foreach ($results as $note) {
+                    $note->$k = implode(',', array_map(function($option_id) use ($options) {
+                        $option_id = intval($option_id);
+                        if (isset($options[$option_id])) {
+                            return $options[$option_id]->option;
+                        } else {
+                            return $option_id;
+                        }
+                    }, explode(',', $note->$k)));
+                }
+            }
+        }
+
+        $keys = [];
+        foreach (['note_id', 'user_id', 'url', 'description', 'created', 'last_active', 'published', 'latitude', 'longitude'] as $k) {
+            $keys[] = [$k, $k];
+        }
+        foreach ($form['fields'] as $field) {
+            $id = $field->field_id;
+            $key = '';
+            switch ($field->field_type) {
+                case 'TEXT':
+                case 'TEXTAREA':
+                    $key = 'data_' . $id;
+                    break;
+                case 'MEDIA':
+                    $key = 'url_' . $id;
+                    break;
+                case 'SINGLESELECT':
+                case 'MULTISELECT':
+                    $key = 'option_' . $id;
+                    break;
+            }
+            $keys[] = [$key, $key . ' ' . $field->label];
+        }
+
+        $csvdata = [];
+        $header = [];
+        foreach ($keys as $k) {
+            $header[] = $k[1];
+        }
+        $csvdata[] = $header;
+        foreach ($results as $note) {
+            $row = [];
+            foreach ($keys as $k) {
+                $readkey = $k[0];
+                $row[] = $note->$readkey;
+            }
+            $csvdata[] = $row;
+        }
+
+        $fp = fopen('php://memory', 'r+b');
+        foreach ($csvdata as $csvrow) {
+            fputcsv($fp, $csvrow);
+        }
+        rewind($fp);
+        $data = rtrim(stream_get_contents($fp), "\n");
+        fclose($fp);
+
+        return new return_package(0, $data);
     }
 
     public static function allSiftrData($pack)
