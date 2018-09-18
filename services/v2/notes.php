@@ -854,7 +854,7 @@ class notes extends dbconnection
         $query = "select
           notes.note_id
         , notes.user_id
-        , media.file_name as url
+        , CONCAT(media.file_folder, '/', media.file_name) as url
         , notes.description
         , notes.created
         , notes.last_active
@@ -869,7 +869,7 @@ class notes extends dbconnection
                     $query .= "\n, field_".$id.".field_data as data_".$id;
                     break;
                 case 'MEDIA':
-                    $query .= "\n, media_".$id.".file_name as url_".$id;
+                    $query .= "\n, CONCAT(media_".$id.".file_folder, '/', media_".$id.".file_name) as url_".$id;
                     break;
                 case 'SINGLESELECT':
                 case 'MULTISELECT':
@@ -895,6 +895,22 @@ class notes extends dbconnection
         group by notes.note_id";
 
         $results = dbconnection::queryArray($query);
+
+        // finish building media URLs
+        foreach ($results as $note) {
+            if ($note->url) {
+                $note->url = Config::v2_gamedata_www_path."/".$note->url;
+            }
+            foreach ($form['fields'] as $field) {
+                $id = $field->field_id;
+                if ($field->field_type === 'MEDIA') {
+                    $k = 'url_' . $id;
+                    if ($note->$k) {
+                        $note->$k = Config::v2_gamedata_www_path."/".$note->$k;
+                    }
+                }
+            }
+        }
 
         // replace option IDs with names
         $options = [];
@@ -961,10 +977,10 @@ class notes extends dbconnection
             fputcsv($fp, $csvrow);
         }
         rewind($fp);
-        $data = rtrim(stream_get_contents($fp), "\n");
+        $csvstr = rtrim(stream_get_contents($fp), "\n");
         fclose($fp);
 
-        return new return_package(0, $data);
+        return new return_package(0, $csvstr);
     }
 
     public static function allSiftrData($pack)
