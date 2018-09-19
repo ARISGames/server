@@ -853,12 +853,11 @@ class notes extends dbconnection
 
         $query = "select
           notes.note_id
-        , notes.user_id
+        , users.user_name
+        , users.display_name
         , CONCAT(media.file_folder, '/', media.file_name) as url
         , notes.description
         , notes.created
-        , notes.last_active
-        , notes.published
         , triggers.latitude
         , triggers.longitude";
         foreach ($form['fields'] as $field) {
@@ -878,6 +877,7 @@ class notes extends dbconnection
             }
         }
         $query .= "\nfrom notes
+        left join users on users.user_id = notes.note_id
         left join instances on instances.object_type = 'NOTE' and instances.object_id = notes.note_id
         left join triggers on triggers.instance_id = instances.instance_id";
         foreach ($form['fields'] as $field) {
@@ -892,7 +892,22 @@ class notes extends dbconnection
             }
         }
         $query .= "\nwhere notes.game_id = ".$game_id."
-        group by notes.note_id";
+        group by notes.note_id
+        , triggers.latitude
+        , triggers.longitude";
+        foreach ($form['fields'] as $field) {
+            $id = $field->field_id;
+            switch ($field->field_type) {
+                case 'TEXT':
+                case 'TEXTAREA':
+                    $query .= "\n, field_".$id.".field_data";
+                    break;
+                case 'MEDIA':
+                    $query .= "\n, media_".$id.".file_folder";
+                    $query .= "\n, media_".$id.".file_name";
+                    break;
+            }
+        }
 
         $results = dbconnection::queryArray($query);
 
@@ -935,7 +950,7 @@ class notes extends dbconnection
         }
 
         $keys = [];
-        foreach (['note_id', 'user_id', 'url', 'description', 'created', 'last_active', 'published', 'latitude', 'longitude'] as $k) {
+        foreach (['note_id', 'user_name', 'display_name', 'url', 'description', 'created', 'latitude', 'longitude'] as $k) {
             $keys[] = [$k, $k];
         }
         foreach ($form['fields'] as $field) {
