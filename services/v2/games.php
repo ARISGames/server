@@ -167,9 +167,77 @@ class games extends dbconnection
 
         if ($pack->is_siftr && intval($pack->auth->user_id) === 788) {
             $subject = 'Your new Siftr: ' . $pack->name;
-            $body = 'Copy to go here'; // TODO
+
+            $identifier = ($pack->siftr_url ? $pack->siftr_url : $pack->game_id);
+
+            $textEmail = "Hello,
+
+Look at that! You created a Siftr called \"".$pack->name."\". This message is to make sure you have everything you need to find and share your Siftr.
+
+First of all, here's the link to your Siftr:
+https://siftr.org/".$identifier."
+You can share the link with your audience to give them access.
+
+Just a few more steps and you'll be ready to start posting!
+
+For users who have already downloaded the Siftr app:
+1. Click on the link or type the URL into your browser and \"".$pack->name."\" will automatically open in the Siftr app.
+2. If the Siftr is private, type in \"".$identifier."\" to get access.
+3. You will be prompted to sign up or log in.
+
+For users who have not downloaded the Siftr app:
+1. Click on the link or type the URL into your browser and \"".$pack->name."\" will open on the Siftr website in your browser.
+2. You will be prompted to download the Siftr app (iOS and Android).
+3. In the app, type in \"".$identifier."\" to get access to this Siftr.
+4. You will be prompted to sign up or log in.
+
+And that's it! From now on, you can easily access \"".$pack->name."\" on your Siftr app home screen. Just follow the Siftr by opening the menu (the colored dots icon in the top-right) and selecting \"Follow this Siftr\".
+
+Email us about any problems you run into. We're excited to hear your feedback, and your problems will make it onto our fix list.
+
+Have fun,
+
+David Gagnon
+Field Day Lab";
+
+            $htmlEmail = "<p>Hello,</p>
+
+<p>Look at that! You created a Siftr called \"<em>".$pack->name."</em>\". This message is to make sure you have everything you need to find and share your Siftr.</p>
+
+<p>First of all, here's the link to your Siftr:<br>
+<a href=\"https://siftr.org/".$identifier."\">https://siftr.org/".$identifier."</a><br>
+You can share the link with your audience to give them access.</p>
+
+<p>Just a few more steps and you'll be ready to start posting!</p>
+
+<p>For users who have already downloaded the Siftr app:</p>
+<ol>
+<li>Click on the link or type the URL into your browser and \"<em>".$pack->name."</em>\" will automatically open in the Siftr app.</li>
+<li>If the Siftr is private, type in \"<em>".$identifier."</em>\" to get access.</li>
+<li>You will be prompted to sign up or log in.</li>
+</ol>
+
+<p>For users who have not downloaded the Siftr app:</p>
+<ol>
+<li>Click on the link or type the URL into your browser and \"<em>".$pack->name."</em>\" will open on the Siftr website in your browser.</li>
+<li>You will be prompted to download the Siftr app (iOS and Android).</li>
+<li>In the app, type in \"<em>".$identifier."</em>\" to get access to this Siftr.</li>
+<li>You will be prompted to sign up or log in.</li>
+</ol>
+
+<p>And that's it! From now on, you can easily access \"<em>".$pack->name."</em>\" on your Siftr app home screen. Just follow the Siftr by opening the menu (the colored dots icon in the top-right) and selecting \"<em>Follow this Siftr</em>\".</p>
+
+<p><img src=\"https://arisgames.org/hosted/siftr-follow.jpg\"></p>
+
+<p>Email us about any problems you run into. We're excited to hear your feedback, and your problems will make it onto our fix list.</p>
+
+<p>Have fun,</p>
+
+<p>David Gagnon<br>
+Field Day Lab</p>";
+
             $email = dbconnection::queryObject("SELECT email FROM users WHERE user_id = '{$pack->auth->user_id}'")->email;
-            util::sendEmail($email, $subject, $body);
+            util::sendEmail($email, $subject, $textEmail, $htmlEmail);
         }
 
         return games::getGame($pack); // TODO include password?

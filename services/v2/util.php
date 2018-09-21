@@ -17,9 +17,10 @@ class util
         fclose($errorLogFile);
     }
 
-    public static function sendEmail($to, $subject, $body)
+    public static function sendEmail($to, $subject, $body, $bodyHTML = null)
     {
       if(empty($to)) return false;
+      if(!$bodyHTML) $bodyHTML = $body;
 
       $c = curl_init();
       curl_setopt($c, CURLOPT_USERPWD, 'api:'.Config::mailgun_key);
@@ -32,7 +33,7 @@ class util
               'to'      => $to,
               'subject' => $subject,
               'text'    => $body,
-              'html'    => $body)
+              'html'    => $bodyHTML)
       );
 
       $output = curl_exec($c);
