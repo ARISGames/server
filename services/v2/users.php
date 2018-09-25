@@ -142,6 +142,13 @@ class users extends dbconnection
             return new return_package(1, NULL, "This user has been banned");
         }
 
+        if(isset($pack->siftr_version)) {
+            $siftr_version = intval($pack->siftr_version);
+            if($siftr_version !== 0 && $siftr_version < 20180925) {
+                return new return_package(1, NULL, "This Siftr version is no longer supported. Please update the app.");
+            }
+        }
+
         $ret = new stdClass();
         $ret->user_id      = $user->user_id;
         $ret->user_name    = $user->user_name;
