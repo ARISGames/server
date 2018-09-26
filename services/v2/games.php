@@ -505,7 +505,8 @@ Field Day Lab</p>";
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        $sql_games = dbconnection::queryArray("SELECT * FROM user_games LEFT JOIN games ON user_games.game_id = games.game_id WHERE user_games.user_id = '{$pack->auth->user_id}' AND games.game_id IS NOT NULL");
+        $user_id = intval($pack->auth->user_id);
+        $sql_games = dbconnection::queryArray("SELECT games.* FROM user_games LEFT JOIN games ON user_games.game_id = games.game_id LEFT JOIN notes ON games.game_id = notes.game_id AND notes.user_id = '{$user_id}' LEFT JOIN user_log ON user_log.user_id = '{$user_id}' AND games.game_id = user_log.game_id AND user_log.event_type = 'MOVE' WHERE user_games.user_id = '{$user_id}' AND games.game_id IS NOT NULL GROUP BY games.game_id ORDER BY GREATEST(IFNULL(notes.last_active, FROM_UNIXTIME(0)), IFNULL(user_log.created, FROM_UNIXTIME(0))) DESC");
         $games = array();
         for($i = 0; $i < count($sql_games); $i++)
             if($ob = games::gameObjectFromSQLWithPassword($sql_games[$i])) $games[] = $ob;
@@ -518,7 +519,8 @@ Field Day Lab</p>";
         $pack->auth->permission = "read_write";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        $sql_games = dbconnection::queryArray("SELECT * FROM game_follows LEFT JOIN games ON game_follows.game_id = games.game_id WHERE game_follows.user_id = '{$pack->auth->user_id}' AND games.game_id IS NOT NULL");
+        $user_id = intval($pack->auth->user_id);
+        $sql_games = dbconnection::queryArray("SELECT games.* FROM game_follows LEFT JOIN games ON game_follows.game_id = games.game_id LEFT JOIN notes ON games.game_id = notes.game_id AND notes.user_id = '{$user_id}' LEFT JOIN user_log ON user_log.user_id = '{$user_id}' AND games.game_id = user_log.game_id AND user_log.event_type = 'MOVE' WHERE game_follows.user_id = '{$user_id}' AND games.game_id IS NOT NULL GROUP BY games.game_id ORDER BY GREATEST(IFNULL(notes.last_active, FROM_UNIXTIME(0)), IFNULL(user_log.created, FROM_UNIXTIME(0))) DESC");
         $games = array();
         for($i = 0; $i < count($sql_games); $i++)
             if($ob = games::gameObjectFromSQL($sql_games[$i])) $games[] = $ob;
