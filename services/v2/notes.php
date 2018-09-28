@@ -67,9 +67,47 @@ class notes extends dbconnection
             $trigger_id  = dbconnection::queryInsert("INSERT INTO triggers (game_id, instance_id, scene_id, type, latitude, longitude, infinite_distance, created) VALUES ( '{$pack->game_id}', '{$instance_id}', '{$scene_id}', 'LOCATION', '{$pack->trigger->latitude}', '{$pack->trigger->longitude}', '1', CURRENT_TIMESTAMP);");
         }
 
+        $api = (isset($pack->api) ? intval($pack->api) : 0);
+
+        $field_id_preview = intval($game->field_id_preview);
+        if (isset($pack->media_id) && $field_id_preview > 0 && $api < 2) {
+            // insert media_id as field_data coming from legacy siftr client
+            dbconnection::queryInsert("INSERT INTO field_data (note_id, field_id, field_data, media_id, field_option_id) VALUES "
+                . '(' . intval($pack->note_id)
+                . ',' . intval($field_id_preview)
+                . ',' . 'NULL'
+                . ',' . intval($pack->media_id)
+                . ',' . 0
+                . ')');
+        }
+
+        $field_id_caption = intval($game->field_id_caption);
+        if (isset($pack->description) && $field_id_caption > 0 && $api < 2) {
+            // insert description as field_data coming from legacy siftr client
+            dbconnection::queryInsert("INSERT INTO field_data (note_id, field_id, field_data, media_id, field_option_id) VALUES "
+                . '(' . intval($pack->note_id)
+                . ',' . intval($field_id_caption)
+                . ',' . addslashes($pack->description)
+                . ',' . 0
+                . ',' . 0
+                . ')');
+        }
+
         //allow for 'tag_id' in API, but really just use object_tags
         if($pack->tag_id) {
-            dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$pack->game_id}', 'NOTE', '{$pack->note_id}', '{$pack->tag_id}', CURRENT_TIMESTAMP)");
+            $field_id_pin = intval($game->field_id_pin);
+            if ($field_id_pin > 0 && $api < 2) {
+                // insert category as field_data coming from legacy siftr client
+                dbconnection::queryInsert("INSERT INTO field_data (note_id, field_id, field_data, media_id, field_option_id) VALUES "
+                    . '(' . intval($pack->note_id)
+                    . ',' . intval($field_id_pin)
+                    . ',' . 'NULL'
+                    . ',' . 0
+                    . ',' . (intval($pack->tag_id) - 10000000)
+                    . ')');
+            } else {
+                dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$pack->game_id}', 'NOTE', '{$pack->note_id}', '{$pack->tag_id}', CURRENT_TIMESTAMP)");
+            }
         }
 
         // create Siftr form data
@@ -132,13 +170,57 @@ class notes extends dbconnection
             "WHERE note_id = '{$pack->note_id}'"
         );
 
+        $game = games::getGame($pack)->data;
+        $api = (isset($pack->api) ? intval($pack->api) : 0);
+
+        $field_id_preview = intval($game->field_id_preview);
+        if (isset($pack->media_id) && $field_id_preview > 0 && $api < 2) {
+            // insert media_id as field_data coming from legacy siftr client
+            dbconnection::query("DELETE FROM field_data WHERE note_id = '{$pack->note_id}' AND field_id = '{$field_id_preview}'");
+            dbconnection::queryInsert("INSERT INTO field_data (note_id, field_id, field_data, media_id, field_option_id) VALUES "
+                . '(' . intval($pack->note_id)
+                . ',' . intval($field_id_preview)
+                . ',' . 'NULL'
+                . ',' . intval($pack->media_id)
+                . ',' . 0
+                . ')');
+        }
+
+        $field_id_caption = intval($game->field_id_caption);
+        if (isset($pack->description) && $field_id_caption > 0 && $api < 2) {
+            // insert description as field_data coming from legacy siftr client
+            dbconnection::query("DELETE FROM field_data WHERE note_id = '{$pack->note_id}' AND field_id = '{$field_id_caption}'");
+            dbconnection::queryInsert("INSERT INTO field_data (note_id, field_id, field_data, media_id, field_option_id) VALUES "
+                . '(' . intval($pack->note_id)
+                . ',' . intval($field_id_caption)
+                . ',' . addslashes($pack->description)
+                . ',' . 0
+                . ',' . 0
+                . ')');
+        }
+
+
         //allow for 'tag_id' in API, but really just use object_tags
         if(isset($pack->tag_id))
         {
-            dbconnection::query("DELETE FROM object_tags WHERE game_id = '{$pack->game_id}' AND object_type = 'NOTE' AND object_id = '{$pack->note_id}'");
-            if($pack->tag_id != 0)
-            {
-                dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$pack->game_id}', 'NOTE', '{$pack->note_id}', '{$pack->tag_id}', CURRENT_TIMESTAMP)");
+            $field_id_pin = intval($game->field_id_pin);
+            if ($field_id_pin > 0 && $api < 2) {
+                // insert category as field_data coming from legacy siftr client
+                dbconnection::query("DELETE FROM field_data WHERE note_id = '{$pack->note_id}' AND field_id = '{$field_id_pin}'");
+                dbconnection::queryInsert("INSERT INTO field_data (note_id, field_id, field_data, media_id, field_option_id) VALUES "
+                    . '(' . intval($pack->note_id)
+                    . ',' . intval($field_id_pin)
+                    . ',' . 'NULL'
+                    . ',' . 0
+                    . ',' . (intval($pack->tag_id) - 10000000)
+                    . ')');
+
+            } else {
+                dbconnection::query("DELETE FROM object_tags WHERE game_id = '{$pack->game_id}' AND object_type = 'NOTE' AND object_id = '{$pack->note_id}'");
+                if($pack->tag_id != 0)
+                {
+                    dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$pack->game_id}', 'NOTE', '{$pack->note_id}', '{$pack->tag_id}', CURRENT_TIMESTAMP)");
+                }
             }
         }
 

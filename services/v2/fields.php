@@ -14,6 +14,27 @@ class fields extends dbconnection
         $fields = dbconnection::queryArray("SELECT * FROM fields WHERE game_id = $game_id");
         $options = dbconnection::queryArray("SELECT * FROM field_options WHERE game_id = $game_id");
 
+        // Hide legacy media/pin/caption fields on old siftr clients
+        $api = (isset($pack->api) ? intval($pack->api) : 0);
+        if ($api < 2) {
+            $game = dbconnection::queryObject("SELECT * FROM games WHERE game_id = $game_id");
+            if ($game) {
+                $hideFields = array(
+                    intval($game->field_id_preview),
+                    intval($game->field_id_pin),
+                    intval($game->field_id_caption)
+                );
+
+                $fieldsFiltered = array();
+                foreach ($fields as $field) {
+                    if (!in_array(intval($field->field_id), $hideFields)) {
+                        $fieldsFiltered[] = $field;
+                    }
+                }
+                $fields = $fieldsFiltered;
+            }
+        }
+
         return new return_package(0, array(
             'fields' => $fields,
             'options' => $options,
@@ -139,9 +160,9 @@ class fields extends dbconnection
             return new return_package(1, NULL, "Field not found");
         }
 
-        $columns = array('field_id', 'game_id', '`option`', 'sort_index');
+        $columns = array('field_id', 'game_id', '`option`', 'sort_index', 'color');
         $sort_index = intval($pack->sort_index) || 0;
-        $values = array($field_id, $game_id, $pack->option, $sort_index);
+        $values = array($field_id, $game_id, $pack->option, $sort_index, $pack->color);
         $columns = implode(",", $columns);
         $quoted = array();
         foreach ($values as $value) {
@@ -168,7 +189,7 @@ class fields extends dbconnection
 
         $columns = array();
         $values = array();
-        foreach (array('option', 'sort_index') as $column) {
+        foreach (array('option', 'sort_index', 'color') as $column) {
             if (isset($pack->$column)) {
                 $columns[] = $column;
                 $values[] = $pack->$column;

@@ -140,10 +140,33 @@ class tags extends dbconnection
 
     public static function getTagsForGame($pack)
     {
-        $sql_tags = dbconnection::queryArray("SELECT * FROM tags WHERE game_id = '{$pack->game_id}'");
+        $game_id = intval($pack->game_id);
+        $sql_tags = dbconnection::queryArray("SELECT * FROM tags WHERE game_id = '{$game_id}'");
         $tags = array();
-        for($i = 0; $i < count($sql_tags); $i++)
+        for($i = 0; $i < count($sql_tags); $i++) {
             if($ob = tags::tagObjectFromSQL($sql_tags[$i])) $tags[] = $ob;
+        }
+
+        // Include field options for the "pin" field of a siftr for legacy clients
+        $api = (isset($pack->api) ? intval($pack->api) : 0);
+        if ($api < 2) {
+            $sql_options = dbconnection::queryArray("SELECT field_options.* FROM games JOIN field_options ON games.field_id_pin = field_options.field_id WHERE games.game_id = '{$game_id}'");
+            for($i = 0; $i < count($sql_options); $i++) {
+                $sql_option = $sql_options[$i];
+                if ($sql_option) {
+                    $tag = new stdClass();
+                    $tag->tag_id     = $sql_option->field_option_id + 10000000;
+                    $tag->game_id    = $sql_option->game_id;
+                    $tag->tag        = $sql_option->option;
+                    $tag->media_id   = 0;
+                    $tag->visible    = 1;
+                    $tag->curated    = 0;
+                    $tag->sort_index = $sql_option->sort_index;
+                    $tag->color      = $sql_option->color;
+                    $tags[] = $tag;
+                }
+            }
+        }
 
         return new return_package(0,$tags);
 
