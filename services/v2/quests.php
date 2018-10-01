@@ -170,7 +170,7 @@ class quests extends dbconnection
 
         dbconnection::query("DELETE FROM quests WHERE quest_id = '{$pack->quest_id}' LIMIT 1");
         //cleanup
-        $reqAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement = 'PLAYER_HAS_COMPLETED_QUEST' AND content_id = '{$pack->quest_id}'");
+        $reqAtoms = dbconnection::queryArray("SELECT * FROM requirement_atoms WHERE requirement IN ('PLAYER_HAS_COMPLETED_QUEST', 'PLAYER_HAS_QUEST_STARS') AND content_id = '{$pack->quest_id}'");
         for($i = 0; $i < count($reqAtoms); $i++)
         {
             $pack->requirement_atom_id = $reqAtoms[$i]->requirement_atom_id;

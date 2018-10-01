@@ -535,6 +535,7 @@ class requirements extends dbconnection
             case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_AUDIO':  return $atom->bool_operator == requirements::playerUploadedTypeNear($atom,"AUDIO");
             case 'PLAYER_HAS_UPLOADED_MEDIA_ITEM_VIDEO':  return $atom->bool_operator == requirements::playerUploadedTypeNear($atom,"VIDEO");
             case 'PLAYER_HAS_COMPLETED_QUEST':            return $atom->bool_operator == requirements::playerCompletedQuest($atom);
+            case 'PLAYER_HAS_QUEST_STARS':                return $atom->bool_operator == requirements::playerHasQuestStars($atom);
             case 'PLAYER_HAS_RECEIVED_INCOMING_WEB_HOOK': return $atom->bool_operator == requirements::playerReceivedWebHook($atom);
             case 'PLAYER_HAS_NOTE':                       return $atom->bool_operator == requirements::playerHasNote($atom);
             case 'PLAYER_HAS_NOTE_WITH_TAG':              return $atom->bool_operator == requirements::playerHasNoteWithTag($atom);
@@ -643,6 +644,18 @@ class requirements extends dbconnection
     {
         $entry = dbconnection::queryObject("SELECT * FROM user_log WHERE game_id = '{$pack->game_id}' AND user_id = '{$pack->user_id}' AND event_type = 'COMPLETE_QUEST' AND content_id = '{$pack->content_id}' AND deleted = 0");
         return $entry ? true : false;
+    }
+
+    private static function playerHasQuestStars($pack) {
+        $game_id = intval($pack->game_id);
+        $user_id = intval($pack->user_id);
+        $compound_id = intval($pack->content_id);
+        $results = dbconnection::queryArray("SELECT quests.stars FROM quests JOIN user_log ON user_log.content_id = quests.quest_id WHERE quests.game_id = '{$game_id}' AND quests.parent_quest_id = '{$compound_id}' AND user_log.user_id = '{$user_id}' AND user_log.game_id = '{$game_id}' AND user_log.event_type = 'COMPLETE_QUEST' AND user_log.deleted = 0 GROUP BY quests.quest_id");
+        $stars = 0;
+        foreach ($results as $row) {
+            $stars += $row->stars;
+        }
+        return $stars >= intval($pack->qty);
     }
 
     // There are no web hooks in v2
