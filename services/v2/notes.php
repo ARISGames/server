@@ -69,7 +69,7 @@ class notes extends dbconnection
 
         $api = (isset($pack->api) ? intval($pack->api) : 0);
 
-        $field_id_preview = intval($game->field_id_preview);
+        $field_id_preview = intval($game->data->field_id_preview);
         if (isset($pack->media_id) && $field_id_preview > 0 && $api < 2) {
             // insert media_id as field_data coming from legacy siftr client
             dbconnection::queryInsert("INSERT INTO field_data (note_id, field_id, field_data, media_id, field_option_id) VALUES "
@@ -81,13 +81,13 @@ class notes extends dbconnection
                 . ')');
         }
 
-        $field_id_caption = intval($game->field_id_caption);
+        $field_id_caption = intval($game->data->field_id_caption);
         if (isset($pack->description) && $field_id_caption > 0 && $api < 2) {
             // insert description as field_data coming from legacy siftr client
             dbconnection::queryInsert("INSERT INTO field_data (note_id, field_id, field_data, media_id, field_option_id) VALUES "
                 . '(' . intval($pack->note_id)
                 . ',' . intval($field_id_caption)
-                . ',' . addslashes($pack->description)
+                . ',' . '"' . addslashes($pack->description) . '"'
                 . ',' . 0
                 . ',' . 0
                 . ')');
@@ -95,7 +95,7 @@ class notes extends dbconnection
 
         //allow for 'tag_id' in API, but really just use object_tags
         if($pack->tag_id) {
-            $field_id_pin = intval($game->field_id_pin);
+            $field_id_pin = intval($game->data->field_id_pin);
             if ($field_id_pin > 0 && $api < 2) {
                 // insert category as field_data coming from legacy siftr client
                 dbconnection::queryInsert("INSERT INTO field_data (note_id, field_id, field_data, media_id, field_option_id) VALUES "
