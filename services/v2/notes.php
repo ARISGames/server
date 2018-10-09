@@ -173,6 +173,28 @@ class notes extends dbconnection
         $game = games::getGame($pack)->data;
         $api = (isset($pack->api) ? intval($pack->api) : 0);
 
+        // recreate Siftr form data
+        if (isset($pack->field_data) && is_array($pack->field_data)) {
+            $q = "DELETE FROM field_data WHERE note_id = '{$pack->note_id}'";
+            if ($api < 2) {
+                foreach (array($field_id_preview, $field_id_caption, $field_id_pin) as $special) {
+                    if ($special > 0) {
+                        $q .= " AND field_id != {$special}";
+                    }
+                }
+            }
+            dbconnection::query($q);
+            foreach ($pack->field_data as $data) {
+                dbconnection::queryInsert("INSERT INTO field_data (note_id, field_id, field_data, media_id, field_option_id) VALUES "
+                    . '(' . intval($pack->note_id)
+                    . ',' . intval($data->field_id)
+                    . ',' . ($data->field_data ? '"' . addslashes($data->field_data) . '"' : 'NULL')
+                    . ',' . intval($data->media_id)
+                    . ',' . intval($data->field_option_id)
+                    . ')');
+            }
+        }
+
         $field_id_preview = intval($game->field_id_preview);
         if (isset($pack->media_id) && $field_id_preview > 0 && $api < 2) {
             // insert media_id as field_data coming from legacy siftr client
@@ -193,7 +215,7 @@ class notes extends dbconnection
             dbconnection::queryInsert("INSERT INTO field_data (note_id, field_id, field_data, media_id, field_option_id) VALUES "
                 . '(' . intval($pack->note_id)
                 . ',' . intval($field_id_caption)
-                . ',' . addslashes($pack->description)
+                . ',' . '"' . addslashes($pack->description) . '"'
                 . ',' . 0
                 . ',' . 0
                 . ')');
@@ -221,20 +243,6 @@ class notes extends dbconnection
                 {
                     dbconnection::queryInsert("INSERT INTO object_tags (game_id, object_type, object_id, tag_id, created) VALUES ('{$pack->game_id}', 'NOTE', '{$pack->note_id}', '{$pack->tag_id}', CURRENT_TIMESTAMP)");
                 }
-            }
-        }
-
-        // recreate Siftr form data
-        if (isset($pack->field_data) && is_array($pack->field_data)) {
-            dbconnection::query("DELETE FROM field_data WHERE note_id = '{$pack->note_id}'");
-            foreach ($pack->field_data as $data) {
-                dbconnection::queryInsert("INSERT INTO field_data (note_id, field_id, field_data, media_id, field_option_id) VALUES "
-                    . '(' . intval($pack->note_id)
-                    . ',' . intval($data->field_id)
-                    . ',' . ($data->field_data ? '"' . addslashes($data->field_data) . '"' : 'NULL')
-                    . ',' . intval($data->media_id)
-                    . ',' . intval($data->field_option_id)
-                    . ')');
             }
         }
 
@@ -543,7 +551,7 @@ class notes extends dbconnection
         }
 
         // Order
-        $q .= " GROUP BY notes.note_id, tag_id, triggers.latitude, triggers.longitude";
+        $q .= " GROUP BY notes.note_id, tag_id, triggers.latitude, triggers.longitude, media.media_id, caption";
         if ($order === 'recent') {
             $q .= " ORDER BY notes.note_id DESC";
         } else if ($order === 'popular') {
@@ -561,11 +569,8 @@ class notes extends dbconnection
         }
 
         $notes = dbconnection::queryArray($q);
-        if ($notes === false) {
-            $notes = array(); // ugh
-        }
         if (!is_array($notes)) {
-            return new return_package(1, NULL, "Error when running SQL query");
+            return new return_package(1, NULL, 'There was an internal error with your search.');
         }
         foreach ($notes as $note) {
             $note->description = $note->caption;
@@ -763,7 +768,7 @@ class notes extends dbconnection
             }
         }
 
-        $lines[] = "GROUP BY notes.note_id, tag_id, triggers.latitude, triggers.longitude";
+        $lines[] = "GROUP BY notes.note_id, tag_id, triggers.latitude, triggers.longitude, $pin_name_select, media.media_id, caption";
         if ($order_by === 'popular') {
             $lines[] = "ORDER BY (COUNT(all_likes.note_id) + COUNT(note_comments.note_id)) DESC";
         }
@@ -778,6 +783,9 @@ class notes extends dbconnection
         $query = implode(' ', $lines);
         $sql_notes = dbconnection::queryArray($query);
         $notes = array();
+        if ($sql_notes === false) {
+            return new return_package(1, NULL, 'There was an internal error with your search.');
+        }
         for ($i = 0; $i < count($sql_notes); $i++) {
             $sql_note = $sql_notes[$i];
             $sql_note->description = $sql_note->caption;
