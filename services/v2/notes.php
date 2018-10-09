@@ -441,20 +441,47 @@ class notes extends dbconnection
         $max_time      = isset($pack->max_time) && is_string($pack->max_time) ? $pack->max_time                     : null;
         $map_data      = isset($pack->map_data)                               ? !!($pack->map_data)                 : true;
 
+        $game = games::getGame($pack)->data;
+        $api = (isset($pack->api) ? intval($pack->api) : 0);
+        $field_id_preview = intval($game->field_id_preview);
+        $field_id_caption = intval($game->field_id_caption);
+        $field_id_pin = intval($game->field_id_pin);
+        if ($field_id_preview > 0 && $api < 2) {
+            $preview_join = "LEFT JOIN field_data AS field_preview ON field_preview.field_id = {$field_id_preview} AND field_preview.note_id = notes.note_id LEFT JOIN media ON media.media_id = field_preview.media_id";
+        } else {
+            $preview_join = "LEFT JOIN media ON media.media_id = notes.media_id";
+        }
+        if ($field_id_caption > 0 && $api < 2) {
+            $caption_select = "field_caption.field_data AS caption";
+            $caption_join = "LEFT JOIN field_data AS field_caption ON field_caption.field_id = {$field_id_caption} AND field_caption.note_id = notes.note_id";
+        } else {
+            $caption_select = "notes.description AS caption";
+            $caption_join = "";
+        }
+        if ($field_id_pin > 0 && $api < 2) {
+            $pin_select = "(field_pin.field_option_id + 10000000) AS tag_id";
+            $pin_join = "LEFT JOIN field_data AS field_pin ON field_pin.field_id = {$field_id_pin} AND field_pin.note_id = notes.note_id";
+        } else {
+            $pin_select = "object_tags.tag_id";
+            $pin_join = "LEFT JOIN object_tags ON object_tags.game_id = notes.game_id AND object_tags.object_type = 'NOTE' AND notes.note_id = object_tags.object_id";
+        }
+
         $q = "SELECT notes.*
         , users.user_name
         , users.display_name
-        , object_tags.tag_id
+        , {$pin_select}
         , triggers.latitude
         , triggers.longitude
         , media.file_name
         , media.file_folder
+        , {$caption_select}
         FROM notes
         LEFT JOIN users ON users.user_id = notes.user_id
         JOIN instances ON instances.object_type = 'NOTE' AND notes.note_id = instances.object_id
         JOIN triggers ON triggers.instance_id = instances.instance_id AND triggers.type = 'LOCATION'
-        LEFT JOIN media ON media.media_id = notes.media_id
-        JOIN object_tags ON object_tags.game_id = notes.game_id AND object_tags.object_type = 'NOTE' AND notes.note_id = object_tags.object_id
+        {$preview_join}
+        {$caption_join}
+        {$pin_join}
         LEFT JOIN note_likes ON notes.note_id = note_likes.note_id
         LEFT JOIN note_comments ON notes.note_id = note_comments.note_id
         WHERE notes.game_id = {$game_id}";
@@ -473,7 +500,7 @@ class notes extends dbconnection
 
         // Tag search
         if (count($tag_ids)) {
-            $q .= ' AND object_tags.tag_id IN (' . implode($tag_ids, ',') . ')';
+            $q .= ' AND tag_id IN (' . implode($tag_ids, ',') . ')';
         }
 
         // Map boundaries
@@ -515,7 +542,7 @@ class notes extends dbconnection
         }
 
         // Order
-        $q .= " GROUP BY notes.note_id, object_tags.tag_id, triggers.latitude, triggers.longitude";
+        $q .= " GROUP BY notes.note_id, tag_id, triggers.latitude, triggers.longitude";
         if ($order === 'recent') {
             $q .= " ORDER BY notes.note_id DESC";
         } else if ($order === 'popular') {
@@ -538,6 +565,9 @@ class notes extends dbconnection
         }
         if (!is_array($notes)) {
             return new return_package(1, NULL, "Error when running SQL query");
+        }
+        foreach ($notes as $note) {
+            $note->description = $note->caption;
         }
 
         $map_notes = array();
@@ -638,14 +668,43 @@ class notes extends dbconnection
         $tag_ids = isset($pack->tag_ids) ? array_map('intval', $pack->tag_ids) : array();
         $note_id = intval($pack->note_id);
 
+        $game = games::getGame($pack)->data;
+        $api = (isset($pack->api) ? intval($pack->api) : 0);
+        $field_id_preview = intval($game->field_id_preview);
+        $field_id_caption = intval($game->field_id_caption);
+        $field_id_pin = intval($game->field_id_pin);
+        if ($field_id_preview > 0 && $api < 2) {
+            $preview_join = "LEFT JOIN field_data AS field_preview ON field_preview.field_id = {$field_id_preview} AND field_preview.note_id = notes.note_id LEFT JOIN media ON media.media_id = field_preview.media_id";
+        } else {
+            $preview_join = "LEFT JOIN media ON media.media_id = notes.media_id";
+        }
+        if ($field_id_caption > 0 && $api < 2) {
+            $caption_select = "field_caption.field_data AS caption";
+            $caption_join = "LEFT JOIN field_data AS field_caption ON field_caption.field_id = {$field_id_caption} AND field_caption.note_id = notes.note_id";
+        } else {
+            $caption_select = "notes.description AS caption";
+            $caption_join = "";
+        }
+        if ($field_id_pin > 0 && $api < 2) {
+            $pin_select = "(field_pin.field_option_id + 10000000) AS tag_id";
+            $pin_join = "LEFT JOIN field_data AS field_pin ON field_pin.field_id = {$field_id_pin} AND field_pin.note_id = notes.note_id";
+            $pin_name_select = "field_option_pin.option";
+            $pin_name_join = "LEFT JOIN field_options AS field_option_pin ON field_pin.field_option_id = field_option_pin.field_option_id";
+        } else {
+            $pin_select = "object_tags.tag_id";
+            $pin_join = "LEFT JOIN object_tags ON object_tags.game_id = notes.game_id AND object_tags.object_type = 'NOTE' AND notes.note_id = object_tags.object_id";
+            $pin_name_select = "tags.tag";
+            $pin_name_join = "LEFT JOIN tags ON object_tags.tag_id = tags.tag_id";
+        }
+
         $lines = array();
 
         $selects = array(
             "notes.*",
             "users.user_name",
             "users.display_name",
-            "object_tags.tag_id",
-            "tags.tag",
+            $pin_select,
+            $pin_name_select,
             "COUNT(all_likes.note_like_id) AS note_likes",
             "COUNT(my_likes.note_like_id) > 0 AS player_liked",
             "triggers.latitude",
@@ -653,6 +712,7 @@ class notes extends dbconnection
             "media.name AS media_name",
             "media.file_name AS media_file_name",
             "media.file_folder AS media_file_folder",
+            $caption_select,
         );
         $lines[] = "SELECT " . implode(", ", $selects);
 
@@ -661,13 +721,14 @@ class notes extends dbconnection
         if ($order_by === 'popular' || !empty($search_terms)) {
             $lines[] = "LEFT JOIN note_comments ON notes.note_id = note_comments.note_id";
         }
-        $lines[] = "LEFT JOIN object_tags ON object_tags.game_id = notes.game_id AND object_tags.object_type = 'NOTE' AND notes.note_id = object_tags.object_id";
-        $lines[] = "LEFT JOIN tags ON object_tags.tag_id = tags.tag_id";
+        $lines[] = $pin_join;
+        $lines[] = $pin_name_join;
         $lines[] = "LEFT JOIN note_likes AS all_likes ON notes.note_id = all_likes.note_id";
         $lines[] = "LEFT JOIN note_likes AS my_likes ON notes.note_id = my_likes.note_id AND my_likes.user_id = '{$user_id}'";
         $lines[] = "LEFT JOIN instances ON instances.object_type = 'NOTE' AND notes.note_id = instances.object_id";
         $lines[] = "LEFT JOIN triggers ON triggers.instance_id = instances.instance_id AND triggers.type = 'LOCATION'";
-        $lines[] = "LEFT JOIN media ON media.media_id = notes.media_id";
+        $lines[] = $preview_join;
+        $lines[] = $caption_join;
 
         $lines[] = "WHERE 1=1";
         $lines[] = "AND notes.game_id = '{$game_id}'";
@@ -685,7 +746,7 @@ class notes extends dbconnection
         }
         if (!empty($tag_ids)) {
             $tag_list = implode(',', $tag_ids);
-            $lines[] = "AND object_tags.tag_id IN ({$tag_list})";
+            $lines[] = "AND tag_id IN ({$tag_list})";
         }
         if ($note_id) {
             $lines[] = "AND notes.note_id = '{$note_id}'";
@@ -699,7 +760,7 @@ class notes extends dbconnection
             }
         }
 
-        $lines[] = "GROUP BY notes.note_id, object_tags.tag_id, triggers.latitude, triggers.longitude";
+        $lines[] = "GROUP BY notes.note_id, tag_id, triggers.latitude, triggers.longitude";
         if ($order_by === 'popular') {
             $lines[] = "ORDER BY (COUNT(all_likes.note_id) + COUNT(note_comments.note_id)) DESC";
         }
@@ -715,10 +776,12 @@ class notes extends dbconnection
         $sql_notes = dbconnection::queryArray($query);
         $notes = array();
         for ($i = 0; $i < count($sql_notes); $i++) {
-            $ob = notes::noteObjectFromSQL($sql_notes[$i]);
+            $sql_note = $sql_notes[$i];
+            if ($sql_note) $sql_note->description = $sql_note->caption;
+            $ob = notes::noteObjectFromSQL($sql_note);
             if (!$ob) continue;
             foreach (array('tag_id', 'note_likes', 'tag', 'latitude', 'longitude', 'user_name', 'display_name', 'player_liked') as $field) {
-                $ob->$field = $sql_notes[$i]->$field;
+                $ob->$field = $sql_note->$field;
             }
 
             $sql_media = $sql_notes[$i];
