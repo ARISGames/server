@@ -472,6 +472,7 @@ class notes extends dbconnection
         , {$pin_select}
         , triggers.latitude
         , triggers.longitude
+        , media.media_id AS media_id_real
         , media.file_name
         , media.file_folder
         , {$caption_select}
@@ -568,6 +569,7 @@ class notes extends dbconnection
         }
         foreach ($notes as $note) {
             $note->description = $note->caption;
+            $note->media_id = $note->media_id_real;
         }
 
         $map_notes = array();
@@ -709,6 +711,7 @@ class notes extends dbconnection
             "COUNT(my_likes.note_like_id) > 0 AS player_liked",
             "triggers.latitude",
             "triggers.longitude",
+            "media.media_id AS media_id_real",
             "media.name AS media_name",
             "media.file_name AS media_file_name",
             "media.file_folder AS media_file_folder",
@@ -777,14 +780,15 @@ class notes extends dbconnection
         $notes = array();
         for ($i = 0; $i < count($sql_notes); $i++) {
             $sql_note = $sql_notes[$i];
-            if ($sql_note) $sql_note->description = $sql_note->caption;
+            $sql_note->description = $sql_note->caption;
+            $sql_note->media_id = $sql_note->media_id_real;
             $ob = notes::noteObjectFromSQL($sql_note);
             if (!$ob) continue;
             foreach (array('tag_id', 'note_likes', 'tag', 'latitude', 'longitude', 'user_name', 'display_name', 'player_liked') as $field) {
                 $ob->$field = $sql_note->$field;
             }
 
-            $sql_media = $sql_notes[$i];
+            $sql_media = $sql_note;
             $sql_media->name        = $sql_media->media_name;
             $sql_media->file_name   = $sql_media->media_file_name;
             $sql_media->file_folder = $sql_media->media_file_folder;
