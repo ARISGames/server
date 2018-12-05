@@ -433,7 +433,7 @@ Field Day Lab</p>";
 
         $q .= " WHERE g.is_siftr";
         if ($siftr_url) $q .= " AND g.siftr_url = '".$pack->siftr_url."'";
-        if (!$siftr_url) $q .= " AND g.published";
+        if (!$siftr_url) $q .= " AND g.published AND (g.password IS NULL OR g.password = '')";
         if ($search) {
             foreach (preg_split('/\s+/', $search) as $word) {
                 if ($word != '') {

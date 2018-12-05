@@ -126,7 +126,7 @@ class client extends dbconnection
         $key_latitude = 'latitude';
         $key_longitude = 'longitude';
         if (isset($pack->filter) && $pack->filter === 'siftr') {
-            $filter .= " AND is_siftr ";
+            $filter .= " AND is_siftr AND (password IS NULL OR password = '') AND published ";
             $key_latitude = 'map_latitude';
             $key_longitude = 'map_longitude';
         }
