@@ -477,6 +477,7 @@ class notes extends dbconnection
         $q = "SELECT notes.*
         , users.user_name
         , users.display_name
+        , users.media_id AS user_media_id
         , {$pin_select}
         , triggers.latitude
         , triggers.longitude
