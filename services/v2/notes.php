@@ -793,7 +793,7 @@ class notes extends dbconnection
             $sql_note->media_id = $sql_note->media_id_real;
             $ob = notes::noteObjectFromSQL($sql_note);
             if (!$ob) continue;
-            foreach (array('tag_id', 'note_likes', 'tag', 'latitude', 'longitude', 'user_name', 'display_name', 'player_liked') as $field) {
+            foreach (array('tag_id', 'note_likes', 'tag', 'latitude', 'longitude', 'user_name', 'display_name', 'player_liked', 'user_media_id') as $field) {
                 $ob->$field = $sql_note->$field;
             }
 
