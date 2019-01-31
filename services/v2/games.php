@@ -427,7 +427,7 @@ Field Day Lab</p>";
 
         $q = "SELECT g.* FROM games AS g";
         if ($order_by === "recent" || $order_by === "popular") {
-            $q .= " LEFT JOIN notes AS n ON g.game_id = n.game_id";
+            $q .= " JOIN notes AS n ON g.game_id = n.game_id";
             // TODO: also use note_comments?
         }
 
