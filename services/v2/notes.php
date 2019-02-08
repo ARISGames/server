@@ -1036,7 +1036,7 @@ class notes extends dbconnection
             }
         }
         $query .= "\nfrom notes
-        left join users on users.user_id = notes.note_id
+        left join users on users.user_id = notes.user_id
         left join instances on instances.object_type = 'NOTE' and instances.object_id = notes.note_id
         left join triggers on triggers.instance_id = instances.instance_id";
         foreach ($form['fields'] as $field) {
