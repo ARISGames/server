@@ -450,6 +450,7 @@ class notes extends dbconnection
         $map_data      = isset($pack->map_data)                               ? !!($pack->map_data)                 : true;
 
         $game = games::getGame($pack)->data;
+        $fields = fields::getFieldsForGame($pack)->data['fields'];
         $api = (isset($pack->api) ? intval($pack->api) : 0);
         $field_id_preview = intval($game->field_id_preview);
         $field_id_caption = intval($game->field_id_caption);
@@ -473,6 +474,25 @@ class notes extends dbconnection
             $pin_select = "object_tags.tag_id";
             $pin_join = "LEFT JOIN object_tags ON object_tags.game_id = notes.game_id AND object_tags.object_type = 'NOTE' AND notes.note_id = object_tags.object_id";
         }
+        $field_select = '';
+        $field_join = '';
+        foreach ($fields as $field) {
+            $field_id = $field->field_id;
+            $table = 'fd_' . $field_id;
+            $field_join .= " LEFT JOIN field_data AS $table ON $table.note_id = notes.note_id AND $table.field_id = $field_id ";
+            switch ($field->field_type) {
+                case 'SINGLESELECT':
+                case 'MULTISELECT':
+                    $field_select .= ", $table.field_option_id AS field_$field_id ";
+                    break;
+                case 'MEDIA':
+                    $field_select .= ", $table.media_id AS field_$field_id ";
+                    break;
+                default:
+                    $field_select .= ", $table.field_data AS field_$field_id ";
+                    break;
+            }
+        }
 
         $q = "SELECT notes.*
         , users.user_name
@@ -485,6 +505,7 @@ class notes extends dbconnection
         , media.file_name
         , media.file_folder
         , {$caption_select}
+          {$field_select}
         FROM notes
         LEFT JOIN users ON users.user_id = notes.user_id
         JOIN instances ON instances.object_type = 'NOTE' AND notes.note_id = instances.object_id
@@ -492,6 +513,7 @@ class notes extends dbconnection
         {$preview_join}
         {$caption_join}
         {$pin_join}
+        {$field_join}
         LEFT JOIN note_likes ON notes.note_id = note_likes.note_id
         LEFT JOIN note_comments ON notes.note_id = note_comments.note_id
         WHERE notes.game_id = {$game_id}";
@@ -585,6 +607,7 @@ class notes extends dbconnection
                 if (is_array($map_object)) {
                     $low_latitude = $high_latitude = $low_longitude = $high_longitude = null;
                     $tags = new stdClass();
+                    $field_data = new stdClass();
                     $note_ids = array();
                     foreach ($map_object as $clustered_note) {
                         $lat = floatval($clustered_note->latitude);
@@ -599,6 +622,21 @@ class notes extends dbconnection
                         } else {
                             $tags->$tag_id = 1;
                         }
+                        foreach ($fields as $field) {
+                            if ($field->field_type === 'SINGLESELECT' || $field->field_type === 'MULTISELECT') {
+                                $field_id = $field->field_id;
+                                $key = "field_$field_id";
+                                $option_id = $clustered_note->$key;
+                                if (!isset($field_data->$field_id)) {
+                                    $field_data->$field_id = new stdClass();
+                                }
+                                if (isset($field_data->$field_id->$option_id)) {
+                                    $field_data->$field_id->$option_id++;
+                                } else {
+                                    $field_data->$field_id->$option_id = 1;
+                                }
+                            }
+                        }
                         $note_ids[] = $clustered_note->note_id;
                     }
                     $cluster = new stdClass();
@@ -608,6 +646,7 @@ class notes extends dbconnection
                     $cluster->max_longitude = $high_longitude;
                     $cluster->note_count = count($map_object);
                     $cluster->tags = $tags;
+                    $cluster->fields = $field_data;
                     $cluster->note_ids = $note_ids;
                     $map_clusters[] = $cluster;
                 } else {
