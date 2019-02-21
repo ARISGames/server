@@ -104,7 +104,7 @@ class fields extends dbconnection
 
         $columns = array();
         $values = array();
-        foreach (array('label', 'required', 'sort_index') as $column) {
+        foreach (array('label', 'required', 'sort_index', 'color') as $column) {
             if (isset($pack->$column)) {
                 $columns[] = $column;
                 $values[] = $pack->$column;
