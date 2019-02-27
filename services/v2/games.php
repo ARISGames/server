@@ -320,7 +320,10 @@ Field Day Lab</p>";
             (isset($pack->moderated)                                    ? "moderated                                    = '".intval($pack->moderated)."', "                                        : "").
             (isset($pack->version)                                      ? "version                                      = '".addslashes($pack->version)."', "                                      : "").
             (isset($pack->colors_id)                                    ? "colors_id                                    = '".addslashes($pack->colors_id)."', "                                    : "").
-            (isset($pack->theme_id)                                     ? "theme_id                                     = '".addslashes($pack->theme_id)."', "                                    : "").
+            (isset($pack->theme_id)                                     ? "theme_id                                     = '".addslashes($pack->theme_id)."', "                                     : "").
+            (isset($pack->field_id_preview)                             ? "field_id_preview                             = '".intval($pack->field_id_preview)."', "                                 : "").
+            (isset($pack->field_id_pin)                                 ? "field_id_pin                                 = '".intval($pack->field_id_pin)."', "                                     : "").
+            (isset($pack->field_id_caption)                             ? "field_id_caption                             = '".intval($pack->field_id_caption)."', "                                 : "").
             (isset($pack->prompt)                                       ? "prompt                                       = '".addslashes($pack->prompt)."', "                                       : "").
             (isset($pack->password)                                     ? "password                                     = '".addslashes($pack->password)."', "                                     : "").
             (isset($pack->staff_pick)                                   ? "staff_pick                                   = '".addslashes($pack->staff_pick)."', "                                   : "").
