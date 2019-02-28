@@ -151,6 +151,15 @@ class games extends dbconnection
                     . ","    . ($field->required ? 1 : 0)
                     . ")"
                     );
+                if ($field->useAsPin) {
+                    dbconnection::query("UPDATE games SET field_id_pin = {$field_id} WHERE game_id = {$game_id}");
+                } else if ($field->useOnCards) {
+                    $col = 'field_id_caption';
+                    if ($field->field_type === 'MEDIA') {
+                        $col = 'field_id_preview';
+                    }
+                    dbconnection::query("UPDATE games SET {$col} = {$field_id} WHERE game_id = {$game_id}");
+                }
                 if (isset($field->options)) {
                     foreach ($field->options as $option) {
                         if (isset($option->option)) $option = $option->option;
