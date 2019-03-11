@@ -233,4 +233,74 @@ class fields extends dbconnection
         games::bumpGameVersion($pack);
         return new return_package(0);
     }
+
+    public static function convertSiftrToFields($pack)
+    {
+        $game_id = intval($pack->game_id);
+        $pack->game_id = $game_id;
+
+        $pack->auth->game_id = $game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        // create media field
+        $media_field_id = dbconnection::queryInsert("INSERT INTO
+            fields (game_id , field_type, label  , required, sort_index)
+            VALUES ($game_id, 'MEDIA'   , 'Photo', 1       , -3        )");
+        // for each note, create field_data with its media_id
+        dbconnection::query("INSERT INTO
+            field_data (note_id, field_id       , media_id)
+            SELECT      note_id, $media_field_id, media_id
+            FROM notes
+            WHERE game_id = $game_id");
+
+        // create text field
+        $caption_field_id = dbconnection::queryInsert("INSERT INTO
+            fields (game_id , field_type, label    , required, sort_index)
+            VALUES ($game_id, 'TEXTAREA', 'Caption', 1       , -2        )");
+        // for each note, create field_data with its description
+        dbconnection::query("INSERT INTO
+            field_data (note_id, field_id         , field_data )
+            SELECT      note_id, $caption_field_id, description
+            FROM notes
+            WHERE game_id = $game_id");
+
+        // create category field
+        $category_field_id = dbconnection::queryInsert("INSERT INTO
+            fields (game_id , field_type    , label     , required, sort_index)
+            VALUES ($game_id, 'SINGLESELECT', 'Category', 1       , -1        )");
+        // create category field_options
+        $tags = tags::getTagsForGame($pack)->data;
+        $tag_mapping = array();
+        foreach ($tags as $tag) {
+            $option = '"' . addslashes($tag->tag) . '"';
+            $sort_index = $tag->sort_index;
+            $color = '"' . addslashes($tag->color) . '"';
+            $field_option_id = dbconnection::queryInsert("INSERT INTO
+                field_options (field_id          , game_id , `option`, sort_index , color )
+                VALUES        ($category_field_id, $game_id, $option , $sort_index, $color)");
+            $tag_mapping[$tag->tag_id] = $field_option_id;
+        }
+        // for each note, create field_data with the field_option_id corresponding to its tag_id
+        $case_expr = 'CASE object_tags.tag_id ';
+        foreach ($tag_mapping as $tag_id => $field_option_id) {
+            $case_expr .= "WHEN $tag_id THEN $field_option_id ";
+        }
+        $case_expr .= 'ELSE 0 END';
+        dbconnection::query("INSERT INTO
+            field_data (note_id      , field_id          , field_option_id)
+            SELECT      notes.note_id, $category_field_id, $case_expr
+            FROM notes
+            LEFT JOIN object_tags ON object_tags.game_id = notes.game_id AND object_tags.object_type = 'NOTE' AND notes.note_id = object_tags.object_id
+            WHERE notes.game_id = $game_id");
+
+        // put the 3 field_ids in the game
+        $pack->field_id_preview = $media_field_id;
+        $pack->field_id_pin     = $category_field_id;
+        $pack->field_id_caption = $caption_field_id;
+        games::updateGame($pack);
+
+        games::bumpGameVersion($pack);
+        return new return_package(0);
+    }
 }
