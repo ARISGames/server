@@ -527,12 +527,25 @@ class notes extends dbconnection
         foreach (preg_split("/\\s+/", $search) as $term) {
             if (strlen($term) === 0) continue;
             $pat = '"%' . addslashes($term) . '%"';
-            $q .= " AND (notes.description LIKE {$pat} OR users.user_name LIKE {$pat} OR users.display_name LIKE {$pat} OR note_comments.description LIKE {$pat})";
+            $ors = ["notes.description LIKE {$pat}", "users.user_name LIKE {$pat}", "users.display_name LIKE {$pat}", "note_comments.description LIKE {$pat}"];
+            foreach ($fields as $field) {
+                if ($field->field_type === 'TEXT' || $field->field_type === 'TEXTAREA') {
+                    $ors[] = "fd_" . $field->field_id . ".field_data LIKE {$pat}";
+                }
+            }
+            $q .= " AND (" . implode(" OR ", $ors) . ")";
         }
 
         // Tag search
         if (count($tag_ids)) {
-            $q .= ' AND tag_id IN (' . implode($tag_ids, ',') . ')';
+            $tag_list = '(' . implode($tag_ids, ',') . ')';
+            $ors = ["tag_id IN {$tag_list}"];
+            foreach ($fields as $field) {
+                if ($field->field_type === 'SINGLESELECT' || $field->field_type === 'MULTISELECT') {
+                    $ors[] = "fd_" . $field->field_id . ".field_option_id IN {$tag_list}";
+                }
+            }
+            $q .= " AND (" . implode(" OR ", $ors) . ")";
         }
 
         // Map boundaries
@@ -575,6 +588,11 @@ class notes extends dbconnection
 
         // Order
         $q .= " GROUP BY notes.note_id, tag_id, triggers.latitude, triggers.longitude, media.media_id, caption";
+
+        foreach ($fields as $field) {
+            $q .= ", field_" . $field->field_id;
+            // avoids "not functionally dependent" errors on certain sql configs
+        }
         if ($order === 'recent') {
             $q .= " ORDER BY notes.note_id DESC";
         } else if ($order === 'popular') {
