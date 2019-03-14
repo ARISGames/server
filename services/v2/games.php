@@ -409,7 +409,7 @@ Field Day Lab</p>";
         $game->prompt                                       = $sql_game->prompt;
         $game->staff_pick                                   = $sql_game->staff_pick;
         $game->created                                      = $sql_game->created;
-        // $game->force_new_format                             = 1;
+        $game->force_new_format                             = 1;
 
         return $game;
     }
