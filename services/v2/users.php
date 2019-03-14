@@ -144,8 +144,8 @@ class users extends dbconnection
 
         if(isset($pack->siftr_version)) {
             $siftr_version = intval($pack->siftr_version);
-            if($siftr_version !== 0 && $siftr_version < 20180925) {
-                return new return_package(1, NULL, "This Siftr version is no longer supported. Please update the app.");
+            if($siftr_version !== 0 && $siftr_version < 20190301) {
+                return new return_package(1, NULL, "Please update the Siftr app to continue.");
             }
         }
 

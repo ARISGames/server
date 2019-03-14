@@ -241,7 +241,20 @@ class fields extends dbconnection
 
         $pack->auth->game_id = $game_id;
         $pack->auth->permission = "read_write";
-        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        if(!users::authenticateUser($pack->auth)) {
+            return new return_package(6, NULL, "Failed Authentication");
+        }
+        if(!editors::authenticateGameEditor($pack->auth) && intval($pack->auth->user_id) !== 1 && intval($pack->auth->user_id) !== 788) {
+            return new return_package(6, NULL, "Failed Authentication");
+        }
+
+        $game = games::getGame($pack)->data;
+        if (!($game->is_siftr)) {
+            return new return_package(6, NULL, "This game is not a Siftr.");
+        }
+        if ($game->field_id_preview || $game->field_id_pin || $game->field_id_caption) {
+            return new return_package(6, NULL, "This Siftr is already in the new format.");
+        }
 
         // create media field
         $media_field_id = dbconnection::queryInsert("INSERT INTO
@@ -249,8 +262,8 @@ class fields extends dbconnection
             VALUES ($game_id, 'MEDIA'   , 'Photo', 1       , -3        )");
         // for each note, create field_data with its media_id
         dbconnection::query("INSERT INTO
-            field_data (note_id, field_id       , media_id)
-            SELECT      note_id, $media_field_id, media_id
+            field_data (note_id, field_id       , field_data, field_option_id, media_id)
+            SELECT      note_id, $media_field_id, ''        , 0              , media_id
             FROM notes
             WHERE game_id = $game_id");
 
@@ -260,8 +273,8 @@ class fields extends dbconnection
             VALUES ($game_id, 'TEXTAREA', 'Caption', 1       , -2        )");
         // for each note, create field_data with its description
         dbconnection::query("INSERT INTO
-            field_data (note_id, field_id         , field_data )
-            SELECT      note_id, $caption_field_id, description
+            field_data (note_id, field_id         , field_data , field_option_id, media_id)
+            SELECT      note_id, $caption_field_id, description, 0              , 0
             FROM notes
             WHERE game_id = $game_id");
 
@@ -288,8 +301,8 @@ class fields extends dbconnection
         }
         $case_expr .= 'ELSE 0 END';
         dbconnection::query("INSERT INTO
-            field_data (note_id      , field_id          , field_option_id)
-            SELECT      notes.note_id, $category_field_id, $case_expr
+            field_data (note_id      , field_id          , field_data, field_option_id, media_id)
+            SELECT      notes.note_id, $category_field_id, ''        , $case_expr     , 0
             FROM notes
             LEFT JOIN object_tags ON object_tags.game_id = notes.game_id AND object_tags.object_type = 'NOTE' AND notes.note_id = object_tags.object_id
             WHERE notes.game_id = $game_id");
