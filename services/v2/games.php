@@ -273,7 +273,12 @@ Field Day Lab</p>";
         $game_id = intval($pack->game_id);
         $pack->auth->game_id = $game_id;
         $pack->auth->permission = "read_write";
-        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        if(!users::authenticateUser($pack->auth)) {
+            return new return_package(6, NULL, "Failed Authentication");
+        }
+        if(!editors::authenticateGameEditor($pack->auth) && intval($pack->auth->user_id) !== 1 && intval($pack->auth->user_id) !== 788) {
+            return new return_package(6, NULL, "Failed Authentication");
+        }
 
         $url_result = games::isValidSiftrURL($pack);
         if ($url_result->returnCode != 0) return $url_result;
