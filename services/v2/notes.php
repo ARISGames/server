@@ -514,8 +514,8 @@ class notes extends dbconnection
         {$caption_join}
         {$pin_join}
         {$field_join}
-        LEFT JOIN note_likes ON notes.note_id = note_likes.note_id
-        LEFT JOIN note_comments ON notes.note_id = note_comments.note_id
+        LEFT JOIN note_likes ON notes.game_id = note_likes.game_id AND notes.note_id = note_likes.note_id
+        LEFT JOIN note_comments ON notes.game_id = note_comments.game_id AND notes.note_id = note_comments.note_id
         WHERE notes.game_id = {$game_id}";
 
         // Search for specific note
