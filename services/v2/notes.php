@@ -589,10 +589,13 @@ class notes extends dbconnection
         // Order
         $q .= " GROUP BY notes.note_id, tag_id, triggers.latitude, triggers.longitude, media.media_id, caption";
 
+        /*
+        // this duplicates notes when you have a multiselect, need to fix
         foreach ($fields as $field) {
             $q .= ", field_" . $field->field_id;
             // avoids "not functionally dependent" errors on certain sql configs
         }
+        */
         if ($order === 'recent') {
             $q .= " ORDER BY notes.note_id DESC";
         } else if ($order === 'popular') {
