@@ -24,6 +24,7 @@ class media extends dbconnection
     {
         $pack->data = base64_encode(file_get_contents(Config::raw_uploads_folder . '/' . $pack->raw_upload_id));
         return media::createMedia($pack);
+        // TODO delete raw file
     }
 
     //Takes in media JSON, all fields optional except user_id + key

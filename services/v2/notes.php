@@ -644,7 +644,7 @@ class notes extends dbconnection
                             $tags->$tag_id = 1;
                         }
                         foreach ($fields as $field) {
-                            if ($field->field_type === 'SINGLESELECT' || $field->field_type === 'MULTISELECT') {
+                            if ($field->field_type === 'SINGLESELECT' || $field->field_type === 'MULTISELECT' || $field->field_type === 'NUMBER') {
                                 $field_id = $field->field_id;
                                 $key = "field_$field_id";
                                 $option_id = $clustered_note->$key;
