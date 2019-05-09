@@ -66,7 +66,7 @@ class fields extends dbconnection
 
         $columns = array('game_id', 'field_type');
         $values = array($game_id, $pack->field_type);
-        foreach (array('label', 'required', 'sort_index') as $column) {
+        foreach (array('label', 'required', 'sort_index', 'min', 'max', 'min_color', 'max_color', 'step') as $column) {
             if (isset($pack->$column)) {
                 $columns[] = $column;
                 $values[] = $pack->$column;
@@ -104,7 +104,7 @@ class fields extends dbconnection
 
         $columns = array();
         $values = array();
-        foreach (array('label', 'required', 'sort_index') as $column) {
+        foreach (array('label', 'required', 'sort_index', 'min', 'max', 'min_color', 'max_color', 'step') as $column) {
             if (isset($pack->$column)) {
                 $columns[] = $column;
                 $values[] = $pack->$column;
