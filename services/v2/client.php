@@ -439,6 +439,9 @@ class client extends dbconnection
         for($i = 0; $i < count($factories); $i++)
         {
             $fac = $factories[$i];
+            if($fac->location_bound_type == 'CLUSTER') {
+                continue; // triggers::assignClusters handles these
+            }
             $insts = dbconnection::queryArray("SELECT * FROM instances WHERE game_id = '{$pack->game_id}' AND factory_id = '{$fac->factory_id}'");
             $now = strtotime(date("Y-m-d H:i:s"));
 
