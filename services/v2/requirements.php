@@ -673,7 +673,26 @@ class requirements extends dbconnection
 
     private static function playerHasNoteWithTag($pack)
     {
-        $result = dbconnection::queryObject("SELECT count(*) as qty FROM user_log JOIN notes ON notes.note_id = user_log.content_id JOIN object_tags ON object_tags.object_id = notes.note_id WHERE user_log.game_id = '{$pack->game_id}' AND user_log.user_id = '{$pack->user_id}' AND user_log.event_type = 'CREATE_NOTE' AND user_log.deleted = '0' AND object_tags.tag_id = '{$pack->content_id}' AND object_tags.object_type = 'NOTE'");
+        $tag_id = intval($pack->content_id);
+        if ($tag_id > 10000000) {
+            // siftr select field id
+            $field_option_id = $tag_id - 10000000;
+            $result = dbconnection::queryObject("
+                SELECT count(*) as qty
+                FROM user_log
+                JOIN notes ON notes.note_id = user_log.content_id
+                JOIN field_data ON field_data.note_id = notes.note_id
+                JOIN games ON notes.game_id = games.game_id
+                WHERE user_log.game_id = '{$pack->game_id}'
+                AND user_log.user_id = '{$pack->user_id}'
+                AND user_log.event_type = 'CREATE_NOTE'
+                AND user_log.deleted = '0'
+                AND field_data.field_id = games.field_id_pin
+                AND field_data.field_option_id = '{$field_option_id}'");
+        } else {
+            // real tag id
+            $result = dbconnection::queryObject("SELECT count(*) as qty FROM user_log JOIN notes ON notes.note_id = user_log.content_id JOIN object_tags ON object_tags.object_id = notes.note_id WHERE user_log.game_id = '{$pack->game_id}' AND user_log.user_id = '{$pack->user_id}' AND user_log.event_type = 'CREATE_NOTE' AND user_log.deleted = '0' AND object_tags.tag_id = '{$pack->content_id}' AND object_tags.object_type = 'NOTE'");
+        }
 
         return $result->qty >= $pack->qty ? true : false;
     }
