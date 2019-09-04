@@ -56,7 +56,9 @@ class media extends dbconnection
                 $filenameext != "caf" &&
                 $filenameext != "mp3" &&
                 $filenameext != "aac" &&
-                $filenameext != "m4a"
+                $filenameext != "m4a" &&
+                //3D
+                $filenameext != "zip"
         )
         return new return_package(1,NULL,"Invalid filetype: '{$filenameext}'");
 
