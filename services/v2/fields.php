@@ -13,6 +13,7 @@ class fields extends dbconnection
 
         $fields = dbconnection::queryArray("SELECT * FROM fields WHERE game_id = $game_id");
         $options = dbconnection::queryArray("SELECT * FROM field_options WHERE game_id = $game_id");
+        $guides = dbconnection::queryArray("SELECT * FROM field_guides WHERE game_id = $game_id");
 
         // Hide legacy media/pin/caption fields on old siftr clients
         $api = (isset($pack->api) ? intval($pack->api) : 0);
@@ -38,6 +39,7 @@ class fields extends dbconnection
         return new return_package(0, array(
             'fields' => $fields,
             'options' => $options,
+            'guides' => $guides,
         ));
     }
 
@@ -66,7 +68,7 @@ class fields extends dbconnection
 
         $columns = array('game_id', 'field_type');
         $values = array($game_id, $pack->field_type);
-        foreach (array('label', 'required', 'sort_index', 'min', 'max', 'min_color', 'max_color', 'step') as $column) {
+        foreach (array('label', 'required', 'sort_index', 'min', 'max', 'min_color', 'max_color', 'step', 'field_guide_id') as $column) {
             if (isset($pack->$column)) {
                 $columns[] = $column;
                 $values[] = $pack->$column;
@@ -160,7 +162,7 @@ class fields extends dbconnection
             return new return_package(1, NULL, "Field not found");
         }
 
-        $columns = array('field_id', 'game_id', '`option`', 'sort_index', 'color');
+        $columns = array('field_id', 'game_id', '`option`', 'sort_index', 'color', 'remnant_id');
         $sort_index = intval($pack->sort_index) || 0;
         $values = array($field_id, $game_id, $pack->option, $sort_index, $pack->color);
         $columns = implode(",", $columns);
@@ -189,7 +191,7 @@ class fields extends dbconnection
 
         $columns = array();
         $values = array();
-        foreach (array('option', 'sort_index', 'color') as $column) {
+        foreach (array('option', 'sort_index', 'color', 'remnant_id') as $column) {
             if (isset($pack->$column)) {
                 $columns[] = $column;
                 $values[] = $pack->$column;
