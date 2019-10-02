@@ -162,7 +162,7 @@ class fields extends dbconnection
             return new return_package(1, NULL, "Field not found");
         }
 
-        $columns = array('field_id', 'game_id', '`option`', 'sort_index', 'color', 'remnant_id');
+        $columns = array('field_id', 'game_id', '`option`', 'sort_index', 'color', 'remnant_id', 'field_guide_id');
         $sort_index = intval($pack->sort_index) || 0;
         $values = array($field_id, $game_id, $pack->option, $sort_index, $pack->color);
         $columns = implode(",", $columns);
@@ -191,7 +191,7 @@ class fields extends dbconnection
 
         $columns = array();
         $values = array();
-        foreach (array('option', 'sort_index', 'color', 'remnant_id') as $column) {
+        foreach (array('option', 'sort_index', 'color', 'remnant_id', 'field_guide_id') as $column) {
             if (isset($pack->$column)) {
                 $columns[] = $column;
                 $values[] = $pack->$column;
