@@ -145,6 +145,7 @@ class triggers extends dbconnection
         $trigger->beacon_uuid                 = $sql_trigger->beacon_uuid;
         $trigger->beacon_major                = $sql_trigger->beacon_major;
         $trigger->beacon_minor                = $sql_trigger->beacon_minor;
+        $trigger->cluster_id                  = $sql_trigger->cluster_id;
 
         return $trigger;
     }
