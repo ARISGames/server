@@ -977,6 +977,21 @@ class notes extends dbconnection
         return new return_package(0);
     }
 
+    public static function deleteUserNotesForGame($pack)
+    {
+        $user_id = intval($pack->user_id);
+        $game_id = intval($pack->game_id);
+        $note_ids = dbconnection::queryArray("SELECT note_id FROM notes WHERE user_id = {$user_id} AND game_id = {$game_id}");
+        foreach ($note_ids as $note_id) {
+            $pack->note_id = $note_id;
+            $ret = notes::deleteNote($pack);
+            if ($ret->returnCode !== 0) {
+                return $ret;
+            }
+        }
+        return new return_package(0);
+    }
+
     public static function likedNote($pack)
     {
         $pack->auth->permission = "read_write";
