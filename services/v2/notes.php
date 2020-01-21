@@ -981,9 +981,9 @@ class notes extends dbconnection
     {
         $user_id = intval($pack->user_id);
         $game_id = intval($pack->game_id);
-        $note_ids = dbconnection::queryArray("SELECT note_id FROM notes WHERE user_id = {$user_id} AND game_id = {$game_id}");
-        foreach ($note_ids as $note_id) {
-            $pack->note_id = $note_id;
+        $notes = dbconnection::queryArray("SELECT note_id FROM notes WHERE user_id = {$user_id} AND game_id = {$game_id}");
+        foreach ($notes as $note) {
+            $pack->note_id = $note->note_id;
             $ret = notes::deleteNote($pack);
             if ($ret->returnCode !== 0) {
                 return $ret;
