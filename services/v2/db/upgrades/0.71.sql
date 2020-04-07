@@ -1,0 +1,2 @@
+ALTER TABLE `quests` ADD `tutorial_1` VARCHAR(255) AFTER `prompt`, ADD `tutorial_2` VARCHAR(255) AFTER `tutorial_1`, ADD `tutorial_3` VARCHAR(255) AFTER `tutorial_2`;
+ALTER TABLE `fields` ADD `instruction` VARCHAR(255) AFTER `label`;
