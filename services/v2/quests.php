@@ -11,6 +11,166 @@ require_once("requirements.php");
 
 class quests extends dbconnection
 {
+    public static function createStemportsQuest($pack)
+    {
+        $game_id = intval($pack->game_id);
+        if($game_id <= 0) return new return_package(6, NULL, "Invalid game ID");
+        $pack->auth->game_id = $game_id;
+        $pack->auth->permission = "read_write";
+        if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+
+        $quest_id = dbconnection::queryInsert(
+            "INSERT INTO quests (".
+            "game_id,".
+            (isset($pack->name)                                 ? "name,"                                 : "").
+            (isset($pack->description)                          ? "description,"                          : "").
+            (isset($pack->prompt)                               ? "prompt,"                               : "").
+            (isset($pack->tutorial_1)                           ? "tutorial_1,"                           : "").
+            (isset($pack->tutorial_2)                           ? "tutorial_2,"                           : "").
+            (isset($pack->tutorial_3)                           ? "tutorial_3,"                           : "").
+            "quest_type,".
+            "created".
+            ") VALUES (".
+            "'".$game_id."',".
+            (isset($pack->name)                                 ? "'".addslashes($pack->name)."',"                                 : "").
+            (isset($pack->description)                          ? "'".addslashes($pack->description)."',"                          : "").
+            (isset($pack->prompt)                               ? "'".addslashes($pack->prompt)."',"                               : "").
+            (isset($pack->tutorial_1)                           ? "'".addslashes($pack->tutorial_1)."',"                           : "").
+            (isset($pack->tutorial_2)                           ? "'".addslashes($pack->tutorial_2)."',"                           : "").
+            (isset($pack->tutorial_3)                           ? "'".addslashes($pack->tutorial_3)."',"                           : "").
+            "'COMPOUND',".
+            "CURRENT_TIMESTAMP".
+            ")"
+        );
+
+        $plaques = (isset($pack->plaques) ? $pack->plaques : array());
+        $pickup_mapping = array(); // mapping from temporary field note id to event package id
+        foreach ($plaques as $plaque) {
+            $event_package_id = dbconnection::queryInsert(
+                "INSERT INTO event_packages (".
+                "game_id,".
+                "created".
+                ") VALUES (".
+                "'".$game_id."',".
+                "CURRENT_TIMESTAMP".
+                ")"
+            );
+            forEach ($plaque->fieldNotes as $fieldNote) {
+                $pickup_mapping[$fieldNote] = $event_package_id;
+            }
+            $plaque_id = dbconnection::queryInsert(
+                "INSERT INTO plaques (".
+                "game_id,".
+                (isset($plaque->name)                ? "name,"                : "").
+                (isset($plaque->description)         ? "description,"         : "").
+                "event_package_id,".
+                "created".
+                ") VALUES (".
+                "'".addslashes($pack->game_id)."',".
+                (isset($plaque->name)                ? "'".addslashes($plaque->name)."',"        : "").
+                (isset($plaque->description)         ? "'".addslashes($plaque->description)."'," : "").
+                "'".intval($event_package_id)."',".
+                "CURRENT_TIMESTAMP".
+                ")"
+            );
+            $instance_id = dbconnection::queryInsert(
+                "INSERT INTO instances (".
+                "game_id,".
+                "object_type,".
+                "object_id,".
+                "qty,".
+                "infinite_qty,".
+                "created".
+                ") VALUES (".
+                "'".$game_id."',".
+                "'PLAQUE',".
+                "'".intval($plaque_id)."',".
+                "1,".
+                "1,".
+                "CURRENT_TIMESTAMP".
+                ")"
+            );
+            $trigger_id = dbconnection::queryInsert(
+                "INSERT INTO triggers (".
+                "game_id,".
+                "instance_id,".
+                "type,".
+                (isset($plaque->latitude)  ? "latitude,"  : "").
+                (isset($plaque->longitude) ? "longitude," : "").
+                "created".
+                ") VALUES (".
+                "'".$game_id."',".
+                "'".intval($instance_id)."',".
+                "'LOCATION',".
+                (isset($plaque->latitude)  ? "'".addslashes($plaque->latitude)."',"  : "").
+                (isset($plaque->longitude) ? "'".addslashes($plaque->longitude)."'," : "").
+                "CURRENT_TIMESTAMP".
+                ")"
+            );
+        }
+
+        $fields = (isset($pack->fields) ? $pack->fields : array());
+        foreach ($fields as $field) {
+            $field_id = dbconnection::queryInsert
+                ( "INSERT INTO fields (game_id, field_type, label, required, quest_id) VALUES ("
+                .          $game_id
+                . ",\""  . addslashes($field->field_type) . "\""
+                . ",\""  . addslashes($field->label) . "\""
+                . ","    . ($field->required ? 1 : 0)
+                . ","    . intval($quest_id)
+                . ")"
+                );
+            if (isset($field->options)) {
+                foreach ($field->options as $option) {
+                    $item_id = dbconnection::queryInsert
+                        ( "INSERT INTO items (name, description) VALUES ("
+                        . "\""  . addslashes($option->option) . "\""
+                        . ",\"" . addslashes($option->description) . "\""
+                        . ")"
+                        );
+                    $option_id = dbconnection::queryInsert
+                        ( "INSERT INTO field_options (field_id, game_id, `option`, color, remnant_id) VALUES ("
+                        .         intval($field_id)
+                        . ","   . $game_id
+                        . ",\"" . addslashes($option->option) . "\""
+                        . ",\"#000000\""
+                        , ","   . intval($item_id)
+                        . ")"
+                        );
+                    if (isset($pickup_mapping[$option->field_option_id])) {
+                        $event_package_id = $pickup_mapping[$option->field_option_id];
+                        $event_id = dbconnection::queryInsert(
+                            "INSERT INTO events (".
+                            "game_id,".
+                            "event_package_id,".
+                            "event,".
+                            "qty,".
+                            "content_id,".
+                            "created".
+                            ") VALUES (".
+                            "'".$game_id."',".
+                            "'".intval($event_package_id)."',".
+                            "'GIVE_ITEM_PLAYER',".
+                            "1,".
+                            "'".intval($item_id)."',".
+                            "CURRENT_TIMESTAMP".
+                            ")"
+                        );
+                    }
+                }
+                $guide_id = dbconnection::queryInsert
+                    ( "INSERT INTO field_guides (game_id, quest_id, field_id) VALUES ("
+                    .       $game_id
+                    . "," . intval($quest_id)
+                    . "," . intval($field_id)
+                    . ")"
+                    );
+            }
+        }
+
+        return new return_package(0);
+    }
+
     //Takes in quest JSON, all fields optional except user_id + key
     public static function createQuest($pack)
     {
