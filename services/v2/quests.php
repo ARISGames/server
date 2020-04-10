@@ -123,8 +123,9 @@ class quests extends dbconnection
             if (isset($field->options)) {
                 foreach ($field->options as $option) {
                     $item_id = dbconnection::queryInsert
-                        ( "INSERT INTO items (name, description) VALUES ("
-                        . "\""  . addslashes($option->option) . "\""
+                        ( "INSERT INTO items (game_id, name, description) VALUES ("
+                        .         $game_id
+                        . ",\"" . addslashes($option->option) . "\""
                         . ",\"" . addslashes($option->description) . "\""
                         . ")"
                         );
