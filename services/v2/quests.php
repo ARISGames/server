@@ -134,7 +134,7 @@ class quests extends dbconnection
                         . ","   . $game_id
                         . ",\"" . addslashes($option->option) . "\""
                         . ",\"#000000\""
-                        , ","   . intval($item_id)
+                        . ","   . intval($item_id)
                         . ")"
                         );
                     if (isset($pickup_mapping[$option->field_option_id])) {
