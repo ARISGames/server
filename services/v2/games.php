@@ -5,6 +5,7 @@ require_once("util.php");
 require_once("editors.php");
 require_once("media.php");
 require_once("scenes.php");
+require_once("quests.php");
 require_once("return_package.php");
 
 class games extends dbconnection
@@ -439,6 +440,29 @@ Field Day Lab</p>";
         } else {
             return new return_package(0,games::gameObjectFromSQL($sql_game));
         }
+    }
+
+    public static function getAllStemportsStations($pack)
+    {
+        $pack->auth->permission = "read_write";
+        if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
+        $user_id = intval($pack->auth->user_id);
+
+        $q = "SELECT games.* FROM games
+            LEFT JOIN user_games ON (games.game_id = user_games.game_id AND user_games.user_id = {$user_id})
+            WHERE games.published = 1
+            OR user_games.user_id IS NOT NULL
+        ";
+        $sql_games = dbconnection::queryArray($q);
+        $games = array();
+        foreach ($sql_games as $sql_game) {
+            $game = games::gameObjectFromSQL($sql_game);
+            $quests = quests::getQuestsForGame($sql_game)->data;
+            $game->quests = $quests;
+            $games[] = $game;
+        }
+
+        return new return_package(0, $games);
     }
 
     public static function searchSiftrs($pack)
