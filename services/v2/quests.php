@@ -19,6 +19,7 @@ class quests extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
+        // TODO media_id (probably apply to both active and complete)
         $quest_id = dbconnection::queryInsert(
             "INSERT INTO quests (".
             "game_id,".
@@ -55,7 +56,8 @@ class quests extends dbconnection
                 "CURRENT_TIMESTAMP".
                 ")"
             );
-            forEach ($plaque->fieldNotes as $fieldNote) {
+            $fieldNotes = (isset($plaque->fieldNotes) ? $plaque->fieldNotes : array());
+            foreach ($fieldNotes as $fieldNote) {
                 $pickup_mapping[$fieldNote] = $event_package_id;
             }
             $plaque_id = dbconnection::queryInsert(
@@ -63,12 +65,14 @@ class quests extends dbconnection
                 "game_id,".
                 (isset($plaque->name)                ? "name,"                : "").
                 (isset($plaque->description)         ? "description,"         : "").
+                (isset($plaque->media_id)            ? "media_id,"            : "").
                 "event_package_id,".
                 "created".
                 ") VALUES (".
                 "'".addslashes($pack->game_id)."',".
                 (isset($plaque->name)                ? "'".addslashes($plaque->name)."',"        : "").
                 (isset($plaque->description)         ? "'".addslashes($plaque->description)."'," : "").
+                (isset($plaque->media_id)            ? intval($plaque->media_id).","             : "").
                 "'".intval($event_package_id)."',".
                 "CURRENT_TIMESTAMP".
                 ")"
@@ -112,21 +116,23 @@ class quests extends dbconnection
         $fields = (isset($pack->fields) ? $pack->fields : array());
         foreach ($fields as $field) {
             $field_id = dbconnection::queryInsert
-                ( "INSERT INTO fields (game_id, field_type, label, required, quest_id) VALUES ("
+                ( "INSERT INTO fields (game_id, field_type, label, required, quest_id, instruction) VALUES ("
                 .          $game_id
                 . ",\""  . addslashes($field->field_type) . "\""
                 . ",\""  . addslashes($field->label) . "\""
                 . ","    . ($field->required ? 1 : 0)
                 . ","    . intval($quest_id)
+                . ",\""  . addslashes($field->prompt) . "\""
                 . ")"
                 );
             if (isset($field->options)) {
                 foreach ($field->options as $option) {
                     $item_id = dbconnection::queryInsert
-                        ( "INSERT INTO items (game_id, name, description) VALUES ("
+                        ( "INSERT INTO items (game_id, name, description, media_id) VALUES ("
                         .         $game_id
                         . ",\"" . addslashes($option->option) . "\""
                         . ",\"" . addslashes($option->description) . "\""
+                        . ","   . intval($option->media_id) . "\""
                         . ")"
                         );
                     $option_id = dbconnection::queryInsert
