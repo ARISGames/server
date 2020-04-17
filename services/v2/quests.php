@@ -132,7 +132,7 @@ class quests extends dbconnection
                         .         $game_id
                         . ",\"" . addslashes($option->option) . "\""
                         . ",\"" . addslashes($option->description) . "\""
-                        . ","   . intval($option->media_id) . "\""
+                        . ","   . intval($option->media_id)
                         . ")"
                         );
                     $option_id = dbconnection::queryInsert
