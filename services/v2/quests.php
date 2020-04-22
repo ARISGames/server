@@ -67,6 +67,7 @@ class quests extends dbconnection
                 (isset($plaque->description)         ? "description,"         : "").
                 (isset($plaque->media_id)            ? "media_id,"            : "").
                 "event_package_id,".
+                "quest_id,".
                 "created".
                 ") VALUES (".
                 "'".addslashes($pack->game_id)."',".
@@ -74,6 +75,7 @@ class quests extends dbconnection
                 (isset($plaque->description)         ? "'".addslashes($plaque->description)."'," : "").
                 (isset($plaque->media_id)            ? intval($plaque->media_id).","             : "").
                 "'".intval($event_package_id)."',".
+                "'".intval($quest_id)."',".
                 "CURRENT_TIMESTAMP".
                 ")"
             );

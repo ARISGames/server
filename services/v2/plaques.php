@@ -32,6 +32,7 @@ class plaques extends dbconnection
             (isset($pack->back_button_enabled) ? "back_button_enabled," : "").
             (isset($pack->continue_function)   ? "continue_function,"   : "").
             (isset($pack->full_screen)         ? "full_screen,"         : "").
+            (isset($pack->quest_id)            ? "quest_id,"            : "").
             "created".
             ") VALUES (".
             "'".addslashes($pack->game_id)."',".
@@ -43,6 +44,7 @@ class plaques extends dbconnection
             (isset($pack->back_button_enabled) ? "'".addslashes($pack->back_button_enabled)."'," : "").
             (isset($pack->continue_function)   ? "'".addslashes($pack->continue_function)."',"   : "").
             (isset($pack->full_screen)         ? "'".addslashes($pack->full_screen)."',"         : "").
+            (isset($pack->quest_id)            ? "'".addslashes($pack->quest_id)."',"            : "").
             "CURRENT_TIMESTAMP".
             ")"
         );
@@ -68,6 +70,7 @@ class plaques extends dbconnection
             (isset($pack->back_button_enabled) ? "back_button_enabled = '".addslashes($pack->back_button_enabled)."', " : "").
             (isset($pack->continue_function)   ? "continue_function   = '".addslashes($pack->continue_function)."', "   : "").
             (isset($pack->full_screen)         ? "full_screen         = '".addslashes($pack->full_screen)."', "         : "").
+            (isset($pack->quest_id)            ? "quest_id            = '".addslashes($pack->quest_id)."', "            : "").
             "last_active = CURRENT_TIMESTAMP ".
             "WHERE plaque_id = '{$pack->plaque_id}'"
         );
@@ -90,6 +93,7 @@ class plaques extends dbconnection
         $plaque->back_button_enabled = $sql_plaque->back_button_enabled;
         $plaque->continue_function   = $sql_plaque->continue_function;
         $plaque->full_screen         = $sql_plaque->full_screen;
+        $plaque->quest_id            = $sql_plaque->quest_id;
 
         return $plaque;
     }
