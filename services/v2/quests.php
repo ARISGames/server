@@ -35,6 +35,7 @@ class quests extends dbconnection
             (isset($pack->tutorial_3_title)                     ? "tutorial_3_title,"                     : "").
             (isset($pack->tutorial_3)                           ? "tutorial_3,"                           : "").
             (isset($pack->tutorial_3_media_id)                  ? "tutorial_3_media_id,"                  : "").
+            (isset($pack->active_icon_media_id)                 ? "active_icon_media_id,"                 : "").
             "quest_type,".
             "created".
             ") VALUES (".
@@ -51,6 +52,7 @@ class quests extends dbconnection
             (isset($pack->tutorial_3_title)                     ? "'".addslashes($pack->tutorial_3_title)."',"                     : "").
             (isset($pack->tutorial_3)                           ? "'".addslashes($pack->tutorial_3)."',"                           : "").
             (isset($pack->tutorial_3_media_id)                  ? "'".addslashes($pack->tutorial_3_media_id)."',"                  : "").
+            (isset($pack->active_icon_media_id)                 ? "'".addslashes($pack->active_icon_media_id)."',"                 : "").
             "'COMPOUND',".
             "CURRENT_TIMESTAMP".
             ")"
