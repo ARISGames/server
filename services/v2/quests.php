@@ -141,7 +141,7 @@ class quests extends dbconnection
                 . ",\""  . addslashes($field->prompt) . "\""
                 . ")"
                 );
-            if (isset($field->options)) {
+            if (isset($field->options) && !(isset($field->noFieldNote) && $field->noFieldNote)) {
                 foreach ($field->options as $option) {
                     $item_id = dbconnection::queryInsert
                         ( "INSERT INTO items (game_id, name, description, media_id, icon_media_id) VALUES ("
