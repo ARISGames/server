@@ -187,13 +187,15 @@ class quests extends dbconnection
                         );
                     }
                 }
-                $guide_id = dbconnection::queryInsert
-                    ( "INSERT INTO field_guides (game_id, quest_id, field_id) VALUES ("
-                    .       $game_id
-                    . "," . intval($quest_id)
-                    . "," . intval($field_id)
-                    . ")"
-                    );
+                if ($collectFieldNotes) {
+                    $guide_id = dbconnection::queryInsert
+                        ( "INSERT INTO field_guides (game_id, quest_id, field_id) VALUES ("
+                        .       $game_id
+                        . "," . intval($quest_id)
+                        . "," . intval($field_id)
+                        . ")"
+                        );
+                }
             }
         }
 
