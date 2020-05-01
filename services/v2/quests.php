@@ -141,17 +141,22 @@ class quests extends dbconnection
                 . ",\""  . addslashes($field->prompt) . "\""
                 . ")"
                 );
-            if (isset($field->options) && !(isset($field->noFieldNote) && $field->noFieldNote)) {
+            if (isset($field->options)) {
+                $collectFieldNotes = !(isset($field->noFieldNote) && $field->noFieldNote);
                 foreach ($field->options as $option) {
-                    $item_id = dbconnection::queryInsert
-                        ( "INSERT INTO items (game_id, name, description, media_id, icon_media_id) VALUES ("
-                        .         $game_id
-                        . ",\"" . addslashes($option->option) . "\""
-                        . ",\"" . addslashes($option->description) . "\""
-                        . ","   . intval($option->media_id)
-                        . ","   . intval($option->media_id)
-                        . ")"
-                        );
+                    if ($collectFieldNotes) {
+                        $item_id = dbconnection::queryInsert
+                            ( "INSERT INTO items (game_id, name, description, media_id, icon_media_id) VALUES ("
+                            .         $game_id
+                            . ",\"" . addslashes($option->option) . "\""
+                            . ",\"" . addslashes($option->description) . "\""
+                            . ","   . intval($option->media_id)
+                            . ","   . intval($option->media_id)
+                            . ")"
+                            );
+                    } else {
+                        $item_id = 0;
+                    }
                     $option_id = dbconnection::queryInsert
                         ( "INSERT INTO field_options (field_id, game_id, `option`, color, remnant_id) VALUES ("
                         .         intval($field_id)
@@ -161,7 +166,7 @@ class quests extends dbconnection
                         . ","   . intval($item_id)
                         . ")"
                         );
-                    if (isset($pickup_mapping[$option->field_option_id])) {
+                    if ($collectFieldNotes && isset($pickup_mapping[$option->field_option_id])) {
                         $event_package_id = $pickup_mapping[$option->field_option_id];
                         $event_id = dbconnection::queryInsert(
                             "INSERT INTO events (".
