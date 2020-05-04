@@ -138,7 +138,7 @@ class quests extends dbconnection
                 . ",\""  . addslashes($field->label) . "\""
                 . ","    . ($field->required ? 1 : 0)
                 . ","    . intval($quest_id)
-                . ",\""  . addslashes($field->prompt) . "\""
+                . ",\""  . addslashes($field->instruction) . "\""
                 . ")"
                 );
             if (isset($field->options)) {
