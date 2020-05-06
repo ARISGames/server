@@ -199,6 +199,7 @@ class quests extends dbconnection
             }
         }
 
+        games::bumpGameVersion($pack);
         return new return_package(0);
     }
 
