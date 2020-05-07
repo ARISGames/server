@@ -19,7 +19,13 @@ class quests extends dbconnection
         $pack->auth->permission = "read_write";
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
-        // TODO media_id (probably apply to both active and complete)
+        // replace a quest if it already has a valid quest ID
+        $existing_quest_id = parseInt($pack->quest_id);
+        $matching_quests = dbconnection::queryArray("SELECT * FROM quests WHERE quest_id = '{$existing_quest_id}' AND game_id = '{$game_id}'");
+        if (empty($matching_quests) || !$pack->do_update) {
+            $existing_quest_id = null;
+        }
+
         $quest_id = dbconnection::queryInsert(
             "INSERT INTO quests (".
             "game_id,".
@@ -196,6 +202,15 @@ class quests extends dbconnection
                         . ")"
                         );
                 }
+            }
+        }
+
+        if ($existing_quest_id) {
+            // finish the update by removing the old quest stuff and replacing our new rows' quest_id
+            $tables = array('quests', 'plaques', 'fields', 'field_guides');
+            foreach ($tables as $table) {
+                dbconnection::query("DELETE FROM ${table} WHERE quest_id = '${existing_quest_id}'");
+                dbconnection::query("UPDATE ${table} SET quest_id = '${existing_quest_id}' WHERE quest_id = '${quest_id}'");
             }
         }
 
