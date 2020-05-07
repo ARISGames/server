@@ -20,7 +20,7 @@ class quests extends dbconnection
         if(!editors::authenticateGameEditor($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         // replace a quest if it already has a valid quest ID
-        $existing_quest_id = parseInt($pack->quest_id);
+        $existing_quest_id = intval($pack->quest_id);
         $matching_quests = dbconnection::queryArray("SELECT * FROM quests WHERE quest_id = '{$existing_quest_id}' AND game_id = '{$game_id}'");
         if (empty($matching_quests) || !$pack->do_update) {
             $existing_quest_id = null;
