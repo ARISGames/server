@@ -138,13 +138,14 @@ class quests extends dbconnection
         $fields = (isset($pack->fields) ? $pack->fields : array());
         foreach ($fields as $field) {
             $field_id = dbconnection::queryInsert
-                ( "INSERT INTO fields (game_id, field_type, label, required, quest_id, instruction) VALUES ("
+                ( "INSERT INTO fields (game_id, field_type, label, required, quest_id, instruction, sort_index) VALUES ("
                 .          $game_id
                 . ",\""  . addslashes($field->field_type) . "\""
                 . ",\""  . addslashes($field->label) . "\""
                 . ","    . ($field->required ? 1 : 0)
                 . ","    . intval($quest_id)
                 . ",\""  . addslashes($field->instruction) . "\""
+                . ","    . intval($field->sort_index)
                 . ")"
                 );
             if (isset($field->options)) {
@@ -164,12 +165,13 @@ class quests extends dbconnection
                         $item_id = 0;
                     }
                     $option_id = dbconnection::queryInsert
-                        ( "INSERT INTO field_options (field_id, game_id, `option`, color, remnant_id) VALUES ("
+                        ( "INSERT INTO field_options (field_id, game_id, `option`, color, remnant_id, sort_index) VALUES ("
                         .         intval($field_id)
                         . ","   . $game_id
                         . ",\"" . addslashes($option->option) . "\""
                         . ",\"#000000\""
                         . ","   . intval($item_id)
+                        . ","   . intval($option->sort_index)
                         . ")"
                         );
                     if ($collectFieldNotes && isset($pickup_mapping[$option->field_option_id])) {
