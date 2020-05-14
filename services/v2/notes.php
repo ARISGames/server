@@ -605,6 +605,7 @@ class notes extends dbconnection
             $note_ids[] = $note->note_id;
         }
         if (!empty($note_ids)) {
+            $note_ids = implode(',', $note_ids);
             $q_field_data = "SELECT * from field_data where note_id in ({$note_ids})";
             $field_data = dbconnection::queryArray($q_field_data);
 
@@ -631,7 +632,8 @@ class notes extends dbconnection
                 if (!isset($field_data_mapping[$field_data_row->note_id])) {
                     $field_data_mapping[$field_data_row->note_id] = array();
                 }
-                $field_data_mapping[$field_data_row->note_id]["field_$field_id"] = $value;
+                $field_id = $field_data_row->field_id;
+                $field_data_mapping[$field_data_row->note_id]["field_{$field_id}"] = $value;
             }
             foreach ($notes as $note) {
                 if (isset($field_data_mapping[$note->note_id])) {
