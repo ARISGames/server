@@ -474,25 +474,6 @@ class notes extends dbconnection
             $pin_select = "object_tags.tag_id";
             $pin_join = "LEFT JOIN object_tags ON object_tags.game_id = notes.game_id AND object_tags.object_type = 'NOTE' AND notes.note_id = object_tags.object_id";
         }
-        $field_select = '';
-        $field_join = '';
-        foreach ($fields as $field) {
-            $field_id = $field->field_id;
-            $table = 'fd_' . $field_id;
-            $field_join .= " LEFT JOIN field_data AS $table ON $table.note_id = notes.note_id AND $table.field_id = $field_id ";
-            switch ($field->field_type) {
-                case 'SINGLESELECT':
-                case 'MULTISELECT':
-                    $field_select .= ", $table.field_option_id AS field_$field_id ";
-                    break;
-                case 'MEDIA':
-                    $field_select .= ", $table.media_id AS field_$field_id ";
-                    break;
-                default:
-                    $field_select .= ", $table.field_data AS field_$field_id ";
-                    break;
-            }
-        }
 
         $q = "SELECT notes.*
         , users.user_name
@@ -505,7 +486,6 @@ class notes extends dbconnection
         , media.file_name
         , media.file_folder
         , {$caption_select}
-          {$field_select}
         FROM notes
         LEFT JOIN users ON users.user_id = notes.user_id
         JOIN instances ON instances.object_type = 'NOTE' AND notes.note_id = instances.object_id
@@ -513,7 +493,6 @@ class notes extends dbconnection
         {$preview_join}
         {$caption_join}
         {$pin_join}
-        {$field_join}
         LEFT JOIN note_likes ON notes.game_id = note_likes.game_id AND notes.note_id = note_likes.note_id
         LEFT JOIN note_comments ON notes.game_id = note_comments.game_id AND notes.note_id = note_comments.note_id
         WHERE notes.game_id = {$game_id}";
@@ -619,6 +598,48 @@ class notes extends dbconnection
         foreach ($notes as $note) {
             $note->description = $note->caption;
             $note->media_id = $note->media_id_real;
+        }
+
+        $note_ids = array();
+        foreach ($notes as $note) {
+            $note_ids[] = $note->note_id;
+        }
+        if (!empty($note_ids)) {
+            $q_field_data = "SELECT * from field_data where note_id in ({$note_ids})";
+            $field_data = dbconnection::queryArray($q_field_data);
+
+            $field_type_mapping = array();
+            foreach ($fields as $field) {
+                $field_type_mapping[$field->field_id] = $field->field_type;
+            }
+
+            $field_data_mapping = array();
+            foreach ($field_data as $field_data_row) {
+                $value = null;
+                switch ($field->field_type) {
+                    case 'SINGLESELECT':
+                    case 'MULTISELECT':
+                        $value = $field_data_row->field_option_id;
+                        break;
+                    case 'MEDIA':
+                        $value = $field_data_row->media_id;
+                        break;
+                    default:
+                        $value = $field_data_row->field_data;
+                        break;
+                }
+                if (!isset($field_data_mapping[$field_data_row->note_id])) {
+                    $field_data_mapping[$field_data_row->note_id] = array();
+                }
+                $field_data_mapping[$field_data_row->note_id]["field_$field_id"] = $value;
+            }
+            foreach ($notes as $note) {
+                if (isset($field_data_mapping[$note->note_id])) {
+                    foreach ($field_data_mapping[$note->note_id] as $k => $v) {
+                        $note->$k = $v;
+                    }
+                }
+            }
         }
 
         $map_notes = array();
