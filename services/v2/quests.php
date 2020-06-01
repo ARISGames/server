@@ -211,7 +211,17 @@ class quests extends dbconnection
             // finish the update by removing the old quest stuff and replacing our new rows' quest_id
             $tables = array('quests', 'plaques', 'fields', 'field_guides');
             foreach ($tables as $table) {
-                dbconnection::query("DELETE FROM ${table} WHERE quest_id = '${existing_quest_id}'");
+                if ($table === 'fields') {
+                    dbconnection::query("DELETE fields, field_options, items, instances
+                        FROM fields
+                        JOIN field_options ON field_options.field_id = fields.field_id
+                        JOIN items ON field_options.remnant_id = items.item_id
+                        JOIN instances ON instances.object_type = 'ITEM' AND instances.object_id = items.item_id
+                        WHERE fields.quest_id = '${existing_quest_id}'"
+                    );
+                } else {
+                    dbconnection::query("DELETE FROM ${table} WHERE quest_id = '${existing_quest_id}'");
+                }
                 dbconnection::query("UPDATE ${table} SET quest_id = '${existing_quest_id}' WHERE quest_id = '${quest_id}'");
             }
         }
