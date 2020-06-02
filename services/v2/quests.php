@@ -214,9 +214,9 @@ class quests extends dbconnection
                 if ($table === 'fields') {
                     dbconnection::query("DELETE fields, field_options, items, instances
                         FROM fields
-                        JOIN field_options ON field_options.field_id = fields.field_id
-                        JOIN items ON field_options.remnant_id = items.item_id
-                        JOIN instances ON instances.object_type = 'ITEM' AND instances.object_id = items.item_id
+                        LEFT JOIN field_options ON field_options.field_id = fields.field_id
+                        LEFT JOIN items ON field_options.remnant_id = items.item_id
+                        LEFT JOIN instances ON instances.object_type = 'ITEM' AND instances.object_id = items.item_id
                         WHERE fields.quest_id = '${existing_quest_id}'"
                     );
                 } else {
