@@ -95,6 +95,8 @@ class items extends dbconnection
         $item->description          = $sql_item->description;
         $item->icon_media_id        = $sql_item->icon_media_id;
         $item->media_id             = $sql_item->media_id;
+        $item->media_id_2           = $sql_item->media_id_2;
+        $item->media_id_3           = $sql_item->media_id_3;
         $item->droppable            = $sql_item->droppable;
         $item->destroyable          = $sql_item->destroyable;
         $item->max_qty_in_inventory = $sql_item->max_qty_in_inventory;

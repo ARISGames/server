@@ -153,12 +153,14 @@ class quests extends dbconnection
                 foreach ($field->options as $option) {
                     if ($collectFieldNotes) {
                         $item_id = dbconnection::queryInsert
-                            ( "INSERT INTO items (game_id, name, description, media_id, icon_media_id) VALUES ("
+                            ( "INSERT INTO items (game_id, name, description, media_id, icon_media_id, media_id_2, media_id_3) VALUES ("
                             .         $game_id
                             . ",\"" . addslashes($option->option) . "\""
                             . ",\"" . addslashes($option->description) . "\""
                             . ","   . intval($option->media_id)
                             . ","   . intval($option->media_id)
+                            . ","   . intval($option->media_id_2)
+                            . ","   . intval($option->media_id_3)
                             . ")"
                             );
                     } else {
