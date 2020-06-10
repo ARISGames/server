@@ -221,6 +221,15 @@ class quests extends dbconnection
                         LEFT JOIN instances ON instances.object_type = 'ITEM' AND instances.object_id = items.item_id
                         WHERE fields.quest_id = '${existing_quest_id}'"
                     );
+                } else if ($table === 'plaques') {
+                    dbconnection::query("DELETE plaques, instances, triggers, event_packages, events
+                        FROM plaques
+                        LEFT JOIN instances ON instances.object_type = 'PLAQUE' AND instances.object_id = plaques.plaque_id
+                        LEFT JOIN triggers ON instances.instance_id = triggers.instance_id
+                        LEFT JOIN event_packages ON event_packages.event_package_id = plaques.event_package_id
+                        LEFT JOIN events ON events.event_package_id = event_packages.event_package_id
+                        WHERE plaques.quest_id = '${existing_quest_id}'"
+                    );
                 } else {
                     dbconnection::query("DELETE FROM ${table} WHERE quest_id = '${existing_quest_id}'");
                 }
