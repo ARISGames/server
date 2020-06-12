@@ -89,6 +89,8 @@ class plaques extends dbconnection
         $plaque->description         = $sql_plaque->description;
         $plaque->icon_media_id       = $sql_plaque->icon_media_id;
         $plaque->media_id            = $sql_plaque->media_id;
+        $plaque->media_id_2          = $sql_plaque->media_id_2;
+        $plaque->media_id_3          = $sql_plaque->media_id_3;
         $plaque->event_package_id    = $sql_plaque->event_package_id;
         $plaque->back_button_enabled = $sql_plaque->back_button_enabled;
         $plaque->continue_function   = $sql_plaque->continue_function;
