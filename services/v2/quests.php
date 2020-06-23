@@ -216,7 +216,7 @@ class quests extends dbconnection
         }
 
         // manually placed caches, just triggers for items
-        $caches = array(); // (isset($pack->caches) ? $pack->caches : array());
+        $caches = (isset($pack->caches) ? $pack->caches : array());
         foreach ($caches as $cache) {
             // $cache has latitude, longitude, field_option_id
             $item_id = $temp_option_to_item_mapping[$cache->field_option_id];
@@ -284,11 +284,15 @@ class quests extends dbconnection
             $tables = array('quests', 'plaques', 'fields', 'field_guides');
             foreach ($tables as $table) {
                 if ($table === 'fields') {
-                    dbconnection::query("DELETE fields, field_options, items, instances
+                    dbconnection::query("DELETE fields, field_options, items, instances, triggers, requirement_root_packages, requirement_and_packages, requirement_atoms
                         FROM fields
                         LEFT JOIN field_options ON field_options.field_id = fields.field_id
                         LEFT JOIN items ON field_options.remnant_id = items.item_id
                         LEFT JOIN instances ON instances.object_type = 'ITEM' AND instances.object_id = items.item_id
+                        LEFT JOIN triggers ON instances.instance_id = triggers.instance_id
+                        LEFT JOIN requirement_root_packages ON triggers.requirement_root_package_id = requirement_root_packages.requirement_root_package_id
+                        LEFT JOIN requirement_and_packages ON requirement_root_packages.requirement_root_package_id = requirement_and_packages.requirement_root_package_id
+                        LEFT JOIN requirement_atoms ON requirement_and_packages.requirement_and_package_id = requirement_atoms.requirement_and_package_id
                         WHERE fields.quest_id = '${existing_quest_id}'"
                     );
                 } else if ($table === 'plaques') {
