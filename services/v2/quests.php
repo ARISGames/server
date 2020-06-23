@@ -140,6 +140,7 @@ class quests extends dbconnection
         }
 
         $fields = (isset($pack->fields) ? $pack->fields : array());
+        $temp_option_to_item_mapping = array(); // mapping from temporary field note id to created item id
         foreach ($fields as $field) {
             $field_id = dbconnection::queryInsert
                 ( "INSERT INTO fields (game_id, field_type, label, required, quest_id, instruction, sort_index) VALUES ("
@@ -170,6 +171,7 @@ class quests extends dbconnection
                     } else {
                         $item_id = 0;
                     }
+                    $temp_option_to_item_mapping[$option->field_option_id] = $item_id;
                     $option_id = dbconnection::queryInsert
                         ( "INSERT INTO field_options (field_id, game_id, `option`, color, remnant_id, sort_index) VALUES ("
                         .         intval($field_id)
@@ -211,6 +213,70 @@ class quests extends dbconnection
                         );
                 }
             }
+        }
+
+        // manually placed caches, just triggers for items
+        $caches = (isset($pack->caches) ? $pack->caches : array());
+        foreach ($caches as $cache) {
+            // $cache has latitude, longitude, field_option_id
+            $item_id = $temp_option_to_item_mapping[$cache->field_option_id];
+            // make req (root, and, atom) for player to not have the item already
+            $root_id = dbconnection::queryInsert
+                ( "INSERT INTO requirement_root_packages (game_id) VALUES ({$game_id})"
+                );
+            $and_id = dbconnection::queryInsert
+                ( "INSERT INTO requirement_and_packages (game_id, requirement_root_package_id) VALUES ("
+                .       $game_id
+                . "," . intval($root_id)
+                . ")"
+                );
+            dbconnection::queryInsert
+                ( "INSERT INTO requirement_atoms (game_id, requirement_and_package_id, bool_operator, requirement, content_id, qty) VALUES ("
+                .       $game_id
+                . "," . intval($and_id)
+                . "," . "0"
+                . "," . "'PLAYER_HAS_ITEM'"
+                . "," . $item_id
+                . "," . "1"
+                . ")"
+                );
+            // make instance (point to item) and trigger
+            $instance_id = dbconnection::queryInsert(
+                "INSERT INTO instances (".
+                "game_id,".
+                "object_type,".
+                "object_id,".
+                "qty,".
+                "infinite_qty,".
+                "created".
+                ") VALUES (".
+                "'".$game_id."',".
+                "'ITEM',".
+                "'".intval($item_id)."',".
+                "1,".
+                "1,".
+                "CURRENT_TIMESTAMP".
+                ")"
+            );
+            $trigger_id = dbconnection::queryInsert(
+                "INSERT INTO triggers (".
+                "game_id,".
+                "instance_id,".
+                "type,".
+                (isset($cache->latitude)  ? "latitude,"  : "").
+                (isset($cache->longitude) ? "longitude," : "").
+                "requirement_root_package_id,".
+                "created".
+                ") VALUES (".
+                "'".$game_id."',".
+                "'".intval($instance_id)."',".
+                "'LOCATION',".
+                (isset($cache->latitude)  ? "'".addslashes($cache->latitude)."',"  : "").
+                (isset($cache->longitude) ? "'".addslashes($cache->longitude)."'," : "").
+                "'".$root_id."',".
+                "CURRENT_TIMESTAMP".
+                ")"
+            );
         }
 
         if ($existing_quest_id) {
