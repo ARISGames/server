@@ -216,7 +216,7 @@ class quests extends dbconnection
         }
 
         // manually placed caches, just triggers for items
-        $caches = (isset($pack->caches) ? $pack->caches : array());
+        $caches = array(); // (isset($pack->caches) ? $pack->caches : array());
         foreach ($caches as $cache) {
             // $cache has latitude, longitude, field_option_id
             $item_id = $temp_option_to_item_mapping[$cache->field_option_id];
