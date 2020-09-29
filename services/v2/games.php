@@ -558,7 +558,10 @@ Field Day Lab</p>";
         if(!users::authenticateUser($pack->auth)) return new return_package(6, NULL, "Failed Authentication");
 
         $user_id = intval($pack->auth->user_id);
-        if (isset($pack->order) && $pack->order === 'recent') {
+        if ($user_id === 75) {
+            // stemports master editor account
+            $sql_games = dbconnection::queryArray("SELECT * FROM games");
+        } else if (isset($pack->order) && $pack->order === 'recent') {
             $sql_games = dbconnection::queryArray("SELECT games.* FROM user_games LEFT JOIN games ON user_games.game_id = games.game_id LEFT JOIN notes ON games.game_id = notes.game_id AND notes.user_id = '{$user_id}' LEFT JOIN user_log ON user_log.user_id = '{$user_id}' AND games.game_id = user_log.game_id AND user_log.event_type = 'MOVE' WHERE user_games.user_id = '{$user_id}' AND games.game_id IS NOT NULL GROUP BY games.game_id ORDER BY GREATEST(IFNULL(notes.last_active, FROM_UNIXTIME(0)), IFNULL(user_log.created, FROM_UNIXTIME(0))) DESC");
         } else {
             $sql_games = dbconnection::queryArray("SELECT * FROM user_games LEFT JOIN games ON user_games.game_id = games.game_id WHERE user_games.user_id = '{$user_id}' AND games.game_id IS NOT NULL");

