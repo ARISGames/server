@@ -501,7 +501,7 @@ class quests extends dbconnection
     public static function getQuestsForGame($pack)
     {
         $user_id = null;
-        if ($path->auth) {
+        if ($pack->auth) {
             $pack->auth->permission = "read_write";
             if (users::authenticateUser($pack->auth)) {
                 $user_id = intval($pack->auth->user_id);
