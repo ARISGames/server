@@ -521,9 +521,8 @@ class quests extends dbconnection
             // authenticated user, they can see their private quests
             $sql_quests = dbconnection::queryArray("
                 SELECT quests.* FROM quests
-                LEFT JOIN user_games ON quests.game_id = user_games.game_id
+                LEFT JOIN user_games ON quests.game_id = user_games.game_id AND user_games.user_id = '{$user_id}'
                 WHERE quests.game_id = '{$game_id}'
-                AND user_games.user_id = '{$user_id}'
                 AND (quests.published OR user_games.user_id IS NOT NULL)
                 GROUP BY quests.quest_id
                 ORDER BY quests.sort_index
