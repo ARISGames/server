@@ -42,6 +42,7 @@ class quests extends dbconnection
             (isset($pack->tutorial_3)                           ? "tutorial_3,"                           : "").
             (isset($pack->tutorial_3_media_id)                  ? "tutorial_3_media_id,"                  : "").
             (isset($pack->stars)                                ? "stars,"                                : "").
+            (isset($pack->published)                            ? "published,"                            : "").
             (isset($pack->active_icon_media_id)                 ? "active_icon_media_id,"                 : "").
             "quest_type,".
             "created".
@@ -60,6 +61,7 @@ class quests extends dbconnection
             (isset($pack->tutorial_3)                           ? "'".addslashes($pack->tutorial_3)."',"                           : "").
             (isset($pack->tutorial_3_media_id)                  ? "'".addslashes($pack->tutorial_3_media_id)."',"                  : "").
             (isset($pack->stars)                                ? "'".addslashes($pack->stars)."',"                                : "").
+            (isset($pack->published)                            ? "'".addslashes($pack->published)."',"                            : "").
             (isset($pack->active_icon_media_id)                 ? "'".addslashes($pack->active_icon_media_id)."',"                 : "").
             "'COMPOUND',".
             "CURRENT_TIMESTAMP".
@@ -341,6 +343,7 @@ class quests extends dbconnection
             (isset($pack->tutorial_3)                           ? "tutorial_3,"                           : "").
             (isset($pack->tutorial_3_media_id)                  ? "tutorial_3_media_id,"                  : "").
             (isset($pack->stars)                                ? "stars,"                                : "").
+            (isset($pack->published)                            ? "published,"                            : "").
             (isset($pack->quest_type)                           ? "quest_type,"                           : "").
             (isset($pack->active_icon_media_id)                 ? "active_icon_media_id,"                 : "").
             (isset($pack->active_media_id)                      ? "active_media_id,"                      : "").
@@ -374,6 +377,7 @@ class quests extends dbconnection
             (isset($pack->tutorial_3)                           ? "'".addslashes($pack->tutorial_3)."',"                           : "").
             (isset($pack->tutorial_3_media_id)                  ? "'".addslashes($pack->tutorial_3_media_id)."',"                  : "").
             (isset($pack->stars)                                ? "'".addslashes($pack->stars)."',"                                : "").
+            (isset($pack->published)                            ? "'".addslashes($pack->published)."',"                            : "").
             (isset($pack->quest_type)                           ? "'".addslashes($pack->quest_type)."',"                           : "").
             (isset($pack->active_icon_media_id)                 ? "'".addslashes($pack->active_icon_media_id)."',"                 : "").
             (isset($pack->active_media_id)                      ? "'".addslashes($pack->active_media_id)."',"                      : "").
@@ -420,6 +424,7 @@ class quests extends dbconnection
             (isset($pack->tutorial_3)                           ? "tutorial_3                           = '".addslashes($pack->tutorial_3)."', "                           : "").
             (isset($pack->tutorial_3_media_id)                  ? "tutorial_3_media_id                  = '".addslashes($pack->tutorial_3_media_id)."', "                  : "").
             (isset($pack->stars)                                ? "stars                                = '".addslashes($pack->stars)."', "                                : "").
+            (isset($pack->published)                            ? "published                            = '".addslashes($pack->published)."', "                            : "").
             (isset($pack->quest_type)                           ? "quest_type                           = '".addslashes($pack->quest_type)."', "                           : "").
             (isset($pack->active_icon_media_id)                 ? "active_icon_media_id                 = '".addslashes($pack->active_icon_media_id)."', "                 : "").
             (isset($pack->active_media_id)                      ? "active_media_id                      = '".addslashes($pack->active_media_id)."', "                      : "").
@@ -464,6 +469,7 @@ class quests extends dbconnection
         $quest->tutorial_3                           = $sql_quest->tutorial_3;
         $quest->tutorial_3_media_id                  = $sql_quest->tutorial_3_media_id;
         $quest->stars                                = $sql_quest->stars;
+        $quest->published                            = $sql_quest->published;
         $quest->quest_type                           = $sql_quest->quest_type;
         $quest->active_icon_media_id                 = $sql_quest->active_icon_media_id;
         $quest->active_media_id                      = $sql_quest->active_media_id;
