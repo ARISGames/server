@@ -500,7 +500,44 @@ class quests extends dbconnection
 
     public static function getQuestsForGame($pack)
     {
-        $sql_quests = dbconnection::queryArray("SELECT * FROM quests WHERE game_id = '{$pack->game_id}' ORDER BY sort_index");
+        $user_id = null;
+        if ($path->auth) {
+            $pack->auth->permission = "read_write";
+            if (users::authenticateUser($pack->auth)) {
+                $user_id = intval($pack->auth->user_id);
+            }
+        }
+
+        $game_id = intval($pack->game_id);
+
+        if ($user_id === 75) {
+            // stemports master editor account
+            $sql_quests = dbconnection::queryArray("
+                SELECT * FROM quests
+                WHERE game_id = '{$game_id}'
+                ORDER BY sort_index
+            ");
+        } else if (!is_null($user_id)) {
+            // authenticated user, they can see their private quests
+            $sql_quests = dbconnection::queryArray("
+                SELECT quests.* FROM quests
+                LEFT JOIN user_games ON quests.game_id = user_games.game_id
+                WHERE quests.game_id = '{$game_id}'
+                AND user_games.user_id = '{$user_id}'
+                AND (quests.published OR user_games.user_id IS NOT NULL)
+                GROUP BY quests.quest_id
+                ORDER BY quests.sort_index
+            ");
+        } else {
+            // only public quests
+            $sql_quests = dbconnection::queryArray("
+                SELECT * FROM quests
+                WHERE game_id = '{$game_id}'
+                AND published
+                ORDER BY sort_index
+            ");
+        }
+
         $quests = array();
         for($i = 0; $i < count($sql_quests); $i++)
             if($ob = quests::questObjectFromSQL($sql_quests[$i])) $quests[] = $ob;
