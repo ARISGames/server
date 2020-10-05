@@ -457,7 +457,7 @@ Field Day Lab</p>";
         $games = array();
         foreach ($sql_games as $sql_game) {
             $game = games::gameObjectFromSQL($sql_game);
-            // TODO pass auth data to getQuestsForGame so you can see your own private quests
+            $sql_game->auth = $pack->auth; // so you can see your own private quests
             $quests = quests::getQuestsForGame($sql_game)->data;
             $game->quests = $quests;
             $games[] = $game;
