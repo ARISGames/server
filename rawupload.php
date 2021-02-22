@@ -1,9 +1,13 @@
 <?php
 require_once('./config.class.php');
+$allowed = array('gif', 'png', 'jpg', 'jpeg', 'mp4', 'mov');
 if ( isset($_FILES['raw_upload']) ) {
+  $ext = pathinfo($_FILES['raw_upload']['name'], PATHINFO_EXTENSION);
   if ($_FILES['raw_upload']['error']) {
     // do nothing
     // var_dump($_FILES['raw_upload']);
+  } else if (!in_array($ext, $allowed)) {
+    echo 'Unsupported filetype';
   } else {
     $filename = date('Ymd_His_') . rand(0, 100000);
     $fullpath = Config::raw_uploads_folder . '/' . $filename;
