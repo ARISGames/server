@@ -964,10 +964,12 @@ class notes extends dbconnection
 
         // Cleanup related items.
         $noteComments = dbconnection::queryArray("SELECT * FROM note_comments WHERE note_id = '{$pack->note_id}'");
-        for($i = 0; $i < count($note_comments); $i++)
-        {
-            $pack->note_comment_id = $noteComments[$i]->note_comment_id;
-            note_comments::deleteNoteComment($pack);
+        if ($noteComments) {
+            for($i = 0; $i < count($note_comments); $i++)
+            {
+                $pack->note_comment_id = $noteComments[$i]->note_comment_id;
+                note_comments::deleteNoteComment($pack);
+            }
         }
 
         // NOTE duplicated from tags.php/instances.php/triggers.php due to amf framework public methods being accessible via url.
