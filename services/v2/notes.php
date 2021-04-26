@@ -538,7 +538,7 @@ class notes extends dbconnection
 
         // Tag search
         if (count($tag_ids)) {
-            $tag_list = '(' . implode($tag_ids, ',') . ')';
+            $tag_list = '(' . implode(',' , $tag_ids) . ')';
             $ors = ["tag_id IN {$tag_list}"];
             foreach ($fields as $field) {
                 if ($field->field_type === 'SINGLESELECT' || $field->field_type === 'MULTISELECT') {
